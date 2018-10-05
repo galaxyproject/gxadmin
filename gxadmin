@@ -12,7 +12,7 @@ usage(){
   handler tail                   : tail handler logs
 
   <tsvquery|csvquery|query>
-        latest_users             : 40 recently registered users
+        latest-users             : 40 recently registered users
         tool-usage               : Counts of tool runs
 
         job-info <id>            : Information about a specific job
@@ -236,7 +236,7 @@ elif [[ $1 == "handler" ]]; then
 		usage
 	fi
 elif [[ $1 == *"query" ]]; then
-	if [[ $2 == "latest_users" ]]; then
+	if [[ $2 == "latest-users" ]]; then
 		qstr="
 			SELECT id, create_time, pg_size_pretty(disk_usage), username, email
 			FROM galaxy_user

@@ -25,7 +25,7 @@ postgres tables, csv, or tsv as desired by the user:
 
 ```
   <tsvquery|csvquery|query>
-        latest_users             : 40 recently registered users
+        latest-users             : 40 recently registered users
         tool-usage               : Counts of tool runs
 
         job-info <id>            : Information about a specific job
@@ -51,7 +51,7 @@ postgres tables, csv, or tsv as desired by the user:
 Returns 40 most recently registered users
 
 ```
-$ gxadmin query latest_users
+$ gxadmin query latest-users
  id |        create_time        | pg_size_pretty |   username    |             email
 ----+---------------------------+----------------+---------------+--------------------------------
   1 | 2018-10-05 11:40:42.90119 |                | helena-rasche | hxr@informatik.uni-freiburg.de
