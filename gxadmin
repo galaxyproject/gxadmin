@@ -17,6 +17,7 @@ usage(){
 
         job-info <id>            : Information about a specific job
         job-outputs <id>         : Output datasets from a specific job
+        job-history <id>         : Job state history for a specific job
         queue                    : Brief overview of currently running jobs
         queue-detail             : Detailed overview of running and queued jobs
         recent-jobs <hours>      : Jobs run in the past <hours> (in any state)
@@ -52,7 +53,7 @@ success() {
 }
 
 validate() {
-    cd $GALAXY_DIST
+	cd $GALAXY_DIST
 	fail_count=0
 	for file in $GALAXY_DIST/*.xml; do
 		xmllint $file > /dev/null 2>/dev/null;
@@ -75,7 +76,7 @@ validate() {
 			success "  OK: $file";
 		fi
 	done;
-    cd -
+	cd -
 
 	if (( fail_count == 0 )); then
 		success "All XML files validated"
@@ -213,7 +214,7 @@ elif [[ $1 == "zerg" ]]; then
 		if [[ $3 == "pool" ]]; then
 			supervisor_strace "gx:zergpool"
 		elif [[ $3 == "0" ]] || [[ $3 == "1" ]]; then
-			supervisor_strace "gx:zergling$3"
+			supervisor_strace "zergling$3"
 		else
 			supervisor_strace "gx:zerg"
 		fi
@@ -229,7 +230,7 @@ elif [[ $1 == "handler" ]]; then
 	elif [[ $2 == "restart" ]]; then
 		validate
 		#influxdb_event "Restarting handlers"
-		 /usr/local/galaxy/galaxy-dist/.venv/bin/supervisorctl restart hd:
+		supervisorctl restart hd:
 	else
 		error "Unknown command"
 		usage
@@ -307,11 +308,15 @@ elif [[ $1 == *"query" ]]; then
 			GROUP BY tool_id, state
 			ORDER BY count desc"
 	elif [[ $2 == "queue_detail" ]] || [[ $2 == "queue-detail" ]]; then
+		d=""
+		if [[ $3 == "--all" ]]; then
+			d=", 'new'"
+		fi
 		qstr="
-			SELECT job.state, job.id, job.job_runner_external_id as extid, job.tool_id, galaxy_user.username, (now() - job.create_time) as time
+			SELECT job.state, job.id, job.job_runner_external_id as extid, job.tool_id, galaxy_user.username, date_trunc('hour', (now() - job.create_time - '2 hours'::interval)) as time_since_creation
 			FROM job, galaxy_user
-			WHERE state in ('running', 'queued') and job.user_id = galaxy_user.id
-			ORDER BY state desc, time desc"
+			WHERE state in ('running', 'queued'$d) and job.user_id = galaxy_user.id
+			ORDER BY state desc, time_since_creation desc"
 	elif [[ $2 == "runtime_per_user" ]] || [[ $2 == "runtime-per-user" ]]; then
 		assert_count $# 3 "Missing user"
 		qstr="
@@ -376,7 +381,47 @@ elif [[ $1 == *"query" ]]; then
 				AND galaxy_group.id = user_group_association.group_id
 				AND user_group_association.user_id = galaxy_user.id
 		"
+	elif [[ $2 == "training-queue" ]]; then
+		assert_count $# 3 "Missing Training ID"
+		# Remove training- if they used it.
+		ww=$(echo "$3" | sed 's/^training-//g')
+		qstr="
+			SELECT
+				job.state,
+				job.id,
+				job.job_runner_external_id AS extid,
+				job.tool_id,
+				galaxy_user.username,
+				date_trunc('hour', job.create_time) AS created
+			FROM
+				job, galaxy_user
+			WHERE
+				state IN ('running', 'queued', 'new')
+				AND job.user_id = galaxy_user.id
+				AND galaxy_user.id
+					IN (
+							SELECT
+								galaxy_user.id
+							FROM
+								galaxy_user, user_group_association, galaxy_group
+							WHERE
+								galaxy_group.name = 'training-$ww'
+								AND galaxy_group.id = user_group_association.group_id
+								AND user_group_association.user_id = galaxy_user.id
+						)
+			ORDER BY
+				state DESC, created DESC;
+		"
 
+	elif [[ $2 == "job-history" ]]; then
+		assert_count $# 3 "Missing Job ID"
+		qstr="
+			SELECT
+				date_trunc('second', create_time) as time,
+				state
+			FROM job_state_history
+			WHERE job_id = $3
+		"
 	elif [[ $2 == "job-outputs" ]]; then
 		assert_count $# 3 "Missing Job ID"
 		qstr="

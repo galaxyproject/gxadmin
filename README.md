@@ -30,6 +30,7 @@ postgres tables, csv, or tsv as desired by the user:
 
         job-info <id>            : Information about a specific job
         job-outputs <id>         : Output datasets from a specific job
+        job-history <id>         : Job state history for a specific job
         queue                    : Brief overview of currently running jobs
         queue-detail             : Detailed overview of running and queued jobs
         recent-jobs <hours>      : Jobs run in the past <hours> (in any state)
@@ -92,6 +93,19 @@ $ gxadmin query job-outputs 1000
 (1 row)
 ```
 
+
+### job-history
+
+```
+$ gxadmin query job-history 4384025
+        time         |  state
+---------------------+---------
+ 2018-10-05 16:20:13 | ok
+ 2018-10-05 16:19:57 | running
+ 2018-10-05 16:19:55 | queued
+ 2018-10-05 16:19:54 | new
+(4 rows)
+```
 
 ### queue
 
