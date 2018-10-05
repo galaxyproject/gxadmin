@@ -1,43 +1,25 @@
 #!/bin/bash
 usage(){
-  echo "gxadmin usage:
-
-  validate                       : validate config files
-
-  zerg swap '<message>'          : swap zerglings
-  zerg tail                      : tail zergling logs
-  zerg strace [0|1|pool]         : swap zerglings
-
-  handler restart '<message>'    : restart handlers
-  handler tail                   : tail handler logs
-
-  <tsvquery|csvquery|query>
-        latest-users             : 40 recently registered users
-        tool-usage               : Counts of tool runs
-
-        job-info <id>            : Information about a specific job
-        job-outputs <id>         : Output datasets from a specific job
-        job-history <id>         : Job state history for a specific job
-        queue                    : Brief overview of currently running jobs
-        queue-detail             : Detailed overview of running and queued jobs
-        recent-jobs <hours>      : Jobs run in the past <hours> (in any state)
-
-        jobs-per-user <email>    : Number of jobs run by a specific user
-        runtime-per-user <email> : computation time of user (by email)
-
-        training [--all]         : List known trainings
-        training-members <tr_id> : List users in a specific training
-
-        # Queries NOT support tsv/csv versions:
-        queue-time <tool_id>     : The average/95%/99% a specific tool spends in queue state.
-        datasets-created-daily   : The min/max/average/p95/p99 of total size of datasets created in a single day.
-
-  migrate-tool-install-to-sqlite : Converts normal potsgres toolshed repository tables into the SQLite version
-
-  update                         : Update this tool
-
-  help / -h / --help : this message
-"
+	echo "gxadmin usage:"
+	cmds="$(grep -o '## .*' gxadmin | grep -v grep | sort | sed 's/^## //g')"
+	echo
+	echo "Zergling Commands:"
+	echo
+	echo "$cmds" | grep '^zerg' | column -s: -t | sed 's/^/    /'
+	echo
+	echo "Handler Commands:"
+	echo
+	echo "$cmds" | grep '^handler' | column -s: -t | sed 's/^/    /'
+	echo
+	echo "DB Queries:"
+	echo
+	echo "$cmds" | grep 'query ' | sort -k2 | column -s: -t | sed 's/^/    /'
+	echo
+	echo "Other:"
+	echo
+	echo "$cmds" | grep -v 'query ' | grep -v '^zerg' | grep -v handler | column -s: -t | sed 's/^/    /'
+	echo
+	echo "help / -h / --help : this message"
 	if [[ $1 == "safe" ]]; then
 		exit 0;
 	fi
@@ -201,10 +183,10 @@ if (( $# == 0 )); then
 	usage safe
 fi
 
-if [[ $1 == "validate" ]]; then
+if [[ $1 == "validate" ]]; then ## validate: validate config files
 	validate
 elif [[ $1 == "zerg" ]]; then
-	if [[ $2 == "swap" ]]; then
+	if [[ $2 == "swap" ]]; then ## zerg swap '<message>': swap zerglings
 		validate
 
 		if (( $# != 3 )); then
@@ -214,9 +196,9 @@ elif [[ $1 == "zerg" ]]; then
 		fi
 
 		zerg_swap $3
-	elif [[ $2 == "tail" ]]; then
+	elif [[ $2 == "tail" ]]; then ## zerg tail: tail zergling logs
 		tail -f /var/log/galaxy/zerg*.log
-	elif [[ $2 == "strace" ]]; then
+	elif [[ $2 == "strace" ]]; then ## zerg strace [0|1|pool]: swap zerglings
 		if [[ $3 == "pool" ]]; then
 			supervisor_strace "gx:zergpool"
 		elif [[ $3 == "0" ]] || [[ $3 == "1" ]]; then
@@ -229,11 +211,11 @@ elif [[ $1 == "zerg" ]]; then
 		usage
 	fi
 elif [[ $1 == "handler" ]]; then
-	if [[ $2 == "strace" ]]; then
+    if [[ $2 == "strace" ]]; then ## handler strace <handler_id>: Run an strace on a specific handler (to watch it load files.)
 		supervisor_strace "hd:handler$3"
-	elif [[ $2 == "tail" ]]; then
+	elif [[ $2 == "tail" ]]; then ## handler tail: tail handler logs
 		tail -f /var/log/galaxy/handler*.log
-	elif [[ $2 == "restart" ]]; then
+	elif [[ $2 == "restart" ]]; then ## handler restart '<message>': restart handlers
 		validate
 		#influxdb_event "Restarting handlers"
 		supervisorctl restart hd:
@@ -241,7 +223,7 @@ elif [[ $1 == "handler" ]]; then
 		error "Unknown command"
 		usage
 	fi
-elif [[ $1 == "migrate-tool-install-to-sqlite" ]]; then
+elif [[ $1 == "migrate-tool-install-to-sqlite" ]]; then ## migrate-tool-install-to-sqlite: Converts normal potsgres toolshed repository tables into the SQLite version
 	# Export tables
 	if [[ -f  galaxy_install.sqlite ]]; then
 		error "galaxy_install.sqlite exists, not overwriting"
@@ -391,26 +373,26 @@ elif [[ $1 == "migrate-tool-install-to-sqlite" ]]; then
 	success "Complete"
 
 elif [[ $1 == *"query" ]]; then
-	if [[ $2 == "latest-users" ]]; then
+	if [[ $2 == "latest-users" ]]; then ## {,csv,tsv}query   latest-users: 40 recently registered users
 		qstr="
 			SELECT id, create_time, pg_size_pretty(disk_usage), username, email
 			FROM galaxy_user
 			ORDER BY create_time desc
 			LIMIT 40"
-	elif  [[ $2 == "tool-usage" ]]; then
+	elif  [[ $2 == "tool-usage" ]]; then ## {,csv,tsv}query   tool-usage: Counts of tool runs
 		qstr="
 			SELECT
 				j.tool_id, count(*) AS count
 			FROM job j
 			GROUP BY j.tool_id
 			ORDER BY count DESC"
-	elif [[ $2 == "job-info" ]]; then
+	elif [[ $2 == "job-info" ]]; then ## {,csv,tsv}query   job-info <id>: Information about a specific job
 		assert_count $# 3 "Missing Job ID"
 		qstr="
 			SELECT job.tool_id, job.state, galaxy_user.username, job.create_time, job.job_runner_name, job.job_runner_external_id
 			FROM job, galaxy_user
 			WHERE job.id = '$3' AND job.user_id = galaxy_user.id"
-	elif [[ $2 == "datasets-created-daily" ]]; then
+	elif [[ $2 == "datasets-created-daily" ]]; then ##           query   datasets-created-daily: The min/max/average/p95/p99 of total size of datasets created in a single day.
 		qstr="
 		CREATE TEMPORARY TABLE temp_queue_times AS
 		select
@@ -427,7 +409,7 @@ elif [[ $1 == *"query" ]]; then
 			pg_size_pretty(percentile_cont(0.99) WITHIN GROUP (ORDER BY sum) ::bigint) as perc_99,
 			pg_size_pretty(max(sum)) as max
 		from temp_queue_times;"
-	elif [[ $2 == "queue-time" ]]; then
+	elif [[ $2 == "queue-time" ]]; then ##           query   queue-time <tool_id>: The average/95%/99% a specific tool spends in queue state.
 		assert_count $# 3 "Missing tool ID"
 		qstr="
 		CREATE TEMPORARY TABLE temp_queue_times AS
@@ -455,14 +437,14 @@ elif [[ $1 == *"query" ]]; then
 			percentile_cont(0.99) WITHIN GROUP (ORDER BY queue_time) as perc_99,
 			max(queue_time)
 		from temp_queue_times;"
-	elif [[ $2 == "queue" ]]; then
+	elif [[ $2 == "queue" ]]; then ## {,csv,tsv}query   queue: Brief overview of currently running jobs
 		qstr="
 			SELECT tool_id, state, count(*)
 			FROM job
 			WHERE state in ('queued', 'running')
 			GROUP BY tool_id, state
 			ORDER BY count desc"
-	elif [[ $2 == "queue-detail" ]]; then
+	elif [[ $2 == "queue-detail" ]]; then ## {,csv,tsv}query   queue-detail: Detailed overview of running and queued jobs
 		d=""
 		if [[ $3 == "--all" ]]; then
 			d=", 'new'"
@@ -472,7 +454,7 @@ elif [[ $1 == *"query" ]]; then
 			FROM job, galaxy_user
 			WHERE state in ('running', 'queued'$d) and job.user_id = galaxy_user.id
 			ORDER BY state desc, time_since_creation desc"
-	elif [[ $2 == "runtime-per-user" ]]; then
+	elif [[ $2 == "runtime-per-user" ]]; then ## {,csv,tsv}query   runtime-per-user <email>: computation time of user (by email)
 		assert_count $# 3 "Missing user"
 		qstr="
 			SELECT sum((metric_value || ' second')::interval)
@@ -486,7 +468,7 @@ elif [[ $1 == *"query" ]]; then
 					where email = '$3'
 				)
 			) AND metric_name = 'runtime_seconds'"
-	elif [[ $2 == "jobs-per-user" ]]; then
+	elif [[ $2 == "jobs-per-user" ]]; then ## {,csv,tsv}query   jobs-per-user <email>: Number of jobs run by a specific user
 		assert_count $# 3 "Missing user"
 		qstr="
 			SELECT count(id)
@@ -496,7 +478,7 @@ elif [[ $1 == *"query" ]]; then
 				FROM galaxy_user
 				WHERE email = '$3'
 			)"
-	elif [[ $2 == "recent-jobs" ]]; then
+	elif [[ $2 == "recent-jobs" ]]; then ## {,csv,tsv}query   recent-jobs <hours>: Jobs run in the past <hours> (in any state)
 		assert_count $# 3 "Missing hours"
 
 		qstr="
@@ -506,7 +488,7 @@ elif [[ $1 == *"query" ]]; then
 			WHERE job.create_time > (now() - '$3 hours'::interval) AND job.user_id = galaxy_user.id
 			ORDER BY id desc
 		"
-	elif [[ $2 == "training" ]]; then
+	elif [[ $2 == "training" ]]; then ## {,csv,tsv}query   training [--all]: List known trainings
 		d1=""
 		d2="AND deleted = false"
 		if [[ $3 == "--all" ]]; then
@@ -523,7 +505,7 @@ elif [[ $1 == *"query" ]]; then
 			WHERE name like 'training-%' $d2
 			ORDER BY create_time DESC
 		"
-	elif [[ $2 == "training-members" ]]; then
+	elif [[ $2 == "training-members" ]]; then ## {,csv,tsv}query   training-members <tr_id>: List users in a specific training
 		assert_count $# 3 "Missing Training ID"
 		# Remove training- if they used it.
 		ww=$(echo "$3" | sed 's/^training-//g')
@@ -568,7 +550,7 @@ elif [[ $1 == *"query" ]]; then
 				state DESC, created DESC;
 		"
 
-	elif [[ $2 == "job-history" ]]; then
+	elif [[ $2 == "job-history" ]]; then ## {,csv,tsv}query   job-history <id>: Job state history for a specific job
 		assert_count $# 3 "Missing Job ID"
 		qstr="
 			SELECT
@@ -577,7 +559,7 @@ elif [[ $1 == *"query" ]]; then
 			FROM job_state_history
 			WHERE job_id = $3
 		"
-	elif [[ $2 == "job-outputs" ]]; then
+	elif [[ $2 == "job-outputs" ]]; then ## {,csv,tsv}query   job-outputs <id>: Output datasets from a specific job
 		assert_count $# 3 "Missing Job ID"
 		qstr="
 			SELECT
