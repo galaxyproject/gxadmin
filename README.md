@@ -88,17 +88,17 @@ $ gxadmin query latest-users
 
 ```
 $ gxadmin tool-usage
-                                                                tool_id                                                                 | count
-----------------------------------------------------------------------------------------------------------------------------------------+--------
- toolshed.g2.bx.psu.edu/repos/devteam/column_maker/Add_a_column1/1.1.0                                                                  | 958154
- Grouping1                                                                                                                              | 638890
- toolshed.g2.bx.psu.edu/repos/devteam/intersect/gops_intersect_1/1.0.0                                                                  | 326959
- toolshed.g2.bx.psu.edu/repos/devteam/get_flanks/get_flanks1/1.0.0                                                                      | 320236
- addValue                                                                                                                               | 313470
- toolshed.g2.bx.psu.edu/repos/devteam/join/gops_join_1/1.0.0                                                                            | 312735
- upload1                                                                                                                                | 103595
- toolshed.g2.bx.psu.edu/repos/rnateam/graphclust_nspdk/nspdk_sparse/9.2                                                                 |  52861
- Filter1                                                                                                                                |  43253
+                                tool_id                                 | count
+------------------------------------------------------------------------+--------
+ toolshed.g2.bx.psu.edu/repos/devteam/column_maker/Add_a_column1/1.1.0  | 958154
+ Grouping1                                                              | 638890
+ toolshed.g2.bx.psu.edu/repos/devteam/intersect/gops_intersect_1/1.0.0  | 326959
+ toolshed.g2.bx.psu.edu/repos/devteam/get_flanks/get_flanks1/1.0.0      | 320236
+ addValue                                                               | 313470
+ toolshed.g2.bx.psu.edu/repos/devteam/join/gops_join_1/1.0.0            | 312735
+ upload1                                                                | 103595
+ toolshed.g2.bx.psu.edu/repos/rnateam/graphclust_nspdk/nspdk_sparse/9.2 |  52861
+ Filter1                                                                |  43253
 ```
 
 ### job-info
@@ -160,49 +160,44 @@ $ gxadmin query queue
 
 ```
 $ gxadmin query queue-detail
-  state  |   id    |  extid  |                                              tool_id                                              |      username       | time_since_creation
----------+---------+---------+---------------------------------------------------------------------------------------------------+---------------------+---------------------
- running | 4360629 | 229333  | toolshed.g2.bx.psu.edu/repos/bgruening/infernal/infernal_cmsearch/1.1.2.0                         |                     | 5 days 11:00:00
- running | 4362676 | 230237  | toolshed.g2.bx.psu.edu/repos/iuc/mothur_venn/mothur_venn/1.36.1.0                                 |                     | 4 days 18:00:00
- running | 4364499 | 231055  | toolshed.g2.bx.psu.edu/repos/iuc/mothur_venn/mothur_venn/1.36.1.0                                 |                     | 4 days 05:00:00
- running | 4366604 | 5183013 | toolshed.g2.bx.psu.edu/repos/iuc/dexseq/dexseq_count/1.24.0.0                                     |                     | 3 days 20:00:00
- running | 4366605 | 5183016 | toolshed.g2.bx.psu.edu/repos/iuc/dexseq/dexseq_count/1.24.0.0                                     |                     | 3 days 20:00:00
- running | 4366606 | 5183017 | toolshed.g2.bx.psu.edu/repos/iuc/dexseq/dexseq_count/1.24.0.0                                     |                     | 3 days 20:00:00
- running | 4366603 | 5183014 | toolshed.g2.bx.psu.edu/repos/iuc/dexseq/dexseq_count/1.24.0.0                                     |                     | 3 days 20:00:00
- running | 4366601 | 5183010 | toolshed.g2.bx.psu.edu/repos/iuc/dexseq/dexseq_count/1.24.0.0                                     |                     | 3 days 20:00:00
- running | 4366602 | 5183011 | toolshed.g2.bx.psu.edu/repos/iuc/dexseq/dexseq_count/1.24.0.0                                     |                     | 3 days 20:00:00
- running | 4369132 | 5183706 | toolshed.g2.bx.psu.edu/repos/devteam/clustalw/clustalw/2.1                                        |                     | 3 days 05:00:00
- running | 4371602 | 234952  | toolshed.g2.bx.psu.edu/repos/devteam/fastqc/fastqc/0.69                                           |                     | 3 days -01:00:00
- queued  | 4325084 | 217919  | toolshed.g2.bx.psu.edu/repos/iuc/trinity/trinity/2.8.3                                            |                     | 14 days 02:00:00
- queued  | 4325142 | 217959  | toolshed.g2.bx.psu.edu/repos/iuc/trinity/trinity/2.8.3                                            |                     | 14 days 02:00:00
- queued  | 4326844 | 218690  | toolshed.g2.bx.psu.edu/repos/nml/spades/spades/3.11.1                                             |                     | 13 days 12:00:00
- queued  | 4330836 | 220095  | toolshed.g2.bx.psu.edu/repos/galaxyp/maldi_quant_preprocessing/maldi_quant_preprocessing/1.18.0.0 |                     | 12 days -01:00:00
- queued  | 4344238 | 222573  | toolshed.g2.bx.psu.edu/repos/nml/spades/spades/1.2                                                |                     | 10 days 08:00:00
- queued  | 4350274 | 225743  | toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.6.0                                      |                     | 9 days 05:00:00
- queued  | 4352088 | 226716  | toolshed.g2.bx.psu.edu/repos/galaxyp/maldi_quant_preprocessing/maldi_quant_preprocessing/1.18.0.0 |                     | 8 days 20:00:00
- queued  | 4352115 | 226725  | toolshed.g2.bx.psu.edu/repos/galaxyp/maldi_quant_preprocessing/maldi_quant_preprocessing/1.18.0.0 |                     | 8 days 20:00:00
- queued  | 4353435 | 227038  | toolshed.g2.bx.psu.edu/repos/iuc/trinity/trinity/2.8.3                                            |                     | 8 days 08:00:00
- queued  | 4361914 | 229712  | toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.6.0                                      |                     | 5 days -01:00:00
- queued  | 4361812 | 229696  | toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.6.0                                      |                     | 5 days -01:00:00
- queued  | 4361939 | 229728  | toolshed.g2.bx.psu.edu/repos/nml/spades/spades/1.2                                                |                     | 4 days 21:00:00
- queued  | 4361941 | 229731  | toolshed.g2.bx.psu.edu/repos/nml/spades/spades/1.2                                                |                     | 4 days 21:00:00
+  state  |   id    |  extid  |                                 tool_id                                   |      username       | time_since_creation
+---------+---------+---------+---------------------------------------------------------------------------+---------------------+---------------------
+ running | 4360629 | 229333  | toolshed.g2.bx.psu.edu/repos/bgruening/infernal/infernal_cmsearch/1.1.2.0 |                     | 5 days 11:00:00
+ running | 4362676 | 230237  | toolshed.g2.bx.psu.edu/repos/iuc/mothur_venn/mothur_venn/1.36.1.0         |                     | 4 days 18:00:00
+ running | 4364499 | 231055  | toolshed.g2.bx.psu.edu/repos/iuc/mothur_venn/mothur_venn/1.36.1.0         |                     | 4 days 05:00:00
+ running | 4366604 | 5183013 | toolshed.g2.bx.psu.edu/repos/iuc/dexseq/dexseq_count/1.24.0.0             |                     | 3 days 20:00:00
+ running | 4366605 | 5183016 | toolshed.g2.bx.psu.edu/repos/iuc/dexseq/dexseq_count/1.24.0.0             |                     | 3 days 20:00:00
+ running | 4366606 | 5183017 | toolshed.g2.bx.psu.edu/repos/iuc/dexseq/dexseq_count/1.24.0.0             |                     | 3 days 20:00:00
+ running | 4366603 | 5183014 | toolshed.g2.bx.psu.edu/repos/iuc/dexseq/dexseq_count/1.24.0.0             |                     | 3 days 20:00:00
+ running | 4366601 | 5183010 | toolshed.g2.bx.psu.edu/repos/iuc/dexseq/dexseq_count/1.24.0.0             |                     | 3 days 20:00:00
+ running | 4366602 | 5183011 | toolshed.g2.bx.psu.edu/repos/iuc/dexseq/dexseq_count/1.24.0.0             |                     | 3 days 20:00:00
+ running | 4369132 | 5183706 | toolshed.g2.bx.psu.edu/repos/devteam/clustalw/clustalw/2.1                |                     | 3 days 05:00:00
+ running | 4371602 | 234952  | toolshed.g2.bx.psu.edu/repos/devteam/fastqc/fastqc/0.69                   |                     | 3 days -01:00:00
+ queued  | 4325084 | 217919  | toolshed.g2.bx.psu.edu/repos/iuc/trinity/trinity/2.8.3                    |                     | 14 days 02:00:00
+ queued  | 4325142 | 217959  | toolshed.g2.bx.psu.edu/repos/iuc/trinity/trinity/2.8.3                    |                     | 14 days 02:00:00
+ queued  | 4326844 | 218690  | toolshed.g2.bx.psu.edu/repos/nml/spades/spades/3.11.1                     |                     | 13 days 12:00:00
+ queued  | 4344238 | 222573  | toolshed.g2.bx.psu.edu/repos/nml/spades/spades/1.2                        |                     | 10 days 08:00:00
+ queued  | 4350274 | 225743  | toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.6.0              |                     | 9 days 05:00:00
+ queued  | 4353435 | 227038  | toolshed.g2.bx.psu.edu/repos/iuc/trinity/trinity/2.8.3                    |                     | 8 days 08:00:00
+ queued  | 4361914 | 229712  | toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.6.0              |                     | 5 days -01:00:00
+ queued  | 4361812 | 229696  | toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.6.0              |                     | 5 days -01:00:00
+ queued  | 4361939 | 229728  | toolshed.g2.bx.psu.edu/repos/nml/spades/spades/1.2                        |                     | 4 days 21:00:00
+ queued  | 4361941 | 229731  | toolshed.g2.bx.psu.edu/repos/nml/spades/spades/1.2                        |                     | 4 days 21:00:00
 ```
 
 ### recent-jobs
 
 ```
 $ gxadmin query recent-jobs 2.1
-   id    |     date_trunc      |                                           tool_id                                            | state |    username
----------+---------------------+----------------------------------------------------------------------------------------------+-------+-----------------
- 4383997 | 2018-10-05 16:07:00 | Filter1                                                                                      | ok    |
- 4383996 | 2018-10-05 16:05:00 | toolshed.g2.bx.psu.edu/repos/bgruening/deeptools_plot_heatmap/deeptools_plot_heatmap/3.0.2.0 | ok    |
- 4383995 | 2018-10-05 16:05:00 | toolshed.g2.bx.psu.edu/repos/bgruening/deeptools_plot_heatmap/deeptools_plot_heatmap/3.0.2.0 | ok    |
- 4383994 | 2018-10-05 16:04:00 | echo_main_condor                                                                             | ok    |
- 4383993 | 2018-10-05 16:04:00 | echo_main_drmaa                                                                              | error |
- 4383992 | 2018-10-05 16:04:00 | echo_main_handler11                                                                          | ok    |
- 4383983 | 2018-10-05 16:04:00 | echo_main_handler2                                                                           | ok    |
- 4383982 | 2018-10-05 16:04:00 | echo_main_handler1                                                                           | ok    |
- 4383981 | 2018-10-05 16:04:00 | echo_main_handler0                                                                           | ok    |
+   id    |     date_trunc      |      tool_id          | state |    username
+---------+---------------------+-----------------------+-------+-----------------
+ 4383997 | 2018-10-05 16:07:00 | Filter1               | ok    |
+ 4383994 | 2018-10-05 16:04:00 | echo_main_condor      | ok    |
+ 4383993 | 2018-10-05 16:04:00 | echo_main_drmaa       | error |
+ 4383992 | 2018-10-05 16:04:00 | echo_main_handler11   | ok    |
+ 4383983 | 2018-10-05 16:04:00 | echo_main_handler2    | ok    |
+ 4383982 | 2018-10-05 16:04:00 | echo_main_handler1    | ok    |
+ 4383981 | 2018-10-05 16:04:00 | echo_main_handler0    | ok    |
 ```
 
 ### jobs-per-user
@@ -252,9 +247,9 @@ Finds all jobs by people in that queue (including things they are executing that
 
 ```
 $ gxadmin query training-queue hts2018
- state  |   id    | extid  |                                                   tool_id      |   username    |       created
---------+---------+--------+----------------------------------------------------------------+---------------+---------------------
- queued | 4350274 | 225743 | toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.6.0   |               | 2018-09-26 10:00:00
+ state  |   id    | extid  | tool_id |   username    |       created
+--------+---------+--------+---------+---------------+---------------------
+ queued | 4350274 | 225743 | upload1 |               | 2018-09-26 10:00:00
 ```
 
 ### queue-time
