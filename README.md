@@ -138,21 +138,18 @@ $ gxadmin query job-history 4384025
 ```
 
 $ gxadmin query queue
-                                              tool_id                                              |  state  | count
----------------------------------------------------------------------------------------------------+---------+-------
- toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.6.0                                      | queued  |     9
- toolshed.g2.bx.psu.edu/repos/iuc/dexseq/dexseq_count/1.24.0.0                                     | running |     7
- toolshed.g2.bx.psu.edu/repos/nml/spades/spades/1.2                                                | queued  |     6
- ebi_sra_main                                                                                      | running |     6
- toolshed.g2.bx.psu.edu/repos/iuc/trinity/trinity/2.8.3                                            | queued  |     5
- toolshed.g2.bx.psu.edu/repos/devteam/bowtie2/bowtie2/2.3.4.2                                      | running |     5
- toolshed.g2.bx.psu.edu/repos/nml/spades/spades/3.11.1+galaxy1                                     | queued  |     4
- toolshed.g2.bx.psu.edu/repos/devteam/fastqc/fastqc/0.69                                           | running |     4
- toolshed.g2.bx.psu.edu/repos/bgruening/nucleosome_prediction/Nucleosome/3.0                       | running |     3
- toolshed.g2.bx.psu.edu/repos/galaxyp/maldi_quant_preprocessing/maldi_quant_preprocessing/1.18.0.0 | queued  |     3
- toolshed.g2.bx.psu.edu/repos/iuc/mothur_venn/mothur_venn/1.36.1.0                                 | running |     2
- toolshed.g2.bx.psu.edu/repos/nml/metaspades/metaspades/3.9.0                                      | running |     2
- upload1                                                                                           | running |     2
+                            tool_id                                |  state  | count
+-------------------------------------------------------------------+---------+-------
+ toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.6.0      | queued  |     9
+ toolshed.g2.bx.psu.edu/repos/iuc/dexseq/dexseq_count/1.24.0.0     | running |     7
+ toolshed.g2.bx.psu.edu/repos/nml/spades/spades/1.2                | queued  |     6
+ ebi_sra_main                                                      | running |     6
+ toolshed.g2.bx.psu.edu/repos/iuc/trinity/trinity/2.8.3            | queued  |     5
+ toolshed.g2.bx.psu.edu/repos/devteam/bowtie2/bowtie2/2.3.4.2      | running |     5
+ toolshed.g2.bx.psu.edu/repos/nml/spades/spades/3.11.1+galaxy1     | queued  |     4
+ toolshed.g2.bx.psu.edu/repos/iuc/mothur_venn/mothur_venn/1.36.1.0 | running |     2
+ toolshed.g2.bx.psu.edu/repos/nml/metaspades/metaspades/3.9.0      | running |     2
+ upload1                                                           | running |     2
 ```
 
 ### queue-detail
