@@ -57,12 +57,14 @@ Supported queries:
 
 ### validate
 
-This requires you to have `$GALAXY_DIST` set and to have config under `$GALAXY_DIST/config`
+**Warning**:
+- This requires you to have `$GALAXY_DIST` set and to have config under `$GALAXY_DIST/config`.
+- This only validates that it is well formed XML, and does **not** validate against any schemas.
 
 ```
 $ gxadmin validate
   OK: /usr/local/galaxy/galaxy-dist/data_manager_conf.xml
-  <snip>
+  ...
   OK: /usr/local/galaxy/galaxy-dist/config/tool_data_table_conf.xml
   OK: /usr/local/galaxy/galaxy-dist/config/tool_sheds_conf.xml
 All XML files validated
@@ -76,7 +78,7 @@ Creating new sqlite database: galaxy_install.sqlite
 Migrating tables
   export: tool_shed_repository
   import: tool_shed_repository
-  <snip>
+  ...
   export: repository_repository_dependency_association
   import: repository_repository_dependency_association
 Complete
