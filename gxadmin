@@ -1,0 +1,408 @@
+#!/bin/bash
+usage(){
+  echo "gxadmin usage:
+
+  validate                       : validate config files
+
+  zerg swap '<message>'          : swap zerglings
+  zerg tail                      : tail zergling logs
+  zerg strace [0|1|pool]         : swap zerglings
+
+  handler restart '<message>'    : restart handlers
+  handler tail                   : tail handler logs
+
+  <tsvquery|csvquery|query>
+        latest_users             : 40 recently registered users
+        tool-usage               : Counts of tool runs
+
+        job-info <id>            : Information about a specific job
+        job-outputs <id>         : Output datasets from a specific job
+        queue                    : Brief overview of currently running jobs
+        queue-detail             : Detailed overview of running and queued jobs
+        recent-jobs <hours>      : Jobs run in the past <hours> (in any state)
+
+        jobs-per-user <email>    : Number of jobs run by a specific user
+        runtime-per-user <email> : computation time of user (by email)
+
+        training [--all]         : List known trainings
+        training-members <tr_id> : List users in a specific training
+
+        # Queries NOT support tsv/csv versions:
+        queue-time <tool_id>     : The average/95%/99% a specific tool spends in queue state.
+        datasets-created-daily   : The min/max/average/p95/p99 of total size of datasets created in a single day.
+
+  help / -h / --help : this message
+"
+	exit 1
+}
+
+assert_restart_lock(){
+	if [ -f /usr/local/galaxy/galaxy-dist/.restart-lock ]; then
+		echo "A restart lock exists. This means someone is probably already restarting galaxy."
+		exit 3
+	fi
+}
+
+error() {
+	echo -e "\e[48;5;09m$@\e[m"
+}
+
+success() {
+	echo -e "\e[38;5;40m$@\e[m"
+}
+
+validate() {
+    cd $GALAXY_DIST
+	fail_count=0
+	for file in $GALAXY_DIST/*.xml; do
+		xmllint $file > /dev/null 2>/dev/null;
+		exit_code=$?
+		if (( $exit_code > 0 )); then
+			fail_count=$(echo "$fail_count + 1" | bc)
+			error "  FAIL: $file ($exit_code)";
+		else
+			success "  OK: $file";
+		fi
+	done;
+
+	for file in $GALAXY_DIST/config/*.xml; do
+		xmllint $file > /dev/null 2>/dev/null;
+		exit_code=$?
+		if (( $exit_code > 0 )); then
+			fail_count=$(echo "$fail_count + 1" | bc)
+			error "  FAIL: $file ($exit_code)";
+		else
+			success "  OK: $file";
+		fi
+	done;
+    cd -
+
+	if (( fail_count == 0 )); then
+		success "All XML files validated"
+	else
+		error "XML validation failed, cancelling any actions."
+		exit 1
+	fi
+}
+
+zerg_swap() {
+	user_message=$1
+
+	# Ensure that we lock out other users.
+	assert_restart_lock
+
+	zerg0running=0
+	supervisorctl status gx:zergling0 | grep RUNNING
+	zerg0=$?
+	if (( $zerg0 == 0 )); then
+		echo "zerg 0 is running"
+		zerg0running=1
+	fi
+
+	zerg1running=0
+	supervisorctl status gx:zergling1 | grep RUNNING
+	zerg1=$?
+	if [ "$zerg1" -eq "0" ]; then
+		echo "zerg 1 is running"
+		zerg1running=1
+	fi
+
+	if [[ "$zerg1running" -eq "1" && "$zerg0running" -eq "1" ]] ; then
+		error "ERROR: BOTH ARE RUNNING"
+		exit 2
+	fi
+	if [[ "$zerg1running" -eq "0" && "$zerg0running" -eq "0" ]] ; then
+		error "ERROR: NEITHER ARE RUNNING"
+		exit 3
+	fi
+
+	supervisorctlstatus=`supervisorctl status | grep zergling | sed 's/\s\+/ /g'`
+
+	echo "Ok, everything looks good."
+	# And again even if everything looks good, just in case.
+
+	#influxdb_event "$user_message<br/><br/>Previous state: <pre>$supervisorctlstatus</pre>"
+	StartDate=`date "+%s"`
+	touch  /usr/local/galaxy/galaxy-dist/.restart-lock
+
+	# Ok, so now we are sure that just one is running
+	if [ "$zerg1running" -eq "1" ] ; then
+		echo "Starting zergling 0"
+		supervisorctl start gx:zergling0
+		echo "Zergling 0 should be running. Now wait patiently while it starts. This script will continue when it is ready."
+		while [ $(curl --silent localhost:9190 | wc -c) -eq "0" ]; do
+			sleep 5;
+			echo -n '.'
+		done
+		echo
+		supervisorctl stop gx:zergling1
+	elif [ "$zerg0running" -eq "1" ] ; then
+		echo "Starting zergling 1"
+		supervisorctl start gx:zergling1
+		echo "Zergling 1 should be running. Now wait patiently while it starts. This script will continue when it is ready."
+		while [ $(curl --silent localhost:9191 | wc -c) -eq "0" ]; do
+			sleep 5;
+			echo -n '.'
+		done
+		echo
+		supervisorctl stop gx:zergling0
+	fi
+
+	FinalDate=`date "+%s"`
+	timing=`date -u -d "0 $FinalDate seconds - $StartDate seconds" +"%H:%M:%S"`
+	#influxdb_event "Swap took $timing"
+	success "Swap took $timing" "galaxy,zergling"
+	rm /usr/local/galaxy/galaxy-dist/.restart-lock
+}
+
+supervisor_strace() {
+	task=$1
+	state=$(supervisorctl status | grep $task)
+	echo "$state" | grep --quiet "RUNNING"
+	if (( $? > 0 )); then
+		error "$task is not running"
+		exit 1
+	fi
+
+	pid=$(echo $state | egrep -o 'pid ([0-9]*)' | sed 's/pid //g' | tr '\n' ' ')
+	pids=$(echo "$pid"  | sed 's/^\s*//g;s/\s*$//g;s/ / -p /g')
+	strace -e open -p $pids
+}
+
+assert_count() {
+	if (( $1 != $2 )); then
+		error "$3"
+		usage
+		exit 1
+	fi
+}
+
+query() {
+	psql -h sn03.bi.uni-freiburg.de -c "$1"
+}
+
+query_tsv() {
+	psql -h sn03.bi.uni-freiburg.de -c "COPY ($1) to STDOUT with CSV DELIMITER E'\t'"
+}
+
+query_csv() {
+	psql -h sn03.bi.uni-freiburg.de -c "COPY ($1) to STDOUT with CSV DELIMITER ','"
+}
+
+if (( $# == 0 )); then
+	usage
+	exit 0
+fi
+
+if [[ $1 == "validate" ]]; then
+	validate
+elif [[ $1 == "zerg" ]]; then
+	if [[ $2 == "swap" ]]; then
+		validate
+
+		if (( $# != 3 )); then
+			error "Restart now requires a message"
+			echo "Please call as: $0 zerg swap 'Restart due to changes in configuration'"
+			exit 1
+		fi
+
+		zerg_swap $3
+	elif [[ $2 == "tail" ]]; then
+		tail -f /var/log/galaxy/zerg*.log
+	elif [[ $2 == "strace" ]]; then
+		if [[ $3 == "pool" ]]; then
+			supervisor_strace "gx:zergpool"
+		elif [[ $3 == "0" ]] || [[ $3 == "1" ]]; then
+			supervisor_strace "gx:zergling$3"
+		else
+			supervisor_strace "gx:zerg"
+		fi
+	else
+		error "Unknown command"
+		usage
+	fi
+elif [[ $1 == "handler" ]]; then
+	if [[ $2 == "strace" ]]; then
+		supervisor_strace "hd:handler$3"
+	elif [[ $2 == "tail" ]]; then
+		tail -f /var/log/galaxy/handler*.log
+	elif [[ $2 == "restart" ]]; then
+		validate
+		#influxdb_event "Restarting handlers"
+		 /usr/local/galaxy/galaxy-dist/.venv/bin/supervisorctl restart hd:
+	else
+		error "Unknown command"
+		usage
+	fi
+elif [[ $1 == *"query" ]]; then
+	if [[ $2 == "latest_users" ]]; then
+		qstr="
+			SELECT id, create_time, pg_size_pretty(disk_usage), username, email
+			FROM galaxy_user
+			ORDER BY create_time desc
+			LIMIT 40"
+	elif [[ $2 == "tool_usage" ]] || [[ $2 == "tool-usage" ]]; then
+		qstr="
+			SELECT
+				j.tool_id, count(*) AS count
+			FROM job j
+			GROUP BY j.tool_id
+			ORDER BY count DESC"
+	elif [[ $2 == "job_info" ]] || [[ $2 == "job-info" ]]; then
+		assert_count $# 3 "Missing Job ID"
+		qstr="
+			SELECT job.tool_id, job.state, galaxy_user.username, job.create_time, job.job_runner_name, job.job_runner_external_id
+			FROM job, galaxy_user
+			WHERE job.id = '$3' AND job.user_id = galaxy_user.id"
+	elif [[ $2 == "datasets-created-daily" ]]; then
+		qstr="
+		CREATE TEMPORARY TABLE temp_queue_times AS
+		select
+			date_trunc('day', create_time),
+			sum(total_size)
+		from dataset
+		group by date_trunc
+		order by date_trunc desc;
+		--
+		select
+			pg_size_pretty(min(sum)) as min,
+			pg_size_pretty(avg(sum)) as avg,
+			pg_size_pretty(percentile_cont(0.95) WITHIN GROUP (ORDER BY sum) ::bigint) as perc_95,
+			pg_size_pretty(percentile_cont(0.99) WITHIN GROUP (ORDER BY sum) ::bigint) as perc_99,
+			pg_size_pretty(max(sum)) as max
+		from temp_queue_times;"
+	elif [[ $2 == "queue-time" ]]; then
+		assert_count $# 3 "Missing tool ID"
+		qstr="
+		CREATE TEMPORARY TABLE temp_queue_times AS
+		select
+			min(a.create_time - b.create_time) as queue_time
+		from
+			job_state_history as a
+		inner join
+			job_state_history as b
+		on
+			(a.job_id = b.job_id)
+		where
+			a.job_id in (select id from job where tool_id like '%"$3"%' and state = 'ok' and create_time > (now() - '3 months'::interval))
+			and a.state = 'running'
+			and b.state = 'queued'
+		group by
+			a.job_id
+		order by
+			queue_time desc
+		;
+		--
+		select
+			min(queue_time),
+			percentile_cont(0.95) WITHIN GROUP (ORDER BY queue_time) as perc_95,
+			percentile_cont(0.99) WITHIN GROUP (ORDER BY queue_time) as perc_99,
+			max(queue_time)
+		from temp_queue_times;"
+	elif [[ $2 == "queue" ]]; then
+		qstr="
+			SELECT tool_id, state, count(*)
+			FROM job
+			WHERE state in ('queued', 'running')
+			GROUP BY tool_id, state
+			ORDER BY count desc"
+	elif [[ $2 == "queue_detail" ]] || [[ $2 == "queue-detail" ]]; then
+		qstr="
+			SELECT job.state, job.id, job.job_runner_external_id as extid, job.tool_id, galaxy_user.username, (now() - job.create_time) as time
+			FROM job, galaxy_user
+			WHERE state in ('running', 'queued') and job.user_id = galaxy_user.id
+			ORDER BY state desc, time desc"
+	elif [[ $2 == "runtime_per_user" ]] || [[ $2 == "runtime-per-user" ]]; then
+		assert_count $# 3 "Missing user"
+		qstr="
+			SELECT sum((metric_value || ' second')::interval)
+			FROM job_metric_numeric
+			WHERE job_id in (
+				SELECT id
+				FROM job
+				WHERE user_id in (
+					SELECT id
+					FROM galaxy_user
+					where email = '$3'
+				)
+			) AND metric_name = 'runtime_seconds'"
+	elif [[ $2 == "jobs_per_user" ]] || [[ $2 == "jobs-per-user" ]]; then
+		assert_count $# 3 "Missing user"
+		qstr="
+			SELECT count(id)
+			FROM job
+			WHERE user_id in (
+				SELECT id
+				FROM galaxy_user
+				WHERE email = '$3'
+			)"
+	elif [[ $2 == "recent-jobs" ]]; then
+		assert_count $# 3 "Missing hours"
+
+		qstr="
+			SELECT
+				job.id, date_trunc('minute', job.create_time), job.tool_id, job.state, galaxy_user.username
+			FROM job, galaxy_user
+			WHERE job.create_time > (now() - '$3 hours'::interval) AND job.user_id = galaxy_user.id
+			ORDER BY id desc
+		"
+	elif [[ $2 == "training" ]]; then
+		d1=""
+		d2="AND deleted = false"
+		if [[ $3 == "--all" ]]; then
+			d1=", deleted"
+			d2=""
+		fi
+
+		qstr="
+			SELECT
+				substring(name from 10) as name,
+				date_trunc('day', create_time)::date as created
+				$d1
+			FROM galaxy_group
+			WHERE name like 'training-%' $d2
+			ORDER BY create_time DESC
+		"
+	elif [[ $2 == "training-members" ]]; then
+		assert_count $# 3 "Missing Training ID"
+		# Remove training- if they used it.
+		ww=$(echo "$3" | sed 's/^training-//g')
+		qstr="
+			SELECT
+				galaxy_user.username,
+				date_trunc('second', user_group_association.create_time) as joined
+			FROM galaxy_user, user_group_association, galaxy_group
+			WHERE galaxy_group.name = 'training-$ww'
+				AND galaxy_group.id = user_group_association.group_id
+				AND user_group_association.user_id = galaxy_user.id
+		"
+
+	elif [[ $2 == "job-outputs" ]]; then
+		assert_count $# 3 "Missing Job ID"
+		qstr="
+			SELECT
+				hda.id, hda.state, hda.deleted, hda.purged, d.id, d.state, d.deleted, d.purged
+			FROM job j
+				JOIN job_to_input_dataset jtid
+					ON j.id = jtid.job_id
+				JOIN history_dataset_association hda
+					ON hda.id = jtid.dataset_id
+				JOIN dataset d
+					ON hda.dataset_id = d.id
+			WHERE j.id = $3
+		"
+	fi
+
+	if [[ $1 == "tsvquery" ]]; then
+		query_tsv "$qstr"
+	elif [[ $1 == "csvquery" ]]; then
+		query_csv "$qstr"
+	else
+		query "$qstr"
+	fi
+elif [[ $1 == "help" ]] || [[ $1 == "-h" ]] || [[ $1 == "--help" ]]; then
+	usage
+else
+	error "Unknown command"
+	usage
+fi
