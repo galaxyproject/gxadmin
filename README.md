@@ -117,7 +117,6 @@ $ gxadmin query job-outputs 1000
   id  | state | deleted | purged |  id  | state | deleted | purged
 ------+-------+---------+--------+------+-------+---------+--------
  1403 |       | f       | f      | 3559 | ok    | f       | f
-(1 row)
 ```
 
 
@@ -208,7 +207,6 @@ $ gxadmin query jobs-per-user hxr@informatik.uni-freiburg.de
  count
 -------
   1460
-(1 row)
 ```
 
 ### runtime-per-user
@@ -218,7 +216,6 @@ $ gxadmin query runtime-per-user hxr@informatik.uni-freiburg.de
    sum
 ----------
  14:07:39
-(1 row)
 ```
 
 ### training
@@ -259,7 +256,6 @@ $ gxadmin query queue-time toolshed.g2.bx.psu.edu/repos/nilesh/rseqc/rseqc_geneB
        min       |     perc_95     |     perc_99     |       max
 -----------------+-----------------+-----------------+-----------------
  00:00:15.421457 | 00:00:55.022874 | 00:00:59.974171 | 00:01:01.211995
-(1 row)
 ```
 
 ### datasets-created-daily
@@ -269,7 +265,6 @@ $ gxadmin query datasets-created-daily
    min   |  avg   | perc_95 | perc_99 |  max
 ---------+--------+---------+---------+-------
  0 bytes | 338 GB | 1355 GB | 2384 GB | 42 TB
-(1 row)
 ```
 
 ### migrate-tool-install-to-sqlite
