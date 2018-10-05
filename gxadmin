@@ -444,7 +444,7 @@ elif [[ $1 == *"query" ]]; then
 			WHERE state in ('queued', 'running')
 			GROUP BY tool_id, state
 			ORDER BY count desc"
-	elif [[ $2 == "queue-detail" ]]; then ## {,csv,tsv}query   queue-detail: Detailed overview of running and queued jobs
+	elif [[ $2 == "queue-detail" ]]; then ## {,csv,tsv}query   queue-detail [--all]: Detailed overview of running and queued jobs
 		d=""
 		if [[ $3 == "--all" ]]; then
 			d=", 'new'"
@@ -585,7 +585,7 @@ elif [[ $1 == *"query" ]]; then
 	else
 		query "$qstr"
 	fi
-elif [[ $1 == "update" ]]; then
+elif [[ $1 == "update" ]]; then ## update: Update the script
     echo "Please run:"
     echo
     echo "curl https://raw.githubusercontent.com/usegalaxy-eu/gxadmin/master/gxadmin > $0"
