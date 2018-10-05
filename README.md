@@ -19,68 +19,8 @@ chmod +x /usr/bin/gxadmin
 
 ## Commands
 
-The query section of the tool supports writing query data out in normal
-postgres tables, csv, or tsv as desired by the user:
-
 - [validate](#validate): Validate XML config files
 - [migrate-tool-install-to-sqlite](#migrate-tool-install-to-sqlite): Converts normal potsgres toolshed repository tables into the SQLite version
-
-### validate
-
-This requires you to have `$GALAXY_DIST` set and to have config under `$GALAXY_DIST/config`
-
-```
-$ gxadmin validate
-  OK: /usr/local/galaxy/galaxy-dist/data_manager_conf.xml
-  OK: /usr/local/galaxy/galaxy-dist/datatypes_conf.xml
-  OK: /usr/local/galaxy/galaxy-dist/integrated_tool_panel.xml
-  OK: /usr/local/galaxy/galaxy-dist/shed_data_manager_conf.xml
-  OK: /usr/local/galaxy/galaxy-dist/shed_tool_conf.xml
-  OK: /usr/local/galaxy/galaxy-dist/config/data_manager_conf.xml
-  OK: /usr/local/galaxy/galaxy-dist/config/datatypes_conf.xml
-  OK: /usr/local/galaxy/galaxy-dist/config/dependency_resolvers_conf.xml
-  OK: /usr/local/galaxy/galaxy-dist/config/external_service_types_conf.xml
-  OK: /usr/local/galaxy/galaxy-dist/config/job_conf.xml
-  OK: /usr/local/galaxy/galaxy-dist/config/job_metrics_conf.xml
-  OK: /usr/local/galaxy/galaxy-dist/config/migrated_tools_conf.xml
-  OK: /usr/local/galaxy/galaxy-dist/config/nagios_tool_conf.xml
-  OK: /usr/local/galaxy/galaxy-dist/config/object_store_conf.xml
-  OK: /usr/local/galaxy/galaxy-dist/config/oidc_backends_config.xml
-  OK: /usr/local/galaxy/galaxy-dist/config/oidc_config.xml
-  OK: /usr/local/galaxy/galaxy-dist/config/shed_data_manager_conf.xml
-  OK: /usr/local/galaxy/galaxy-dist/config/shed_tool_conf.xml
-  OK: /usr/local/galaxy/galaxy-dist/config/shed_tool_data_table_conf.xml
-  OK: /usr/local/galaxy/galaxy-dist/config/tool_conf.xml
-  OK: /usr/local/galaxy/galaxy-dist/config/tool_data_table_conf.xml
-  OK: /usr/local/galaxy/galaxy-dist/config/tool_sheds_conf.xml
-All XML files validated
-```
-
-### migrate-tool-install-to-sqlite
-
-```
-$ gxadmin migrate-tool-install-to-sqlite
-Creating new sqlite database: galaxy_install.sqlite
-Migrating tables
-  export: tool_shed_repository
-  import: tool_shed_repository
-  export: migrate_version
-  import: migrate_version
-  export: tool_version
-  import: tool_version
-  export: tool_version_association
-  import: tool_version_association
-  export: migrate_tools
-  import: migrate_tools
-  export: tool_dependency
-  import: tool_dependency
-  export: repository_dependency
-  import: repository_dependency
-  export: repository_repository_dependency_association
-  import: repository_repository_dependency_association
-Complete
-```
-
 
 ## Queries
 
@@ -114,6 +54,33 @@ Supported queries:
 - [queue-time](#queue-time): The average/95%/99% a specific tool spends in queue state.
 - [datasets-created-daily](#datasets-created-daily): The min/max/average/p95/p99 of total size of datasets created in a single day.
 
+
+### validate
+
+This requires you to have `$GALAXY_DIST` set and to have config under `$GALAXY_DIST/config`
+
+```
+$ gxadmin validate
+  OK: /usr/local/galaxy/galaxy-dist/data_manager_conf.xml
+  <snip>
+  OK: /usr/local/galaxy/galaxy-dist/config/tool_data_table_conf.xml
+  OK: /usr/local/galaxy/galaxy-dist/config/tool_sheds_conf.xml
+All XML files validated
+```
+
+### migrate-tool-install-to-sqlite
+
+```
+$ gxadmin migrate-tool-install-to-sqlite
+Creating new sqlite database: galaxy_install.sqlite
+Migrating tables
+  export: tool_shed_repository
+  import: tool_shed_repository
+  <snip>
+  export: repository_repository_dependency_association
+  import: repository_repository_dependency_association
+Complete
+```
 
 
 ### latest-users
