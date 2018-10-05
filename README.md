@@ -17,29 +17,13 @@ curl https://raw.githubusercontent.com/usegalaxy-eu/gxadmin/master/gxadmin > /us
 chmod +x /usr/bin/gxadmin
 ```
 
-## Queries
+## Commands
 
 The query section of the tool supports writing query data out in normal
 postgres tables, csv, or tsv as desired by the user:
 
 - [validate](#validate): Validate XML config files
 - [migrate-tool-install-to-sqlite](#migrate-tool-install-to-sqlite): Converts normal potsgres toolshed repository tables into the SQLite version
-- Queries
-    - [latest-users](#latest-users): 40 recently registered users
-    - [tool-usage](#tool-usage): Counts of tool runs
-    - [job-info](#job-info): Information about a specific job
-    - [job-outputs](#job-outputs): Output datasets from a specific job
-    - [job-history](#job-history): Job state history for a specific job
-    - [queue](#queue): Brief overview of currently running jobs
-    - [queue-detail](#queue-detail): Detailed overview of running and queued jobs
-    - [recent-jobs](#recent-jobs): Jobs run in the past <hours> (in any state)
-    - [jobs-per-user](#jobs-per-user): Number of jobs run by a specific user
-    - [runtime-per-user](#runtime-per-user): computation time of user (by email)
-    - [training](#training): List known trainings
-    - [training-members](#training-members): List users in a specific training
-    - [queue-time](#queue-time): The average/95%/99% a specific tool spends in queue state.
-    - [datasets-created-daily](#datasets-created-daily): The min/max/average/p95/p99 of total size of datasets created in a single day.
-
 
 ### validate
 
@@ -96,6 +80,40 @@ Migrating tables
   import: repository_repository_dependency_association
 Complete
 ```
+
+
+## Queries
+
+Queries support being run in normal postgres table, csv, or tsv output as you
+need. Just use `gxadmin query`, `gxadmin tsvquery`, or `gxadmin csvquery` as
+appropriate.
+
+You should have a `.pgpass` with the connection information, and set `PGHOST`
+and `PGUSER` in your environment.
+
+Example .pgpass:
+
+```
+<pg_host>:5432:*:<pg_user>:<pg_password>
+```
+
+Supported queries:
+
+- [latest-users](#latest-users): 40 recently registered users
+- [tool-usage](#tool-usage): Counts of tool runs
+- [job-info](#job-info): Information about a specific job
+- [job-outputs](#job-outputs): Output datasets from a specific job
+- [job-history](#job-history): Job state history for a specific job
+- [queue](#queue): Brief overview of currently running jobs
+- [queue-detail](#queue-detail): Detailed overview of running and queued jobs
+- [recent-jobs](#recent-jobs): Jobs run in the past <hours> (in any state)
+- [jobs-per-user](#jobs-per-user): Number of jobs run by a specific user
+- [runtime-per-user](#runtime-per-user): computation time of user (by email)
+- [training](#training): List known trainings
+- [training-members](#training-members): List users in a specific training
+- [queue-time](#queue-time): The average/95%/99% a specific tool spends in queue state.
+- [datasets-created-daily](#datasets-created-daily): The min/max/average/p95/p99 of total size of datasets created in a single day.
+
 
 
 ### latest-users
