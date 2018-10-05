@@ -181,15 +181,15 @@ assert_count() {
 }
 
 query() {
-	psql -h sn03.bi.uni-freiburg.de -c "$1"
+	psql -c "$1"
 }
 
 query_tsv() {
-	psql -h sn03.bi.uni-freiburg.de -c "COPY ($1) to STDOUT with CSV DELIMITER E'\t'"
+	psql -c "COPY ($1) to STDOUT with CSV DELIMITER E'\t'"
 }
 
 query_csv() {
-	psql -h sn03.bi.uni-freiburg.de -c "COPY ($1) to STDOUT with CSV DELIMITER ','"
+	psql -c "COPY ($1) to STDOUT with CSV DELIMITER ','"
 }
 
 if (( $# == 0 )); then
@@ -355,7 +355,7 @@ elif [[ $1 == "migrate_tool_install_to_sqlite" ]]; then
 	table=tool_shed_repository
 	success "  export: ${table}"
 	export_csv=$(mktemp /tmp/tmp.gxadmin.${table}.XXXXXXXXXXX)
-	psql -h sn03.bi.uni-freiburg.de -U galaxy -c "COPY (select
+	psql -c "COPY (select
 		id, create_time, update_time, tool_shed, name, description, owner, changeset_revision, case when deleted then 1 else 0 end, metadata, includes_datatypes, installed_changeset_revision, uninstalled, dist_to_shed, ctx_rev, status, error_message, tool_shed_status from $table) to STDOUT with CSV" > $export_csv;
 
 	success "  import: ${table}"
@@ -372,7 +372,7 @@ elif [[ $1 == "migrate_tool_install_to_sqlite" ]]; then
 	for table in {migrate_version,tool_version,tool_version_association,migrate_tools,tool_dependency,repository_dependency,repository_repository_dependency_association}; do
 		success "  export: ${table}"
 		export_csv=$(mktemp /tmp/tmp.gxadmin.${table}.XXXXXXXXXXX)
-		psql -h sn03.bi.uni-freiburg.de -U galaxy -c "COPY (select * from $table) to STDOUT with CSV" > $export_csv;
+		psql -c "COPY (select * from $table) to STDOUT with CSV" > $export_csv;
 
 		success "  import: ${table}"
 		echo ".mode csv
