@@ -397,14 +397,14 @@ elif [[ $1 == *"query" ]]; then
 			FROM galaxy_user
 			ORDER BY create_time desc
 			LIMIT 40"
-	elif [[ $2 == "tool_usage" ]] || [[ $2 == "tool-usage" ]]; then
+	elif  [[ $2 == "tool-usage" ]]; then
 		qstr="
 			SELECT
 				j.tool_id, count(*) AS count
 			FROM job j
 			GROUP BY j.tool_id
 			ORDER BY count DESC"
-	elif [[ $2 == "job_info" ]] || [[ $2 == "job-info" ]]; then
+	elif [[ $2 == "job-info" ]]; then
 		assert_count $# 3 "Missing Job ID"
 		qstr="
 			SELECT job.tool_id, job.state, galaxy_user.username, job.create_time, job.job_runner_name, job.job_runner_external_id
@@ -462,7 +462,7 @@ elif [[ $1 == *"query" ]]; then
 			WHERE state in ('queued', 'running')
 			GROUP BY tool_id, state
 			ORDER BY count desc"
-	elif [[ $2 == "queue_detail" ]] || [[ $2 == "queue-detail" ]]; then
+	elif [[ $2 == "queue-detail" ]]; then
 		d=""
 		if [[ $3 == "--all" ]]; then
 			d=", 'new'"
@@ -472,7 +472,7 @@ elif [[ $1 == *"query" ]]; then
 			FROM job, galaxy_user
 			WHERE state in ('running', 'queued'$d) and job.user_id = galaxy_user.id
 			ORDER BY state desc, time_since_creation desc"
-	elif [[ $2 == "runtime_per_user" ]] || [[ $2 == "runtime-per-user" ]]; then
+	elif [[ $2 == "runtime-per-user" ]]; then
 		assert_count $# 3 "Missing user"
 		qstr="
 			SELECT sum((metric_value || ' second')::interval)
@@ -486,7 +486,7 @@ elif [[ $1 == *"query" ]]; then
 					where email = '$3'
 				)
 			) AND metric_name = 'runtime_seconds'"
-	elif [[ $2 == "jobs_per_user" ]] || [[ $2 == "jobs-per-user" ]]; then
+	elif [[ $2 == "jobs-per-user" ]]; then
 		assert_count $# 3 "Missing user"
 		qstr="
 			SELECT count(id)
