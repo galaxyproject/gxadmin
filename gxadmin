@@ -32,10 +32,13 @@ usage(){
         queue-time <tool_id>     : The average/95%/99% a specific tool spends in queue state.
         datasets-created-daily   : The min/max/average/p95/p99 of total size of datasets created in a single day.
 
-  migrate_tool_install_to_sqlite
+  migrate-tool-install-to-sqlite : Converts normal potsgres toolshed repository tables into the SQLite version
 
   help / -h / --help : this message
 "
+	if [[ $1 == "safe" ]]; then
+		exit 0;
+	fi
 	exit 1
 }
 
@@ -193,8 +196,7 @@ query_csv() {
 }
 
 if (( $# == 0 )); then
-	usage
-	exit 0
+	usage safe
 fi
 
 if [[ $1 == "validate" ]]; then
@@ -237,7 +239,7 @@ elif [[ $1 == "handler" ]]; then
 		error "Unknown command"
 		usage
 	fi
-elif [[ $1 == "migrate_tool_install_to_sqlite" ]]; then
+elif [[ $1 == "migrate-tool-install-to-sqlite" ]]; then
 	# Export tables
 	if [[ -f  galaxy_install.sqlite ]]; then
 		error "galaxy_install.sqlite exists, not overwriting"
@@ -587,6 +589,9 @@ elif [[ $1 == *"query" ]]; then
 					ON hda.dataset_id = d.id
 			WHERE j.id = $3
 		"
+	else
+		error "Unknown query"
+		usage
 	fi
 
 	if [[ $1 == "tsvquery" ]]; then
@@ -597,7 +602,7 @@ elif [[ $1 == *"query" ]]; then
 		query "$qstr"
 	fi
 elif [[ $1 == "help" ]] || [[ $1 == "-h" ]] || [[ $1 == "--help" ]]; then
-	usage
+	usage safe
 else
 	error "Unknown command"
 	usage

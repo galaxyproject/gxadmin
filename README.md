@@ -24,6 +24,17 @@ postgres tables, csv, or tsv as desired by the user:
 
 
 ```
+gxadmin usage:
+
+  validate                       : validate config files
+
+  zerg swap '<message>'          : swap zerglings
+  zerg tail                      : tail zergling logs
+  zerg strace [0|1|pool]         : swap zerglings
+
+  handler restart '<message>'    : restart handlers
+  handler tail                   : tail handler logs
+
   <tsvquery|csvquery|query>
         latest-users             : 40 recently registered users
         tool-usage               : Counts of tool runs
@@ -44,6 +55,10 @@ postgres tables, csv, or tsv as desired by the user:
         # Queries NOT support tsv/csv versions:
         queue-time <tool_id>     : The average/95%/99% a specific tool spends in queue state.
         datasets-created-daily   : The min/max/average/p95/p99 of total size of datasets created in a single day.
+
+  migrate-tool-install-to-sqlite : Converts normal potsgres toolshed repository tables into the SQLite version
+
+  help / -h / --help : this message
 ```
 
 ### latest-users
@@ -250,6 +265,30 @@ $ gxadmin query datasets-created-daily
 (1 row)
 ```
 
+### migrate-tool-install-to-sqlite
+
+```
+$ gxadmin migrate-tool-install-to-sqlite
+Creating new sqlite database: galaxy_install.sqlite
+Migrating tables
+  export: tool_shed_repository
+  import: tool_shed_repository
+  export: migrate_version
+  import: migrate_version
+  export: tool_version
+  import: tool_version
+  export: tool_version_association
+  import: tool_version_association
+  export: migrate_tools
+  import: migrate_tools
+  export: tool_dependency
+  import: tool_dependency
+  export: repository_dependency
+  import: repository_dependency
+  export: repository_repository_dependency_association
+  import: repository_repository_dependency_association
+Complete
+```
 
 ## License
 
