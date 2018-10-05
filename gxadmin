@@ -34,6 +34,8 @@ usage(){
 
   migrate-tool-install-to-sqlite : Converts normal potsgres toolshed repository tables into the SQLite version
 
+  update                         : Update this tool
+
   help / -h / --help : this message
 "
 	if [[ $1 == "safe" ]]; then
@@ -369,9 +371,9 @@ elif [[ $1 == "migrate-tool-install-to-sqlite" ]]; then
 		error "  sql: ${export_csv}"
 	fi
 
-
+	sqlite3 galaxy_install.sqlite "insert into migrate_version values ('ToolShedInstall', 'lib/galaxy/model/tool_shed_install/migrate', 17)"
 	# the rest are sane!
-	for table in {migrate_version,tool_version,tool_version_association,migrate_tools,tool_dependency,repository_dependency,repository_repository_dependency_association}; do
+	for table in {tool_version,tool_version_association,migrate_tools,tool_dependency,repository_dependency,repository_repository_dependency_association}; do
 		success "  export: ${table}"
 		export_csv=$(mktemp /tmp/tmp.gxadmin.${table}.XXXXXXXXXXX)
 		psql -c "COPY (select * from $table) to STDOUT with CSV" > $export_csv;
@@ -601,6 +603,10 @@ elif [[ $1 == *"query" ]]; then
 	else
 		query "$qstr"
 	fi
+elif [[ $1 == "update" ]]; then
+    echo "Please run:"
+    echo
+    echo "curl https://raw.githubusercontent.com/usegalaxy-eu/gxadmin/master/gxadmin > $0"
 elif [[ $1 == "help" ]] || [[ $1 == "-h" ]] || [[ $1 == "--help" ]]; then
 	usage safe
 else
