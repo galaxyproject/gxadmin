@@ -72,6 +72,31 @@ $ gxadmin validate
 All XML files validated
 ```
 
+### migrate-tool-install-to-sqlite
+
+```
+$ gxadmin migrate-tool-install-to-sqlite
+Creating new sqlite database: galaxy_install.sqlite
+Migrating tables
+  export: tool_shed_repository
+  import: tool_shed_repository
+  export: migrate_version
+  import: migrate_version
+  export: tool_version
+  import: tool_version
+  export: tool_version_association
+  import: tool_version_association
+  export: migrate_tools
+  import: migrate_tools
+  export: tool_dependency
+  import: tool_dependency
+  export: repository_dependency
+  import: repository_dependency
+  export: repository_repository_dependency_association
+  import: repository_repository_dependency_association
+Complete
+```
+
 
 ### latest-users
 
@@ -262,31 +287,6 @@ $ gxadmin query datasets-created-daily
    min   |  avg   | perc_95 | perc_99 |  max
 ---------+--------+---------+---------+-------
  0 bytes | 338 GB | 1355 GB | 2384 GB | 42 TB
-```
-
-### migrate-tool-install-to-sqlite
-
-```
-$ gxadmin migrate-tool-install-to-sqlite
-Creating new sqlite database: galaxy_install.sqlite
-Migrating tables
-  export: tool_shed_repository
-  import: tool_shed_repository
-  export: migrate_version
-  import: migrate_version
-  export: tool_version
-  import: tool_version
-  export: tool_version_association
-  import: tool_version_association
-  export: migrate_tools
-  import: migrate_tools
-  export: tool_dependency
-  import: tool_dependency
-  export: repository_dependency
-  import: repository_dependency
-  export: repository_repository_dependency_association
-  import: repository_repository_dependency_association
-Complete
 ```
 
 ## License
