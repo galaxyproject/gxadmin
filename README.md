@@ -10,6 +10,12 @@ Mostly it's a good dumping ground for the common queries we all run quite
 often. Some useful ones are included. This script strictly expects a postgres
 database and we will not support mysql or sqlite3.
 
+## Installation
+
+```
+curl https://raw.githubusercontent.com/usegalaxy-eu/gxadmin/master/gxadmin > /usr/bin/gxadmin
+chmod +x /usr/bin/gxadmin
+```
 
 ## Queries
 
