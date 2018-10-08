@@ -1,4 +1,13 @@
 #!/usr/bin/env python
+"""
+This was a script developed internally at usegalaxy.eu for aiding in
+investigating broken / errored / etc jobs.
+
+It encodes a number of assumptions that are specific to our galaxy instance
+(runner names, sge + condor, etc.)
+
+Hopefully someday this can be migrated into the main gxadmin utility.
+"""
 import pprint
 import json
 import binascii
