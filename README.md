@@ -28,8 +28,8 @@ Queries support being run in normal postgres table, csv, or tsv output as you
 need. Just use `gxadmin query`, `gxadmin tsvquery`, or `gxadmin csvquery` as
 appropriate.
 
-You should have a `.pgpass` with the connection information, and set `PGHOST`
-and `PGUSER` in your environment.
+You should have a `~/.pgpass` with the database connection information, and set
+`PGDATABASE`, `PGHOST`, and `PGUSER` in your environment.
 
 Example .pgpass:
 
