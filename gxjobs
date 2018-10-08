@@ -1,0 +1,120 @@
+#!/usr/bin/env python
+import pprint
+import json
+import binascii
+import argparse
+import subprocess
+import csv
+
+outformat = """
+       Id: %s
+     Tool: %s
+     User: %s
+    State: %s
+  Created: %s
+   Stderr: %s
+   Runner: %s / %s
+JobParams:
+    %s
+
+
+"""
+
+condor_special = """
+  Remote Host: {RemoteHost}
+      Command: {Cmd}
+         Rank: {Rank}
+ Requirements: {Requirements}
+Requested RAM: {RequestMemory}
+Requested CPU: {RequestCpus}
+"""
+
+sge_special = """
+ Remote Host: {remote_host}
+     Command: {stdout_path_list}
+Requirements: {hard resource_list}
+"""
+
+condor_special_hist = """
+  Remote Host: {LastRemoteHost}
+      Command: {Cmd}
+         Rank: {Rank}
+ Requirements: {Requirements}
+Requested RAM: {RequestMemory}
+Requested CPU: {RequestCpus}
+"""
+
+parser = argparse.ArgumentParser()
+parser.add_argument('id')
+parser.add_argument('--condor', action='store_true')
+parser.add_argument('--sge', action='store_true')
+args = parser.parse_args()
+
+columns = [
+    'job.id', 'job.tool_id', 'job.state', 'galaxy_user.email',
+    'job.create_time', 'job.stderr', 'job.job_runner_name',
+    'job.job_runner_external_id', 'job.destination_params'
+]
+
+gx_id = ['psql', '-c', "COPY (select " + (', '.join(columns)) + "  from job, galaxy_user where job.id = '$1' and job.user_id = galaxy_user.id) TO STDOUT WITH CSV"]
+
+ext_id = ['psql', '-c', "COPY (select " + (', '.join(columns)) + " from job, galaxy_user where job.job_runner_external_id = '$1' and job.user_id = galaxy_user.id) TO STDOUT WITH CSV"]
+
+if args.sge or args.condor:
+    ext_id[-1] = ext_id[-1].replace('$1', args.id)
+    q = subprocess.check_output(ext_id)
+else:
+    gx_id[-1] = gx_id[-1].replace('$1', args.id)
+    q = subprocess.check_output(gx_id)
+
+def indent(text, count=2):
+    return text.replace('\n', '\n' + (' ' * count))
+
+reader = csv.reader(q.split('\n'), delimiter=',', quotechar='"')
+(job_id, tool_id, state, email, create_time, stderr, runner_name, runner_id, params) = reader.next()
+real_params = json.loads(binascii.unhexlify(params[2:]))
+print(outformat % (job_id, tool_id, email, state, create_time, stderr, runner_name, runner_id, indent(json.dumps(real_params, indent=4), 4)))
+
+try:
+    if state == 'running':
+        if runner_name == 'condor':
+            w = subprocess.check_output(['condor_q', runner_id, '-long'])
+            e = {}
+            for line in w.split('\n'):
+                if len(line.strip()) == 0: continue
+                (k, v) = line.split(' = ', 1)
+                e[k] = v.strip('"')
+            print condor_special.format(**e)
+        elif runner_name == 'drmaa':
+            w = subprocess.check_output(['qstat', '-j', runner_id])
+            e = {}
+            for line in w.split('\n'):
+                if line.startswith('===='): continue
+                if len(line.strip()) == 0: continue
+                (k, v) = line.split(': ', 1)
+                e[k] = v.strip()
+
+            e['stdout_path_list'] = e['stdout_path_list'].replace('.o', '.sh')
+
+            # I really hate sge.
+            w2 = subprocess.check_output(['qstat'])
+            for line in w2.split('\n'):
+                if line[0:len(runner_id)] == runner_id:
+                    d = line.split()
+                    e['remote_host'] =d[7]
+                    print(d[7])
+            print sge_special.format(**e)
+
+
+    elif state in ('ok', 'error'):
+        if runner_name == 'condor':
+            w = subprocess.check_output(['condor_history', runner_id, '-long', '-limit', '1'])
+            e = {}
+            for line in w.split('\n'):
+                if len(line.strip()) == 0: continue
+                (k, v) = line.split(' = ', 1)
+                e[k] = v.strip('"')
+            print condor_special_hist.format(**e)
+except Exception as e:
+    print(e)
+    pass
