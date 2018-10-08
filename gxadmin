@@ -549,7 +549,56 @@ elif [[ $1 == *"query" ]]; then
 			ORDER BY
 				state DESC, created DESC;
 		"
-
+	elif [[ $2 == "disk-usage" ]]; then ## {,csv,tsv}query   disk-usage: Disk usage per object store.
+		qstr="
+			SELECT
+				object_store_id, sum(total_size)
+			FROM dataset
+			WHERE NOT purged
+			GROUP BY object_store_id
+			ORDER BY sum DESC;
+		"
+	elif [[ $2 == "users-count" ]]; then ## {,csv,tsv}query   users-count: Shows sums of active/external/deleted/purged accounts
+		qstr="
+			SELECT
+				active, external, deleted, purged, count(*) as count
+			FROM
+				galaxy_user
+			GROUP BY
+				active, external, deleted, purged
+		"
+	elif [[ $2 == "users-total" ]]; then ## {,csv,tsv}query   users-total: Total number of Galaxy users (incl deleted, purged, inactive)
+		qstr="
+			SELECT count(*) FROM galaxy_user
+		"
+	elif [[ $2 == "groups-list" ]]; then ## {,csv,tsv}query   groups-list: List all groups known to Galaxy
+		qstr="
+			SELECT
+				galaxy_group.name, count(*)
+			FROM
+				galaxy_group, user_group_association
+			WHERE
+				user_group_association.group_id = galaxy_group.id
+			GROUP BY name
+		"
+	elif [[ $2 == "collection-usage" ]]; then ## {,csv,tsv}query   collection-usage: Information about how many collections of various types are used
+		qstr="
+			SELECT
+				collection_type, count(*)
+			FROM
+				dataset_collection
+			GROUP BY
+				collection_type;
+		"
+	elif [[ $2 == "ts-repos" ]]; then ## {,csv,tsv}query   ts-repos: Counts of toolshed repositories by toolshed and owner.
+		qstr="
+			SELECT
+				tool_shed, owner, count(*)
+			FROM
+				tool_shed_repository
+			GROUP BY
+				tool_shed, owner;
+		"
 	elif [[ $2 == "job-history" ]]; then ## {,csv,tsv}query   job-history <id>: Job state history for a specific job
 		assert_count $# 3 "Missing Job ID"
 		qstr="
