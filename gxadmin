@@ -608,16 +608,46 @@ elif [[ $1 == *"query" ]]; then
 			FROM job_state_history
 			WHERE job_id = $3
 		"
-	elif [[ $2 == "job-outputs" ]]; then ## {,csv,tsv}query   job-outputs <id>: Output datasets from a specific job
+	elif [[ $2 == "job-inputs" ]]; then ## {,csv,tsv}query   job-inputs <id>: Input datasets to a specific job
 		assert_count $# 3 "Missing Job ID"
 		qstr="
 			SELECT
-				hda.id, hda.state, hda.deleted, hda.purged, d.id, d.state, d.deleted, d.purged
+				hda.id AS hda_id,
+				hda.state AS hda_state,
+				hda.deleted AS hda_deleted,
+				hda.purged AS hda_purged,
+				d.id AS d_id,
+				d.state AS d_state,
+				d.deleted AS d_deleted,
+				d.purged AS d_purged,
+				d.object_store_id AS object_store_id
 			FROM job j
 				JOIN job_to_input_dataset jtid
 					ON j.id = jtid.job_id
 				JOIN history_dataset_association hda
 					ON hda.id = jtid.dataset_id
+				JOIN dataset d
+					ON hda.dataset_id = d.id
+			WHERE j.id = $3
+		"
+	elif [[ $2 == "job-outputs" ]]; then ## {,csv,tsv}query   job-outputs <id>: Output datasets from a specific job
+		assert_count $# 3 "Missing Job ID"
+		qstr="
+			SELECT
+				hda.id AS hda_id,
+				hda.state AS hda_state,
+				hda.deleted AS hda_deleted,
+				hda.purged AS hda_purged,
+				d.id AS d_id,
+				d.state AS d_state,
+				d.deleted AS d_deleted,
+				d.purged AS d_purged,
+				d.object_store_id AS object_store_id
+			FROM job j
+				JOIN job_to_output_dataset jtod
+					ON j.id = jtod.job_id
+				JOIN history_dataset_association hda
+					ON hda.id = jtod.dataset_id
 				JOIN dataset d
 					ON hda.dataset_id = d.id
 			WHERE j.id = $3
