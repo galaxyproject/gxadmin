@@ -179,6 +179,21 @@ query_csv() {
 	psql -c "COPY ($1) to STDOUT with CSV DELIMITER ','"
 }
 
+
+function arr2awk() {
+    t=$(declare -p $1)
+    eval "declare -A t="${t#*=}
+    s=
+    for k in "${!t[@]}"; do
+        s+="$k=\"\$${t[$k]}\","
+    done
+    echo -n ${s:0:-2}
+}
+
+query_influx() {
+	psql -c "COPY ($1) to STDOUT with CSV DELIMITER E','" | awk -F, "{print \"${2} $(arr2awk $3)}"
+}
+
 if (( $# == 0 )); then
 	usage safe
 fi
@@ -374,6 +389,7 @@ elif [[ $1 == "migrate-tool-install-to-sqlite" ]]; then ## migrate-tool-install-
 
 elif [[ $1 == *"query" ]]; then
 	if [[ $2 == "latest-users" ]]; then ## {,csv,tsv}query   latest-users: 40 recently registered users
+		declare -A fields=( [email]=5 [username]=4 [disk_usage]=3 [create_time]=2 [id]=1 )
 		qstr="
 			SELECT id, create_time, pg_size_pretty(disk_usage), username, email
 			FROM galaxy_user
@@ -572,6 +588,17 @@ elif [[ $1 == *"query" ]]; then
 				JOIN dataset d
 					ON hda.dataset_id = d.id
 			WHERE j.id = $3
+		"
+	elif [[ $2 == "jobs-queued" ]]; then ## {,csv,tsv}query   jobs-queued
+		declare -A fields=( [internal]=2 [external]=1 )
+		qstr="
+		SELECT
+			sum(CASE WHEN job_runner_external_id IS NOT null THEN 1 ELSE 0 END) as external,
+			sum(CASE WHEN job_runner_external_id IS null THEN 1 ELSE 0 END) as internal
+		FROM
+			job
+		WHERE
+			state = 'queued'
 		"
 	else
 		error "Unknown query"
