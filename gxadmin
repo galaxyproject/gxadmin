@@ -609,6 +609,8 @@ elif [[ $1 == *"query" ]]; then
 		query_tsv "$qstr"
 	elif [[ $1 == "csvquery" ]]; then
 		query_csv "$qstr"
+	elif [[ $1 == "iquery" ]]; then
+		query_influx "$qstr" $2 fields
 	else
 		query "$qstr"
 	fi
