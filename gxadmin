@@ -406,7 +406,7 @@ elif [[ $func_name == *"query" ]]; then
 		assert_count_ge $# 1 "Missing Job ID"
 		job_ids="$(echo $@ | sed 's/\s\+/,/g')"
 		qstr="
-			SELECT job.tool_id, job.state, galaxy_user.username, job.create_time, job.job_runner_name, job.job_runner_external_id
+			SELECT job.id, job.tool_id, job.state, galaxy_user.username, job.create_time, job.job_runner_name, job.job_runner_external_id
 			FROM job, galaxy_user
 			WHERE job.id in ($job_ids) AND job.user_id = galaxy_user.id"
 	elif [[ $query_name == "datasets-created-daily" ]]; then ##           query   datasets-created-daily: The min/max/average/p95/p99 of total size of datasets created in a single day.
