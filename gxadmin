@@ -167,6 +167,14 @@ assert_count() {
 	fi
 }
 
+assert_count_ge() {
+	if (( $1 < $2 )); then
+		error "$3"
+		usage
+		exit 1
+	fi
+}
+
 query() {
 	psql -c "$1"
 }
@@ -183,26 +191,30 @@ if (( $# == 0 )); then
 	usage safe
 fi
 
-if [[ $1 == "validate" ]]; then ## validate: validate config files
+
+# MAIN
+func_name="$1";
+shift;
+
+if [[ $func_name == "validate" ]]; then ## validate: validate config files
 	validate
-elif [[ $1 == "zerg" ]]; then
-	if [[ $2 == "swap" ]]; then ## zerg swap '<message>': swap zerglings
+elif [[ $func_name == "zerg" ]]; then
+	subfunc="$1";
+	shift;
+	if [[ $subfunc == "swap" ]]; then ## zerg swap '<message>': swap zerglings
 		validate
+		assert_count $# 1 "Restart now requires a message"
 
-		if (( $# != 3 )); then
-			error "Restart now requires a message"
-			echo "Please call as: $0 zerg swap 'Restart due to changes in configuration'"
-			exit 1
-		fi
-
-		zerg_swap $3
-	elif [[ $2 == "tail" ]]; then ## zerg tail: tail zergling logs
+		zerg_swap $1
+	elif [[ $subfunc == "tail" ]]; then ## zerg tail: tail zergling logs
 		tail -f /var/log/galaxy/zerg*.log
-	elif [[ $2 == "strace" ]]; then ## zerg strace [0|1|pool]: swap zerglings
-		if [[ $3 == "pool" ]]; then
+	elif [[ $subfunc == "strace" ]]; then ## zerg strace [0|1|pool]: swap zerglings
+		param="$1";
+		shift;
+		if [[ $param == "pool" ]]; then
 			supervisor_strace "gx:zergpool"
-		elif [[ $3 == "0" ]] || [[ $3 == "1" ]]; then
-			supervisor_strace "zergling$3"
+		elif [[ $param == "0" ]] || [[ $param == "1" ]]; then
+			supervisor_strace "zergling$param"
 		else
 			supervisor_strace "gx:zerg"
 		fi
@@ -210,12 +222,14 @@ elif [[ $1 == "zerg" ]]; then
 		error "Unknown command"
 		usage
 	fi
-elif [[ $1 == "handler" ]]; then
-    if [[ $2 == "strace" ]]; then ## handler strace <handler_id>: Run an strace on a specific handler (to watch it load files.)
-		supervisor_strace "hd:handler$3"
-	elif [[ $2 == "tail" ]]; then ## handler tail: tail handler logs
+elif [[ $func_name == "handler" ]]; then
+	subfunc="$1";
+	shift;
+    if [[ $subfunc == "strace" ]]; then ## handler strace <handler_id>: Run an strace on a specific handler (to watch it load files.)
+		supervisor_strace "hd:handler$1"
+	elif [[ $subfunc == "tail" ]]; then ## handler tail: tail handler logs
 		tail -f /var/log/galaxy/handler*.log
-	elif [[ $2 == "restart" ]]; then ## handler restart '<message>': restart handlers
+	elif [[ $subfunc == "restart" ]]; then ## handler restart '<message>': restart handlers
 		validate
 		#influxdb_event "Restarting handlers"
 		supervisorctl restart hd:
@@ -223,7 +237,7 @@ elif [[ $1 == "handler" ]]; then
 		error "Unknown command"
 		usage
 	fi
-elif [[ $1 == "migrate-tool-install-to-sqlite" ]]; then ## migrate-tool-install-to-sqlite: Converts normal potsgres toolshed repository tables into the SQLite version
+elif [[ $func_name == "migrate-tool-install-to-sqlite" ]]; then ## migrate-tool-install-to-sqlite: Converts normal potsgres toolshed repository tables into the SQLite version
 	# Export tables
 	if [[ -f  galaxy_install.sqlite ]]; then
 		error "galaxy_install.sqlite exists, not overwriting"
@@ -372,27 +386,30 @@ elif [[ $1 == "migrate-tool-install-to-sqlite" ]]; then ## migrate-tool-install-
 
 	success "Complete"
 
-elif [[ $1 == *"query" ]]; then
-	if [[ $2 == "latest-users" ]]; then ## {,csv,tsv}query   latest-users: 40 recently registered users
+elif [[ $func_name == *"query" ]]; then
+	query_name="$1";
+	shift;
+	if [[ $query_name == "latest-users" ]]; then ## {,csv,tsv}query   latest-users: 40 recently registered users
 		qstr="
 			SELECT id, create_time, pg_size_pretty(disk_usage), username, email
 			FROM galaxy_user
 			ORDER BY create_time desc
 			LIMIT 40"
-	elif  [[ $2 == "tool-usage" ]]; then ## {,csv,tsv}query   tool-usage: Counts of tool runs
+	elif  [[ $query_name == "tool-usage" ]]; then ## {,csv,tsv}query   tool-usage: Counts of tool runs
 		qstr="
 			SELECT
 				j.tool_id, count(*) AS count
 			FROM job j
 			GROUP BY j.tool_id
 			ORDER BY count DESC"
-	elif [[ $2 == "job-info" ]]; then ## {,csv,tsv}query   job-info <id>: Information about a specific job
-		assert_count $# 3 "Missing Job ID"
+	elif [[ $query_name == "job-info" ]]; then ## {,csv,tsv}query   job-info <id> [id] ...: Information about a specific job
+		assert_count_ge $# 1 "Missing Job ID"
+		job_ids="$(echo $@ | sed 's/\s\+/,/g')"
 		qstr="
 			SELECT job.tool_id, job.state, galaxy_user.username, job.create_time, job.job_runner_name, job.job_runner_external_id
 			FROM job, galaxy_user
-			WHERE job.id = '$3' AND job.user_id = galaxy_user.id"
-	elif [[ $2 == "datasets-created-daily" ]]; then ##           query   datasets-created-daily: The min/max/average/p95/p99 of total size of datasets created in a single day.
+			WHERE job.id in ($job_ids) AND job.user_id = galaxy_user.id"
+	elif [[ $query_name == "datasets-created-daily" ]]; then ##           query   datasets-created-daily: The min/max/average/p95/p99 of total size of datasets created in a single day.
 		qstr="
 		CREATE TEMPORARY TABLE temp_queue_times AS
 		select
@@ -409,8 +426,8 @@ elif [[ $1 == *"query" ]]; then
 			pg_size_pretty(percentile_cont(0.99) WITHIN GROUP (ORDER BY sum) ::bigint) as perc_99,
 			pg_size_pretty(max(sum)) as max
 		from temp_queue_times;"
-	elif [[ $2 == "queue-time" ]]; then ##           query   queue-time <tool_id>: The average/95%/99% a specific tool spends in queue state.
-		assert_count $# 3 "Missing tool ID"
+	elif [[ $query_name == "queue-time" ]]; then ##           query   queue-time <tool_id>: The average/95%/99% a specific tool spends in queue state.
+		assert_count $# 1 "Missing tool ID"
 		qstr="
 		CREATE TEMPORARY TABLE temp_queue_times AS
 		select
@@ -437,16 +454,16 @@ elif [[ $1 == *"query" ]]; then
 			percentile_cont(0.99) WITHIN GROUP (ORDER BY queue_time) as perc_99,
 			max(queue_time)
 		from temp_queue_times;"
-	elif [[ $2 == "queue" ]]; then ## {,csv,tsv}query   queue: Brief overview of currently running jobs
+	elif [[ $query_name == "queue" ]]; then ## {,csv,tsv}query   queue: Brief overview of currently running jobs
 		qstr="
 			SELECT tool_id, state, count(*)
 			FROM job
 			WHERE state in ('queued', 'running')
 			GROUP BY tool_id, state
 			ORDER BY count desc"
-	elif [[ $2 == "queue-detail" ]]; then ## {,csv,tsv}query   queue-detail [--all]: Detailed overview of running and queued jobs
+	elif [[ $query_name == "queue-detail" ]]; then ## {,csv,tsv}query   queue-detail [--all]: Detailed overview of running and queued jobs
 		d=""
-		if [[ $3 == "--all" ]]; then
+		if [[ $1 == "--all" ]]; then
 			d=", 'new'"
 		fi
 		qstr="
@@ -454,8 +471,8 @@ elif [[ $1 == *"query" ]]; then
 			FROM job, galaxy_user
 			WHERE state in ('running', 'queued'$d) and job.user_id = galaxy_user.id
 			ORDER BY state desc, time_since_creation desc"
-	elif [[ $2 == "runtime-per-user" ]]; then ## {,csv,tsv}query   runtime-per-user <email>: computation time of user (by email)
-		assert_count $# 3 "Missing user"
+	elif [[ $query_name == "runtime-per-user" ]]; then ## {,csv,tsv}query   runtime-per-user <email>: computation time of user (by email)
+		assert_count $# 1 "Missing user"
 		qstr="
 			SELECT sum((metric_value || ' second')::interval)
 			FROM job_metric_numeric
@@ -465,33 +482,33 @@ elif [[ $1 == *"query" ]]; then
 				WHERE user_id in (
 					SELECT id
 					FROM galaxy_user
-					where email = '$3'
+					where email = '$1'
 				)
 			) AND metric_name = 'runtime_seconds'"
-	elif [[ $2 == "jobs-per-user" ]]; then ## {,csv,tsv}query   jobs-per-user <email>: Number of jobs run by a specific user
-		assert_count $# 3 "Missing user"
+	elif [[ $query_name == "jobs-per-user" ]]; then ## {,csv,tsv}query   jobs-per-user <email>: Number of jobs run by a specific user
+		assert_count $# 1 "Missing user"
 		qstr="
 			SELECT count(id)
 			FROM job
 			WHERE user_id in (
 				SELECT id
 				FROM galaxy_user
-				WHERE email = '$3'
+				WHERE email = '$1'
 			)"
-	elif [[ $2 == "recent-jobs" ]]; then ## {,csv,tsv}query   recent-jobs <hours>: Jobs run in the past <hours> (in any state)
-		assert_count $# 3 "Missing hours"
+	elif [[ $query_name == "recent-jobs" ]]; then ## {,csv,tsv}query   recent-jobs <hours>: Jobs run in the past <hours> (in any state)
+		assert_count $# 1 "Missing hours"
 
 		qstr="
 			SELECT
 				job.id, date_trunc('minute', job.create_time), job.tool_id, job.state, galaxy_user.username
 			FROM job, galaxy_user
-			WHERE job.create_time > (now() - '$3 hours'::interval) AND job.user_id = galaxy_user.id
+			WHERE job.create_time > (now() - '$1 hours'::interval) AND job.user_id = galaxy_user.id
 			ORDER BY id desc
 		"
-	elif [[ $2 == "training" ]]; then ## {,csv,tsv}query   training [--all]: List known trainings
+	elif [[ $query_name == "training" ]]; then ## {,csv,tsv}query   training [--all]: List known trainings
 		d1=""
 		d2="AND deleted = false"
-		if [[ $3 == "--all" ]]; then
+		if [[ $1 == "--all" ]]; then
 			d1=", deleted"
 			d2=""
 		fi
@@ -505,10 +522,10 @@ elif [[ $1 == *"query" ]]; then
 			WHERE name like 'training-%' $d2
 			ORDER BY create_time DESC
 		"
-	elif [[ $2 == "training-members" ]]; then ## {,csv,tsv}query   training-members <tr_id>: List users in a specific training
-		assert_count $# 3 "Missing Training ID"
+	elif [[ $query_name == "training-members" ]]; then ## {,csv,tsv}query   training-members <tr_id>: List users in a specific training
+		assert_count $# 1 "Missing Training ID"
 		# Remove training- if they used it.
-		ww=$(echo "$3" | sed 's/^training-//g')
+		ww=$(echo "$1" | sed 's/^training-//g')
 		qstr="
 			SELECT
 				galaxy_user.username,
@@ -518,10 +535,10 @@ elif [[ $1 == *"query" ]]; then
 				AND galaxy_group.id = user_group_association.group_id
 				AND user_group_association.user_id = galaxy_user.id
 		"
-	elif [[ $2 == "training-queue" ]]; then
-		assert_count $# 3 "Missing Training ID"
+	elif [[ $query_name == "training-queue" ]]; then
+		assert_count $# 1 "Missing Training ID"
 		# Remove training- if they used it.
-		ww=$(echo "$3" | sed 's/^training-//g')
+		ww=$(echo "$1" | sed 's/^training-//g')
 		qstr="
 			SELECT
 				job.state,
@@ -549,7 +566,7 @@ elif [[ $1 == *"query" ]]; then
 			ORDER BY
 				state DESC, created DESC;
 		"
-	elif [[ $2 == "disk-usage" ]]; then ## {,csv,tsv}query   disk-usage: Disk usage per object store.
+	elif [[ $query_name == "disk-usage" ]]; then ## {,csv,tsv}query   disk-usage: Disk usage per object store.
 		qstr="
 			SELECT
 				object_store_id, sum(total_size)
@@ -558,7 +575,7 @@ elif [[ $1 == *"query" ]]; then
 			GROUP BY object_store_id
 			ORDER BY sum DESC;
 		"
-	elif [[ $2 == "users-count" ]]; then ## {,csv,tsv}query   users-count: Shows sums of active/external/deleted/purged accounts
+	elif [[ $query_name == "users-count" ]]; then ## {,csv,tsv}query   users-count: Shows sums of active/external/deleted/purged accounts
 		qstr="
 			SELECT
 				active, external, deleted, purged, count(*) as count
@@ -567,11 +584,11 @@ elif [[ $1 == *"query" ]]; then
 			GROUP BY
 				active, external, deleted, purged
 		"
-	elif [[ $2 == "users-total" ]]; then ## {,csv,tsv}query   users-total: Total number of Galaxy users (incl deleted, purged, inactive)
+	elif [[ $query_name == "users-total" ]]; then ## {,csv,tsv}query   users-total: Total number of Galaxy users (incl deleted, purged, inactive)
 		qstr="
 			SELECT count(*) FROM galaxy_user
 		"
-	elif [[ $2 == "groups-list" ]]; then ## {,csv,tsv}query   groups-list: List all groups known to Galaxy
+	elif [[ $query_name == "groups-list" ]]; then ## {,csv,tsv}query   groups-list: List all groups known to Galaxy
 		qstr="
 			SELECT
 				galaxy_group.name, count(*)
@@ -581,7 +598,7 @@ elif [[ $1 == *"query" ]]; then
 				user_group_association.group_id = galaxy_group.id
 			GROUP BY name
 		"
-	elif [[ $2 == "collection-usage" ]]; then ## {,csv,tsv}query   collection-usage: Information about how many collections of various types are used
+	elif [[ $query_name == "collection-usage" ]]; then ## {,csv,tsv}query   collection-usage: Information about how many collections of various types are used
 		qstr="
 			SELECT
 				collection_type, count(*)
@@ -590,7 +607,7 @@ elif [[ $1 == *"query" ]]; then
 			GROUP BY
 				collection_type;
 		"
-	elif [[ $2 == "ts-repos" ]]; then ## {,csv,tsv}query   ts-repos: Counts of toolshed repositories by toolshed and owner.
+	elif [[ $query_name == "ts-repos" ]]; then ## {,csv,tsv}query   ts-repos: Counts of toolshed repositories by toolshed and owner.
 		qstr="
 			SELECT
 				tool_shed, owner, count(*)
@@ -599,17 +616,17 @@ elif [[ $1 == *"query" ]]; then
 			GROUP BY
 				tool_shed, owner;
 		"
-	elif [[ $2 == "job-history" ]]; then ## {,csv,tsv}query   job-history <id>: Job state history for a specific job
-		assert_count $# 3 "Missing Job ID"
+	elif [[ $query_name == "job-history" ]]; then ## {,csv,tsv}query   job-history <id>: Job state history for a specific job
+		assert_count $# 1 "Missing Job ID"
 		qstr="
 			SELECT
 				date_trunc('second', create_time) as time,
 				state
 			FROM job_state_history
-			WHERE job_id = $3
+			WHERE job_id = $1
 		"
-	elif [[ $2 == "job-inputs" ]]; then ## {,csv,tsv}query   job-inputs <id>: Input datasets to a specific job
-		assert_count $# 3 "Missing Job ID"
+	elif [[ $query_name == "job-inputs" ]]; then ## {,csv,tsv}query   job-inputs <id>: Input datasets to a specific job
+		assert_count $# 1 "Missing Job ID"
 		qstr="
 			SELECT
 				hda.id AS hda_id,
@@ -628,10 +645,10 @@ elif [[ $1 == *"query" ]]; then
 					ON hda.id = jtid.dataset_id
 				JOIN dataset d
 					ON hda.dataset_id = d.id
-			WHERE j.id = $3
+			WHERE j.id = $1
 		"
-	elif [[ $2 == "job-outputs" ]]; then ## {,csv,tsv}query   job-outputs <id>: Output datasets from a specific job
-		assert_count $# 3 "Missing Job ID"
+	elif [[ $query_name == "job-outputs" ]]; then ## {,csv,tsv}query   job-outputs <id>: Output datasets from a specific job
+		assert_count $# 1 "Missing Job ID"
 		qstr="
 			SELECT
 				hda.id AS hda_id,
@@ -650,25 +667,25 @@ elif [[ $1 == *"query" ]]; then
 					ON hda.id = jtod.dataset_id
 				JOIN dataset d
 					ON hda.dataset_id = d.id
-			WHERE j.id = $3
+			WHERE j.id = $1
 		"
 	else
 		error "Unknown query"
 		usage
 	fi
 
-	if [[ $1 == "tsvquery" ]]; then
+	if [[ $func_name == "tsvquery" ]]; then
 		query_tsv "$qstr"
-	elif [[ $1 == "csvquery" ]]; then
+	elif [[ $func_name == "csvquery" ]]; then
 		query_csv "$qstr"
 	else
 		query "$qstr"
 	fi
-elif [[ $1 == "update" ]]; then ## update: Update the script
+elif [[ $func_name == "update" ]]; then ## update: Update the script
     echo "Please run:"
     echo
     echo "curl https://raw.githubusercontent.com/usegalaxy-eu/gxadmin/master/gxadmin > $0"
-elif [[ $1 == "help" ]] || [[ $1 == "-h" ]] || [[ $1 == "--help" ]]; then
+elif [[ $func_name == "help" ]] || [[ $func_name == "-h" ]] || [[ $func_name == "--help" ]]; then
 	usage safe
 else
 	error "Unknown command"
