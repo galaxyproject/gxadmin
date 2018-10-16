@@ -619,7 +619,7 @@ elif [[ $func_name == *"query" ]]; then
 	elif [[ $query_name == "active-users" ]]; then ## {,csv,tsv}query   active-users [weeks]: Count of users who ran jobs in past 1 week (default = 1)
 		weeks=1
 		if (( $# > 0 )); then
-			weeks= $#
+			weeks=$1
 		fi
 
 		qstr="
