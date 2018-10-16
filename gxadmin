@@ -696,7 +696,9 @@ elif [[ $func_name == *"query" ]]; then
 		query "$qstr"
 	fi
 elif [[ $func_name == "update" ]]; then ## update: Update the script
-	sh -c "curl https://raw.githubusercontent.com/usegalaxy-eu/gxadmin/master/gxadmin > $0"
+	tmp=$(mktemp);
+	curl https://raw.githubusercontent.com/usegalaxy-eu/gxadmin/master/gxadmin > $tmp;
+	mv $tmp $0;
 	exit 0
 elif [[ $func_name == "help" ]] || [[ $func_name == "-h" ]] || [[ $func_name == "--help" ]]; then
 	usage safe
