@@ -42,9 +42,8 @@ success() {
 }
 
 validate() {
-	cd $GALAXY_DIST
 	fail_count=0
-	for file in $GALAXY_DIST/*.xml; do
+	for file in ${GALAXY_CONFIG_DIR}/*.xml; do
 		xmllint $file > /dev/null 2>/dev/null;
 		exit_code=$?
 		if (( $exit_code > 0 )); then
@@ -55,7 +54,7 @@ validate() {
 		fi
 	done;
 
-	for file in $GALAXY_DIST/config/*.xml; do
+	for file in ${GALAXY_MUTABLE_CONFIG_DIR}/*.xml; do
 		xmllint $file > /dev/null 2>/dev/null;
 		exit_code=$?
 		if (( $exit_code > 0 )); then
@@ -65,7 +64,6 @@ validate() {
 			success "  OK: $file";
 		fi
 	done;
-	cd -
 
 	if (( fail_count == 0 )); then
 		success "All XML files validated"
