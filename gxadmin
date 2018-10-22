@@ -409,26 +409,25 @@ elif [[ $func_name == *"query" ]]; then
 			WHERE job.id in ($job_ids) AND job.user_id = galaxy_user.id"
 	elif [[ $query_name == "datasets-created-daily" ]]; then ##           query   datasets-created-daily: The min/max/average/p95/p99 of total size of datasets created in a single day.
 		qstr="
-		CREATE TEMPORARY TABLE temp_queue_times AS
-		select
+		WITH temp_queue_times AS
+		(select
 			date_trunc('day', create_time),
 			sum(total_size)
 		from dataset
 		group by date_trunc
-		order by date_trunc desc;
-		--
+		order by date_trunc desc)
 		select
 			pg_size_pretty(min(sum)) as min,
 			pg_size_pretty(avg(sum)) as avg,
 			pg_size_pretty(percentile_cont(0.95) WITHIN GROUP (ORDER BY sum) ::bigint) as perc_95,
 			pg_size_pretty(percentile_cont(0.99) WITHIN GROUP (ORDER BY sum) ::bigint) as perc_99,
 			pg_size_pretty(max(sum)) as max
-		from temp_queue_times;"
+		from temp_queue_times"
 	elif [[ $query_name == "queue-time" ]]; then ##           query   queue-time <tool_id>: The average/95%/99% a specific tool spends in queue state.
 		assert_count $# 1 "Missing tool ID"
 		qstr="
-		CREATE TEMPORARY TABLE temp_queue_times AS
-		select
+		WITH temp_queue_times AS
+		(select
 			min(a.create_time - b.create_time) as queue_time
 		from
 			job_state_history as a
@@ -444,14 +443,13 @@ elif [[ $func_name == *"query" ]]; then
 			a.job_id
 		order by
 			queue_time desc
-		;
-		--
+		)
 		select
 			min(queue_time),
 			percentile_cont(0.95) WITHIN GROUP (ORDER BY queue_time) as perc_95,
 			percentile_cont(0.99) WITHIN GROUP (ORDER BY queue_time) as perc_99,
 			max(queue_time)
-		from temp_queue_times;"
+		from temp_queue_times"
 	elif [[ $query_name == "queue" ]]; then ## {,csv,tsv}query   queue: Brief overview of currently running jobs
 		qstr="
 			SELECT tool_id, state, count(*)
