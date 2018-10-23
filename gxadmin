@@ -196,6 +196,42 @@ shift;
 
 if [[ $func_name == "validate" ]]; then ## validate: validate config files
 	validate
+elif [[ $func_name == "cleanup" ]]; then ## cleanup [days]: Cleanup histories/hdas/etc for past N days (default=30)
+	days=30
+	if (( $# > 0 )); then
+		days=$1
+	fi
+
+	# TODO(hxr): nicer syntax?
+	if [[ -z "$GALAXY_ROOT" ]]; then
+		error Please set \$GALAXY_ROOT
+		exit 1
+	fi
+	if [[ -z "$GALAXY_CONFIG_FILE" ]]; then
+		error Please set \$GALAXY_CONFIG_FILE
+		exit 1
+	fi
+	if [[ -z "$GALAXY_LOG_DIR" ]]; then
+		error Please set \$GALAXY_LOG_DIR
+		exit 1
+	fi
+
+	for action in {delete_userless_histories,delete_exported_histories,purge_deleted_histories,purge_deleted_hdas,delete_datasets,purge_datasets}; do
+		python $GALAXY_ROOT/scripts/cleanup_datasets/pgcleanup.py \
+			-c $GALAXY_CONFIG_FILE \
+			-o $days \
+			-l $GALAXY_LOG_DIR \
+			-s $action \
+			-w 128MB 2>&1 >> $GALAXY_LOG_DIR/cleanup_datasets.log;
+
+		# Something that telegraf can consume
+		ec=$?
+		if (( ec == 0 )); then
+			echo "cleanup_datasets,group=$action success=1"
+		else
+			echo "cleanup_datasets,group=$action success=0"
+		fi
+	done
 elif [[ $func_name == "zerg" ]]; then
 	subfunc="$1";
 	shift;
