@@ -778,6 +778,7 @@ elif [[ $func_name == *"query" ]]; then
 elif [[ $func_name == "update" ]]; then ## update: Update the script
 	tmp=$(mktemp);
 	curl https://raw.githubusercontent.com/usegalaxy-eu/gxadmin/master/gxadmin > $tmp;
+	chmod +x $tmp;
 	mv $tmp $0;
 	exit 0
 elif [[ $func_name == "help" ]] || [[ $func_name == "-h" ]] || [[ $func_name == "--help" ]]; then
