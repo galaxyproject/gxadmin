@@ -10,8 +10,6 @@ Mostly it's a good dumping ground for the common queries we all run quite
 often. Some useful ones are included. This script strictly expects a postgres
 database and we will not support mysql or sqlite3.
 
-[Changelog](CHANGELOG.md)
-
 ## Installation
 
 ```
@@ -277,6 +275,15 @@ $ gxadmin query datasets-created-daily
 ---------+--------+---------+---------+-------
  0 bytes | 338 GB | 1355 GB | 2384 GB | 42 TB
 ```
+
+## Changelog
+
+[Changelog](CHANGELOG.md)
+
+## Authors
+
+- Helena Rasche (@erasche)
+- Nate Coraor (@natefoo)
 
 ## License
 
