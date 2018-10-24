@@ -12,6 +12,7 @@ usage(){
 	echo "$cmds" | grep '^handler' | column -s: -t | sed 's/^/    /'
 	echo
 	echo "DB Queries:"
+	echo "  'query' can be exchanged with 'tsvquery' or 'csvquery' for tab- and comma-separated variants"
 	echo
 	echo "$cmds" | grep 'query ' | sort -k2 | column -s: -t | sed 's/^/    /'
 	echo
@@ -423,27 +424,27 @@ elif [[ $func_name == "migrate-tool-install-to-sqlite" ]]; then ## migrate-tool-
 elif [[ $func_name == *"query" ]]; then
 	query_name="$1";
 	shift;
-	if [[ $query_name == "latest-users" ]]; then ## {,csv,tsv}query   latest-users: 40 recently registered users
+	if [[ $query_name == "latest-users" ]]; then ## query   latest-users: 40 recently registered users
 		qstr="
 			SELECT id, create_time, pg_size_pretty(disk_usage), username, email
 			FROM galaxy_user
 			ORDER BY create_time desc
 			LIMIT 40"
-	elif  [[ $query_name == "tool-usage" ]]; then ## {,csv,tsv}query   tool-usage: Counts of tool runs
+	elif  [[ $query_name == "tool-usage" ]]; then ## query   tool-usage: Counts of tool runs
 		qstr="
 			SELECT
 				j.tool_id, count(*) AS count
 			FROM job j
 			GROUP BY j.tool_id
 			ORDER BY count DESC"
-	elif [[ $query_name == "job-info" ]]; then ## {,csv,tsv}query   job-info <id> [id] ...: Information about a specific job
+	elif [[ $query_name == "job-info" ]]; then ## query   job-info <id> [id] ...: Information about a specific job
 		assert_count_ge $# 1 "Missing Job ID"
 		job_ids="$(echo $@ | sed 's/\s\+/,/g')"
 		qstr="
 			SELECT job.id, job.tool_id, job.state, job.handler, galaxy_user.username, job.create_time, job.job_runner_name, job.job_runner_external_id
 			FROM job, galaxy_user
 			WHERE job.id in ($job_ids) AND job.user_id = galaxy_user.id"
-	elif [[ $query_name == "datasets-created-daily" ]]; then ##           query   datasets-created-daily: The min/max/average/p95/p99 of total size of datasets created in a single day.
+	elif [[ $query_name == "datasets-created-daily" ]]; then ## query   datasets-created-daily: The min/max/average/p95/p99 of total size of datasets created in a single day.
 		qstr="
 		WITH temp_queue_times AS
 		(select
@@ -459,7 +460,7 @@ elif [[ $func_name == *"query" ]]; then
 			pg_size_pretty(percentile_cont(0.99) WITHIN GROUP (ORDER BY sum) ::bigint) as perc_99,
 			pg_size_pretty(max(sum)) as max
 		from temp_queue_times"
-	elif [[ $query_name == "queue-time" ]]; then ##           query   queue-time <tool_id>: The average/95%/99% a specific tool spends in queue state.
+	elif [[ $query_name == "queue-time" ]]; then ## query   queue-time <tool_id>: The average/95%/99% a specific tool spends in queue state.
 		assert_count $# 1 "Missing tool ID"
 		qstr="
 		WITH temp_queue_times AS
@@ -486,14 +487,14 @@ elif [[ $func_name == *"query" ]]; then
 			percentile_cont(0.99) WITHIN GROUP (ORDER BY queue_time) as perc_99,
 			max(queue_time)
 		from temp_queue_times"
-	elif [[ $query_name == "queue" ]]; then ## {,csv,tsv}query   queue: Brief overview of currently running jobs
+	elif [[ $query_name == "queue" ]]; then ## query   queue: Brief overview of currently running jobs
 		qstr="
 			SELECT tool_id, state, count(*)
 			FROM job
 			WHERE state in ('queued', 'running')
 			GROUP BY tool_id, state
 			ORDER BY count desc"
-	elif [[ $query_name == "queue-detail" ]]; then ## {,csv,tsv}query   queue-detail [--all]: Detailed overview of running and queued jobs
+	elif [[ $query_name == "queue-detail" ]]; then ## query   queue-detail [--all]: Detailed overview of running and queued jobs
 		d=""
 		if [[ $1 == "--all" ]]; then
 			d=", 'new'"
@@ -503,7 +504,7 @@ elif [[ $func_name == *"query" ]]; then
 			FROM job, galaxy_user
 			WHERE state in ('running', 'queued'$d) and job.user_id = galaxy_user.id
 			ORDER BY state desc, time_since_creation desc"
-	elif [[ $query_name == "runtime-per-user" ]]; then ## {,csv,tsv}query   runtime-per-user <email>: computation time of user (by email)
+	elif [[ $query_name == "runtime-per-user" ]]; then ## query   runtime-per-user <email>: computation time of user (by email)
 		assert_count $# 1 "Missing user"
 		qstr="
 			SELECT sum((metric_value || ' second')::interval)
@@ -517,7 +518,7 @@ elif [[ $func_name == *"query" ]]; then
 					where email = '$1'
 				)
 			) AND metric_name = 'runtime_seconds'"
-	elif [[ $query_name == "jobs-per-user" ]]; then ## {,csv,tsv}query   jobs-per-user <email>: Number of jobs run by a specific user
+	elif [[ $query_name == "jobs-per-user" ]]; then ## query   jobs-per-user <email>: Number of jobs run by a specific user
 		assert_count $# 1 "Missing user"
 		qstr="
 			SELECT count(id)
@@ -527,7 +528,7 @@ elif [[ $func_name == *"query" ]]; then
 				FROM galaxy_user
 				WHERE email = '$1'
 			)"
-	elif [[ $query_name == "recent-jobs" ]]; then ## {,csv,tsv}query   recent-jobs <hours>: Jobs run in the past <hours> (in any state)
+	elif [[ $query_name == "recent-jobs" ]]; then ## query   recent-jobs <hours>: Jobs run in the past <hours> (in any state)
 		assert_count $# 1 "Missing hours"
 
 		qstr="
@@ -537,7 +538,7 @@ elif [[ $func_name == *"query" ]]; then
 			WHERE job.create_time > (now() - '$1 hours'::interval) AND job.user_id = galaxy_user.id
 			ORDER BY id desc
 		"
-	elif [[ $query_name == "training" ]]; then ## {,csv,tsv}query   training [--all]: List known trainings
+	elif [[ $query_name == "training" ]]; then ## query   training [--all]: List known trainings
 		d1=""
 		d2="AND deleted = false"
 		if [[ $1 == "--all" ]]; then
@@ -554,7 +555,7 @@ elif [[ $func_name == *"query" ]]; then
 			WHERE name like 'training-%' $d2
 			ORDER BY create_time DESC
 		"
-	elif [[ $query_name == "training-members" ]]; then ## {,csv,tsv}query   training-members <tr_id>: List users in a specific training
+	elif [[ $query_name == "training-members" ]]; then ## query   training-members <tr_id>: List users in a specific training
 		assert_count $# 1 "Missing Training ID"
 		# Remove training- if they used it.
 		ww=$(echo "$1" | sed 's/^training-//g')
@@ -567,7 +568,7 @@ elif [[ $func_name == *"query" ]]; then
 				AND galaxy_group.id = user_group_association.group_id
 				AND user_group_association.user_id = galaxy_user.id
 		"
-	elif [[ $query_name == "training-memberof" ]]; then ## {,csv,tsv}query   training-memberof <username>: List trainings that a user is part of
+	elif [[ $query_name == "training-memberof" ]]; then ## query   training-memberof <username>: List trainings that a user is part of
 		assert_count $# 1 "Missing Training ID"
 		# Remove training- if they used it.
 		ww=$(echo "$1" | sed 's/^training-//g')
@@ -580,7 +581,7 @@ elif [[ $func_name == *"query" ]]; then
 				AND user_group_association.user_id = galaxy_user.id
                 AND galaxy_user.username='$ww'
 		"
-	elif [[ $query_name == "training-remove-member" ]]; then ## {,csv,tsv}query   training-remove-member <training> <username> [YESDOIT]: Remove a user from a training
+	elif [[ $query_name == "training-remove-member" ]]; then ## query   training-remove-member <training> <username> [YESDOIT]: Remove a user from a training
 		assert_count_ge $# 2 "Missing parameters"
 		# Remove training- if they used it.
 		ww=$(echo "$1" | sed 's/^training-//g')
@@ -607,7 +608,7 @@ elif [[ $func_name == *"query" ]]; then
 			fi
 			echo $qstr
 		fi
-#    elif [[ $query_name == "jcaas" ]]; then ## {,csv,tsv}query   jcaas <username> <tool_id>: See JCaaS output for a (user, tool) pair
+#    elif [[ $query_name == "jcaas" ]]; then ## query   jcaas <username> <tool_id>: See JCaaS output for a (user, tool) pair
 #		assert_count $# 2 "Missing Training ID"
 #        username=$1
 #        tool_id=$2
@@ -645,7 +646,7 @@ elif [[ $func_name == *"query" ]]; then
 			ORDER BY
 				state DESC, created DESC;
 		"
-	elif [[ $query_name == "disk-usage" ]]; then ## {,csv,tsv}query   disk-usage: Disk usage per object store.
+	elif [[ $query_name == "disk-usage" ]]; then ## query   disk-usage: Disk usage per object store.
 		qstr="
 			SELECT
 				object_store_id, sum(total_size)
@@ -654,7 +655,7 @@ elif [[ $func_name == *"query" ]]; then
 			GROUP BY object_store_id
 			ORDER BY sum DESC;
 		"
-	elif [[ $query_name == "users-count" ]]; then ## {,csv,tsv}query   users-count: Shows sums of active/external/deleted/purged accounts
+	elif [[ $query_name == "users-count" ]]; then ## query   users-count: Shows sums of active/external/deleted/purged accounts
 		qstr="
 			SELECT
 				active, external, deleted, purged, count(*) as count
@@ -663,11 +664,11 @@ elif [[ $func_name == *"query" ]]; then
 			GROUP BY
 				active, external, deleted, purged
 		"
-	elif [[ $query_name == "users-total" ]]; then ## {,csv,tsv}query   users-total: Total number of Galaxy users (incl deleted, purged, inactive)
+	elif [[ $query_name == "users-total" ]]; then ## query   users-total: Total number of Galaxy users (incl deleted, purged, inactive)
 		qstr="
 			SELECT count(*) FROM galaxy_user
 		"
-	elif [[ $query_name == "groups-list" ]]; then ## {,csv,tsv}query   groups-list: List all groups known to Galaxy
+	elif [[ $query_name == "groups-list" ]]; then ## query   groups-list: List all groups known to Galaxy
 		qstr="
 			SELECT
 				galaxy_group.name, count(*)
@@ -677,7 +678,7 @@ elif [[ $func_name == *"query" ]]; then
 				user_group_association.group_id = galaxy_group.id
 			GROUP BY name
 		"
-	elif [[ $query_name == "collection-usage" ]]; then ## {,csv,tsv}query   collection-usage: Information about how many collections of various types are used
+	elif [[ $query_name == "collection-usage" ]]; then ## query   collection-usage: Information about how many collections of various types are used
 		qstr="
 			SELECT
 				collection_type, count(*)
@@ -686,7 +687,7 @@ elif [[ $func_name == *"query" ]]; then
 			GROUP BY
 				collection_type;
 		"
-	elif [[ $query_name == "ts-repos" ]]; then ## {,csv,tsv}query   ts-repos: Counts of toolshed repositories by toolshed and owner.
+	elif [[ $query_name == "ts-repos" ]]; then ## query   ts-repos: Counts of toolshed repositories by toolshed and owner.
 		qstr="
 			SELECT
 				tool_shed, owner, count(*)
@@ -695,7 +696,7 @@ elif [[ $func_name == *"query" ]]; then
 			GROUP BY
 				tool_shed, owner;
 		"
-	elif [[ $query_name == "active-users" ]]; then ## {,csv,tsv}query   active-users [weeks]: Count of users who ran jobs in past 1 week (default = 1)
+	elif [[ $query_name == "active-users" ]]; then ## query   active-users [weeks]: Count of users who ran jobs in past 1 week (default = 1)
 		weeks=1
 		if (( $# > 0 )); then
 			weeks=$1
@@ -709,7 +710,7 @@ elif [[ $func_name == *"query" ]]; then
 			WHERE
 				job.create_time > (now() - '$weeks weeks'::interval)
 		"
-	elif [[ $query_name == "job-history" ]]; then ## {,csv,tsv}query   job-history <id>: Job state history for a specific job
+	elif [[ $query_name == "job-history" ]]; then ## query   job-history <id>: Job state history for a specific job
 		assert_count $# 1 "Missing Job ID"
 		qstr="
 			SELECT
@@ -718,7 +719,7 @@ elif [[ $func_name == *"query" ]]; then
 			FROM job_state_history
 			WHERE job_id = $1
 		"
-	elif [[ $query_name == "job-inputs" ]]; then ## {,csv,tsv}query   job-inputs <id>: Input datasets to a specific job
+	elif [[ $query_name == "job-inputs" ]]; then ## query   job-inputs <id>: Input datasets to a specific job
 		assert_count $# 1 "Missing Job ID"
 		qstr="
 			SELECT
@@ -740,7 +741,7 @@ elif [[ $func_name == *"query" ]]; then
 					ON hda.dataset_id = d.id
 			WHERE j.id = $1
 		"
-	elif [[ $query_name == "job-outputs" ]]; then ## {,csv,tsv}query   job-outputs <id>: Output datasets from a specific job
+	elif [[ $query_name == "job-outputs" ]]; then ## query   job-outputs <id>: Output datasets from a specific job
 		assert_count $# 1 "Missing Job ID"
 		qstr="
 			SELECT
