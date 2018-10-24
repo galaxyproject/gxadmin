@@ -10,6 +10,8 @@ Mostly it's a good dumping ground for the common queries we all run quite
 often. Some useful ones are included. This script strictly expects a postgres
 database and we will not support mysql or sqlite3.
 
+[Changelog](CHANGELOG.md)
+
 ## Installation
 
 ```

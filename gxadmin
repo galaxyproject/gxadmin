@@ -615,7 +615,7 @@ elif [[ $func_name == *"query" ]]; then
 #
 #        curl http://localhost:8090  -d '{"tool_id": "'$tool_id'", "user_roles": ['$user_roles'], "email": "'$email'"}' -XPOST -H 'Content-type: application/json' | jq .
 
-	elif [[ $query_name == "training-queue" ]]; then
+	elif [[ $query_name == "training-queue" ]]; then ## query   training-queue <training_id>: Jobs currently being run by people in a given training
 		assert_count $# 1 "Missing Training ID"
 		# Remove training- if they used it.
 		ww=$(echo "$1" | sed 's/^training-//g')
@@ -781,6 +781,8 @@ elif [[ $func_name == "update" ]]; then ## update: Update the script
 	chmod +x $tmp;
 	mv $tmp $0;
 	exit 0
+elif [[ $func_name == "version" ]] || [[ $func_name == "v" ]] || [[ $func_name == "--version" ]]; then
+	echo "7"
 elif [[ $func_name == "help" ]] || [[ $func_name == "-h" ]] || [[ $func_name == "--help" ]]; then
 	usage safe
 else
