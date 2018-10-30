@@ -1,5 +1,8 @@
 #!/bin/bash
 usage(){
+	if (( $# > 0 )) && [[ $1 != "safe" ]]; then
+		error $@
+	fi
 	echo "gxadmin usage:"
 	cmds="$(grep -o '## .*' $0 | grep -v grep | sort | sed 's/^## //g')"
 	echo
@@ -20,11 +23,59 @@ usage(){
 	echo
 	echo "$cmds" | grep -v 'query ' | grep -v '^zerg' | grep -v handler | column -s: -t | sed 's/^/    /'
 	echo
-	echo "help / -h / --help : this message"
+	echo "help / -h / --help : this message. Invoke '--help' on any subcommand for help specific to that subcommand"
 	if [[ $1 == "safe" ]]; then
 		exit 0;
 	fi
 	exit 1
+}
+
+handle_help() {
+	for i; do
+		if [[ $i = --help || $i = -h ]]; then
+			cat -
+			# exit after printing the documentation!
+			exit 0
+		fi
+	done
+}
+
+help_wanted() {
+	echo "$@" | grep --quiet -- '--help'
+
+	if (( $? == 0 )); then
+		func_prefix="### ${func_name}"
+		key="${func_name}"
+		short="${func_name}"
+		if [[ ! -z "${subfunc}" ]]; then
+			func_prefix="${func_prefix} ${subfunc}"
+			key="${key}_${subfunc}"
+			short="${short}\s*${subfunc}"
+		fi
+		key="#${key}#"
+
+		prefix=''
+		if [[ -z "$NOPREFIX" ]]; then
+			prefix='  '
+		fi
+
+		echo "${func_prefix}"
+		short=$(grep -o "## ${short}[^-].*" $0)
+		invoke=$(echo $short | sed "s/^##[^:]*://g")
+		cmdline=$(echo $short | sed "s/^##\s*//g;s/:.*//g")
+		echo
+		echo "${prefix}$invoke"
+		echo
+		echo "**Invocation**"
+		echo
+		echo "${prefix}$0 $cmdline"
+		echo
+		echo "**Notes/Examples**"
+		echo
+		grep -o "$key.*" $0 | sed "s/$key \{0,1\}/$prefix/g"
+		echo
+		exit 0
+	fi
 }
 
 assert_restart_lock(){
@@ -43,6 +94,15 @@ success() {
 }
 
 validate() {
+	if [[ -z "$GALAXY_CONFIG_DIR" ]]; then
+		error Please set \$GALAXY_CONFIG_DIR
+		exit 1
+	fi
+	if [[ -z "$GALAXY_MUTABLE_CONFIG_DIR" ]]; then
+		error Please set \$GALAXY_MUTABLE_CONFIG_DIR
+		exit 1
+	fi
+
 	fail_count=0
 	for file in ${GALAXY_CONFIG_DIR}/*.xml; do
 		xmllint $file > /dev/null 2>/dev/null;
@@ -174,7 +234,7 @@ assert_count_ge() {
 	fi
 }
 
-query() {
+query_tbl() {
 	psql -c "$1"
 }
 
@@ -191,13 +251,33 @@ if (( $# == 0 )); then
 fi
 
 
-# MAIN
-func_name="$1";
-shift;
+##############################################################
+# Functions
+##############################################################
 
-if [[ $func_name == "validate" ]]; then ## validate: validate config files
-	validate
-elif [[ $func_name == "cleanup" ]]; then ## cleanup [days]: Cleanup histories/hdas/etc for past N days (default=30)
+func_validate() { ## validate: validate config files
+	handle_help "$@" <<-EOF
+		Validate the configuration files
+		**Warning**:
+		- This requires you to have `$GALAXY_DIST` set and to have config under `$GALAXY_DIST/config`.
+		- This only validates that it is well formed XML, and does **not** validate against any schemas.
+
+		    $ gxadmin validate
+		      OK: /usr/local/galaxy/galaxy-dist/data_manager_conf.xml
+		      ...
+		      OK: /usr/local/galaxy/galaxy-dist/config/tool_data_table_conf.xml
+		      OK: /usr/local/galaxy/galaxy-dist/config/tool_sheds_conf.xml
+		    All XML files validated
+	EOF
+
+	validate;
+}
+
+cleanup() { ## cleanup [days]: Cleanup histories/hdas/etc for past N days (default=30)
+	handle_help "$@" <<-EOF
+		Cleanup histories/hdas/etc for past N days using the python objects-based method
+	EOF
+
 	days=30
 	if (( $# > 0 )); then
 		days=$1
@@ -233,46 +313,94 @@ elif [[ $func_name == "cleanup" ]]; then ## cleanup [days]: Cleanup histories/hd
 			echo "cleanup_datasets,group=$action success=0"
 		fi
 	done
-elif [[ $func_name == "zerg" ]]; then
-	subfunc="$1";
-	shift;
-	if [[ $subfunc == "swap" ]]; then ## zerg swap '<message>': swap zerglings
-		validate
-		assert_count $# 1 "Restart now requires a message"
+}
 
-		zerg_swap $1
-	elif [[ $subfunc == "tail" ]]; then ## zerg tail: tail zergling logs
-		tail -f /var/log/galaxy/zerg*.log
-	elif [[ $subfunc == "strace" ]]; then ## zerg strace [0|1|pool]: swap zerglings
-		param="$1";
-		shift;
-		if [[ $param == "pool" ]]; then
-			supervisor_strace "gx:zergpool"
-		elif [[ $param == "0" ]] || [[ $param == "1" ]]; then
-			supervisor_strace "zergling$param"
-		else
-			supervisor_strace "gx:zerg"
-		fi
-	else
-		error "Unknown command"
-		usage
-	fi
-elif [[ $func_name == "handler" ]]; then
-	subfunc="$1";
+func_zerg_swap() { ## zerg swap <message>: swap zerglings
+	handle_help "$@" <<-EOF
+	EOF
+
+	validate
+	assert_count $# 1 "Restart now requires a message"
+	zerg_swap $1
+}
+
+func_zerg_tail() { ## zerg tail: tail zergling logs
+	handle_help "$@" <<-EOF
+	EOF
+
+	tail -f $GALAXY_LOG_DIR/*zerg*.log
+}
+
+zerg_strace() { ## zerg strace [0|1|pool]: swap zerglings
+	handle_help "$@" <<-EOF
+	EOF
+
+	param="$1";
 	shift;
-    if [[ $subfunc == "strace" ]]; then ## handler strace <handler_id>: Run an strace on a specific handler (to watch it load files.)
-		supervisor_strace "hd:handler$1"
-	elif [[ $subfunc == "tail" ]]; then ## handler tail: tail handler logs
-		tail -f /var/log/galaxy/handler*.log
-	elif [[ $subfunc == "restart" ]]; then ## handler restart '<message>': restart handlers
-		validate
-		#influxdb_event "Restarting handlers"
-		supervisorctl restart hd:
+	if [[ $param == "pool" ]]; then
+		supervisor_strace "gx:zergpool"
+	elif [[ $param == "0" ]] || [[ $param == "1" ]]; then
+		supervisor_strace "zergling$param"
 	else
-		error "Unknown command"
-		usage
+		supervisor_strace "gx:zerg"
 	fi
-elif [[ $func_name == "migrate-tool-install-to-sqlite" ]]; then ## migrate-tool-install-to-sqlite: Converts normal potsgres toolshed repository tables into the SQLite version
+}
+
+zerg() {
+	subcommand="$1"; shift
+	case "$subcommand" in
+		swap   ) func_zerg_swap  "$@";;
+		tail   ) func_zerg_tail    "$@";;
+		strace ) zerg_strace "$@";;
+	esac
+}
+
+handler_strace() { ## handler strace <handler_id>: Run an strace on a specific handler (to watch it load files.)
+	handle_help "$@" <<-EOF
+	EOF
+
+	supervisor_strace "hd:handler$1"
+}
+
+handler_tail() { ## handler tail: tail handler logs
+	handle_help "$@" <<-EOF
+	EOF
+
+	tail -f $GALAXY_LOG_DIR/handler*.log
+}
+
+handler_restart() { ## handler restart <message>: restart handlers
+	handle_help "$@" <<-EOF
+	EOF
+
+	validate
+	#influxdb_event "Restarting handlers"
+	supervisorctl restart hd:
+}
+
+handler() {
+	subcommand="$1"; shift
+	case "$subcommand" in
+		strace  ) handler_strace  "$@";;
+		tail    ) handler_tail    "$@";;
+		restart ) handler_restart "$@";;
+	esac
+}
+
+
+migrate_to_sqlite() { ## migrate-tool-install-to-sqlite: Converts normal potsgres toolshed repository tables into the SQLite version
+	handle_help "$@" <<-EOF
+		    $ gxadmin migrate-tool-install-to-sqlite
+		    Creating new sqlite database: galaxy_install.sqlite
+		    Migrating tables
+		      export: tool_shed_repository
+		      import: tool_shed_repository
+		      ...
+		      export: repository_repository_dependency_association
+		      import: repository_repository_dependency_association
+		    Complete
+	EOF
+
 	# Export tables
 	if [[ -f  galaxy_install.sqlite ]]; then
 		error "galaxy_install.sqlite exists, not overwriting"
@@ -420,32 +548,78 @@ elif [[ $func_name == "migrate-tool-install-to-sqlite" ]]; then ## migrate-tool-
 	done
 
 	success "Complete"
+}
 
-elif [[ $func_name == *"query" ]]; then
-	query_name="$1";
-	shift;
-	if [[ $query_name == "latest-users" ]]; then ## query   latest-users: 40 recently registered users
-		qstr="
-			SELECT id, create_time, pg_size_pretty(disk_usage), username, email
-			FROM galaxy_user
-			ORDER BY create_time desc
-			LIMIT 40"
-	elif  [[ $query_name == "tool-usage" ]]; then ## query   tool-usage: Counts of tool runs
-		qstr="
-			SELECT
-				j.tool_id, count(*) AS count
-			FROM job j
-			GROUP BY j.tool_id
-			ORDER BY count DESC"
-	elif [[ $query_name == "job-info" ]]; then ## query   job-info <id> [id] ...: Information about a specific job
-		assert_count_ge $# 1 "Missing Job ID"
-		job_ids="$(echo $@ | sed 's/\s\+/,/g')"
-		qstr="
-			SELECT job.id, job.tool_id, job.state, job.handler, galaxy_user.username, job.create_time, job.job_runner_name, job.job_runner_external_id
-			FROM job, galaxy_user
-			WHERE job.id in ($job_ids) AND job.user_id = galaxy_user.id"
-	elif [[ $query_name == "datasets-created-daily" ]]; then ## query   datasets-created-daily: The min/max/average/p95/p99 of total size of datasets created in a single day.
-		qstr="
+query_latest_users() { ## query   latest-users: 40 recently registered users
+	handle_help "$@" <<-EOF
+		Returns 40 most recently registered users
+
+		    $ gxadmin query latest-users
+		     id |        create_time        | pg_size_pretty |   username    |             email
+		    ----+---------------------------+----------------+---------------+--------------------------------
+		      1 | 2018-10-05 11:40:42.90119 |                | helena-rasche | hxr@informatik.uni-freiburg.de
+	EOF
+
+	cat <<-EOF
+		SELECT id, create_time, pg_size_pretty(disk_usage), username, email
+		FROM galaxy_user
+		ORDER BY create_time desc
+		LIMIT 40
+	EOF
+}
+
+query_tool_usage() { ## query   tool-usage: Counts of tool runs
+	handle_help "$@" <<-EOF
+		    $ gxadmin tool-usage
+		                                    tool_id                                 | count
+		    ------------------------------------------------------------------------+--------
+		     toolshed.g2.bx.psu.edu/repos/devteam/column_maker/Add_a_column1/1.1.0  | 958154
+		     Grouping1                                                              | 638890
+		     toolshed.g2.bx.psu.edu/repos/devteam/intersect/gops_intersect_1/1.0.0  | 326959
+		     toolshed.g2.bx.psu.edu/repos/devteam/get_flanks/get_flanks1/1.0.0      | 320236
+		     addValue                                                               | 313470
+		     toolshed.g2.bx.psu.edu/repos/devteam/join/gops_join_1/1.0.0            | 312735
+		     upload1                                                                | 103595
+		     toolshed.g2.bx.psu.edu/repos/rnateam/graphclust_nspdk/nspdk_sparse/9.2 |  52861
+		     Filter1                                                                |  43253
+	EOF
+
+	cat <<-EOF
+		SELECT
+			j.tool_id, count(*) AS count
+		FROM job j
+		GROUP BY j.tool_id
+		ORDER BY count DESC
+	EOF
+}
+
+query_job_info() { ## query   job-info <id> [id] ...: Information about a specific job
+	handle_help "$@" <<-EOF
+		    $ gxadmin query job-info 1
+		     tool_id | state | username |        create_time         | job_runner_name | job_runner_external_id
+		    ---------+-------+----------+----------------------------+-----------------+------------------------
+		     upload1 | ok    | admin    | 2012-12-06 16:34:27.492711 | local:///       | 9347
+	EOF
+
+	assert_count_ge $# 1 "Missing Job ID"
+	job_ids="$(echo $@ | sed 's/\s\+/,/g')"
+
+	cat <<-EOF
+		SELECT job.id, job.tool_id, job.state, job.handler, galaxy_user.username, job.create_time, job.job_runner_name, job.job_runner_external_id
+		FROM job, galaxy_user
+		WHERE job.id in ($job_ids) AND job.user_id = galaxy_user.id
+	EOF
+}
+
+query_datasets_created_daily() { ## query   datasets-created-daily: The min/max/average/p95/p99 of total size of datasets created in a single day.
+	handle_help "$@" <<-EOF
+		    $ gxadmin query datasets-created-daily
+		       min   |  avg   | perc_95 | perc_99 |  max
+		    ---------+--------+---------+---------+-------
+		     0 bytes | 338 GB | 1355 GB | 2384 GB | 42 TB
+	EOF
+
+	cat <<-EOF
 		WITH temp_queue_times AS
 		(select
 			date_trunc('day', create_time),
@@ -459,10 +633,21 @@ elif [[ $func_name == *"query" ]]; then
 			pg_size_pretty(percentile_cont(0.95) WITHIN GROUP (ORDER BY sum) ::bigint) as perc_95,
 			pg_size_pretty(percentile_cont(0.99) WITHIN GROUP (ORDER BY sum) ::bigint) as perc_99,
 			pg_size_pretty(max(sum)) as max
-		from temp_queue_times"
-	elif [[ $query_name == "queue-time" ]]; then ## query   queue-time <tool_id>: The average/95%/99% a specific tool spends in queue state.
-		assert_count $# 1 "Missing tool ID"
-		qstr="
+		from temp_queue_times
+	EOF
+}
+
+query_queue_time() { ## query   queue-time <tool_id>: The average/95%/99% a specific tool spends in queue state.
+	handle_help "$@" <<-EOF
+		    $ gxadmin query queue-time toolshed.g2.bx.psu.edu/repos/nilesh/rseqc/rseqc_geneBody_coverage/2.6.4.3
+		           min       |     perc_95     |     perc_99     |       max
+		    -----------------+-----------------+-----------------+-----------------
+		     00:00:15.421457 | 00:00:55.022874 | 00:00:59.974171 | 00:01:01.211995
+	EOF
+
+	assert_count $# 1 "Missing tool ID"
+
+	cat <<-EOF
 		WITH temp_queue_times AS
 		(select
 			min(a.create_time - b.create_time) as queue_time
@@ -473,7 +658,7 @@ elif [[ $func_name == *"query" ]]; then
 		on
 			(a.job_id = b.job_id)
 		where
-			a.job_id in (select id from job where tool_id like '%"$3"%' and state = 'ok' and create_time > (now() - '3 months'::interval))
+			a.job_id in (select id from job where tool_id like '%$3%' and state = 'ok' and create_time > (now() - '3 months'::interval))
 			and a.state = 'running'
 			and b.state = 'queued'
 		group by
@@ -486,27 +671,78 @@ elif [[ $func_name == *"query" ]]; then
 			percentile_cont(0.95) WITHIN GROUP (ORDER BY queue_time) as perc_95,
 			percentile_cont(0.99) WITHIN GROUP (ORDER BY queue_time) as perc_99,
 			max(queue_time)
-		from temp_queue_times"
-	elif [[ $query_name == "queue" ]]; then ## query   queue: Brief overview of currently running jobs
-		qstr="
+		from temp_queue_times
+	EOF
+}
+
+query_queue() { ## query   queue: Brief overview of currently running jobs
+	handle_help "$@" <<-EOF
+		    $ gxadmin query queue
+		                                tool_id                                |  state  | count
+		    -------------------------------------------------------------------+---------+-------
+		     toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.6.0      | queued  |     9
+		     toolshed.g2.bx.psu.edu/repos/iuc/dexseq/dexseq_count/1.24.0.0     | running |     7
+		     toolshed.g2.bx.psu.edu/repos/nml/spades/spades/1.2                | queued  |     6
+		     ebi_sra_main                                                      | running |     6
+		     toolshed.g2.bx.psu.edu/repos/iuc/trinity/trinity/2.8.3            | queued  |     5
+		     toolshed.g2.bx.psu.edu/repos/devteam/bowtie2/bowtie2/2.3.4.2      | running |     5
+		     toolshed.g2.bx.psu.edu/repos/nml/spades/spades/3.11.1+galaxy1     | queued  |     4
+		     toolshed.g2.bx.psu.edu/repos/iuc/mothur_venn/mothur_venn/1.36.1.0 | running |     2
+		     toolshed.g2.bx.psu.edu/repos/nml/metaspades/metaspades/3.9.0      | running |     2
+		     upload1                                                           | running |     2
+	EOF
+
+	cat <<-EOF
 			SELECT tool_id, state, count(*)
 			FROM job
 			WHERE state in ('queued', 'running')
 			GROUP BY tool_id, state
-			ORDER BY count desc"
-	elif [[ $query_name == "queue-detail" ]]; then ## query   queue-detail [--all]: Detailed overview of running and queued jobs
-		d=""
-		if [[ $1 == "--all" ]]; then
-			d=", 'new'"
-		fi
-		qstr="
+			ORDER BY count desc
+	EOF
+}
+
+query_queue_detail() { ## query   queue-detail [--all]: Detailed overview of running and queued jobs
+	handle_help "$@" <<-EOF
+		    $ gxadmin query queue-detail
+		      state  |   id    |  extid  |                                 tool_id                                   |      username       | time_since_creation
+		    ---------+---------+---------+---------------------------------------------------------------------------+---------------------+---------------------
+		     running | 4360629 | 229333  | toolshed.g2.bx.psu.edu/repos/bgruening/infernal/infernal_cmsearch/1.1.2.0 |                     | 5 days 11:00:00
+		     running | 4362676 | 230237  | toolshed.g2.bx.psu.edu/repos/iuc/mothur_venn/mothur_venn/1.36.1.0         |                     | 4 days 18:00:00
+		     running | 4364499 | 231055  | toolshed.g2.bx.psu.edu/repos/iuc/mothur_venn/mothur_venn/1.36.1.0         |                     | 4 days 05:00:00
+		     running | 4366604 | 5183013 | toolshed.g2.bx.psu.edu/repos/iuc/dexseq/dexseq_count/1.24.0.0             |                     | 3 days 20:00:00
+		     running | 4366605 | 5183016 | toolshed.g2.bx.psu.edu/repos/iuc/dexseq/dexseq_count/1.24.0.0             |                     | 3 days 20:00:00
+		     queued  | 4350274 | 225743  | toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.6.0              |                     | 9 days 05:00:00
+		     queued  | 4353435 | 227038  | toolshed.g2.bx.psu.edu/repos/iuc/trinity/trinity/2.8.3                    |                     | 8 days 08:00:00
+		     queued  | 4361914 | 229712  | toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.6.0              |                     | 5 days -01:00:00
+		     queued  | 4361812 | 229696  | toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.6.0              |                     | 5 days -01:00:00
+		     queued  | 4361939 | 229728  | toolshed.g2.bx.psu.edu/repos/nml/spades/spades/1.2                        |                     | 4 days 21:00:00
+		     queued  | 4361941 | 229731  | toolshed.g2.bx.psu.edu/repos/nml/spades/spades/1.2                        |                     | 4 days 21:00:00
+	EOF
+
+	d=""
+	if [[ $1 == "--all" ]]; then
+		d=", 'new'"
+	fi
+
+		cat <<-EOF
 			SELECT job.state, job.id, job.job_runner_external_id as extid, job.tool_id, galaxy_user.username, date_trunc('hour', (now() - job.create_time - '2 hours'::interval)) as time_since_creation
 			FROM job, galaxy_user
 			WHERE state in ('running', 'queued'$d) and job.user_id = galaxy_user.id
-			ORDER BY state desc, time_since_creation desc"
-	elif [[ $query_name == "runtime-per-user" ]]; then ## query   runtime-per-user <email>: computation time of user (by email)
-		assert_count $# 1 "Missing user"
-		qstr="
+			ORDER BY state desc, time_since_creation desc
+	EOF
+}
+
+query_runtime_per_user() { ## query   runtime-per-user <email>: computation time of user (by email)
+	handle_help "$@" <<-EOF
+		    $ gxadmin query runtime-per-user hxr@informatik.uni-freiburg.de
+		       sum
+		    ----------
+		     14:07:39
+	EOF
+
+	assert_count $# 1 "Missing user"
+
+	cat <<-EOF
 			SELECT sum((metric_value || ' second')::interval)
 			FROM job_metric_numeric
 			WHERE job_id in (
@@ -517,49 +753,97 @@ elif [[ $func_name == *"query" ]]; then
 					FROM galaxy_user
 					where email = '$1'
 				)
-			) AND metric_name = 'runtime_seconds'"
-	elif [[ $query_name == "jobs-per-user" ]]; then ## query   jobs-per-user <email>: Number of jobs run by a specific user
-		assert_count $# 1 "Missing user"
-		qstr="
+			) AND metric_name = 'runtime_seconds'
+	EOF
+}
+
+query_jobs_per_user() { ## query   jobs-per-user <email>: Number of jobs run by a specific user
+	handle_help "$@" <<-EOF
+		    $ gxadmin query jobs-per-user hxr@informatik.uni-freiburg.de
+		     count
+		    -------
+		      1460
+	EOF
+
+	assert_count $# 1 "Missing user"
+	cat <<-EOF
 			SELECT count(id)
 			FROM job
 			WHERE user_id in (
 				SELECT id
 				FROM galaxy_user
 				WHERE email = '$1'
-			)"
-	elif [[ $query_name == "recent-jobs" ]]; then ## query   recent-jobs <hours>: Jobs run in the past <hours> (in any state)
-		assert_count $# 1 "Missing hours"
+	EOF
+}
 
-		qstr="
+query_recent_jobs() { ## query   recent-jobs <hours>: Jobs run in the past <hours> (in any state)
+	handle_help "$@" <<-EOF
+		Note that your database may have a different TZ than your querying. This is probably a misconfiguration on our end, please let me know how to fix it. Just add your offset to UTC to your query.
+
+		    $ gxadmin query recent-jobs 2.1
+		       id    |     date_trunc      |      tool_id          | state |    username
+		    ---------+---------------------+-----------------------+-------+-----------------
+		     4383997 | 2018-10-05 16:07:00 | Filter1               | ok    |
+		     4383994 | 2018-10-05 16:04:00 | echo_main_condor      | ok    |
+		     4383993 | 2018-10-05 16:04:00 | echo_main_drmaa       | error |
+		     4383992 | 2018-10-05 16:04:00 | echo_main_handler11   | ok    |
+		     4383983 | 2018-10-05 16:04:00 | echo_main_handler2    | ok    |
+		     4383982 | 2018-10-05 16:04:00 | echo_main_handler1    | ok    |
+		     4383981 | 2018-10-05 16:04:00 | echo_main_handler0    | ok    |
+	EOF
+
+	assert_count $# 1 "Missing hours"
+
+	cat <<-EOF
 			SELECT
 				job.id, date_trunc('minute', job.create_time), job.tool_id, job.state, galaxy_user.username
 			FROM job, galaxy_user
 			WHERE job.create_time > (now() - '$1 hours'::interval) AND job.user_id = galaxy_user.id
 			ORDER BY id desc
-		"
-	elif [[ $query_name == "training" ]]; then ## query   training [--all]: List known trainings
-		d1=""
-		d2="AND deleted = false"
-		if [[ $1 == "--all" ]]; then
-			d1=", deleted"
-			d2=""
-		fi
+	EOF
+}
 
-		qstr="
-			SELECT
-				substring(name from 10) as name,
-				date_trunc('day', create_time)::date as created
-				$d1
-			FROM galaxy_group
-			WHERE name like 'training-%' $d2
-			ORDER BY create_time DESC
-		"
-	elif [[ $query_name == "training-members" ]]; then ## query   training-members <tr_id>: List users in a specific training
-		assert_count $# 1 "Missing Training ID"
-		# Remove training- if they used it.
-		ww=$(echo "$1" | sed 's/^training-//g')
-		qstr="
+query_training() { ## query   training [--all]: List known trainings
+	handle_help "$@" <<-EOF
+		This module is specific to EU's implementation of Training Infrastructure as a Service. But this specifically just checks for all groups with the name prefix `training-`
+
+		    $ gxadmin query training
+		           name       |  created
+		    ------------------+------------
+		     hts2018          | 2018-09-19
+	EOF
+
+	d1=""
+	d2="AND deleted = false"
+	if [[ $1 == "--all" ]]; then
+		d1=", deleted"
+		d2=""
+	fi
+
+	cat <<-EOF
+		SELECT
+			substring(name from 10) as name,
+			date_trunc('day', create_time)::date as created
+			$d1
+		FROM galaxy_group
+		WHERE name like 'training-%' $d2
+		ORDER BY create_time DESC
+	EOF
+}
+
+query_training_members() { ## query   training-members <tr_id>: List users in a specific training
+	handle_help "$@" <<-EOF
+		    $ gxadmin query training-members hts2018
+		          username      |       joined
+		    --------------------+---------------------
+		     helena-rasche      | 2018-09-21 21:42:01
+	EOF
+
+	assert_count $# 1 "Missing Training ID"
+	# Remove training- if they used it.
+	ww=$(echo "$1" | sed 's/^training-//g')
+
+	cat <<-EOF
 			SELECT
 				galaxy_user.username,
 				date_trunc('second', user_group_association.create_time) as joined
@@ -567,12 +851,18 @@ elif [[ $func_name == *"query" ]]; then
 			WHERE galaxy_group.name = 'training-$ww'
 				AND galaxy_group.id = user_group_association.group_id
 				AND user_group_association.user_id = galaxy_user.id
-		"
-	elif [[ $query_name == "training-memberof" ]]; then ## query   training-memberof <username>: List trainings that a user is part of
-		assert_count $# 1 "Missing Training ID"
-		# Remove training- if they used it.
-		ww=$(echo "$1" | sed 's/^training-//g')
-		qstr="
+	EOF
+}
+
+query_training_memberof() { ## query   training-memberof <username>: List trainings that a user is part of
+	handle_help "$@" <<-EOF
+	EOF
+
+	assert_count $# 1 "Missing Training ID"
+	# Remove training- if they used it.
+	ww=$(echo "$1" | sed 's/^training-//g')
+
+	cat <<-EOF
 			SELECT
                 galaxy_group.name
 			FROM
@@ -580,13 +870,26 @@ elif [[ $func_name == *"query" ]]; then
 			WHERE   galaxy_group.id = user_group_association.group_id
 				AND user_group_association.user_id = galaxy_user.id
                 AND galaxy_user.username='$ww'
-		"
-	elif [[ $query_name == "training-remove-member" ]]; then ## query   training-remove-member <training> <username> [YESDOIT]: Remove a user from a training
-		assert_count_ge $# 2 "Missing parameters"
-		# Remove training- if they used it.
-		ww=$(echo "$1" | sed 's/^training-//g')
+	EOF
+}
 
-		qstr="
+query_training_remove_member() { ## query   training-remove-member <training> <username> [YESDOIT]: Remove a user from a training
+	handle_help "$@" <<-EOF
+	EOF
+
+	assert_count_ge $# 2 "Missing parameters"
+	# Remove training- if they used it.
+	ww=$(echo "$1" | sed 's/^training-//g')
+
+	if (( $# == 3 )) && [[ "$3" == "YESDOIT" ]]; then
+		results="$(query_tsv "$qstr")"
+		uga_id=$(echo "$results" | awk -F'\t' '{print $1}')
+		if (( uga_id > -1 )); then
+			qstr="delete from user_group_association where id = $uga_id"
+		fi
+		echo $qstr
+	else
+		cat <<-EOF
 			SELECT
 				user_group_association.id,
 				galaxy_user.username,
@@ -598,28 +901,25 @@ elif [[ $func_name == *"query" ]]; then
 			WHERE
 				galaxy_group.name = 'training-$ww'
 				AND galaxy_user.username = '$2'
-		"
+		EOF
+	fi
+}
 
-		if (( $# == 3 )) && [[ "$3" == "YESDOIT" ]]; then
-			results="$(query_tsv "$qstr")"
-			uga_id=$(echo "$results" | awk -F'\t' '{print $1}')
-			if (( uga_id > -1 )); then
-				qstr="delete from user_group_association where id = $uga_id"
-			fi
-			echo $qstr
-		fi
-#    elif [[ $query_name == "jcaas" ]]; then ## query   jcaas <username> <tool_id>: See JCaaS output for a (user, tool) pair
-#		assert_count $# 2 "Missing Training ID"
-#        username=$1
-#        tool_id=$2
-#
-#        curl http://localhost:8090  -d '{"tool_id": "'$tool_id'", "user_roles": ['$user_roles'], "email": "'$email'"}' -XPOST -H 'Content-type: application/json' | jq .
+query_training_queue() { ## query   training-queue <training_id>: Jobs currently being run by people in a given training
+	handle_help "$@" <<-EOF
+		Finds all jobs by people in that queue (including things they are executing that are not part of a training)
 
-	elif [[ $query_name == "training-queue" ]]; then ## query   training-queue <training_id>: Jobs currently being run by people in a given training
-		assert_count $# 1 "Missing Training ID"
-		# Remove training- if they used it.
-		ww=$(echo "$1" | sed 's/^training-//g')
-		qstr="
+		    $ gxadmin query training-queue hts2018
+		     state  |   id    | extid  | tool_id |   username    |       created
+		    --------+---------+--------+---------+---------------+---------------------
+		     queued | 4350274 | 225743 | upload1 |               | 2018-09-26 10:00:00
+	EOF
+
+	assert_count $# 1 "Missing Training ID"
+	# Remove training- if they used it.
+	ww=$(echo "$1" | sed 's/^training-//g')
+
+	cat <<-EOF
 			SELECT
 				job.state,
 				job.id,
@@ -645,31 +945,71 @@ elif [[ $func_name == *"query" ]]; then
 						)
 			ORDER BY
 				state DESC, created DESC;
-		"
-	elif [[ $query_name == "disk-usage" ]]; then ## query   disk-usage: Disk usage per object store.
-		qstr="
+	EOF
+}
+
+query_disk_usage() { ## query   disk-usage: Disk usage per object store.
+	handle_help "$@" <<-EOF
+		TODO: implement flag for --nice numbers
+
+		     object_store_id |      sum
+		    -----------------+----------------
+		     files8          | 88109503720067
+		     files6          | 64083627169725
+		     files9          | 53690953947700
+		     files7          | 30657241908566
+		     files1          | 30633153627407
+		     files2          | 22117477087642
+		     files3          | 21571951600351
+		     files4          | 13969690603365
+		                     |  6943415154832
+		     secondary       |   594632335718
+		    (10 rows)
+	EOF
+
+	cat <<-EOF
 			SELECT
 				object_store_id, sum(total_size)
 			FROM dataset
 			WHERE NOT purged
 			GROUP BY object_store_id
 			ORDER BY sum DESC;
-		"
-	elif [[ $query_name == "users-count" ]]; then ## query   users-count: Shows sums of active/external/deleted/purged accounts
-		qstr="
+	EOF
+}
+
+query_users_count() { ## query   users-count: Shows sums of active/external/deleted/purged accounts
+	handle_help "$@" <<-EOF
+		     active | external | deleted | purged | count
+		    --------+----------+---------+--------+-------
+		     f      | f        | f       | f      |   182
+		     t      | f        | t       | t      |     2
+		     t      | f        | t       | f      |     6
+		     t      | f        | f       | f      |  2350
+		     f      | f        | t       | t      |    36
+	EOF
+
+	cat <<-EOF
 			SELECT
 				active, external, deleted, purged, count(*) as count
 			FROM
 				galaxy_user
 			GROUP BY
 				active, external, deleted, purged
-		"
-	elif [[ $query_name == "users-total" ]]; then ## query   users-total: Total number of Galaxy users (incl deleted, purged, inactive)
-		qstr="
+	EOF
+}
+
+query_users_total() { ## query   users-total: Total number of Galaxy users (incl deleted, purged, inactive)
+	handle_help "$@" <<-EOF
+	EOF
+	cat <<-EOF
 			SELECT count(*) FROM galaxy_user
-		"
-	elif [[ $query_name == "groups-list" ]]; then ## query   groups-list: List all groups known to Galaxy
-		qstr="
+	EOF
+}
+
+query_groups_list() { ## query   groups-list: List all groups known to Galaxy
+	handle_help "$@" <<-EOF
+	EOF
+	cat <<-EOF
 			SELECT
 				galaxy_group.name, count(*)
 			FROM
@@ -677,51 +1017,98 @@ elif [[ $func_name == *"query" ]]; then
 			WHERE
 				user_group_association.group_id = galaxy_group.id
 			GROUP BY name
-		"
-	elif [[ $query_name == "collection-usage" ]]; then ## query   collection-usage: Information about how many collections of various types are used
-		qstr="
+	EOF
+}
+
+query_collection_usage() { ## query   collection-usage: Information about how many collections of various types are used
+	handle_help "$@" <<-EOF
+	EOF
+	cat <<-EOF
 			SELECT
 				collection_type, count(*)
 			FROM
 				dataset_collection
 			GROUP BY
-				collection_type;
-		"
-	elif [[ $query_name == "ts-repos" ]]; then ## query   ts-repos: Counts of toolshed repositories by toolshed and owner.
-		qstr="
+				collection_type
+	EOF
+}
+
+query_ts_repos() { ## query   ts-repos: Counts of toolshed repositories by toolshed and owner.
+	handle_help "$@" <<-EOF
+	EOF
+	cat <<-EOF
 			SELECT
 				tool_shed, owner, count(*)
 			FROM
 				tool_shed_repository
 			GROUP BY
-				tool_shed, owner;
-		"
-	elif [[ $query_name == "active-users" ]]; then ## query   active-users [weeks]: Count of users who ran jobs in past 1 week (default = 1)
-		weeks=1
-		if (( $# > 0 )); then
-			weeks=$1
-		fi
+				tool_shed, owner
+	EOF
+}
 
-		qstr="
-			SELECT
-				count(distinct user_id)
-			FROM
-				job
-			WHERE
-				job.create_time > (now() - '$weeks weeks'::interval)
-		"
-	elif [[ $query_name == "job-history" ]]; then ## query   job-history <id>: Job state history for a specific job
-		assert_count $# 1 "Missing Job ID"
-		qstr="
+query_active_users() { ## query   active-users [weeks]: Count of users who ran jobs in past 1 week (default = 1)
+	handle_help "$@" <<-EOF
+		Unique users who ran jobs in past week:
+
+		    $ gxadmin query active-users
+		     count
+		    -------
+		       220
+		    (1 row)
+
+		Or the monthly-active-users:
+
+		    $ gxadmin query active-users 4
+		     count
+		    -------
+		       555
+		    (1 row)
+	EOF
+
+	weeks=1
+	if (( $# > 0 )); then
+		weeks=$1
+	fi
+
+	cat <<-EOF
+		SELECT
+			count(distinct user_id)
+		FROM
+			job
+		WHERE
+			job.create_time > (now() - '$weeks weeks'::interval)
+	EOF
+}
+
+query_job_history() { ## query   job-history <id>: Job state history for a specific job
+	handle_help "$@" <<-EOF
+		    $ gxadmin query job-history 4384025
+		            time         |  state
+		    ---------------------+---------
+		     2018-10-05 16:20:13 | ok
+		     2018-10-05 16:19:57 | running
+		     2018-10-05 16:19:55 | queued
+		     2018-10-05 16:19:54 | new
+		    (4 rows)
+	EOF
+
+	assert_count $# 1 "Missing Job ID"
+
+	cat <<-EOF
 			SELECT
 				date_trunc('second', create_time) as time,
 				state
 			FROM job_state_history
 			WHERE job_id = $1
-		"
-	elif [[ $query_name == "job-inputs" ]]; then ## query   job-inputs <id>: Input datasets to a specific job
-		assert_count $# 1 "Missing Job ID"
-		qstr="
+	EOF
+}
+
+query_job_inputs() { ## query   job-inputs <id>: Input datasets to a specific job
+	handle_help "$@" <<-EOF
+	EOF
+	assert_count $# 1 "Missing Job ID"
+
+	cat <<-EOF
 			SELECT
 				hda.id AS hda_id,
 				hda.state AS hda_state,
@@ -740,10 +1127,16 @@ elif [[ $func_name == *"query" ]]; then
 				JOIN dataset d
 					ON hda.dataset_id = d.id
 			WHERE j.id = $1
-		"
-	elif [[ $query_name == "job-outputs" ]]; then ## query   job-outputs <id>: Output datasets from a specific job
-		assert_count $# 1 "Missing Job ID"
-		qstr="
+	EOF
+}
+
+query_job_outputs() { ## query   job-outputs <id>: Output datasets from a specific job
+	handle_help "$@" <<-EOF
+	EOF
+
+	assert_count $# 1 "Missing Job ID"
+
+	cat <<-EOF
 			SELECT
 				hda.id AS hda_id,
 				hda.state AS hda_state,
@@ -763,29 +1156,98 @@ elif [[ $func_name == *"query" ]]; then
 					ON hda.dataset_id = d.id
 			WHERE j.id = $1
 		"
-	else
-		error "Unknown query"
-		usage
-	fi
+	EOF
+}
 
-	if [[ $func_name == "tsvquery" ]]; then
-		query_tsv "$qstr"
-	elif [[ $func_name == "csvquery" ]]; then
-		query_csv "$qstr"
-	else
-		query "$qstr"
-	fi
-elif [[ $func_name == "update" ]]; then ## update: Update the script
+update() { ## update: Update the script
+	handle_help "$@" <<-EOF
+	EOF
+
 	tmp=$(mktemp);
 	curl https://raw.githubusercontent.com/usegalaxy-eu/gxadmin/master/gxadmin > $tmp;
 	chmod +x $tmp;
 	mv $tmp $0;
 	exit 0
-elif [[ $func_name == "version" ]] || [[ $func_name == "v" ]] || [[ $func_name == "--version" ]]; then
-	echo "7"
-elif [[ $func_name == "help" ]] || [[ $func_name == "-h" ]] || [[ $func_name == "--help" ]]; then
-	usage safe
-else
-	error "Unknown command"
-	usage
-fi
+}
+
+version() {
+	echo 8
+}
+
+
+obtain_query() {
+	query_name="$1"; shift
+
+	case "$query_name" in
+		latest-users           )  query_latest_users           "$@" ;;
+		tool-usage             )  query_tool_usage             "$@" ;;
+		job-info               )  query_job_info               "$@" ;;
+		datasets-created-daily )  query_datasets_created_daily "$@" ;;
+		queue-time             )  query_queue_time             "$@" ;;
+		queue                  )  query_queue                  "$@" ;;
+		queue-detail           )  query_queue_detail           "$@" ;;
+		runtime-per-user       )  query_runtime_per_user       "$@" ;;
+		jobs-per-user          )  query_jobs_per_user          "$@" ;;
+		recent-jobs            )  query_recent_jobs            "$@" ;;
+		training               )  query_training               "$@" ;;
+		training-members       )  query_training_members       "$@" ;;
+		training-memberof      )  query_training_memberof      "$@" ;;
+		training-remove-member )  query_training_remove_member "$@" ;;
+		training-queue         )  query_training_queue         "$@" ;;
+		disk-usage             )  query_disk_usage             "$@" ;;
+		users-count            )  query_users_count            "$@" ;;
+		users-total            )  query_users_total            "$@" ;;
+		groups-list            )  query_groups_list            "$@" ;;
+		collection-usage       )  query_collection_usage       "$@" ;;
+		ts-repos               )  query_ts_repos               "$@" ;;
+		active-users           )  query_active_users           "$@" ;;
+		job-history            )  query_job_history            "$@" ;;
+		job-inputs             )  query_job_inputs             "$@" ;;
+		job-outputs            )  query_job_outputs            "$@" ;;
+
+		# default
+		* ) echo "ERROR" ;;
+	esac
+}
+
+query() {
+	# do the thing zhu li
+	query_type="$1"; shift
+	subfunc="$1"; shift
+
+	db_query="$(obtain_query $subfunc "$@")"
+	if [[ "$db_query" == "ERROR" ]]; then
+		usage
+	fi
+
+	# Run the queries
+	case "$query_type" in
+		tsvquery )  query_tsv "$db_query";;
+		csvquery )  query_csv "$db_query";;
+		query    )  query_tbl "$db_query";;
+		# default
+		#*        )  usage "Error";;
+	esac
+}
+
+
+mode="$1"; shift
+
+case "$mode" in
+	validate                       ) validate "$@" ;;
+	cleanup                        ) cleanup "$@" ;;
+	zerg                           ) zerg "$@" ;;
+	handler                        ) handler "$@" ;;
+	migrate-tool-install-to-sqlite ) migrate_to_sqlite "$@" ;;
+	update                         ) update "$@" ;;
+    *query                         ) query "$mode" "$@"    ;;
+
+	# version commands
+	version   ) version ;;
+	-v        ) version ;;
+	--version ) version ;;
+	# help
+	help      ) usage safe ;;
+	-h        ) usage safe ;;
+	--help    ) usage safe ;;
+esac

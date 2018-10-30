@@ -1,3 +1,10 @@
+# 8
+
+- Added:
+	- Help documentation in-tool
+- Fixed:
+	- rewrote internals to use functions + case/esac
+
 # 7
 
 - Added:
