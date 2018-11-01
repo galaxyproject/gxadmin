@@ -17,12 +17,20 @@ curl https://raw.githubusercontent.com/usegalaxy-eu/gxadmin/master/gxadmin > /us
 chmod +x /usr/bin/gxadmin
 ```
 
-## Commands
+## Changelog
 
-- [validate](#validate): Validate XML config files
-- [migrate-tool-install-to-sqlite](#migrate-tool-install-to-sqlite): Converts normal potsgres toolshed repository tables into the SQLite version
+[Changelog](CHANGELOG.md)
 
-## Queries
+## Authors
+
+- Helena Rasche (@erasche)
+- Nate Coraor (@natefoo)
+
+## License
+
+GPLv3
+
+## Query Setup
 
 Queries support being run in normal postgres table, csv, or tsv output as you
 need. Just use `gxadmin query`, `gxadmin tsvquery`, or `gxadmin csvquery` as
@@ -37,254 +45,622 @@ Example .pgpass:
 <pg_host>:5432:*:<pg_user>:<pg_password>
 ```
 
-Supported queries:
+## Commands
 
-- [datasets-created-daily](#datasets-created-daily): The min/max/average/p95/p99 of total size of datasets created in a single day.
-- [job-history](#job-history): Job state history for a specific job
-- [job-info](#job-info): Information about a specific job
-- [job-outputs](#job-outputs): Output datasets from a specific job
-- [jobs-per-user](#jobs-per-user): Number of jobs run by a specific user
-- [latest-users](#latest-users): 40 recently registered users
-- [queue-detail](#queue-detail): Detailed overview of running and queued jobs
-- [queue-time](#queue-time): The average/95%/99% a specific tool spends in queue state.
-- [queue](#queue): Brief overview of currently running jobs
-- [recent-jobs](#recent-jobs): Jobs run in the past <hours> (in any state)
-- [runtime-per-user](#runtime-per-user): computation time of user (by email)
-- [tool-usage](#tool-usage): Counts of tool runs
-- [training-members](#training-members): List users in a specific training
-- [training](#training): List known trainings
+Command | Description
+------- | -----------
+[cleanup](#cleanup) | Cleanup histories/hdas/etc for past N days (default=30)
+[handler restart](#handler-restart) | restart handlers
+[handler strace](#handler-strace) | Run an strace on a specific handler (to watch it load files.)
+[handler tail](#handler-tail) | tail handler logs
+[migrate-tool-install-to-sqlite](#migrate-tool-install-to-sqlite) | Converts normal potsgres toolshed repository tables into the SQLite version
+[query active-users](#query-active-users) | Count of users who ran jobs in past 1 week (default = 1)
+[query collection-usage](#query-collection-usage) | Information about how many collections of various types are used
+[query datasets-created-daily](#query-datasets-created-daily) | The min/max/average/p95/p99 of total size of datasets created in a single day.
+[query disk-usage](#query-disk-usage) | Disk usage per object store.
+[query groups-list](#query-groups-list) | List all groups known to Galaxy
+[query job-history](#query-job-history) | Job state history for a specific job
+[query job-info](#query-job-info) | Information about a specific job
+[query job-inputs](#query-job-inputs) | Input datasets to a specific job
+[query job-outputs](#query-job-outputs) | Output datasets from a specific job
+[query jobs-per-user](#query-jobs-per-user) | Number of jobs run by a specific user
+[query latest-users](#query-latest-users) | 40 recently registered users
+[query queue](#query-queue) | Brief overview of currently running jobs
+[query queue-detail](#query-queue-detail) | Detailed overview of running and queued jobs
+[query queue-time](#query-queue-time) | The average/95%/99% a specific tool spends in queue state.
+[query recent-jobs](#query-recent-jobs) | Jobs run in the past <hours> (in any state)
+[query runtime-per-user](#query-runtime-per-user) | computation time of user (by email)
+[query tool-usage](#query-tool-usage) | Counts of tool runs
+[query training](#query-training) | List known trainings
+[query training-memberof](#query-training-memberof) | List trainings that a user is part of
+[query training-members](#query-training-members) | List users in a specific training
+[query training-queue](#query-training-queue) | Jobs currently being run by people in a given training
+[query training-remove-member](#query-training-remove-member) | Remove a user from a training
+[query ts-repos](#query-ts-repos) | Counts of toolshed repositories by toolshed and owner.
+[query users-count](#query-users-count) | Shows sums of active/external/deleted/purged accounts
+[query users-total](#query-users-total) | Total number of Galaxy users (incl deleted, purged, inactive)
+[update](#update) | Update the script
+[validate](#validate) | validate config files
+[zerg strace](#zerg-strace) | swap zerglings
+[zerg swap](#zerg-swap) | swap zerglings
+[zerg tail](#zerg-tail) | tail zergling logs
+
+
+### cleanup
+
+**NAME**
+
+cleanup -  Cleanup histories/hdas/etc for past N days (default=30)
+
+**SYNOPSIS**
+
+gxadmin cleanup [days]
+
+**NOTES**
+
+Cleanup histories/hdas/etc for past N days using the python objects-based method
+
+
+### handler restart
+
+**NAME**
+
+handler restart -  restart handlers
+
+**SYNOPSIS**
+
+gxadmin handler restart <message>
+
+
+### handler strace
+
+**NAME**
+
+handler strace -  Run an strace on a specific handler (to watch it load files.)
+
+**SYNOPSIS**
+
+gxadmin handler strace <handler_id>
+
+
+### handler tail
+
+**NAME**
+
+handler tail -  tail handler logs
+
+**SYNOPSIS**
+
+gxadmin handler tail
+
+
+### migrate-tool-install-to-sqlite
+
+**NAME**
+
+migrate-tool-install-to-sqlite -  Converts normal potsgres toolshed repository tables into the SQLite version
+
+**SYNOPSIS**
+
+gxadmin migrate-tool-install-to-sqlite
+
+**NOTES**
+
+    $ gxadmin migrate-tool-install-to-sqlite
+    Creating new sqlite database: galaxy_install.sqlite
+    Migrating tables
+      export: tool_shed_repository
+      import: tool_shed_repository
+      ...
+      export: repository_repository_dependency_association
+      import: repository_repository_dependency_association
+    Complete
+
+
+### query active-users
+
+**NAME**
+
+query active-users -  Count of users who ran jobs in past 1 week (default = 1)
+
+**SYNOPSIS**
+
+gxadmin query active-users [weeks]
+
+**NOTES**
+
+Unique users who ran jobs in past week:
+
+    $ gxadmin query active-users
+     count
+    -------
+       220
+    (1 row)
+
+Or the monthly-active-users:
+
+    $ gxadmin query active-users 4
+     count
+    -------
+       555
+    (1 row)
+
+### query collection-usage
+
+**NAME**
+
+query collection-usage -  Information about how many collections of various types are used
+
+**SYNOPSIS**
+
+gxadmin query collection-usage
+
+### query datasets-created-daily
+
+**NAME**
+
+query datasets-created-daily -  The min/max/average/p95/p99 of total size of datasets created in a single day.
+
+**SYNOPSIS**
+
+gxadmin query datasets-created-daily
+
+**NOTES**
+
+    $ gxadmin query datasets-created-daily
+       min   |  avg   | perc_95 | perc_99 |  max
+    ---------+--------+---------+---------+-------
+     0 bytes | 338 GB | 1355 GB | 2384 GB | 42 TB
+
+### query disk-usage
+
+**NAME**
+
+query disk-usage -  Disk usage per object store.
+
+**SYNOPSIS**
+
+gxadmin query disk-usage
+
+**NOTES**
+
+TODO: implement flag for --nice numbers
+
+     object_store_id |      sum
+    -----------------+----------------
+     files8          | 88109503720067
+     files6          | 64083627169725
+     files9          | 53690953947700
+     files7          | 30657241908566
+     files1          | 30633153627407
+     files2          | 22117477087642
+     files3          | 21571951600351
+     files4          | 13969690603365
+                     |  6943415154832
+     secondary       |   594632335718
+    (10 rows)
+
+### query groups-list
+
+**NAME**
+
+query groups-list -  List all groups known to Galaxy
+
+**SYNOPSIS**
+
+gxadmin query groups-list
+
+### query job-history
+
+**NAME**
+
+query job-history -  Job state history for a specific job
+
+**SYNOPSIS**
+
+gxadmin query job-history <id>
+
+**NOTES**
+
+    $ gxadmin query job-history 4384025
+            time         |  state
+    ---------------------+---------
+     2018-10-05 16:20:13 | ok
+     2018-10-05 16:19:57 | running
+     2018-10-05 16:19:55 | queued
+     2018-10-05 16:19:54 | new
+    (4 rows)
+
+### query job-info
+
+**NAME**
+
+query job-info -  Information about a specific job
+
+**SYNOPSIS**
+
+gxadmin query job-info <id> [id] ...
+
+**NOTES**
+
+    $ gxadmin query job-info 1
+     tool_id | state | username |        create_time         | job_runner_name | job_runner_external_id
+    ---------+-------+----------+----------------------------+-----------------+------------------------
+     upload1 | ok    | admin    | 2012-12-06 16:34:27.492711 | local:///       | 9347
+
+### query job-inputs
+
+**NAME**
+
+query job-inputs -  Input datasets to a specific job
+
+**SYNOPSIS**
+
+gxadmin query job-inputs <id>
+
+### query job-outputs
+
+**NAME**
+
+query job-outputs -  Output datasets from a specific job
+
+**SYNOPSIS**
+
+gxadmin query job-outputs <id>
+
+### query jobs-per-user
+
+**NAME**
+
+query jobs-per-user -  Number of jobs run by a specific user
+
+**SYNOPSIS**
+
+gxadmin query jobs-per-user <email>
+
+**NOTES**
+
+    $ gxadmin query jobs-per-user hxr@informatik.uni-freiburg.de
+     count
+    -------
+      1460
+
+### query latest-users
+
+**NAME**
+
+query latest-users -  40 recently registered users
+
+**SYNOPSIS**
+
+gxadmin query latest-users
+
+**NOTES**
+
+Returns 40 most recently registered users
+
+    $ gxadmin query latest-users
+     id |        create_time        | pg_size_pretty |   username    |             email
+    ----+---------------------------+----------------+---------------+--------------------------------
+      1 | 2018-10-05 11:40:42.90119 |                | helena-rasche | hxr@informatik.uni-freiburg.de
+
+### query queue
+
+**NAME**
+
+query queue -  Brief overview of currently running jobs
+
+**SYNOPSIS**
+
+gxadmin query queue
+
+**NOTES**
+
+    $ gxadmin query queue
+                                tool_id                                |  state  | count
+    -------------------------------------------------------------------+---------+-------
+     toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.6.0      | queued  |     9
+     toolshed.g2.bx.psu.edu/repos/iuc/dexseq/dexseq_count/1.24.0.0     | running |     7
+     toolshed.g2.bx.psu.edu/repos/nml/spades/spades/1.2                | queued  |     6
+     ebi_sra_main                                                      | running |     6
+     toolshed.g2.bx.psu.edu/repos/iuc/trinity/trinity/2.8.3            | queued  |     5
+     toolshed.g2.bx.psu.edu/repos/devteam/bowtie2/bowtie2/2.3.4.2      | running |     5
+     toolshed.g2.bx.psu.edu/repos/nml/spades/spades/3.11.1+galaxy1     | queued  |     4
+     toolshed.g2.bx.psu.edu/repos/iuc/mothur_venn/mothur_venn/1.36.1.0 | running |     2
+     toolshed.g2.bx.psu.edu/repos/nml/metaspades/metaspades/3.9.0      | running |     2
+     upload1                                                           | running |     2
+
+### query queue-detail
+
+**NAME**
+
+query queue-detail -  Detailed overview of running and queued jobs
+
+**SYNOPSIS**
+
+gxadmin query queue-detail [--all]
+
+**NOTES**
+
+    $ gxadmin query queue-detail
+      state  |   id    |  extid  |                                 tool_id                                   |      username       | time_since_creation
+    ---------+---------+---------+---------------------------------------------------------------------------+---------------------+---------------------
+     running | 4360629 | 229333  | toolshed.g2.bx.psu.edu/repos/bgruening/infernal/infernal_cmsearch/1.1.2.0 |                     | 5 days 11:00:00
+     running | 4362676 | 230237  | toolshed.g2.bx.psu.edu/repos/iuc/mothur_venn/mothur_venn/1.36.1.0         |                     | 4 days 18:00:00
+     running | 4364499 | 231055  | toolshed.g2.bx.psu.edu/repos/iuc/mothur_venn/mothur_venn/1.36.1.0         |                     | 4 days 05:00:00
+     running | 4366604 | 5183013 | toolshed.g2.bx.psu.edu/repos/iuc/dexseq/dexseq_count/1.24.0.0             |                     | 3 days 20:00:00
+     running | 4366605 | 5183016 | toolshed.g2.bx.psu.edu/repos/iuc/dexseq/dexseq_count/1.24.0.0             |                     | 3 days 20:00:00
+     queued  | 4350274 | 225743  | toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.6.0              |                     | 9 days 05:00:00
+     queued  | 4353435 | 227038  | toolshed.g2.bx.psu.edu/repos/iuc/trinity/trinity/2.8.3                    |                     | 8 days 08:00:00
+     queued  | 4361914 | 229712  | toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.6.0              |                     | 5 days -01:00:00
+     queued  | 4361812 | 229696  | toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.6.0              |                     | 5 days -01:00:00
+     queued  | 4361939 | 229728  | toolshed.g2.bx.psu.edu/repos/nml/spades/spades/1.2                        |                     | 4 days 21:00:00
+     queued  | 4361941 | 229731  | toolshed.g2.bx.psu.edu/repos/nml/spades/spades/1.2                        |                     | 4 days 21:00:00
+
+### query queue-time
+
+**NAME**
+
+query queue-time -  The average/95%/99% a specific tool spends in queue state.
+
+**SYNOPSIS**
+
+gxadmin query queue-time <tool_id>
+
+**NOTES**
+
+    $ gxadmin query queue-time toolshed.g2.bx.psu.edu/repos/nilesh/rseqc/rseqc_geneBody_coverage/2.6.4.3
+           min       |     perc_95     |     perc_99     |       max
+    -----------------+-----------------+-----------------+-----------------
+     00:00:15.421457 | 00:00:55.022874 | 00:00:59.974171 | 00:01:01.211995
+
+### query recent-jobs
+
+**NAME**
+
+query recent-jobs -  Jobs run in the past <hours> (in any state)
+
+**SYNOPSIS**
+
+gxadmin query recent-jobs <hours>
+
+**NOTES**
+
+Note that your database may have a different TZ than your querying. This is probably a misconfiguration on our end, please let me know how to fix it. Just add your offset to UTC to your query.
+
+    $ gxadmin query recent-jobs 2.1
+       id    |     date_trunc      |      tool_id          | state |    username
+    ---------+---------------------+-----------------------+-------+-----------------
+     4383997 | 2018-10-05 16:07:00 | Filter1               | ok    |
+     4383994 | 2018-10-05 16:04:00 | echo_main_condor      | ok    |
+     4383993 | 2018-10-05 16:04:00 | echo_main_drmaa       | error |
+     4383992 | 2018-10-05 16:04:00 | echo_main_handler11   | ok    |
+     4383983 | 2018-10-05 16:04:00 | echo_main_handler2    | ok    |
+     4383982 | 2018-10-05 16:04:00 | echo_main_handler1    | ok    |
+     4383981 | 2018-10-05 16:04:00 | echo_main_handler0    | ok    |
+
+### query runtime-per-user
+
+**NAME**
+
+query runtime-per-user -  computation time of user (by email)
+
+**SYNOPSIS**
+
+gxadmin query runtime-per-user <email>
+
+**NOTES**
+
+    $ gxadmin query runtime-per-user hxr@informatik.uni-freiburg.de
+       sum
+    ----------
+     14:07:39
+
+### query tool-usage
+
+**NAME**
+
+query tool-usage -  Counts of tool runs
+
+**SYNOPSIS**
+
+gxadmin query tool-usage
+
+**NOTES**
+
+    $ gxadmin tool-usage
+                                    tool_id                                 | count
+    ------------------------------------------------------------------------+--------
+     toolshed.g2.bx.psu.edu/repos/devteam/column_maker/Add_a_column1/1.1.0  | 958154
+     Grouping1                                                              | 638890
+     toolshed.g2.bx.psu.edu/repos/devteam/intersect/gops_intersect_1/1.0.0  | 326959
+     toolshed.g2.bx.psu.edu/repos/devteam/get_flanks/get_flanks1/1.0.0      | 320236
+     addValue                                                               | 313470
+     toolshed.g2.bx.psu.edu/repos/devteam/join/gops_join_1/1.0.0            | 312735
+     upload1                                                                | 103595
+     toolshed.g2.bx.psu.edu/repos/rnateam/graphclust_nspdk/nspdk_sparse/9.2 |  52861
+     Filter1                                                                |  43253
+
+### query training
+
+**NAME**
+
+query training -  List known trainings
+
+**SYNOPSIS**
+
+gxadmin query training [--all]
+
+**NOTES**
+
+This module is specific to EU's implementation of Training Infrastructure as a Service. But this specifically just checks for all groups with the name prefix
+
+    $ gxadmin query training
+           name       |  created
+    ------------------+------------
+     hts2018          | 2018-09-19
+
+### query training-memberof
+
+**NAME**
+
+query training-memberof -  List trainings that a user is part of
+
+**SYNOPSIS**
+
+gxadmin query training-memberof <username>
+
+### query training-members
+
+**NAME**
+
+query training-members -  List users in a specific training
+
+**SYNOPSIS**
+
+gxadmin query training-members <tr_id>
+
+**NOTES**
+
+    $ gxadmin query training-members hts2018
+          username      |       joined
+    --------------------+---------------------
+     helena-rasche      | 2018-09-21 21:42:01
+
+### query training-queue
+
+**NAME**
+
+query training-queue -  Jobs currently being run by people in a given training
+
+**SYNOPSIS**
+
+gxadmin query training-queue <training_id>
+
+**NOTES**
+
+Finds all jobs by people in that queue (including things they are executing that are not part of a training)
+
+    $ gxadmin query training-queue hts2018
+     state  |   id    | extid  | tool_id |   username    |       created
+    --------+---------+--------+---------+---------------+---------------------
+     queued | 4350274 | 225743 | upload1 |               | 2018-09-26 10:00:00
+
+### query training-remove-member
+
+**NAME**
+
+query training-remove-member -  Remove a user from a training
+
+**SYNOPSIS**
+
+gxadmin query training-remove-member <training> <username> [YESDOIT]
+
+### query ts-repos
+
+**NAME**
+
+query ts-repos -  Counts of toolshed repositories by toolshed and owner.
+
+**SYNOPSIS**
+
+gxadmin query ts-repos
+
+### query users-count
+
+**NAME**
+
+query users-count -  Shows sums of active/external/deleted/purged accounts
+
+**SYNOPSIS**
+
+gxadmin query users-count
+
+**NOTES**
+
+     active | external | deleted | purged | count
+    --------+----------+---------+--------+-------
+     f      | f        | f       | f      |   182
+     t      | f        | t       | t      |     2
+     t      | f        | t       | f      |     6
+     t      | f        | f       | f      |  2350
+     f      | f        | t       | t      |    36
+
+### query users-total
+
+**NAME**
+
+query users-total -  Total number of Galaxy users (incl deleted, purged, inactive)
+
+**SYNOPSIS**
+
+gxadmin query users-total
+
+### update
+
+**NAME**
+
+update -  Update the script
+
+**SYNOPSIS**
+
+gxadmin update
 
 
 ### validate
 
+**NAME**
+
+validate -  validate config files
+
+**SYNOPSIS**
+
+gxadmin validate
+
+**NOTES**
+
+Validate the configuration files
 **Warning**:
 - This requires you to have `$GALAXY_DIST` set and to have config under `$GALAXY_DIST/config`.
 - This only validates that it is well formed XML, and does **not** validate against any schemas.
 
-```
-$ gxadmin validate
-  OK: /usr/local/galaxy/galaxy-dist/data_manager_conf.xml
-  ...
-  OK: /usr/local/galaxy/galaxy-dist/config/tool_data_table_conf.xml
-  OK: /usr/local/galaxy/galaxy-dist/config/tool_sheds_conf.xml
-All XML files validated
-```
-
-### migrate-tool-install-to-sqlite
-
-```
-$ gxadmin migrate-tool-install-to-sqlite
-Creating new sqlite database: galaxy_install.sqlite
-Migrating tables
-  export: tool_shed_repository
-  import: tool_shed_repository
-  ...
-  export: repository_repository_dependency_association
-  import: repository_repository_dependency_association
-Complete
-```
+    $ gxadmin validate
+      OK: /usr/local/galaxy/galaxy-dist/data_manager_conf.xml
+      ...
+      OK: /usr/local/galaxy/galaxy-dist/config/tool_data_table_conf.xml
+      OK: /usr/local/galaxy/galaxy-dist/config/tool_sheds_conf.xml
+    All XML files validated
 
 
-### latest-users
+### zerg strace
 
-Returns 40 most recently registered users
+**NAME**
 
-```
-$ gxadmin query latest-users
- id |        create_time        | pg_size_pretty |   username    |             email
-----+---------------------------+----------------+---------------+--------------------------------
-  1 | 2018-10-05 11:40:42.90119 |                | helena-rasche | hxr@informatik.uni-freiburg.de
-```
+zerg strace -  swap zerglings
 
-### tool-usage
+**SYNOPSIS**
 
-```
-$ gxadmin tool-usage
-                                tool_id                                 | count
-------------------------------------------------------------------------+--------
- toolshed.g2.bx.psu.edu/repos/devteam/column_maker/Add_a_column1/1.1.0  | 958154
- Grouping1                                                              | 638890
- toolshed.g2.bx.psu.edu/repos/devteam/intersect/gops_intersect_1/1.0.0  | 326959
- toolshed.g2.bx.psu.edu/repos/devteam/get_flanks/get_flanks1/1.0.0      | 320236
- addValue                                                               | 313470
- toolshed.g2.bx.psu.edu/repos/devteam/join/gops_join_1/1.0.0            | 312735
- upload1                                                                | 103595
- toolshed.g2.bx.psu.edu/repos/rnateam/graphclust_nspdk/nspdk_sparse/9.2 |  52861
- Filter1                                                                |  43253
-```
-
-### job-info
-
-```
-$ gxadmin query job-info 1
- tool_id | state | username |        create_time         | job_runner_name | job_runner_external_id
----------+-------+----------+----------------------------+-----------------+------------------------
- upload1 | ok    | admin    | 2012-12-06 16:34:27.492711 | local:///       | 9347
-```
-
-### job-outputs
-
-```
-$ gxadmin query job-outputs 1000
-  id  | state | deleted | purged |  id  | state | deleted | purged
-------+-------+---------+--------+------+-------+---------+--------
- 1403 |       | f       | f      | 3559 | ok    | f       | f
-```
+gxadmin zerg strace [0|1|pool]
 
 
-### job-history
+### zerg swap
 
-```
-$ gxadmin query job-history 4384025
-        time         |  state
----------------------+---------
- 2018-10-05 16:20:13 | ok
- 2018-10-05 16:19:57 | running
- 2018-10-05 16:19:55 | queued
- 2018-10-05 16:19:54 | new
-(4 rows)
-```
+**NAME**
 
-### queue
+zerg swap -  swap zerglings
 
-```
+**SYNOPSIS**
 
-$ gxadmin query queue
-                            tool_id                                |  state  | count
--------------------------------------------------------------------+---------+-------
- toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.6.0      | queued  |     9
- toolshed.g2.bx.psu.edu/repos/iuc/dexseq/dexseq_count/1.24.0.0     | running |     7
- toolshed.g2.bx.psu.edu/repos/nml/spades/spades/1.2                | queued  |     6
- ebi_sra_main                                                      | running |     6
- toolshed.g2.bx.psu.edu/repos/iuc/trinity/trinity/2.8.3            | queued  |     5
- toolshed.g2.bx.psu.edu/repos/devteam/bowtie2/bowtie2/2.3.4.2      | running |     5
- toolshed.g2.bx.psu.edu/repos/nml/spades/spades/3.11.1+galaxy1     | queued  |     4
- toolshed.g2.bx.psu.edu/repos/iuc/mothur_venn/mothur_venn/1.36.1.0 | running |     2
- toolshed.g2.bx.psu.edu/repos/nml/metaspades/metaspades/3.9.0      | running |     2
- upload1                                                           | running |     2
-```
+gxadmin zerg swap <message>
 
-### queue-detail
 
-```
-$ gxadmin query queue-detail
-  state  |   id    |  extid  |                                 tool_id                                   |      username       | time_since_creation
----------+---------+---------+---------------------------------------------------------------------------+---------------------+---------------------
- running | 4360629 | 229333  | toolshed.g2.bx.psu.edu/repos/bgruening/infernal/infernal_cmsearch/1.1.2.0 |                     | 5 days 11:00:00
- running | 4362676 | 230237  | toolshed.g2.bx.psu.edu/repos/iuc/mothur_venn/mothur_venn/1.36.1.0         |                     | 4 days 18:00:00
- running | 4364499 | 231055  | toolshed.g2.bx.psu.edu/repos/iuc/mothur_venn/mothur_venn/1.36.1.0         |                     | 4 days 05:00:00
- running | 4366604 | 5183013 | toolshed.g2.bx.psu.edu/repos/iuc/dexseq/dexseq_count/1.24.0.0             |                     | 3 days 20:00:00
- running | 4366605 | 5183016 | toolshed.g2.bx.psu.edu/repos/iuc/dexseq/dexseq_count/1.24.0.0             |                     | 3 days 20:00:00
- running | 4366606 | 5183017 | toolshed.g2.bx.psu.edu/repos/iuc/dexseq/dexseq_count/1.24.0.0             |                     | 3 days 20:00:00
- running | 4366603 | 5183014 | toolshed.g2.bx.psu.edu/repos/iuc/dexseq/dexseq_count/1.24.0.0             |                     | 3 days 20:00:00
- running | 4366601 | 5183010 | toolshed.g2.bx.psu.edu/repos/iuc/dexseq/dexseq_count/1.24.0.0             |                     | 3 days 20:00:00
- running | 4366602 | 5183011 | toolshed.g2.bx.psu.edu/repos/iuc/dexseq/dexseq_count/1.24.0.0             |                     | 3 days 20:00:00
- running | 4369132 | 5183706 | toolshed.g2.bx.psu.edu/repos/devteam/clustalw/clustalw/2.1                |                     | 3 days 05:00:00
- running | 4371602 | 234952  | toolshed.g2.bx.psu.edu/repos/devteam/fastqc/fastqc/0.69                   |                     | 3 days -01:00:00
- queued  | 4325084 | 217919  | toolshed.g2.bx.psu.edu/repos/iuc/trinity/trinity/2.8.3                    |                     | 14 days 02:00:00
- queued  | 4325142 | 217959  | toolshed.g2.bx.psu.edu/repos/iuc/trinity/trinity/2.8.3                    |                     | 14 days 02:00:00
- queued  | 4326844 | 218690  | toolshed.g2.bx.psu.edu/repos/nml/spades/spades/3.11.1                     |                     | 13 days 12:00:00
- queued  | 4344238 | 222573  | toolshed.g2.bx.psu.edu/repos/nml/spades/spades/1.2                        |                     | 10 days 08:00:00
- queued  | 4350274 | 225743  | toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.6.0              |                     | 9 days 05:00:00
- queued  | 4353435 | 227038  | toolshed.g2.bx.psu.edu/repos/iuc/trinity/trinity/2.8.3                    |                     | 8 days 08:00:00
- queued  | 4361914 | 229712  | toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.6.0              |                     | 5 days -01:00:00
- queued  | 4361812 | 229696  | toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.6.0              |                     | 5 days -01:00:00
- queued  | 4361939 | 229728  | toolshed.g2.bx.psu.edu/repos/nml/spades/spades/1.2                        |                     | 4 days 21:00:00
- queued  | 4361941 | 229731  | toolshed.g2.bx.psu.edu/repos/nml/spades/spades/1.2                        |                     | 4 days 21:00:00
-```
+### zerg tail
 
-### recent-jobs
+**NAME**
 
-```
-$ gxadmin query recent-jobs 2.1
-   id    |     date_trunc      |      tool_id          | state |    username
----------+---------------------+-----------------------+-------+-----------------
- 4383997 | 2018-10-05 16:07:00 | Filter1               | ok    |
- 4383994 | 2018-10-05 16:04:00 | echo_main_condor      | ok    |
- 4383993 | 2018-10-05 16:04:00 | echo_main_drmaa       | error |
- 4383992 | 2018-10-05 16:04:00 | echo_main_handler11   | ok    |
- 4383983 | 2018-10-05 16:04:00 | echo_main_handler2    | ok    |
- 4383982 | 2018-10-05 16:04:00 | echo_main_handler1    | ok    |
- 4383981 | 2018-10-05 16:04:00 | echo_main_handler0    | ok    |
-```
+zerg tail -  tail zergling logs
 
-### jobs-per-user
+**SYNOPSIS**
 
-```
+gxadmin zerg tail
 
-$ gxadmin query jobs-per-user hxr@informatik.uni-freiburg.de
- count
--------
-  1460
-```
-
-### runtime-per-user
-
-```
-$ gxadmin query runtime-per-user hxr@informatik.uni-freiburg.de
-   sum
-----------
- 14:07:39
-```
-
-### training
-
-This module is specific to EU's implementation of Training Infrastructure as a Service. But this specifically just checks for all groups with the name prefix `training-`
-
-```
-$ gxadmin query training
-       name       |  created
-------------------+------------
- hts2018          | 2018-09-19
-```
-
-### training-members
-
-```
-$ gxadmin query training-members hts2018
-      username      |       joined
---------------------+---------------------
- helena-rasche      | 2018-09-21 21:42:01
-```
-
-### training-queue
-
-Finds all jobs by people in that queue (including things they are executing that are not part of a training)
-
-```
-$ gxadmin query training-queue hts2018
- state  |   id    | extid  | tool_id |   username    |       created
---------+---------+--------+---------+---------------+---------------------
- queued | 4350274 | 225743 | upload1 |               | 2018-09-26 10:00:00
-```
-
-### queue-time
-
-```
-$ gxadmin query queue-time toolshed.g2.bx.psu.edu/repos/nilesh/rseqc/rseqc_geneBody_coverage/2.6.4.3
-       min       |     perc_95     |     perc_99     |       max
------------------+-----------------+-----------------+-----------------
- 00:00:15.421457 | 00:00:55.022874 | 00:00:59.974171 | 00:01:01.211995
-```
-
-### datasets-created-daily
-
-```
-$ gxadmin query datasets-created-daily
-   min   |  avg   | perc_95 | perc_99 |  max
----------+--------+---------+---------+-------
- 0 bytes | 338 GB | 1355 GB | 2384 GB | 42 TB
-```
-
-## Changelog
-
-[Changelog](CHANGELOG.md)
-
-## Authors
-
-- Helena Rasche (@erasche)
-- Nate Coraor (@natefoo)
-
-## License
-
-GPLv3
