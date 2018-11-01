@@ -31,51 +31,37 @@ usage(){
 }
 
 handle_help() {
-	for i; do
+	for i in "$@"; do
 		if [[ $i = --help || $i = -h ]]; then
-			cat -
+
+			key="${mode}"
+			if [[ ! -z "${subfunc}" ]]; then
+				key="${key} ${subfunc}"
+			fi
+
+			echo "**NAME**"
+			echo
+			invoke_desc=$(grep "## ${key}[ :]" $0 | sed "s/.*## /gxadmin /g")
+			short_desc=$(echo $invoke_desc | sed 's/.*://g')
+			short_parm=$(echo $invoke_desc | sed 's/:.*//g')
+			echo "${key} - ${short_desc}"
+			echo
+			echo "**SYNOPSIS**"
+			echo
+			echo $short_parm
+			echo
+			manual="$(cat -)"
+			manual_wc="$(echo $manual | wc -c)"
+			if (( manual_wc > 3 )); then
+				echo "**NOTES**"
+				echo
+				echo "$manual"
+				echo
+			fi
 			# exit after printing the documentation!
-			exit 0
+			exit 42
 		fi
 	done
-}
-
-help_wanted() {
-	echo "$@" | grep --quiet -- '--help'
-
-	if (( $? == 0 )); then
-		func_prefix="### ${func_name}"
-		key="${func_name}"
-		short="${func_name}"
-		if [[ ! -z "${subfunc}" ]]; then
-			func_prefix="${func_prefix} ${subfunc}"
-			key="${key}_${subfunc}"
-			short="${short}\s*${subfunc}"
-		fi
-		key="#${key}#"
-
-		prefix=''
-		if [[ -z "$NOPREFIX" ]]; then
-			prefix='  '
-		fi
-
-		echo "${func_prefix}"
-		short=$(grep -o "## ${short}[^-].*" $0)
-		invoke=$(echo $short | sed "s/^##[^:]*://g")
-		cmdline=$(echo $short | sed "s/^##\s*//g;s/:.*//g")
-		echo
-		echo "${prefix}$invoke"
-		echo
-		echo "**Invocation**"
-		echo
-		echo "${prefix}$0 $cmdline"
-		echo
-		echo "**Notes/Examples**"
-		echo
-		grep -o "$key.*" $0 | sed "s/$key \{0,1\}/$prefix/g"
-		echo
-		exit 0
-	fi
 }
 
 assert_restart_lock(){
@@ -259,7 +245,7 @@ func_validate() { ## validate: validate config files
 	handle_help "$@" <<-EOF
 		Validate the configuration files
 		**Warning**:
-		- This requires you to have `$GALAXY_DIST` set and to have config under `$GALAXY_DIST/config`.
+		- This requires you to have \`\$GALAXY_DIST\` set and to have config under \`\$GALAXY_DIST/config\`.
 		- This only validates that it is well formed XML, and does **not** validate against any schemas.
 
 		    $ gxadmin validate
@@ -347,8 +333,8 @@ zerg_strace() { ## zerg strace [0|1|pool]: swap zerglings
 }
 
 zerg() {
-	subcommand="$1"; shift
-	case "$subcommand" in
+	subfunc="$1"; shift
+	case "$subfunc" in
 		swap   ) func_zerg_swap  "$@";;
 		tail   ) func_zerg_tail    "$@";;
 		strace ) zerg_strace "$@";;
@@ -379,8 +365,8 @@ handler_restart() { ## handler restart <message>: restart handlers
 }
 
 handler() {
-	subcommand="$1"; shift
-	case "$subcommand" in
+	subfunc="$1"; shift
+	case "$subfunc" in
 		strace  ) handler_strace  "$@";;
 		tail    ) handler_tail    "$@";;
 		restart ) handler_restart "$@";;
@@ -550,7 +536,7 @@ migrate_to_sqlite() { ## migrate-tool-install-to-sqlite: Converts normal potsgre
 	success "Complete"
 }
 
-query_latest_users() { ## query   latest-users: 40 recently registered users
+query_latest_users() { ## query latest-users: 40 recently registered users
 	handle_help "$@" <<-EOF
 		Returns 40 most recently registered users
 
@@ -568,7 +554,7 @@ query_latest_users() { ## query   latest-users: 40 recently registered users
 	EOF
 }
 
-query_tool_usage() { ## query   tool-usage: Counts of tool runs
+query_tool_usage() { ## query tool-usage: Counts of tool runs
 	handle_help "$@" <<-EOF
 		    $ gxadmin tool-usage
 		                                    tool_id                                 | count
@@ -593,7 +579,7 @@ query_tool_usage() { ## query   tool-usage: Counts of tool runs
 	EOF
 }
 
-query_job_info() { ## query   job-info <id> [id] ...: Information about a specific job
+query_job_info() { ## query job-info <id> [id] ...: Information about a specific job
 	handle_help "$@" <<-EOF
 		    $ gxadmin query job-info 1
 		     tool_id | state | username |        create_time         | job_runner_name | job_runner_external_id
@@ -611,7 +597,7 @@ query_job_info() { ## query   job-info <id> [id] ...: Information about a specif
 	EOF
 }
 
-query_datasets_created_daily() { ## query   datasets-created-daily: The min/max/average/p95/p99 of total size of datasets created in a single day.
+query_datasets_created_daily() { ## query datasets-created-daily: The min/max/average/p95/p99 of total size of datasets created in a single day.
 	handle_help "$@" <<-EOF
 		    $ gxadmin query datasets-created-daily
 		       min   |  avg   | perc_95 | perc_99 |  max
@@ -637,7 +623,7 @@ query_datasets_created_daily() { ## query   datasets-created-daily: The min/max/
 	EOF
 }
 
-query_queue_time() { ## query   queue-time <tool_id>: The average/95%/99% a specific tool spends in queue state.
+query_queue_time() { ## query queue-time <tool_id>: The average/95%/99% a specific tool spends in queue state.
 	handle_help "$@" <<-EOF
 		    $ gxadmin query queue-time toolshed.g2.bx.psu.edu/repos/nilesh/rseqc/rseqc_geneBody_coverage/2.6.4.3
 		           min       |     perc_95     |     perc_99     |       max
@@ -675,7 +661,7 @@ query_queue_time() { ## query   queue-time <tool_id>: The average/95%/99% a spec
 	EOF
 }
 
-query_queue() { ## query   queue: Brief overview of currently running jobs
+query_queue() { ## query queue: Brief overview of currently running jobs
 	handle_help "$@" <<-EOF
 		    $ gxadmin query queue
 		                                tool_id                                |  state  | count
@@ -701,7 +687,7 @@ query_queue() { ## query   queue: Brief overview of currently running jobs
 	EOF
 }
 
-query_queue_detail() { ## query   queue-detail [--all]: Detailed overview of running and queued jobs
+query_queue_detail() { ## query queue-detail [--all]: Detailed overview of running and queued jobs
 	handle_help "$@" <<-EOF
 		    $ gxadmin query queue-detail
 		      state  |   id    |  extid  |                                 tool_id                                   |      username       | time_since_creation
@@ -732,7 +718,7 @@ query_queue_detail() { ## query   queue-detail [--all]: Detailed overview of run
 	EOF
 }
 
-query_runtime_per_user() { ## query   runtime-per-user <email>: computation time of user (by email)
+query_runtime_per_user() { ## query runtime-per-user <email>: computation time of user (by email)
 	handle_help "$@" <<-EOF
 		    $ gxadmin query runtime-per-user hxr@informatik.uni-freiburg.de
 		       sum
@@ -757,7 +743,7 @@ query_runtime_per_user() { ## query   runtime-per-user <email>: computation time
 	EOF
 }
 
-query_jobs_per_user() { ## query   jobs-per-user <email>: Number of jobs run by a specific user
+query_jobs_per_user() { ## query jobs-per-user <email>: Number of jobs run by a specific user
 	handle_help "$@" <<-EOF
 		    $ gxadmin query jobs-per-user hxr@informatik.uni-freiburg.de
 		     count
@@ -776,7 +762,7 @@ query_jobs_per_user() { ## query   jobs-per-user <email>: Number of jobs run by 
 	EOF
 }
 
-query_recent_jobs() { ## query   recent-jobs <hours>: Jobs run in the past <hours> (in any state)
+query_recent_jobs() { ## query recent-jobs <hours>: Jobs run in the past <hours> (in any state)
 	handle_help "$@" <<-EOF
 		Note that your database may have a different TZ than your querying. This is probably a misconfiguration on our end, please let me know how to fix it. Just add your offset to UTC to your query.
 
@@ -803,7 +789,7 @@ query_recent_jobs() { ## query   recent-jobs <hours>: Jobs run in the past <hour
 	EOF
 }
 
-query_training() { ## query   training [--all]: List known trainings
+query_training() { ## query training [--all]: List known trainings
 	handle_help "$@" <<-EOF
 		This module is specific to EU's implementation of Training Infrastructure as a Service. But this specifically just checks for all groups with the name prefix `training-`
 
@@ -831,7 +817,7 @@ query_training() { ## query   training [--all]: List known trainings
 	EOF
 }
 
-query_training_members() { ## query   training-members <tr_id>: List users in a specific training
+query_training_members() { ## query training-members <tr_id>: List users in a specific training
 	handle_help "$@" <<-EOF
 		    $ gxadmin query training-members hts2018
 		          username      |       joined
@@ -854,7 +840,7 @@ query_training_members() { ## query   training-members <tr_id>: List users in a 
 	EOF
 }
 
-query_training_memberof() { ## query   training-memberof <username>: List trainings that a user is part of
+query_training_memberof() { ## query training-memberof <username>: List trainings that a user is part of
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -873,7 +859,7 @@ query_training_memberof() { ## query   training-memberof <username>: List traini
 	EOF
 }
 
-query_training_remove_member() { ## query   training-remove-member <training> <username> [YESDOIT]: Remove a user from a training
+query_training_remove_member() { ## query training-remove-member <training> <username> [YESDOIT]: Remove a user from a training
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -905,7 +891,7 @@ query_training_remove_member() { ## query   training-remove-member <training> <u
 	fi
 }
 
-query_training_queue() { ## query   training-queue <training_id>: Jobs currently being run by people in a given training
+query_training_queue() { ## query training-queue <training_id>: Jobs currently being run by people in a given training
 	handle_help "$@" <<-EOF
 		Finds all jobs by people in that queue (including things they are executing that are not part of a training)
 
@@ -948,7 +934,7 @@ query_training_queue() { ## query   training-queue <training_id>: Jobs currently
 	EOF
 }
 
-query_disk_usage() { ## query   disk-usage: Disk usage per object store.
+query_disk_usage() { ## query disk-usage: Disk usage per object store.
 	handle_help "$@" <<-EOF
 		TODO: implement flag for --nice numbers
 
@@ -977,7 +963,7 @@ query_disk_usage() { ## query   disk-usage: Disk usage per object store.
 	EOF
 }
 
-query_users_count() { ## query   users-count: Shows sums of active/external/deleted/purged accounts
+query_users_count() { ## query users-count: Shows sums of active/external/deleted/purged accounts
 	handle_help "$@" <<-EOF
 		     active | external | deleted | purged | count
 		    --------+----------+---------+--------+-------
@@ -998,7 +984,7 @@ query_users_count() { ## query   users-count: Shows sums of active/external/dele
 	EOF
 }
 
-query_users_total() { ## query   users-total: Total number of Galaxy users (incl deleted, purged, inactive)
+query_users_total() { ## query users-total: Total number of Galaxy users (incl deleted, purged, inactive)
 	handle_help "$@" <<-EOF
 	EOF
 	cat <<-EOF
@@ -1006,7 +992,7 @@ query_users_total() { ## query   users-total: Total number of Galaxy users (incl
 	EOF
 }
 
-query_groups_list() { ## query   groups-list: List all groups known to Galaxy
+query_groups_list() { ## query groups-list: List all groups known to Galaxy
 	handle_help "$@" <<-EOF
 	EOF
 	cat <<-EOF
@@ -1020,7 +1006,7 @@ query_groups_list() { ## query   groups-list: List all groups known to Galaxy
 	EOF
 }
 
-query_collection_usage() { ## query   collection-usage: Information about how many collections of various types are used
+query_collection_usage() { ## query collection-usage: Information about how many collections of various types are used
 	handle_help "$@" <<-EOF
 	EOF
 	cat <<-EOF
@@ -1033,7 +1019,7 @@ query_collection_usage() { ## query   collection-usage: Information about how ma
 	EOF
 }
 
-query_ts_repos() { ## query   ts-repos: Counts of toolshed repositories by toolshed and owner.
+query_ts_repos() { ## query ts-repos: Counts of toolshed repositories by toolshed and owner.
 	handle_help "$@" <<-EOF
 	EOF
 	cat <<-EOF
@@ -1046,7 +1032,7 @@ query_ts_repos() { ## query   ts-repos: Counts of toolshed repositories by tools
 	EOF
 }
 
-query_active_users() { ## query   active-users [weeks]: Count of users who ran jobs in past 1 week (default = 1)
+query_active_users() { ## query active-users [weeks]: Count of users who ran jobs in past 1 week (default = 1)
 	handle_help "$@" <<-EOF
 		Unique users who ran jobs in past week:
 
@@ -1080,7 +1066,7 @@ query_active_users() { ## query   active-users [weeks]: Count of users who ran j
 	EOF
 }
 
-query_job_history() { ## query   job-history <id>: Job state history for a specific job
+query_job_history() { ## query job-history <id>: Job state history for a specific job
 	handle_help "$@" <<-EOF
 		    $ gxadmin query job-history 4384025
 		            time         |  state
@@ -1103,7 +1089,7 @@ query_job_history() { ## query   job-history <id>: Job state history for a speci
 	EOF
 }
 
-query_job_inputs() { ## query   job-inputs <id>: Input datasets to a specific job
+query_job_inputs() { ## query job-inputs <id>: Input datasets to a specific job
 	handle_help "$@" <<-EOF
 	EOF
 	assert_count $# 1 "Missing Job ID"
@@ -1130,7 +1116,7 @@ query_job_inputs() { ## query   job-inputs <id>: Input datasets to a specific jo
 	EOF
 }
 
-query_job_outputs() { ## query   job-outputs <id>: Output datasets from a specific job
+query_job_outputs() { ## query job-outputs <id>: Output datasets from a specific job
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -1175,6 +1161,31 @@ version() {
 }
 
 
+cmdlist() {
+	IFS=$'\n'
+	# TOC
+	echo "Command | Description"
+	echo "------- | -----------"
+	for command in $(grep -o ' ## .*' $0 | grep -v grep | sort | sed 's/^ ## //g'); do
+		cmd_part="$(echo $command | sed 's/:.*//g;s/\s*<.*//g;s/\s*\[.*//')"
+		desc_part="$(echo $command | sed 's/^[^:]*:\s*//g')"
+		key_part="$(echo $cmd_part | sed 's/ /-/g')"
+		echo "[${cmd_part}](#${key_part}) | $desc_part"
+	done
+	echo
+
+	# Now for sections
+	for command in $(grep -o ' ## .*' $0 | grep -v grep | sort | sed 's/^ ## //g'); do
+		cmd_part="$(echo $command | sed 's/:.*//g;s/\s*<.*//g;s/\s*\[.*//')"
+		echo
+		echo "### $cmd_part"
+		echo
+		bash -c "$0 $cmd_part --help"
+	done
+
+}
+
+
 obtain_query() {
 	query_name="$1"; shift
 
@@ -1216,6 +1227,11 @@ query() {
 	subfunc="$1"; shift
 
 	db_query="$(obtain_query $subfunc "$@")"
+	ec=$?
+	if (( ec > 0 )); then
+		echo "$db_query"
+		exit 0
+	fi
 	if [[ "$db_query" == "ERROR" ]]; then
 		usage
 	fi
@@ -1234,7 +1250,7 @@ query() {
 mode="$1"; shift
 
 case "$mode" in
-	validate                       ) validate "$@" ;;
+	validate                       ) func_validate "$@" ;;
 	cleanup                        ) cleanup "$@" ;;
 	zerg                           ) zerg "$@" ;;
 	handler                        ) handler "$@" ;;
@@ -1242,6 +1258,8 @@ case "$mode" in
 	update                         ) update "$@" ;;
     *query                         ) query "$mode" "$@"    ;;
 
+	# Generate for readme:
+	cmdlist   ) cmdlist ;;
 	# version commands
 	version   ) version ;;
 	-v        ) version ;;
