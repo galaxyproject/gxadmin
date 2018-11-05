@@ -1,3 +1,8 @@
+# 9-rc1
+
+- Fixed:
+	- Improved `latest-users` to include any groups they're part of and their registration status (ack'd email/not)
+
 # 8
 
 - Added:

@@ -547,7 +547,18 @@ query_latest_users() { ## query latest-users: 40 recently registered users
 	EOF
 
 	cat <<-EOF
-		SELECT id, create_time, pg_size_pretty(disk_usage), username, email
+		SELECT
+			id,
+			create_time,
+			pg_size_pretty(disk_usage) as disk_usage,
+			username,
+			email,
+			array_to_string(ARRAY(
+				select galaxy_group.name from galaxy_group where id in (
+					select group_id from user_group_association where user_group_association.user_id = galaxy_user.id
+				)
+			), ' ') as groups,
+			active
 		FROM galaxy_user
 		ORDER BY create_time desc
 		LIMIT 40
