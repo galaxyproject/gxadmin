@@ -121,8 +121,6 @@ validate() {
 }
 
 zerg_swap() {
-	user_message=$1
-
 	# Ensure that we lock out other users.
 	assert_restart_lock
 
@@ -156,7 +154,6 @@ zerg_swap() {
 	echo "Ok, everything looks good."
 	# And again even if everything looks good, just in case.
 
-	#influxdb_event "$user_message<br/><br/>Previous state: <pre>$supervisorctlstatus</pre>"
 	StartDate=`date "+%s"`
 	touch  /usr/local/galaxy/galaxy-dist/.restart-lock
 
@@ -185,7 +182,6 @@ zerg_swap() {
 
 	FinalDate=`date "+%s"`
 	timing=`date -u -d "0 $FinalDate seconds - $StartDate seconds" +"%H:%M:%S"`
-	#influxdb_event "Swap took $timing"
 	success "Swap took $timing" "galaxy,zergling"
 	rm /usr/local/galaxy/galaxy-dist/.restart-lock
 }
@@ -306,7 +302,7 @@ func_zerg_swap() { ## zerg swap <message>: swap zerglings
 	EOF
 
 	validate
-	assert_count $# 1 "Restart now requires a message"
+	#assert_count $# 1 "Restart now requires a message"
 	zerg_swap $1
 }
 
@@ -360,7 +356,6 @@ handler_restart() { ## handler restart <message>: restart handlers
 	EOF
 
 	validate
-	#influxdb_event "Restarting handlers"
 	supervisorctl restart hd:
 }
 
