@@ -228,6 +228,31 @@ query_csv() {
 	psql -c "COPY ($1) to STDOUT with CSV DELIMITER ','"
 }
 
+query_influx() {
+	arr2py=$(cat <<EOF
+import sys
+query_name = sys.argv[1]
+fields = {x.split('=')[0]: int(x.split('=')[1]) for x in sys.argv[2].split(';')}
+tags = []
+if len(sys.argv) > 3:
+	tags = {x.split('=')[0]: int(x.split('=')[1]) for x in sys.argv[3].split(';')}
+for line in sys.stdin.read().split('\n'):
+	if len(line) == 0:
+		continue
+	parsed = line.split(',')
+	metric = query_name
+	if len(tags):
+		tag_data = ['%s=%s' % (k, parsed[v])  for (k, v) in tags.items()]
+		metric += ',' + ','.join(tag_data)
+	field_data = ['%s=%s' % (k, parsed[v])  for (k, v) in fields.items()]
+	metric += ' ' + ','.join(field_data)
+	print(metric)
+EOF
+)
+
+	psql -c "COPY ($1) to STDOUT with CSV DELIMITER E','" | python -c "$arr2py" "$2" "$3" "$4"
+}
+
 if (( $# == 0 )); then
 	usage safe
 fi
@@ -698,14 +723,16 @@ query_queue_overview() { ## query queue-overview: View used mostly for monitorin
 		Primarily for monitoring of queue.
 	EOF
 
-	cat <<-EOF
+	fields="count=6"
+	tags="tool_id=0;tool_version=1;destination_id=2;handler=3;state=4;job_runner_name=5"
+	read -r -d '' QUERY <<-EOF
 		SELECT
 			tool_id, tool_version, destination_id, handler, state, job_runner_name, count(*) as count
 		FROM job
 		WHERE
 			state = 'running' or state = 'queued'
 		GROUP BY
-			tool_id, tool_version, destination_id, handler, state, job_runner_name;
+			tool_id, tool_version, destination_id, handler, state, job_runner_name
 	EOF
 }
 
@@ -952,7 +979,7 @@ query_training_queue() { ## query training-queue <training_id>: Jobs currently b
 								AND user_group_association.user_id = galaxy_user.id
 						)
 			ORDER BY
-				state DESC, created DESC;
+				state DESC, created DESC
 	EOF
 }
 
@@ -981,7 +1008,7 @@ query_disk_usage() { ## query disk-usage: Disk usage per object store.
 			FROM dataset
 			WHERE NOT purged
 			GROUP BY object_store_id
-			ORDER BY sum DESC;
+			ORDER BY sum DESC
 	EOF
 }
 
@@ -1249,23 +1276,27 @@ query() {
 	query_type="$1"; shift
 	subfunc="$1"; shift
 
-	db_query="$(obtain_query $subfunc "$@")"
-	ec=$?
-	if (( ec > 0 )); then
-		echo "$db_query"
-		exit 0
-	fi
-	if [[ "$db_query" == "ERROR" ]]; then
+	# We do not run this in a subshell because we need to "return" multiple things.
+	obtain_query $subfunc "$@"
+
+	# TODO(hxr)
+	#ec=$?
+	#if (( ec > 0 )); then
+		#echo "$db_query"
+		#exit 0
+	#fi
+	if [[ "$QUERY" == "ERROR" ]]; then
 		usage
 	fi
 
 	# Run the queries
 	case "$query_type" in
-		tsvquery )  query_tsv "$db_query";;
-		csvquery )  query_csv "$db_query";;
-		query    )  query_tbl "$db_query";;
+		tsvquery )  query_tsv "$QUERY";;
+		csvquery )  query_csv "$QUERY";;
+		query    )  query_tbl "$QUERY";;
+		iquery   )  query_influx "$QUERY" "$subfunc" "$fields" "$tags";;
 		# default
-		#*        )  usage "Error";;
+		*        )  usage "Error";;
 	esac
 }
 
