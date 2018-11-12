@@ -1206,7 +1206,7 @@ update() { ## update: Update the script
 }
 
 version() {
-	echo 8
+	echo 9
 }
 
 

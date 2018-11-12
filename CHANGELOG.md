@@ -1,7 +1,10 @@
-# 9-rc1
+# 9
 
+- Added:
+	- Influx query for queue-overview
 - Fixed:
 	- Improved `latest-users` to include any groups they're part of and their registration status (ack'd email/not)
+	- Influx queries now functional (but not automatic)
 
 # 8
 
