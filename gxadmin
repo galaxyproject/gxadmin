@@ -720,7 +720,11 @@ query_queue() { ## query queue: Brief overview of currently running jobs
 
 query_queue_overview() { ## query queue-overview: View used mostly for monitoring
 	handle_help "$@" <<-EOF
-		Primarily for monitoring of queue.
+		Primarily for monitoring of queue. Optimally used with 'iquery' and passed to Telegraf.
+
+		    $ gxadmin iquery queue-overview
+		    queue-overview,tool_id=test_history_sanitization,tool_version=0.0.1,state=running,handler=main.web.1,destination_id=condor,job_runner_name=condor count=1
+
 	EOF
 
 	fields="count=6"
