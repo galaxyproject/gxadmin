@@ -693,6 +693,22 @@ query_queue() { ## query queue: Brief overview of currently running jobs
 	EOF
 }
 
+query_queue_overview() { ## query queue-overview: View used mostly for monitoring
+	handle_help "$@" <<-EOF
+		Primarily for monitoring of queue.
+	EOF
+
+	cat <<-EOF
+		SELECT
+			tool_id, tool_version, destination_id, handler, state, job_runner_name, count(*) as count
+		FROM job
+		WHERE
+			state = 'running' or state = 'queued'
+		GROUP BY
+			tool_id, tool_version, destination_id, handler, state, job_runner_name;
+	EOF
+}
+
 query_queue_detail() { ## query queue-detail [--all]: Detailed overview of running and queued jobs
 	handle_help "$@" <<-EOF
 		    $ gxadmin query queue-detail
@@ -1203,6 +1219,7 @@ obtain_query() {
 		queue-time             )  query_queue_time             "$@" ;;
 		queue                  )  query_queue                  "$@" ;;
 		queue-detail           )  query_queue_detail           "$@" ;;
+		queue-overview         )  query_queue_overview         "$@" ;;
 		runtime-per-user       )  query_runtime_per_user       "$@" ;;
 		jobs-per-user          )  query_jobs_per_user          "$@" ;;
 		recent-jobs            )  query_recent_jobs            "$@" ;;
