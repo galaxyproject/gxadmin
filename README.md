@@ -45,8 +45,6 @@ Example .pgpass:
 <pg_host>:5432:*:<pg_user>:<pg_password>
 ```
 
-## Commands
-
 Command | Description
 ------- | -----------
 [cleanup](#cleanup) | Cleanup histories/hdas/etc for past N days (default=30)
@@ -67,6 +65,7 @@ Command | Description
 [query latest-users](#query-latest-users) | 40 recently registered users
 [query queue](#query-queue) | Brief overview of currently running jobs
 [query queue-detail](#query-queue-detail) | Detailed overview of running and queued jobs
+[query queue-overview](#query-queue-overview) | View used mostly for monitoring
 [query queue-time](#query-queue-time) | The average/95%/99% a specific tool spends in queue state.
 [query recent-jobs](#query-recent-jobs) | Jobs run in the past <hours> (in any state)
 [query runtime-per-user](#query-runtime-per-user) | computation time of user (by email)
@@ -185,6 +184,7 @@ Or the monthly-active-users:
        555
     (1 row)
 
+
 ### query collection-usage
 
 **NAME**
@@ -194,6 +194,7 @@ query collection-usage -  Information about how many collections of various type
 **SYNOPSIS**
 
 gxadmin query collection-usage
+
 
 ### query datasets-created-daily
 
@@ -211,6 +212,7 @@ gxadmin query datasets-created-daily
        min   |  avg   | perc_95 | perc_99 |  max
     ---------+--------+---------+---------+-------
      0 bytes | 338 GB | 1355 GB | 2384 GB | 42 TB
+
 
 ### query disk-usage
 
@@ -240,6 +242,7 @@ TODO: implement flag for --nice numbers
      secondary       |   594632335718
     (10 rows)
 
+
 ### query groups-list
 
 **NAME**
@@ -249,6 +252,7 @@ query groups-list -  List all groups known to Galaxy
 **SYNOPSIS**
 
 gxadmin query groups-list
+
 
 ### query job-history
 
@@ -271,6 +275,7 @@ gxadmin query job-history <id>
      2018-10-05 16:19:54 | new
     (4 rows)
 
+
 ### query job-info
 
 **NAME**
@@ -288,6 +293,7 @@ gxadmin query job-info <id> [id] ...
     ---------+-------+----------+----------------------------+-----------------+------------------------
      upload1 | ok    | admin    | 2012-12-06 16:34:27.492711 | local:///       | 9347
 
+
 ### query job-inputs
 
 **NAME**
@@ -298,6 +304,7 @@ query job-inputs -  Input datasets to a specific job
 
 gxadmin query job-inputs <id>
 
+
 ### query job-outputs
 
 **NAME**
@@ -307,6 +314,7 @@ query job-outputs -  Output datasets from a specific job
 **SYNOPSIS**
 
 gxadmin query job-outputs <id>
+
 
 ### query jobs-per-user
 
@@ -324,6 +332,7 @@ gxadmin query jobs-per-user <email>
      count
     -------
       1460
+
 
 ### query latest-users
 
@@ -343,6 +352,7 @@ Returns 40 most recently registered users
      id |        create_time        | pg_size_pretty |   username    |             email
     ----+---------------------------+----------------+---------------+--------------------------------
       1 | 2018-10-05 11:40:42.90119 |                | helena-rasche | hxr@informatik.uni-freiburg.de
+
 
 ### query queue
 
@@ -369,6 +379,7 @@ gxadmin query queue
      toolshed.g2.bx.psu.edu/repos/iuc/mothur_venn/mothur_venn/1.36.1.0 | running |     2
      toolshed.g2.bx.psu.edu/repos/nml/metaspades/metaspades/3.9.0      | running |     2
      upload1                                                           | running |     2
+
 
 ### query queue-detail
 
@@ -397,6 +408,25 @@ gxadmin query queue-detail [--all]
      queued  | 4361939 | 229728  | toolshed.g2.bx.psu.edu/repos/nml/spades/spades/1.2                        |                     | 4 days 21:00:00
      queued  | 4361941 | 229731  | toolshed.g2.bx.psu.edu/repos/nml/spades/spades/1.2                        |                     | 4 days 21:00:00
 
+
+### query queue-overview
+
+**NAME**
+
+query queue-overview -  View used mostly for monitoring
+
+**SYNOPSIS**
+
+gxadmin query queue-overview
+
+**NOTES**
+
+Primarily for monitoring of queue. Optimally used with 'iquery' and passed to Telegraf.
+
+    $ gxadmin iquery queue-overview
+    queue-overview,tool_id=test_history_sanitization,tool_version=0.0.1,state=running,handler=main.web.1,destination_id=condor,job_runner_name=condor count=1
+
+
 ### query queue-time
 
 **NAME**
@@ -413,6 +443,7 @@ gxadmin query queue-time <tool_id>
            min       |     perc_95     |     perc_99     |       max
     -----------------+-----------------+-----------------+-----------------
      00:00:15.421457 | 00:00:55.022874 | 00:00:59.974171 | 00:01:01.211995
+
 
 ### query recent-jobs
 
@@ -439,6 +470,7 @@ Note that your database may have a different TZ than your querying. This is prob
      4383982 | 2018-10-05 16:04:00 | echo_main_handler1    | ok    |
      4383981 | 2018-10-05 16:04:00 | echo_main_handler0    | ok    |
 
+
 ### query runtime-per-user
 
 **NAME**
@@ -455,6 +487,7 @@ gxadmin query runtime-per-user <email>
        sum
     ----------
      14:07:39
+
 
 ### query tool-usage
 
@@ -481,6 +514,7 @@ gxadmin query tool-usage
      toolshed.g2.bx.psu.edu/repos/rnateam/graphclust_nspdk/nspdk_sparse/9.2 |  52861
      Filter1                                                                |  43253
 
+
 ### query training
 
 **NAME**
@@ -493,12 +527,13 @@ gxadmin query training [--all]
 
 **NOTES**
 
-This module is specific to EU's implementation of Training Infrastructure as a Service. But this specifically just checks for all groups with the name prefix
+This module is specific to EU's implementation of Training Infrastructure as a Service. But this specifically just checks for all groups with the name prefix 
 
     $ gxadmin query training
            name       |  created
     ------------------+------------
      hts2018          | 2018-09-19
+
 
 ### query training-memberof
 
@@ -509,6 +544,7 @@ query training-memberof -  List trainings that a user is part of
 **SYNOPSIS**
 
 gxadmin query training-memberof <username>
+
 
 ### query training-members
 
@@ -526,6 +562,7 @@ gxadmin query training-members <tr_id>
           username      |       joined
     --------------------+---------------------
      helena-rasche      | 2018-09-21 21:42:01
+
 
 ### query training-queue
 
@@ -546,6 +583,7 @@ Finds all jobs by people in that queue (including things they are executing that
     --------+---------+--------+---------+---------------+---------------------
      queued | 4350274 | 225743 | upload1 |               | 2018-09-26 10:00:00
 
+
 ### query training-remove-member
 
 **NAME**
@@ -556,6 +594,7 @@ query training-remove-member -  Remove a user from a training
 
 gxadmin query training-remove-member <training> <username> [YESDOIT]
 
+
 ### query ts-repos
 
 **NAME**
@@ -565,6 +604,7 @@ query ts-repos -  Counts of toolshed repositories by toolshed and owner.
 **SYNOPSIS**
 
 gxadmin query ts-repos
+
 
 ### query users-count
 
@@ -586,6 +626,7 @@ gxadmin query users-count
      t      | f        | f       | f      |  2350
      f      | f        | t       | t      |    36
 
+
 ### query users-total
 
 **NAME**
@@ -595,6 +636,7 @@ query users-total -  Total number of Galaxy users (incl deleted, purged, inactiv
 **SYNOPSIS**
 
 gxadmin query users-total
+
 
 ### update
 
