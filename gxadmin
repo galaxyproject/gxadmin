@@ -566,7 +566,7 @@ query_latest_users() { ## query latest-users: 40 recently registered users
 		      1 | 2018-10-05 11:40:42.90119 |                | helena-rasche | hxr@informatik.uni-freiburg.de
 	EOF
 
-	cat <<-EOF
+	read -r -d '' QUERY <<-EOF
 		SELECT
 			id,
 			create_time,
@@ -601,7 +601,7 @@ query_tool_usage() { ## query tool-usage: Counts of tool runs
 		     Filter1                                                                |  43253
 	EOF
 
-	cat <<-EOF
+	read -r -d '' QUERY <<-EOF
 		SELECT
 			j.tool_id, count(*) AS count
 		FROM job j
@@ -621,7 +621,7 @@ query_job_info() { ## query job-info <id> [id] ...: Information about a specific
 	assert_count_ge $# 1 "Missing Job ID"
 	job_ids="$(echo $@ | sed 's/\s\+/,/g')"
 
-	cat <<-EOF
+	read -r -d '' QUERY <<-EOF
 		SELECT job.id, job.tool_id, job.state, job.handler, galaxy_user.username, job.create_time, job.job_runner_name, job.job_runner_external_id
 		FROM job, galaxy_user
 		WHERE job.id in ($job_ids) AND job.user_id = galaxy_user.id
@@ -636,7 +636,7 @@ query_datasets_created_daily() { ## query datasets-created-daily: The min/max/av
 		     0 bytes | 338 GB | 1355 GB | 2384 GB | 42 TB
 	EOF
 
-	cat <<-EOF
+	read -r -d '' QUERY <<-EOF
 		WITH temp_queue_times AS
 		(select
 			date_trunc('day', create_time),
@@ -664,7 +664,7 @@ query_queue_time() { ## query queue-time <tool_id>: The average/95%/99% a specif
 
 	assert_count $# 1 "Missing tool ID"
 
-	cat <<-EOF
+	read -r -d '' QUERY <<-EOF
 		WITH temp_queue_times AS
 		(select
 			min(a.create_time - b.create_time) as queue_time
@@ -709,7 +709,7 @@ query_queue() { ## query queue: Brief overview of currently running jobs
 		     upload1                                                           | running |     2
 	EOF
 
-	cat <<-EOF
+	read -r -d '' QUERY <<-EOF
 			SELECT tool_id, state, count(*)
 			FROM job
 			WHERE state in ('queued', 'running')
@@ -759,7 +759,7 @@ query_queue_detail() { ## query queue-detail [--all]: Detailed overview of runni
 		d=", 'new'"
 	fi
 
-		cat <<-EOF
+		read -r -d '' QUERY <<-EOF
 			SELECT job.state, job.id, job.job_runner_external_id as extid, job.tool_id, galaxy_user.username, date_trunc('hour', (now() - job.create_time - '2 hours'::interval)) as time_since_creation
 			FROM job, galaxy_user
 			WHERE state in ('running', 'queued'$d) and job.user_id = galaxy_user.id
@@ -777,7 +777,7 @@ query_runtime_per_user() { ## query runtime-per-user <email>: computation time o
 
 	assert_count $# 1 "Missing user"
 
-	cat <<-EOF
+	read -r -d '' QUERY <<-EOF
 			SELECT sum((metric_value || ' second')::interval)
 			FROM job_metric_numeric
 			WHERE job_id in (
@@ -801,7 +801,7 @@ query_jobs_per_user() { ## query jobs-per-user <email>: Number of jobs run by a 
 	EOF
 
 	assert_count $# 1 "Missing user"
-	cat <<-EOF
+	read -r -d '' QUERY <<-EOF
 			SELECT count(id)
 			FROM job
 			WHERE user_id in (
@@ -829,7 +829,7 @@ query_recent_jobs() { ## query recent-jobs <hours>: Jobs run in the past <hours>
 
 	assert_count $# 1 "Missing hours"
 
-	cat <<-EOF
+	read -r -d '' QUERY <<-EOF
 			SELECT
 				job.id, date_trunc('minute', job.create_time), job.tool_id, job.state, galaxy_user.username
 			FROM job, galaxy_user
@@ -855,7 +855,7 @@ query_training() { ## query training [--all]: List known trainings
 		d2=""
 	fi
 
-	cat <<-EOF
+	read -r -d '' QUERY <<-EOF
 		SELECT
 			substring(name from 10) as name,
 			date_trunc('day', create_time)::date as created
@@ -878,7 +878,7 @@ query_training_members() { ## query training-members <tr_id>: List users in a sp
 	# Remove training- if they used it.
 	ww=$(echo "$1" | sed 's/^training-//g')
 
-	cat <<-EOF
+	read -r -d '' QUERY <<-EOF
 			SELECT
 				galaxy_user.username,
 				date_trunc('second', user_group_association.create_time) as joined
@@ -897,7 +897,7 @@ query_training_memberof() { ## query training-memberof <username>: List training
 	# Remove training- if they used it.
 	ww=$(echo "$1" | sed 's/^training-//g')
 
-	cat <<-EOF
+	read -r -d '' QUERY <<-EOF
 			SELECT
                 galaxy_group.name
 			FROM
@@ -924,7 +924,7 @@ query_training_remove_member() { ## query training-remove-member <training> <use
 		fi
 		echo $qstr
 	else
-		cat <<-EOF
+		read -r -d '' QUERY <<-EOF
 			SELECT
 				user_group_association.id,
 				galaxy_user.username,
@@ -954,7 +954,7 @@ query_training_queue() { ## query training-queue <training_id>: Jobs currently b
 	# Remove training- if they used it.
 	ww=$(echo "$1" | sed 's/^training-//g')
 
-	cat <<-EOF
+	read -r -d '' QUERY <<-EOF
 			SELECT
 				job.state,
 				job.id,
@@ -1002,7 +1002,7 @@ query_disk_usage() { ## query disk-usage: Disk usage per object store.
 		    (10 rows)
 	EOF
 
-	cat <<-EOF
+	read -r -d '' QUERY <<-EOF
 			SELECT
 				object_store_id, sum(total_size)
 			FROM dataset
@@ -1023,7 +1023,7 @@ query_users_count() { ## query users-count: Shows sums of active/external/delete
 		     f      | f        | t       | t      |    36
 	EOF
 
-	cat <<-EOF
+	read -r -d '' QUERY <<-EOF
 			SELECT
 				active, external, deleted, purged, count(*) as count
 			FROM
@@ -1036,7 +1036,7 @@ query_users_count() { ## query users-count: Shows sums of active/external/delete
 query_users_total() { ## query users-total: Total number of Galaxy users (incl deleted, purged, inactive)
 	handle_help "$@" <<-EOF
 	EOF
-	cat <<-EOF
+	read -r -d '' QUERY <<-EOF
 			SELECT count(*) FROM galaxy_user
 	EOF
 }
@@ -1044,7 +1044,7 @@ query_users_total() { ## query users-total: Total number of Galaxy users (incl d
 query_groups_list() { ## query groups-list: List all groups known to Galaxy
 	handle_help "$@" <<-EOF
 	EOF
-	cat <<-EOF
+	read -r -d '' QUERY <<-EOF
 			SELECT
 				galaxy_group.name, count(*)
 			FROM
@@ -1058,7 +1058,7 @@ query_groups_list() { ## query groups-list: List all groups known to Galaxy
 query_collection_usage() { ## query collection-usage: Information about how many collections of various types are used
 	handle_help "$@" <<-EOF
 	EOF
-	cat <<-EOF
+	read -r -d '' QUERY <<-EOF
 			SELECT
 				collection_type, count(*)
 			FROM
@@ -1071,7 +1071,7 @@ query_collection_usage() { ## query collection-usage: Information about how many
 query_ts_repos() { ## query ts-repos: Counts of toolshed repositories by toolshed and owner.
 	handle_help "$@" <<-EOF
 	EOF
-	cat <<-EOF
+	read -r -d '' QUERY <<-EOF
 			SELECT
 				tool_shed, owner, count(*)
 			FROM
@@ -1105,7 +1105,7 @@ query_active_users() { ## query active-users [weeks]: Count of users who ran job
 		weeks=$1
 	fi
 
-	cat <<-EOF
+	read -r -d '' QUERY <<-EOF
 		SELECT
 			count(distinct user_id)
 		FROM
@@ -1129,7 +1129,7 @@ query_job_history() { ## query job-history <id>: Job state history for a specifi
 
 	assert_count $# 1 "Missing Job ID"
 
-	cat <<-EOF
+	read -r -d '' QUERY <<-EOF
 			SELECT
 				date_trunc('second', create_time) as time,
 				state
@@ -1143,7 +1143,7 @@ query_job_inputs() { ## query job-inputs <id>: Input datasets to a specific job
 	EOF
 	assert_count $# 1 "Missing Job ID"
 
-	cat <<-EOF
+	read -r -d '' QUERY <<-EOF
 			SELECT
 				hda.id AS hda_id,
 				hda.state AS hda_state,
@@ -1171,7 +1171,7 @@ query_job_outputs() { ## query job-outputs <id>: Output datasets from a specific
 
 	assert_count $# 1 "Missing Job ID"
 
-	cat <<-EOF
+	read -r -d '' QUERY <<-EOF
 			SELECT
 				hda.id AS hda_id,
 				hda.state AS hda_state,
