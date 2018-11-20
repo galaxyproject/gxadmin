@@ -654,6 +654,15 @@ query_datasets_created_daily() { ## query datasets-created-daily: The min/max/av
 	EOF
 }
 
+query_largest_collection() { ## query largest-collection: Returns the size of the single largest collection
+	handle_help "$@" <<-EOF
+	EOF
+
+	read -r -d '' QUERY <<-EOF
+		WITH asdf as (select count(*) from dataset_collection_element group by dataset_collection_id order by count desc) select max(count) from asdf;
+	EOF
+}
+
 query_queue_time() { ## query queue-time <tool_id>: The average/95%/99% a specific tool spends in queue state.
 	handle_help "$@" <<-EOF
 		    $ gxadmin query queue-time toolshed.g2.bx.psu.edu/repos/nilesh/rseqc/rseqc_geneBody_coverage/2.6.4.3
@@ -1259,6 +1268,7 @@ obtain_query() {
 		job-info               )  query_job_info               "$@" ;;
 		datasets-created-daily )  query_datasets_created_daily "$@" ;;
 		queue-time             )  query_queue_time             "$@" ;;
+		largest-collection     )  query_largest_collection     "$@" ;;
 		queue                  )  query_queue                  "$@" ;;
 		queue-detail           )  query_queue_detail           "$@" ;;
 		queue-overview         )  query_queue_overview         "$@" ;;
