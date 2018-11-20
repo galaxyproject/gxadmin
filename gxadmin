@@ -1037,6 +1037,16 @@ query_users_count() { ## query users-count: Shows sums of active/external/delete
 	EOF
 }
 
+query_tool_last_used_date() { ## query tool-last-used: When was the most recent invocation of every tool
+	handle_help "@" <<-EOF
+		It is not truly every tool, there is no easy way to find the tools which have never been run.
+	EOF
+
+	read -r -d '' QUERY <<-EOF
+		select max(date_trunc('month', create_time)), tool_id from job group by tool_id order by max desc;
+	EOF
+}
+
 query_users_total() { ## query users-total: Total number of Galaxy users (incl deleted, purged, inactive)
 	handle_help "$@" <<-EOF
 	EOF
@@ -1259,6 +1269,7 @@ obtain_query() {
 		training-memberof      )  query_training_memberof      "$@" ;;
 		training-remove-member )  query_training_remove_member "$@" ;;
 		training-queue         )  query_training_queue         "$@" ;;
+		tool-last-used-date    )  query_tool_last_used_date    "$@" ;;
 		disk-usage             )  query_disk_usage             "$@" ;;
 		users-count            )  query_users_count            "$@" ;;
 		users-total            )  query_users_total            "$@" ;;
