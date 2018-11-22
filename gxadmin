@@ -1076,7 +1076,7 @@ query_tool_last_used_date() { ## query tool-last-used-date: When was the most re
 	EOF
 
 	read -r -d '' QUERY <<-EOF
-		select max(date_trunc('month', create_time)), tool_id from job group by tool_id order by max desc;
+		select max(date_trunc('month', create_time)), tool_id from job group by tool_id order by max desc
 	EOF
 }
 
@@ -1186,12 +1186,17 @@ query_active_users() { ## query active-users [weeks]: Count of users who ran job
 	EOF
 }
 
-query_tool_metrics() { ## query tool-metrics <tool_id> <metric_id>: See values of a specific metric
+query_tool_metrics() { ## query tool-metrics <tool_id> <metric_id> [--like]: See values of a specific metric
 	handle_help "$@" <<-EOF
 	EOF
 
 	assert_count_ge $# 1 "Missing Tool ID"
-	assert_count $# 2 "Missing Metric ID (hint: tool-available-metrics)"
+	assert_count_ge $# 2 "Missing Metric ID (hint: tool-available-metrics)"
+
+	tool_subquery="SELECT id FROM job WHERE tool_id = '$1'"
+	if [[ "$3" == "--like" ]]; then
+		tool_subquery="SELECT id FROM job WHERE tool_id like '$1'"
+	fi
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
@@ -1201,7 +1206,7 @@ query_tool_metrics() { ## query tool-metrics <tool_id> <metric_id>: See values o
 			metric_name = '$2'
 			and
 			job_id in (
-				SELECT id FROM job WHERE tool_id = '$1'
+				$tool_subquery
 			)
 	EOF
 }
