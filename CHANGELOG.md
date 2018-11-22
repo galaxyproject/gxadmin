@@ -1,10 +1,25 @@
 # 9
 
 - Added:
-	- Influx query for queue-overview
+	- Influx queries for:
+		- active-users
+		- collection-usage
+		- disk-usage
+		- groups-list
+		- largest-collection
+		- queue
+		- queue-overview
+		- tool-usage
+		- ts-repos
+		- users-count
+		- users-total
+	- tool-metrics
+	- tool-available-metrics
+	- largest-collection
 - Fixed:
 	- Improved `latest-users` to include any groups they're part of and their registration status (ack'd email/not)
 	- Influx queries now functional (but not automatic)
+	- Collection usage
 
 # 8
 

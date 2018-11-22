@@ -1,4 +1,5 @@
 #!/bin/bash
+
 usage(){
 	if (( $# > 0 )) && [[ $1 != "safe" ]]; then
 		error $@
@@ -234,7 +235,7 @@ import sys
 query_name = sys.argv[1]
 fields = {x.split('=')[0]: int(x.split('=')[1]) for x in sys.argv[2].split(';')}
 tags = []
-if len(sys.argv) > 3:
+if len(sys.argv) > 3 and len(sys.argv[3]) > 0:
 	tags = {x.split('=')[0]: int(x.split('=')[1]) for x in sys.argv[3].split(';')}
 for line in sys.stdin.read().split('\n'):
 	if len(line) == 0:
@@ -566,6 +567,7 @@ query_latest_users() { ## query latest-users: 40 recently registered users
 		      1 | 2018-10-05 11:40:42.90119 |                | helena-rasche | hxr@informatik.uni-freiburg.de
 	EOF
 
+
 	read -r -d '' QUERY <<-EOF
 		SELECT
 			id,
@@ -600,6 +602,9 @@ query_tool_usage() { ## query tool-usage: Counts of tool runs
 		     toolshed.g2.bx.psu.edu/repos/rnateam/graphclust_nspdk/nspdk_sparse/9.2 |  52861
 		     Filter1                                                                |  43253
 	EOF
+
+	fields="count=1"
+	tags="tool_id=0"
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
@@ -658,8 +663,17 @@ query_largest_collection() { ## query largest-collection: Returns the size of th
 	handle_help "$@" <<-EOF
 	EOF
 
+	fields="count=0"
+	tags=""
+
 	read -r -d '' QUERY <<-EOF
-		WITH asdf as (select count(*) from dataset_collection_element group by dataset_collection_id order by count desc) select max(count) from asdf;
+		WITH asdf AS (
+			SELECT count(*)
+			FROM dataset_collection_element
+			GROUP BY dataset_collection_id
+			ORDER BY count desc
+		)
+		select max(count) as count from asdf
 	EOF
 }
 
@@ -718,6 +732,9 @@ query_queue() { ## query queue: Brief overview of currently running jobs
 		     upload1                                                           | running |     2
 	EOF
 
+	fields="count=2"
+	tags="tool_id=0;state=1"
+
 	read -r -d '' QUERY <<-EOF
 			SELECT tool_id, state, count(*)
 			FROM job
@@ -738,6 +755,7 @@ query_queue_overview() { ## query queue-overview: View used mostly for monitorin
 
 	fields="count=6"
 	tags="tool_id=0;tool_version=1;destination_id=2;handler=3;state=4;job_runner_name=5"
+
 	read -r -d '' QUERY <<-EOF
 		SELECT
 			tool_id, tool_version, destination_id, handler, state, job_runner_name, count(*) as count
@@ -1015,6 +1033,9 @@ query_disk_usage() { ## query disk-usage: Disk usage per object store.
 		    (10 rows)
 	EOF
 
+	fields="count=1"
+	tags="object_store_id=0"
+
 	read -r -d '' QUERY <<-EOF
 			SELECT
 				object_store_id, sum(total_size)
@@ -1036,6 +1057,9 @@ query_users_count() { ## query users-count: Shows sums of active/external/delete
 		     f      | f        | t       | t      |    36
 	EOF
 
+	fields="count=4"
+	tags="active=0;external=1;deleted=2;purged=3"
+
 	read -r -d '' QUERY <<-EOF
 			SELECT
 				active, external, deleted, purged, count(*) as count
@@ -1046,7 +1070,7 @@ query_users_count() { ## query users-count: Shows sums of active/external/delete
 	EOF
 }
 
-query_tool_last_used_date() { ## query tool-last-used: When was the most recent invocation of every tool
+query_tool_last_used_date() { ## query tool-last-used-date: When was the most recent invocation of every tool
 	handle_help "@" <<-EOF
 		It is not truly every tool, there is no easy way to find the tools which have never been run.
 	EOF
@@ -1059,6 +1083,10 @@ query_tool_last_used_date() { ## query tool-last-used: When was the most recent 
 query_users_total() { ## query users-total: Total number of Galaxy users (incl deleted, purged, inactive)
 	handle_help "$@" <<-EOF
 	EOF
+
+	fields="count=0"
+	tags=""
+
 	read -r -d '' QUERY <<-EOF
 			SELECT count(*) FROM galaxy_user
 	EOF
@@ -1067,6 +1095,10 @@ query_users_total() { ## query users-total: Total number of Galaxy users (incl d
 query_groups_list() { ## query groups-list: List all groups known to Galaxy
 	handle_help "$@" <<-EOF
 	EOF
+
+	fields="count=1"
+	tags="group_name=0"
+
 	read -r -d '' QUERY <<-EOF
 			SELECT
 				galaxy_group.name, count(*)
@@ -1081,19 +1113,30 @@ query_groups_list() { ## query groups-list: List all groups known to Galaxy
 query_collection_usage() { ## query collection-usage: Information about how many collections of various types are used
 	handle_help "$@" <<-EOF
 	EOF
+
+	fields="count=1"
+	tags="group_name=0"
+
 	read -r -d '' QUERY <<-EOF
-			SELECT
-				collection_type, count(*)
-			FROM
-				dataset_collection
-			GROUP BY
-				collection_type
+		SELECT
+			dc.collection_type, count(*)
+		FROM
+			history_dataset_collection_association as hdca
+		INNER JOIN
+			dataset_collection as dc
+			ON hdca.collection_id = dc.id
+		GROUP BY
+			dc.collection_type;
 	EOF
 }
 
 query_ts_repos() { ## query ts-repos: Counts of toolshed repositories by toolshed and owner.
 	handle_help "$@" <<-EOF
 	EOF
+
+	fields="count=2"
+	tags="tool_shed=0;owner=1"
+
 	read -r -d '' QUERY <<-EOF
 			SELECT
 				tool_shed, owner, count(*)
@@ -1128,13 +1171,54 @@ query_active_users() { ## query active-users [weeks]: Count of users who ran job
 		weeks=$1
 	fi
 
+	fields="count=1"
+	tags="weeks=0"
+
+
 	read -r -d '' QUERY <<-EOF
 		SELECT
+			$weeks as weeks,
 			count(distinct user_id)
 		FROM
 			job
 		WHERE
 			job.create_time > (now() - '$weeks weeks'::interval)
+	EOF
+}
+
+query_tool_metrics() { ## query tool-metrics <tool_id> <metric_id>: See values of a specific metric
+	handle_help "$@" <<-EOF
+	EOF
+
+	assert_count_ge $# 1 "Missing Tool ID"
+	assert_count $# 2 "Missing Metric ID (hint: tool-available-metrics)"
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			metric_value
+		FROM job_metric_numeric
+		WHERE
+			metric_name = '$2'
+			and
+			job_id in (
+				SELECT id FROM job WHERE tool_id = '$1'
+			)
+	EOF
+}
+
+query_tool_available_metrics() { ## query tool-available-metrics <tool_id>: list all available metrics for a given tool
+	handle_help "$@" <<-EOF
+	EOF
+
+	assert_count $# 1 "Missing Tool ID"
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			distinct metric_name
+		FROM job_metric_numeric
+		WHERE job_id in (
+			SELECT id FROM job WHERE tool_id = '$1'
+		)
 	EOF
 }
 
@@ -1263,37 +1347,39 @@ obtain_query() {
 	query_name="$1"; shift
 
 	case "$query_name" in
-		latest-users           )  query_latest_users           "$@" ;;
-		tool-usage             )  query_tool_usage             "$@" ;;
-		job-info               )  query_job_info               "$@" ;;
-		datasets-created-daily )  query_datasets_created_daily "$@" ;;
-		queue-time             )  query_queue_time             "$@" ;;
-		largest-collection     )  query_largest_collection     "$@" ;;
-		queue                  )  query_queue                  "$@" ;;
-		queue-detail           )  query_queue_detail           "$@" ;;
-		queue-overview         )  query_queue_overview         "$@" ;;
-		runtime-per-user       )  query_runtime_per_user       "$@" ;;
-		jobs-per-user          )  query_jobs_per_user          "$@" ;;
-		recent-jobs            )  query_recent_jobs            "$@" ;;
-		training               )  query_training               "$@" ;;
-		training-members       )  query_training_members       "$@" ;;
-		training-memberof      )  query_training_memberof      "$@" ;;
-		training-remove-member )  query_training_remove_member "$@" ;;
-		training-queue         )  query_training_queue         "$@" ;;
-		tool-last-used-date    )  query_tool_last_used_date    "$@" ;;
-		disk-usage             )  query_disk_usage             "$@" ;;
-		users-count            )  query_users_count            "$@" ;;
-		users-total            )  query_users_total            "$@" ;;
-		groups-list            )  query_groups_list            "$@" ;;
-		collection-usage       )  query_collection_usage       "$@" ;;
-		ts-repos               )  query_ts_repos               "$@" ;;
-		active-users           )  query_active_users           "$@" ;;
-		job-history            )  query_job_history            "$@" ;;
-		job-inputs             )  query_job_inputs             "$@" ;;
-		job-outputs            )  query_job_outputs            "$@" ;;
+		latest-users           ) query_latest_users           "$@" ;;
+		tool-usage             ) query_tool_usage             "$@" ;;
+		job-info               ) query_job_info               "$@" ;;
+		datasets-created-daily ) query_datasets_created_daily "$@" ;;
+		queue-time             ) query_queue_time             "$@" ;;
+		largest-collection     ) query_largest_collection     "$@" ;;
+		queue                  ) query_queue                  "$@" ;;
+		queue-detail           ) query_queue_detail           "$@" ;;
+		queue-overview         ) query_queue_overview         "$@" ;;
+		runtime-per-user       ) query_runtime_per_user       "$@" ;;
+		jobs-per-user          ) query_jobs_per_user          "$@" ;;
+		recent-jobs            ) query_recent_jobs            "$@" ;;
+		training               ) query_training               "$@" ;;
+		training-members       ) query_training_members       "$@" ;;
+		training-memberof      ) query_training_memberof      "$@" ;;
+		training-remove-member ) query_training_remove_member "$@" ;;
+		training-queue         ) query_training_queue         "$@" ;;
+		tool-last-used-date    ) query_tool_last_used_date    "$@" ;;
+		disk-usage             ) query_disk_usage             "$@" ;;
+		users-count            ) query_users_count            "$@" ;;
+		users-total            ) query_users_total            "$@" ;;
+		groups-list            ) query_groups_list            "$@" ;;
+		collection-usage       ) query_collection_usage       "$@" ;;
+		ts-repos               ) query_ts_repos               "$@" ;;
+		active-users           ) query_active_users           "$@" ;;
+		job-history            ) query_job_history            "$@" ;;
+		job-inputs             ) query_job_inputs             "$@" ;;
+		job-outputs            ) query_job_outputs            "$@" ;;
+		tool-metrics           ) query_tool_metrics           "$@";;
+		tool-available-metrics ) query_tool_available_metrics "$@" ;;
 
 		# default
-		* ) echo "ERROR" ;;
+		* ) export QUERY="ERROR" ;;
 	esac
 }
 

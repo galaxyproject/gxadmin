@@ -62,6 +62,7 @@ Command | Description
 [query job-inputs](#query-job-inputs) | Input datasets to a specific job
 [query job-outputs](#query-job-outputs) | Output datasets from a specific job
 [query jobs-per-user](#query-jobs-per-user) | Number of jobs run by a specific user
+[query largest-collection](#query-largest-collection) | Returns the size of the single largest collection
 [query latest-users](#query-latest-users) | 40 recently registered users
 [query queue](#query-queue) | Brief overview of currently running jobs
 [query queue-detail](#query-queue-detail) | Detailed overview of running and queued jobs
@@ -69,6 +70,9 @@ Command | Description
 [query queue-time](#query-queue-time) | The average/95%/99% a specific tool spends in queue state.
 [query recent-jobs](#query-recent-jobs) | Jobs run in the past <hours> (in any state)
 [query runtime-per-user](#query-runtime-per-user) | computation time of user (by email)
+[query tool-available-metrics](#query-tool-available-metrics) | list all available metrics for a given tool
+[query tool-last-used-date](#query-tool-last-used-date) | When was the most recent invocation of every tool
+[query tool-metrics](#query-tool-metrics) | See values of a specific metric
 [query tool-usage](#query-tool-usage) | Counts of tool runs
 [query training](#query-training) | List known trainings
 [query training-memberof](#query-training-memberof) | List trainings that a user is part of
@@ -334,6 +338,17 @@ gxadmin query jobs-per-user <email>
       1460
 
 
+### query largest-collection
+
+**NAME**
+
+query largest-collection -  Returns the size of the single largest collection
+
+**SYNOPSIS**
+
+gxadmin query largest-collection
+
+
 ### query latest-users
 
 **NAME**
@@ -487,6 +502,31 @@ gxadmin query runtime-per-user <email>
        sum
     ----------
      14:07:39
+
+
+### query tool-available-metrics
+
+**NAME**
+
+query tool-available-metrics -  list all available metrics for a given tool
+
+**SYNOPSIS**
+
+gxadmin query tool-available-metrics <tool_id>
+
+
+### query tool-last-used-date
+
+
+### query tool-metrics
+
+**NAME**
+
+query tool-metrics -  See values of a specific metric
+
+**SYNOPSIS**
+
+gxadmin query tool-metrics <tool_id> <metric_id>
 
 
 ### query tool-usage
