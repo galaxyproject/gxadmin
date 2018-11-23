@@ -66,7 +66,7 @@ handle_help() {
 }
 
 assert_restart_lock(){
-	if [ -f /usr/local/galaxy/galaxy-dist/.restart-lock ]; then
+	if [ -f $HOME/.restart-lock ]; then
 		echo "A restart lock exists. This means someone is probably already restarting galaxy."
 		exit 3
 	fi
@@ -78,6 +78,15 @@ error() {
 
 success() {
 	echo -e "\e[38;5;40m$@\e[m"
+}
+
+wait_for_url() {
+	url=$1; shift;
+
+	while [ $(curl --silent $url | wc -c) -eq "0" ]; do
+		sleep 5;
+		echo -n '.'
+	done
 }
 
 validate() {
@@ -126,7 +135,7 @@ zerg_swap() {
 	assert_restart_lock
 
 	zerg0running=0
-	supervisorctl status gx:zergling0 | grep RUNNING
+	supervisorctl status z0:zergling0 | grep RUNNING
 	zerg0=$?
 	if (( $zerg0 == 0 )); then
 		echo "zerg 0 is running"
@@ -134,7 +143,7 @@ zerg_swap() {
 	fi
 
 	zerg1running=0
-	supervisorctl status gx:zergling1 | grep RUNNING
+	supervisorctl status z1:zergling1 | grep RUNNING
 	zerg1=$?
 	if [ "$zerg1" -eq "0" ]; then
 		echo "zerg 1 is running"
@@ -156,35 +165,32 @@ zerg_swap() {
 	# And again even if everything looks good, just in case.
 
 	StartDate=`date "+%s"`
-	touch  /usr/local/galaxy/galaxy-dist/.restart-lock
+	touch  $HOME/.restart-lock
 
 	# Ok, so now we are sure that just one is running
 	if [ "$zerg1running" -eq "1" ] ; then
-		echo "Starting zergling 0"
-		supervisorctl start gx:zergling0
-		echo "Zergling 0 should be running. Now wait patiently while it starts. This script will continue when it is ready."
-		while [ $(curl --silent localhost:9190 | wc -c) -eq "0" ]; do
-			sleep 5;
-			echo -n '.'
-		done
-		echo
-		supervisorctl stop gx:zergling1
-	elif [ "$zerg0running" -eq "1" ] ; then
-		echo "Starting zergling 1"
-		supervisorctl start gx:zergling1
-		echo "Zergling 1 should be running. Now wait patiently while it starts. This script will continue when it is ready."
-		while [ $(curl --silent localhost:9191 | wc -c) -eq "0" ]; do
-			sleep 5;
-			echo -n '.'
-		done
-		echo
-		supervisorctl stop gx:zergling0
+		to_start="z0:zergling0"
+		to_stop="z1:zergling1"
+		check_url="localhost:9190"
+	else
+		to_start="z1:zergling1"
+		to_stop="z0:zergling0"
+		check_url="localhost:9191"
 	fi
+
+	echo "Starting $to_start"
+	supervisorctl start $to_start
+	echo "$to_start should be running. Now wait patiently while it starts. This script will continue when it is ready."
+
+	wait_for_url $check_url
+	echo
+
+	supervisorctl stop $to_stop
 
 	FinalDate=`date "+%s"`
 	timing=`date -u -d "0 $FinalDate seconds - $StartDate seconds" +"%H:%M:%S"`
-	success "Swap took $timing" "galaxy,zergling"
-	rm /usr/local/galaxy/galaxy-dist/.restart-lock
+	success "Swap took $timing"
+	rm $HOME/.restart-lock
 }
 
 supervisor_strace() {
@@ -271,10 +277,10 @@ func_validate() { ## validate: validate config files
 		- This only validates that it is well formed XML, and does **not** validate against any schemas.
 
 		    $ gxadmin validate
-		      OK: /usr/local/galaxy/galaxy-dist/data_manager_conf.xml
+		      OK: galaxy-dist/data_manager_conf.xml
 		      ...
-		      OK: /usr/local/galaxy/galaxy-dist/config/tool_data_table_conf.xml
-		      OK: /usr/local/galaxy/galaxy-dist/config/tool_sheds_conf.xml
+		      OK: galaxy-dist/config/tool_data_table_conf.xml
+		      OK: galaxy-dist/config/tool_sheds_conf.xml
 		    All XML files validated
 	EOF
 
