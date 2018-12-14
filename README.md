@@ -64,6 +64,7 @@ Command | Description
 [query jobs-per-user](#query-jobs-per-user) | Number of jobs run by a specific user
 [query largest-collection](#query-largest-collection) | Returns the size of the single largest collection
 [query latest-users](#query-latest-users) | 40 recently registered users
+[query old-histories](#query-old-histories) | Lists histories that haven't been updated (used) for <weeks>
 [query queue](#query-queue) | Brief overview of currently running jobs
 [query queue-detail](#query-queue-detail) | Detailed overview of running and queued jobs
 [query queue-overview](#query-queue-overview) | View used mostly for monitoring
@@ -82,7 +83,6 @@ Command | Description
 [query ts-repos](#query-ts-repos) | Counts of toolshed repositories by toolshed and owner.
 [query users-count](#query-users-count) | Shows sums of active/external/deleted/purged accounts
 [query users-total](#query-users-total) | Total number of Galaxy users (incl deleted, purged, inactive)
-[query old-histories](#query-old-histories) | List histories not updated in X weeks
 [update](#update) | Update the script
 [validate](#validate) | validate config files
 [zerg strace](#zerg-strace) | swap zerglings
@@ -368,6 +368,34 @@ Returns 40 most recently registered users
      id |        create_time        | pg_size_pretty |   username    |             email
     ----+---------------------------+----------------+---------------+--------------------------------
       1 | 2018-10-05 11:40:42.90119 |                | helena-rasche | hxr@informatik.uni-freiburg.de
+
+
+### query old-histories
+
+**NAME**
+
+query old-histories -  Lists histories that haven't been updated (used) for <weeks>
+
+**SYNOPSIS**
+
+gxadmin query old-histories <weeks>
+
+**NOTES**
+
+Histories and their users who haven't been updated for a year. Default number of weeks is 15.
+
+ query old-histories 52
+  id   |        update_time         | user_id |  email  |       name         | published | deleted | purged | hid_counter
+-------+----------------------------+---------+---------+--------------------+-----------+---------+--------+-------------
+ 39903 | 2017-06-13 12:35:07.174749 |     834 | xxx@xxx | Unnamed history    | f         | f       | f      |          23
+  1674 | 2017-06-13 14:08:30.017574 |       9 | xxx@xxx | SAHA project       | f         | f       | f      |          47
+ 40088 | 2017-06-15 04:10:48.879122 |     986 | xxx@xxx | Unnamed history    | f         | f       | f      |           3
+ 39023 | 2017-06-15 09:33:12.007002 |     849 | xxx@xxx | prac 4 new final   | f         | f       | f      |         297
+ 35437 | 2017-06-16 04:41:13.15785  |     731 | xxx@xxx | Unnamed history    | f         | f       | f      |          98
+ 40123 | 2017-06-16 13:43:24.948344 |     987 | xxx@xxx | Unnamed history    | f         | f       | f      |          22
+ 40050 | 2017-06-19 00:46:29.032462 |     193 | xxx@xxx | Telmatactis        | f         | f       | f      |          74
+ 12212 | 2017-06-20 14:41:03.762881 |     169 | xxx@xxx | Unnamed history    | f         | f       | f      |          24
+ 39523 | 2017-06-21 01:34:52.226653 |       9 | xxx@xxx | OSCC Cell Lines    | f         | f       | f      |         139
 
 
 ### query queue
@@ -700,15 +728,6 @@ query users-total -  Total number of Galaxy users (incl deleted, purged, inactiv
 
 gxadmin query users-total
 
-### query old-histories
-
-**NAME**
-
-query old-histories  - Produce a list of histories and their related users that haven't been updated for X weeks.
-
-**SYNOPSIS**
-
-gxadmin query old-histories <weeks>
 
 ### update
 
@@ -739,10 +758,10 @@ Validate the configuration files
 - This only validates that it is well formed XML, and does **not** validate against any schemas.
 
     $ gxadmin validate
-      OK: /usr/local/galaxy/galaxy-dist/data_manager_conf.xml
+      OK: galaxy-dist/data_manager_conf.xml
       ...
-      OK: /usr/local/galaxy/galaxy-dist/config/tool_data_table_conf.xml
-      OK: /usr/local/galaxy/galaxy-dist/config/tool_sheds_conf.xml
+      OK: galaxy-dist/config/tool_data_table_conf.xml
+      OK: galaxy-dist/config/tool_sheds_conf.xml
     All XML files validated
 
 
@@ -777,3 +796,4 @@ zerg tail -  tail zergling logs
 **SYNOPSIS**
 
 gxadmin zerg tail
+
