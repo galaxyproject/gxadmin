@@ -82,6 +82,7 @@ Command | Description
 [query ts-repos](#query-ts-repos) | Counts of toolshed repositories by toolshed and owner.
 [query users-count](#query-users-count) | Shows sums of active/external/deleted/purged accounts
 [query users-total](#query-users-total) | Total number of Galaxy users (incl deleted, purged, inactive)
+[query old-histories](#query-old-histories) | List histories not updated in X weeks
 [update](#update) | Update the script
 [validate](#validate) | validate config files
 [zerg strace](#zerg-strace) | swap zerglings
@@ -589,7 +590,7 @@ gxadmin query training [--all]
 
 **NOTES**
 
-This module is specific to EU's implementation of Training Infrastructure as a Service. But this specifically just checks for all groups with the name prefix 
+This module is specific to EU's implementation of Training Infrastructure as a Service. But this specifically just checks for all groups with the name prefix
 
     $ gxadmin query training
            name       |  created
@@ -699,6 +700,15 @@ query users-total -  Total number of Galaxy users (incl deleted, purged, inactiv
 
 gxadmin query users-total
 
+### query old-histories
+
+**NAME**
+
+query old-histories  - Produce a list of histories and their related users that haven't been updated for X weeks.
+
+**SYNOPSIS**
+
+gxadmin query old-histories <weeks>
 
 ### update
 
@@ -767,4 +777,3 @@ zerg tail -  tail zergling logs
 **SYNOPSIS**
 
 gxadmin zerg tail
-

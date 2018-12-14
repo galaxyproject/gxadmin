@@ -1,3 +1,7 @@
+#10
+- Added:
+	- Old histories query to find histories that haven't been used for X weeks.
+
 # 9
 
 - Added:
