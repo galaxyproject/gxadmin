@@ -1338,15 +1338,15 @@ query_old_histories(){ ## query old-histories <weeks>: Lists histories that have
 		$gxadmin query old-histories 52
 		  id   |        update_time         | user_id |                   email                    |       name         | published | deleted | purged | hid_counter
 		-------+----------------------------+---------+--------------------------------------------+--------------------+-----------+---------+--------+-------------
-		 39903 | 2017-06-13 12:35:07.174749 |     834 | david.carrasco.flores@uni-jena.de          | Unnamed history    | f         | f       | f      |          23
-		  1674 | 2017-06-13 14:08:30.017574 |       9 | simon.fox@uwa.edu.au                       | SAHA project       | f         | f       | f      |          47
-		 40088 | 2017-06-15 04:10:48.879122 |     986 | iida.midori517@mail.kyutech.jp             | Unnamed history    | f         | f       | f      |           3
-		 39023 | 2017-06-15 09:33:12.007002 |     849 | a.ayfan@uq.net.au                          | prac 4 new final   | f         | f       | f      |         297
-		 35437 | 2017-06-16 04:41:13.15785  |     731 | l.bohlmann@uq.edu.au                       | Unnamed history    | f         | f       | f      |          98
-		 40123 | 2017-06-16 13:43:24.948344 |     987 | sarerazack@icloud.com                      | Unnamed history    | f         | f       | f      |          22
-		 40050 | 2017-06-19 00:46:29.032462 |     193 | b.madio@imb.uq.edu.au                      | Telmatactis        | f         | f       | f      |          74
-		 12212 | 2017-06-20 14:41:03.762881 |     169 | joan.fibla@cmb.udl.cat                     | Unnamed history    | f         | f       | f      |          24
-		 39523 | 2017-06-21 01:34:52.226653 |       9 | simon.fox@uwa.edu.au                       | OSCC Cell Lines    | f         | f       | f      |         139
+		 39903 | 2017-06-13 12:35:07.174749 |     834 | xxxxxxxxx@xxxxxxxxxxxxxxxxxxxxxxx          | Unnamed history    | f         | f       | f      |          23
+		  1674 | 2017-06-13 14:08:30.017574 |       9 | xxxxxxxxx@xxxxxxxxxxxxxxxxxxxxxxx          | SAHA project       | f         | f       | f      |          47
+		 40088 | 2017-06-15 04:10:48.879122 |     986 | xxxxxxxxx@xxxxxxxxxxxxxxxxxxxxxxx          | Unnamed history    | f         | f       | f      |           3
+		 39023 | 2017-06-15 09:33:12.007002 |     849 | xxxxxxxxx@xxxxxxxxxxxxxxxxxxxxxxx          | prac 4 new final   | f         | f       | f      |         297
+		 35437 | 2017-06-16 04:41:13.15785  |     731 | xxxxxxxxx@xxxxxxxxxxxxxxxxxxxxxxx          | Unnamed history    | f         | f       | f      |          98
+		 40123 | 2017-06-16 13:43:24.948344 |     987 | xxxxxxxxx@xxxxxxxxxxxxxxxxxxxxxxx          | Unnamed history    | f         | f       | f      |          22
+		 40050 | 2017-06-19 00:46:29.032462 |     193 | xxxxxxxxx@xxxxxxxxxxxxxxxxxxxxxxx          | Telmatactis        | f         | f       | f      |          74
+		 12212 | 2017-06-20 14:41:03.762881 |     169 | xxxxxxxxx@xxxxxxxxxxxxxxxxxxxxxxx          | Unnamed history    | f         | f       | f      |          24
+		 39523 | 2017-06-21 01:34:52.226653 |       9 | xxxxxxxxx@xxxxxxxxxxxxxxxxxxxxxxx          | OSCC Cell Lines    | f         | f       | f      |         139
 	EOF
 
 	weeks=15
