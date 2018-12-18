@@ -1435,38 +1435,38 @@ obtain_query() {
 	query_name="$1"; shift
 
 	case "$query_name" in
-		latest-users           ) query_latest_users           "$@" ;;
-		tool-usage             ) query_tool_usage             "$@" ;;
-		job-info               ) query_job_info               "$@" ;;
+		active-users           ) query_active_users           "$@" ;;
+		collection-usage       ) query_collection_usage       "$@" ;;
 		datasets-created-daily ) query_datasets_created_daily "$@" ;;
-		queue-time             ) query_queue_time             "$@" ;;
+		disk-usage             ) query_disk_usage             "$@" ;;
+		groups-list            ) query_groups_list            "$@" ;;
+		job-history            ) query_job_history            "$@" ;;
+		job-info               ) query_job_info               "$@" ;;
+		job-inputs             ) query_job_inputs             "$@" ;;
+		job-outputs            ) query_job_outputs            "$@" ;;
+		jobs-per-user          ) query_jobs_per_user          "$@" ;;
 		largest-collection     ) query_largest_collection     "$@" ;;
+		latest-users           ) query_latest_users           "$@" ;;
+		old-histories          ) query_old_histories          "$@" ;;
 		queue                  ) query_queue                  "$@" ;;
 		queue-detail           ) query_queue_detail           "$@" ;;
 		queue-overview         ) query_queue_overview         "$@" ;;
-		runtime-per-user       ) query_runtime_per_user       "$@" ;;
-		jobs-per-user          ) query_jobs_per_user          "$@" ;;
+		queue-time             ) query_queue_time             "$@" ;;
 		recent-jobs            ) query_recent_jobs            "$@" ;;
-		training               ) query_training               "$@" ;;
-		training-members       ) query_training_members       "$@" ;;
-		training-memberof      ) query_training_memberof      "$@" ;;
-		training-remove-member ) query_training_remove_member "$@" ;;
-		training-queue         ) query_training_queue         "$@" ;;
-		tool-last-used-date    ) query_tool_last_used_date    "$@" ;;
-		disk-usage             ) query_disk_usage             "$@" ;;
-		users-count            ) query_users_count            "$@" ;;
-		user-details           ) query_user_details           "$@" ;;
-		users-total            ) query_users_total            "$@" ;;
-		groups-list            ) query_groups_list            "$@" ;;
-		collection-usage       ) query_collection_usage       "$@" ;;
-		ts-repos               ) query_ts_repos               "$@" ;;
-		active-users           ) query_active_users           "$@" ;;
-		job-history            ) query_job_history            "$@" ;;
-		job-inputs             ) query_job_inputs             "$@" ;;
-		job-outputs            ) query_job_outputs            "$@" ;;
-		tool-metrics           ) query_tool_metrics           "$@";;
+		runtime-per-user       ) query_runtime_per_user       "$@" ;;
 		tool-available-metrics ) query_tool_available_metrics "$@" ;;
-		old-histories		   ) query_old_histories		  "$@" ;;
+		tool-last-used-date    ) query_tool_last_used_date    "$@" ;;
+		tool-metrics           ) query_tool_metrics           "$@" ;;
+		tool-usage             ) query_tool_usage             "$@" ;;
+		training               ) query_training               "$@" ;;
+		training-memberof      ) query_training_memberof      "$@" ;;
+		training-members       ) query_training_members       "$@" ;;
+		training-queue         ) query_training_queue         "$@" ;;
+		training-remove-member ) query_training_remove_member "$@" ;;
+		ts-repos               ) query_ts_repos               "$@" ;;
+		user-details           ) query_user_details           "$@" ;;
+		users-count            ) query_users_count            "$@" ;;
+		users-total            ) query_users_total            "$@" ;;
 
 		# default
 		* ) export QUERY="ERROR" ;;
