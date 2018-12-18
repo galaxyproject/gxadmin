@@ -1,6 +1,10 @@
 #10
+
 - Added:
-	- Old histories query to find histories that haven't been used for X weeks.
+	- old-histories: Old histories query to find histories that haven't been used for X weeks.
+	- user-details: query details about a specific user ID
+- Fixed:
+	- Included date in cleanup logs
 
 # 9
 
