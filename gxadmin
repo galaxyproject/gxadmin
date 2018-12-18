@@ -1052,6 +1052,21 @@ query_disk_usage() { ## query disk-usage: Disk usage per object store.
 	EOF
 }
 
+
+query_user_details() { ## query user-details:
+	handle_help "$@" <<-EOF
+	EOF
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			id, create_time, email, external, deleted, purged, username, disk_usage, active, last_password_change
+		FROM
+			galaxy_user
+		WHERE
+			id = $1
+	EOF
+}
+
 query_users_count() { ## query users-count: Shows sums of active/external/deleted/purged accounts
 	handle_help "$@" <<-EOF
 		     active | external | deleted | purged | count
@@ -1440,6 +1455,7 @@ obtain_query() {
 		tool-last-used-date    ) query_tool_last_used_date    "$@" ;;
 		disk-usage             ) query_disk_usage             "$@" ;;
 		users-count            ) query_users_count            "$@" ;;
+		user-details           ) query_user_details           "$@" ;;
 		users-total            ) query_users_total            "$@" ;;
 		groups-list            ) query_groups_list            "$@" ;;
 		collection-usage       ) query_collection_usage       "$@" ;;
