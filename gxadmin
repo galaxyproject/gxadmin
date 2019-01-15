@@ -204,7 +204,7 @@ supervisor_strace() {
 
 	pid=$(echo $state | egrep -o 'pid ([0-9]*)' | sed 's/pid //g' | tr '\n' ' ')
 	pids=$(echo "$pid"  | sed 's/^\s*//g;s/\s*$//g;s/ / -p /g')
-	strace -e open -p $pids
+	strace -e open,openat -p $pids
 }
 
 assert_count() {
@@ -1505,17 +1505,47 @@ query() {
 	esac
 }
 
+uwsgi() {
+	subfunc="$1"; shift
+	case "$subfunc" in
+		stats_influx  ) uwsgi_stats_influx "$@";;
+	esac
+}
+
+uwsgi_stats_influx(){ ## uwsgi stats_influx: InfluxDB formatted output for the current stats
+	address="$1"; shift
+
+	# fetch data
+	data="$(uwsgi --connect-and-read $address 2>&1)"
+
+	echo "$data" | \
+		jq -r '.locks[] | to_entries[] |  "uwsgi.locks,group=\(.key) count=\(.value)"' | \
+		sed 's/group=user 0/group=user_0/g'
+
+	echo "$data" | \
+		jq -r '. | "uwsgi.general listen_queue=\(.listen_queue),listen_queue_errors=\(.listen_queue_errors),load=\(.load),signal_queue=\(.signal_queue)"'
+
+	echo "$data" | \
+		jq -r '.sockets[] | "uwsgi.sockets,name=\(.name),proto=\(.proto) queue=\(.queue),max_queue=\(.max_queue),shared=\(.shared),can_offload=\(.can_offload)"'
+
+	echo "$data" | \
+		jq -r '.workers[] | "uwsgi.worker,id=\(.id) accepting=\(.accepting),requests=\(.requests),exceptions=\(.exception),harakiri_count=\(.harakiri_count),signals=\(.signals),signal_queue=\(.signal_queue),status=\"\(.status)\",rss=\(.rss),vsz=\(.vsz),running_time=\(.running_time),respawn_count=\(.respawn_count),tx=\(.tx),avg_rt=\(.avg_rt)"'
+}
+
+
+
 
 mode="$1"; shift
 
 case "$mode" in
-	validate                       ) func_validate "$@" ;;
-	cleanup                        ) cleanup "$@" ;;
-	zerg                           ) zerg "$@" ;;
-	handler                        ) handler "$@" ;;
+	validate                       ) func_validate     "$@" ;;
+	cleanup                        ) cleanup           "$@" ;;
+	zerg                           ) zerg              "$@" ;;
+	handler                        ) handler           "$@" ;;
 	migrate-tool-install-to-sqlite ) migrate_to_sqlite "$@" ;;
-	update                         ) update "$@" ;;
-    *query                         ) query "$mode" "$@"    ;;
+	update                         ) update            "$@" ;;
+	uwsgi                          ) uwsgi             "$@" ;;
+    *query                         ) query "$mode"     "$@" ;;
 
 	# Generate for readme:
 	cmdlist   ) cmdlist ;;
@@ -1527,4 +1557,6 @@ case "$mode" in
 	help      ) usage safe ;;
 	-h        ) usage safe ;;
 	--help    ) usage safe ;;
+	# anything else
+	*         ) usage "Unknown command";;
 esac
