@@ -165,7 +165,7 @@ zerg_swap() {
 	# And again even if everything looks good, just in case.
 
 	StartDate=`date "+%s"`
-	touch  $HOME/.restart-lock
+	echo $$ > $HOME/.restart-lock
 
 	# Ok, so now we are sure that just one is running
 	if [ "$zerg1running" -eq "1" ] ; then
