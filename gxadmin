@@ -1080,14 +1080,46 @@ query_user_details() { ## query user-details:
 	handle_help "$@" <<-EOF
 	EOF
 
-	read -r -d '' QUERY <<-EOF
+	# Metada
+	read -r -d '' qstr <<-EOF
 		SELECT
-			id, create_time, email, external, deleted, purged, username, disk_usage, active, last_password_change
+			username, id, email, create_time, external, deleted, purged, active, pg_size_pretty(disk_usage)
 		FROM
 			galaxy_user
 		WHERE
-			id = $1
+			username = '$1' or id = CAST(REGEXP_REPLACE(COALESCE('$1','0'), '[^0-9]+', '0', 'g') AS INTEGER)
 	EOF
+	results=$(query_tsv "$qstr")
+	user_id=$(echo "$results" | awk '{print $2}')
+
+	# Recent jobs
+	read -r -d '' qstr <<-EOF
+		SELECT
+			tool_id, state, create_time, exit_code, metric_value::text::interval
+		FROM
+			job, job_metric_numeric
+		WHERE
+			job.user_id = $user_id and job.id = job_metric_numeric.job_id and metric_name = 'runtime_seconds' order by job.id desc limit 10
+	EOF
+	recent_jobs=$(query_tsv "$qstr")
+	recent_jobs2=$(printf "Tool ID\tStatus\tCreated\tExit Code\tRuntime\n----\t----\t----\t---\t----\n%s" "$recent_jobs" | sed 's/\t/\t | \t/g' | column -t -s'	')
+
+	read -r -d '' template <<EOF
+# Galaxy User $user_id
+
+  Property | Value
+---------- | -----
+        ID | %s (id=%s) %s
+   Created | %s %s
+Properties | ext=%s deleted=%s purged=%s active=%s
+Disk Usage | %s %s
+
+## Recent Jobs
+
+%s
+\n
+EOF
+	printf "$template" $results "$recent_jobs2"
 }
 
 query_users_count() { ## query users-count: Shows sums of active/external/deleted/purged accounts
