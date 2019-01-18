@@ -1,4 +1,12 @@
-#10
+# 11
+
+- Added:
+	- filter hexdecode: to help decode hex blobs in postgres queries
+	- uwsgi stats\_influx: which fetches stats from uWSGI zerglings
+- Improved:
+	- user-details: now reports in markdown compatible output and with more information about the user
+
+# 10
 
 - Added:
 	- old-histories: Old histories query to find histories that haven't been used for X weeks.
