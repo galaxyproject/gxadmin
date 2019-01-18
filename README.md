@@ -48,6 +48,7 @@ Example .pgpass:
 Command | Description
 ------- | -----------
 [cleanup](#cleanup) | Cleanup histories/hdas/etc for past N days (default=30)
+[filter hexdecode](#filter-hexdecode) | Decodes any hex blobs from postgres outputs
 [handler restart](#handler-restart) | restart handlers
 [handler strace](#handler-strace) | Run an strace on a specific handler (to watch it load files.)
 [handler tail](#handler-tail) | tail handler logs
@@ -81,9 +82,11 @@ Command | Description
 [query training-queue](#query-training-queue) | Jobs currently being run by people in a given training
 [query training-remove-member](#query-training-remove-member) | Remove a user from a training
 [query ts-repos](#query-ts-repos) | Counts of toolshed repositories by toolshed and owner.
+[query user-details](#query-user-details) |
 [query users-count](#query-users-count) | Shows sums of active/external/deleted/purged accounts
 [query users-total](#query-users-total) | Total number of Galaxy users (incl deleted, purged, inactive)
 [update](#update) | Update the script
+[uwsgi stats_influx](#uwsgi-stats_influx) | InfluxDB formatted output for the current stats
 [validate](#validate) | validate config files
 [zerg strace](#zerg-strace) | swap zerglings
 [zerg swap](#zerg-swap) | swap zerglings
@@ -103,6 +106,66 @@ gxadmin cleanup [days]
 **NOTES**
 
 Cleanup histories/hdas/etc for past N days using the python objects-based method
+
+
+### filter hexdecode
+
+**NAME**
+
+filter hexdecode -  Decodes any hex blobs from postgres outputs
+
+**SYNOPSIS**
+
+gxadmin filter hexdecode
+
+**NOTES**
+
+This automatically replaces any hex strings (\x[a-f0-9]+) with their decoded versions. This can allow you to query galaxy metadata, decode it, and start processing it with JQ. Just pipe your query to it and it will replace it wherever it is found.
+
+    [galaxy@sn04 ~]$ psql -c  'select metadata from history_dataset_association limit 10;'
+                                 metadata
+    ------------------------------------------------------------------------------------------------------------------
+     \x7b22646174615f6c696e6573223a206e756c6c2c202264626b6579223a205b223f225d2c202273657175656e636573223a206e756c6c7d
+     \x7b22646174615f6c696e6573223a206e756c6c2c202264626b6579223a205b223f225d2c202273657175656e636573223a206e756c6c7d
+     \x7b22646174615f6c696e6573223a206e756c6c2c202264626b6579223a205b223f225d2c202273657175656e636573223a206e756c6c7d
+     \x7b22646174615f6c696e6573223a206e756c6c2c202264626b6579223a205b223f225d2c202273657175656e636573223a206e756c6c7d
+     \x7b22646174615f6c696e6573223a206e756c6c2c202264626b6579223a205b223f225d2c202273657175656e636573223a206e756c6c7d
+     \x7b22646174615f6c696e6573223a20333239312c202264626b6579223a205b223f225d2c202273657175656e636573223a20317d
+     \x7b22646174615f6c696e6573223a20312c202264626b6579223a205b223f225d7d
+     \x7b22646174615f6c696e6573223a20312c202264626b6579223a205b223f225d7d
+     \x7b22646174615f6c696e6573223a20312c202264626b6579223a205b223f225d7d
+     \x7b22646174615f6c696e6573223a20312c202264626b6579223a205b223f225d7d
+    (10 rows)
+
+    [galaxy@sn04 ~]$ psql -c  'select metadata from history_dataset_association limit 10;'  | gxadmin filter hexdecode
+                                 metadata
+    ------------------------------------------------------------------------------------------------------------------
+     {"data_lines": null, "dbkey": ["?"], "sequences": null}
+     {"data_lines": null, "dbkey": ["?"], "sequences": null}
+     {"data_lines": null, "dbkey": ["?"], "sequences": null}
+     {"data_lines": null, "dbkey": ["?"], "sequences": null}
+     {"data_lines": null, "dbkey": ["?"], "sequences": null}
+     {"data_lines": 3291, "dbkey": ["?"], "sequences": 1}
+     {"data_lines": 1, "dbkey": ["?"]}
+     {"data_lines": 1, "dbkey": ["?"]}
+     {"data_lines": 1, "dbkey": ["?"]}
+     {"data_lines": 1, "dbkey": ["?"]}
+    (10 rows)
+
+Or to query for the dbkeys uesd by datasets:
+
+    [galaxy@sn04 ~]$ psql -c  'copy (select metadata from history_dataset_association limit 1000) to stdout' | \
+        gxadmin filter hexdecode | \
+        jq -r '.dbkey[0]' 2>/dev/null | sort | uniq -c | sort -nr
+        768 ?
+        118 danRer7
+         18 hg19
+         17 mm10
+         13 mm9
+          4 dm3
+          1 TAIR10
+          1 hg38
+          1 ce10
 
 
 ### handler restart
@@ -697,6 +760,17 @@ query ts-repos -  Counts of toolshed repositories by toolshed and owner.
 gxadmin query ts-repos
 
 
+### query user-details
+
+**NAME**
+
+query user-details -
+
+**SYNOPSIS**
+
+gxadmin query user-details
+
+
 ### query users-count
 
 **NAME**
@@ -738,6 +812,53 @@ update -  Update the script
 **SYNOPSIS**
 
 gxadmin update
+
+
+### uwsgi stats_influx
+
+**NAME**
+
+uwsgi stats_influx -  InfluxDB formatted output for the current stats
+
+**SYNOPSIS**
+
+gxadmin uwsgi stats_influx <addr>
+
+**NOTES**
+
+Contact a specific uWSGI stats address (requires uwsgi binary on path)
+and requests the current stats + formats them for InfluxDB. For some
+reason it has trouble with localhost vs IP address, so recommend that
+you use IP.
+
+    $ gxadmin uwsgi stats_influx 127.0.0.1:9191
+    uwsgi.locks,addr=127.0.0.1:9191,group=user_0 count=0
+    uwsgi.locks,addr=127.0.0.1:9191,group=signal count=0
+    uwsgi.locks,addr=127.0.0.1:9191,group=filemon count=0
+    uwsgi.locks,addr=127.0.0.1:9191,group=timer count=0
+    uwsgi.locks,addr=127.0.0.1:9191,group=rbtimer count=0
+    uwsgi.locks,addr=127.0.0.1:9191,group=cron count=0
+    uwsgi.locks,addr=127.0.0.1:9191,group=thunder count=2006859
+    uwsgi.locks,addr=127.0.0.1:9191,group=rpc count=0
+    uwsgi.locks,addr=127.0.0.1:9191,group=snmp count=0
+    uwsgi.general,addr=127.0.0.1:9191 listen_queue=0,listen_queue_errors=0,load=0,signal_queue=0
+    uwsgi.sockets,addr=127.0.0.1:9191,name=127.0.0.1:4001,proto=uwsgi queue=0,max_queue=100,shared=0,can_offload=0
+    uwsgi.worker,addr=127.0.0.1:9191,id=1 accepting=1,requests=65312,exceptions=526,harakiri_count=26,signals=0,signal_queue=0,status="idle",rss=0,vsz=0,running_time=17433008661,respawn_count=27,tx=15850829410,avg_rt=71724
+    uwsgi.worker,addr=127.0.0.1:9191,id=2 accepting=1,requests=67495,exceptions=472,harakiri_count=51,signals=0,signal_queue=0,status="idle",rss=0,vsz=0,running_time=15467746010,respawn_count=52,tx=15830867066,avg_rt=65380
+    uwsgi.worker,addr=127.0.0.1:9191,id=3 accepting=1,requests=67270,exceptions=520,harakiri_count=35,signals=0,signal_queue=0,status="idle",rss=0,vsz=0,running_time=14162158015,respawn_count=36,tx=15799661545,avg_rt=73366
+    uwsgi.worker,addr=127.0.0.1:9191,id=4 accepting=1,requests=66434,exceptions=540,harakiri_count=34,signals=0,signal_queue=0,status="idle",rss=0,vsz=0,running_time=15740205807,respawn_count=35,tx=16231969649,avg_rt=75468
+    uwsgi.worker,addr=127.0.0.1:9191,id=5 accepting=1,requests=67021,exceptions=534,harakiri_count=38,signals=0,signal_queue=0,status="idle",rss=0,vsz=0,running_time=14573155758,respawn_count=39,tx=16517287963,avg_rt=140855
+    uwsgi.worker,addr=127.0.0.1:9191,id=6 accepting=1,requests=66810,exceptions=483,harakiri_count=24,signals=0,signal_queue=0,status="idle",rss=0,vsz=0,running_time=19107513635,respawn_count=25,tx=15945313469,avg_rt=64032
+    uwsgi.worker,addr=127.0.0.1:9191,id=7 accepting=1,requests=66544,exceptions=460,harakiri_count=35,signals=0,signal_queue=0,status="idle",rss=0,vsz=0,running_time=14240478391,respawn_count=36,tx=15499531841,avg_rt=114981
+    uwsgi.worker,addr=127.0.0.1:9191,id=8 accepting=1,requests=67577,exceptions=517,harakiri_count=35,signals=0,signal_queue=0,status="idle",rss=0,vsz=0,running_time=14767971195,respawn_count=36,tx=15780639229,avg_rt=201275
+
+For multiple zerglings you can run this for each and just 2>/dev/null
+
+    PATH=/opt/galaxy/venv/bin:/sbin:/bin:/usr/sbin:/usr/bin gxadmin uwsgi stats_influx 127.0.0.1:9190 2>/dev/null
+    PATH=/opt/galaxy/venv/bin:/sbin:/bin:/usr/sbin:/usr/bin gxadmin uwsgi stats_influx 127.0.0.1:9191 2>/dev/null
+    exit 0
+
+And it will fetch only data for responding uwsgis.
 
 
 ### validate
