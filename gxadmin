@@ -1,5 +1,25 @@
 #!/bin/bash
 
+
+hexdecodelines=$(cat <<EOF
+import sys
+import re
+import binascii
+query = re.compile(r'^(.*)\\\\x([0-9a-f]+)(.*)$')
+for line in sys.stdin:
+	asdf = '%s' % line.replace('\\\\\\\\', '\\\\')
+	while True:
+		m = query.match(asdf)
+		if m: 
+			asdf = m.groups()[0]
+			asdf += binascii.unhexlify(m.groups()[1])
+			asdf += m.groups()[2] + '\\n'
+		else:
+			break
+	sys.stdout.write(asdf)
+EOF
+)
+
 usage(){
 	if (( $# > 0 )) && [[ $1 != "safe" ]]; then
 		error $@
@@ -1505,6 +1525,70 @@ query() {
 	esac
 }
 
+
+hexdecode() { ## filter hexdecode: Decodes any hex blobs from postgres outputs 
+	handle_help "$@" <<-EOF
+		This automatically replaces any hex strings (\\x[a-f0-9]+) with their decoded versions. This can allow you to query galaxy metadata, decode it, and start processing it with JQ. Just pipe your query to it and it will replace it wherever it is found.
+
+		    [galaxy@sn04 ~]$ psql -c  'select metadata from history_dataset_association limit 10;'
+		    						     metadata
+		    ------------------------------------------------------------------------------------------------------------------
+		     \\x7b22646174615f6c696e6573223a206e756c6c2c202264626b6579223a205b223f225d2c202273657175656e636573223a206e756c6c7d
+		     \\x7b22646174615f6c696e6573223a206e756c6c2c202264626b6579223a205b223f225d2c202273657175656e636573223a206e756c6c7d
+		     \\x7b22646174615f6c696e6573223a206e756c6c2c202264626b6579223a205b223f225d2c202273657175656e636573223a206e756c6c7d
+		     \\x7b22646174615f6c696e6573223a206e756c6c2c202264626b6579223a205b223f225d2c202273657175656e636573223a206e756c6c7d
+		     \\x7b22646174615f6c696e6573223a206e756c6c2c202264626b6579223a205b223f225d2c202273657175656e636573223a206e756c6c7d
+		     \\x7b22646174615f6c696e6573223a20333239312c202264626b6579223a205b223f225d2c202273657175656e636573223a20317d
+		     \\x7b22646174615f6c696e6573223a20312c202264626b6579223a205b223f225d7d
+		     \\x7b22646174615f6c696e6573223a20312c202264626b6579223a205b223f225d7d
+		     \\x7b22646174615f6c696e6573223a20312c202264626b6579223a205b223f225d7d
+		     \\x7b22646174615f6c696e6573223a20312c202264626b6579223a205b223f225d7d
+		    (10 rows)
+
+		    [galaxy@sn04 ~]$ psql -c  'select metadata from history_dataset_association limit 10;'  | gxadmin filter hexdecode
+		    						     metadata
+		    ------------------------------------------------------------------------------------------------------------------
+		     {"data_lines": null, "dbkey": ["?"], "sequences": null}
+		     {"data_lines": null, "dbkey": ["?"], "sequences": null}
+		     {"data_lines": null, "dbkey": ["?"], "sequences": null}
+		     {"data_lines": null, "dbkey": ["?"], "sequences": null}
+		     {"data_lines": null, "dbkey": ["?"], "sequences": null}
+		     {"data_lines": 3291, "dbkey": ["?"], "sequences": 1}
+		     {"data_lines": 1, "dbkey": ["?"]}
+		     {"data_lines": 1, "dbkey": ["?"]}
+		     {"data_lines": 1, "dbkey": ["?"]}
+		     {"data_lines": 1, "dbkey": ["?"]}
+		    (10 rows)
+
+		Or to query for the dbkeys uesd by datasets:
+
+		    [galaxy@sn04 ~]$ psql -c  'copy (select metadata from history_dataset_association limit 1000) to stdout' | \\ 
+		        gxadmin filter hexdecode | \\
+		        jq -r '.dbkey[0]' 2>/dev/null | sort | uniq -c | sort -nr
+		        768 ?
+		        118 danRer7
+		         18 hg19
+		         17 mm10
+		         13 mm9
+		          4 dm3
+		          1 TAIR10
+		          1 hg38
+		          1 ce10
+	
+
+	EOF
+
+	cat /dev/stdin | python -c "$hexdecodelines"
+}
+
+
+filter() {
+	subfunc="$1"; shift
+	case "$subfunc" in
+		hexdecode  ) hexdecode "$@" ;;
+	esac
+}
+
 uwsgi() {
 	subfunc="$1"; shift
 	case "$subfunc" in
@@ -1516,10 +1600,11 @@ uwsgi_stats_influx(){ ## uwsgi stats_influx: InfluxDB formatted output for the c
 	address="$1"; shift
 
 	# fetch data
-	data="$(uwsgi --connect-and-read $address 2>&1)"
+	uwsgi=$(which uwsgi)
+	data="$($uwsgi --connect-and-read $address 2>&1)"
 
 	echo "$data" | \
-		jq -r '.locks[] | to_entries[] |  "uwsgi.locks,addr='$address'group=\(.key) count=\(.value)"' | \
+		jq -r '.locks[] | to_entries[] |  "uwsgi.locks,addr='$address',group=\(.key) count=\(.value)"' | \
 		sed 's/group=user 0/group=user_0/g'
 
 	echo "$data" | \
@@ -1546,7 +1631,8 @@ case "$mode" in
 	migrate-tool-install-to-sqlite ) migrate_to_sqlite "$@" ;;
 	update                         ) update            "$@" ;;
 	uwsgi                          ) uwsgi             "$@" ;;
-    *query                         ) query "$mode"     "$@" ;;
+        filter                         ) filter            "$@" ;;
+        *query                         ) query "$mode"     "$@" ;;
 
 	# Generate for readme:
 	cmdlist   ) cmdlist ;;
