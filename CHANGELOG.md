@@ -3,6 +3,7 @@
 - Added:
 	- filter hexdecode: to help decode hex blobs in postgres queries
 	- uwsgi stats\_influx: which fetches stats from uWSGI zerglings
+	- filter pg2md: Convert postgres tables into markdown compatible tables
 - Improved:
 	- user-details: now reports in markdown compatible output and with more information about the user
 
