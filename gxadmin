@@ -1351,9 +1351,9 @@ query_month_data(){ ## query monthly data-created [year]: Number of active users
 			pg_size_pretty(sum(total_size)), date_trunc('month', dataset.create_time) AS month
 		FROM
 			dataset
+		$where
 		GROUP BY
 			month
-		$where
 		ORDER BY
 			month DESC;
 	EOF
