@@ -1338,6 +1338,69 @@ query_tool_available_metrics() { ## query tool-available-metrics <tool_id>: list
 	EOF
 }
 
+query_month_data(){ ## query monthly data-created [year]: Number of active users per month, running jobs
+	handle_help "$@" <<-EOF
+	EOF
+
+	if (( $# > 0 )); then
+		where="WHERE date_trunc('year', dataset.create_time) = '$1-01-01'::date"
+	fi
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			pg_size_pretty(sum(total_size)), date_trunc('month', dataset.create_time) AS month
+		FROM
+			dataset
+		GROUP BY
+			month
+		$where
+		ORDER BY
+			month DESC;
+	EOF
+}
+
+query_month_users(){ ## query monthly active-users [year]: Number of active users per month, running jobs
+	handle_help "$@" <<-EOF
+	EOF
+
+	if (( $# > 0 )); then
+		where="WHERE date_trunc('year', job.create_time) = '$1-01-01'::date"
+	fi
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			count(distinct user_id) as unique_users,
+			date_trunc('month', job.create_time) as month
+		FROM job
+		$where
+		GROUP BY month
+		ORDER BY month DESC
+	EOF
+}
+
+query_month_jobs(){ ## query monthly jobs [year]: Number of jobs run each month
+	handle_help "$@" <<-EOF
+	EOF
+
+	if (( $# > 0 )); then
+		where="WHERE date_trunc('year', job.create_time) = '$1-01-01'::date"
+	fi
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			date_trunc('month', job.create_time) AS month,
+			count(*)
+		FROM
+			job
+		$where
+		GROUP BY
+			month
+		ORDER BY
+			month DESC
+	EOF
+
+}
+
 query_job_history() { ## query job-history <id>: Job state history for a specific job
 	handle_help "$@" <<-EOF
 		    $ gxadmin query job-history 4384025
@@ -1518,6 +1581,9 @@ obtain_query() {
 		jobs-per-user          ) query_jobs_per_user          "$@" ;;
 		largest-collection     ) query_largest_collection     "$@" ;;
 		latest-users           ) query_latest_users           "$@" ;;
+		monthly-data           ) query_month_data             "$@" ;;
+		monthly-jobs           ) query_month_jobs             "$@" ;;
+		monthly-users          ) query_month_users            "$@" ;;
 		old-histories          ) query_old_histories          "$@" ;;
 		queue                  ) query_queue                  "$@" ;;
 		queue-detail           ) query_queue_detail           "$@" ;;
