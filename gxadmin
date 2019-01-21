@@ -244,7 +244,7 @@ assert_count_ge() {
 }
 
 query_tbl() {
-	psql -c "$1" | sed 's/--+--/- | -/g'
+	psql -c "$1"
 }
 
 query_tsv() {
@@ -1641,6 +1641,17 @@ query() {
 }
 
 
+pg2md() { ## filter pg2md: Convert postgres table format outputs to something that can be pasted as markdown
+	handle_help "$@" <<-EOF
+		Imagine doing something like:
+
+		    gxadmin query active-users 2018 | gxadmin filter pg2md
+
+		and it should produce a nicely formatted table
+	EOF
+	cat /dev/stdin | sed 's/--+--/- | -/g;s/^\(\s\+\)\([^|]\+\) |/\2 \1|/g'
+}
+
 hexdecode() { ## filter hexdecode: Decodes any hex blobs from postgres outputs
 	handle_help "$@" <<-EOF
 		This automatically replaces any hex strings (\\x[a-f0-9]+) with their decoded versions. This can allow you to query galaxy metadata, decode it, and start processing it with JQ. Just pipe your query to it and it will replace it wherever it is found.
@@ -1701,6 +1712,7 @@ filter() {
 	subfunc="$1"; shift
 	case "$subfunc" in
 		hexdecode  ) hexdecode "$@" ;;
+		pg2md      ) pg2md     "$@" ;;
 	esac
 }
 
