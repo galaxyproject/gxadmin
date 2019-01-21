@@ -1025,8 +1025,8 @@ query_training_queue() { ## query training-queue <training_id>: Jobs currently b
 			FROM
 				job, galaxy_user
 			WHERE
-				state IN ('running', 'queued', 'new')
-				AND job.user_id = galaxy_user.id
+				job.user_id = galaxy_user.id
+				AND job.create_time > (now() - '3 hours'::interval)
 				AND galaxy_user.id
 					IN (
 							SELECT
@@ -1039,7 +1039,7 @@ query_training_queue() { ## query training-queue <training_id>: Jobs currently b
 								AND user_group_association.user_id = galaxy_user.id
 						)
 			ORDER BY
-				state DESC, created DESC
+				job.create_time ASC
 	EOF
 }
 
@@ -1092,6 +1092,17 @@ query_user_details() { ## query user-details:
 	results=$(query_tsv "$qstr")
 	user_id=$(echo "$results" | awk '{print $2}')
 
+	# Groups
+	read -r -d '' qstr <<-EOF
+		select string_agg(galaxy_group.name, ', ') from user_group_association, galaxy_group where user_id = $user_id and user_group_association.group_id = galaxy_group.id
+	EOF
+	group_membership=$(query_tsv "$qstr")
+
+	read -r -d '' qstr <<-EOF
+		select string_agg(role.name, ', ') from user_role_association, role where user_id = $user_id and user_role_association.role_id = role.id and role.type not in ('private', 'sharing')
+	EOF
+	role_membership=$(query_tsv "$qstr")
+
 	# Recent jobs
 	read -r -d '' qstr <<-EOF
 		SELECT
@@ -1114,12 +1125,17 @@ query_user_details() { ## query user-details:
 Properties | ext=%s deleted=%s purged=%s active=%s
 Disk Usage | %s %s
 
+## Groups/Roles
+
+Groups: %s
+Roles: %s
+
 ## Recent Jobs
 
 %s
 \n
 EOF
-	printf "$template" $results "$recent_jobs2"
+	printf "$template" $results "$group_membership" "$role_membership" "$recent_jobs2"
 }
 
 query_users_count() { ## query users-count: Shows sums of active/external/deleted/purged accounts
@@ -1520,6 +1536,7 @@ obtain_query() {
 		training-remove-member ) query_training_remove_member "$@" ;;
 		ts-repos               ) query_ts_repos               "$@" ;;
 		user-details           ) query_user_details           "$@" ;;
+		user-info              ) query_user_details           "$@" ;;
 		users-count            ) query_users_count            "$@" ;;
 		users-total            ) query_users_total            "$@" ;;
 
