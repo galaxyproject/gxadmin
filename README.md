@@ -45,10 +45,13 @@ Example .pgpass:
 <pg_host>:5432:*:<pg_user>:<pg_password>
 ```
 
+## Commands
+
 Command | Description
 ------- | -----------
 [cleanup](#cleanup) | Cleanup histories/hdas/etc for past N days (default=30)
 [filter hexdecode](#filter-hexdecode) | Decodes any hex blobs from postgres outputs
+[filter pg2md](#filter-pg2md) | Convert postgres table format outputs to something that can be pasted as markdown
 [handler restart](#handler-restart) | restart handlers
 [handler strace](#handler-strace) | Run an strace on a specific handler (to watch it load files.)
 [handler tail](#handler-tail) | tail handler logs
@@ -65,6 +68,9 @@ Command | Description
 [query jobs-per-user](#query-jobs-per-user) | Number of jobs run by a specific user
 [query largest-collection](#query-largest-collection) | Returns the size of the single largest collection
 [query latest-users](#query-latest-users) | 40 recently registered users
+[query monthly-data](#query-monthly-data) | Number of active users per month, running jobs
+[query monthly-jobs](#query-monthly-jobs) | Number of jobs run each month
+[query monthly-users](#query-monthly-users) | Number of active users per month, running jobs
 [query old-histories](#query-old-histories) | Lists histories that haven't been updated (used) for <weeks>
 [query queue](#query-queue) | Brief overview of currently running jobs
 [query queue-detail](#query-queue-detail) | Detailed overview of running and queued jobs
@@ -82,7 +88,7 @@ Command | Description
 [query training-queue](#query-training-queue) | Jobs currently being run by people in a given training
 [query training-remove-member](#query-training-remove-member) | Remove a user from a training
 [query ts-repos](#query-ts-repos) | Counts of toolshed repositories by toolshed and owner.
-[query user-details](#query-user-details) |
+[query user-details](#query-user-details) | Quick overview of a Galaxy user in your system
 [query users-count](#query-users-count) | Shows sums of active/external/deleted/purged accounts
 [query users-total](#query-users-total) | Total number of Galaxy users (incl deleted, purged, inactive)
 [update](#update) | Update the script
@@ -166,6 +172,39 @@ Or to query for the dbkeys uesd by datasets:
           1 TAIR10
           1 hg38
           1 ce10
+
+
+### filter pg2md
+
+**NAME**
+
+filter pg2md -  Convert postgres table format outputs to something that can be pasted as markdown
+
+**SYNOPSIS**
+
+gxadmin filter pg2md
+
+**NOTES**
+
+Imagine doing something like:
+
+    $ gxadmin query active-users 2018 | gxadmin filter pg2md
+    unique_users  |        month
+    ------------- | --------------------
+    811           | 2018-12-01 00:00:00
+    658           | 2018-11-01 00:00:00
+    583           | 2018-10-01 00:00:00
+    444           | 2018-09-01 00:00:00
+    342           | 2018-08-01 00:00:00
+    379           | 2018-07-01 00:00:00
+    370           | 2018-06-01 00:00:00
+    330           | 2018-05-01 00:00:00
+    274           | 2018-04-01 00:00:00
+    186           | 2018-03-01 00:00:00
+    168           | 2018-02-01 00:00:00
+    122           | 2018-01-01 00:00:00
+
+and it should produce a nicely formatted table
 
 
 ### handler restart
@@ -433,6 +472,99 @@ Returns 40 most recently registered users
       1 | 2018-10-05 11:40:42.90119 |                | helena-rasche | hxr@informatik.uni-freiburg.de
 
 
+### query monthly-data
+
+**NAME**
+
+query monthly-data -  Number of active users per month, running jobs
+
+**SYNOPSIS**
+
+gxadmin query monthly-data [year]
+
+**NOTES**
+
+Find out how much data was ingested or created by Galaxy during the past months.
+
+    $ gxadmin query monthly-data 2018
+     pg_size_pretty |        month
+    ----------------+---------------------
+     62 TB          | 2018-12-01 00:00:00
+     50 TB          | 2018-11-01 00:00:00
+     59 TB          | 2018-10-01 00:00:00
+     32 TB          | 2018-09-01 00:00:00
+     26 TB          | 2018-08-01 00:00:00
+     42 TB          | 2018-07-01 00:00:00
+     34 TB          | 2018-06-01 00:00:00
+     33 TB          | 2018-05-01 00:00:00
+     27 TB          | 2018-04-01 00:00:00
+     32 TB          | 2018-03-01 00:00:00
+     18 TB          | 2018-02-01 00:00:00
+     16 TB          | 2018-01-01 00:00:00
+
+
+### query monthly-jobs
+
+**NAME**
+
+query monthly-jobs -  Number of jobs run each month
+
+**SYNOPSIS**
+
+gxadmin query monthly-jobs [year]
+
+**NOTES**
+
+Count jobs run each month
+
+    [galaxy@sn04 galaxy]$ gxadmin query monthly-jobs 2018
+            month        | count
+    ---------------------+--------
+     2018-12-01 00:00:00 |  96941
+     2018-11-01 00:00:00 |  94625
+     2018-10-01 00:00:00 | 156940
+     2018-09-01 00:00:00 | 103331
+     2018-08-01 00:00:00 | 128658
+     2018-07-01 00:00:00 |  90852
+     2018-06-01 00:00:00 | 230470
+     2018-05-01 00:00:00 | 182331
+     2018-04-01 00:00:00 | 109032
+     2018-03-01 00:00:00 | 197125
+     2018-02-01 00:00:00 | 260931
+     2018-01-01 00:00:00 |  25378
+
+
+### query monthly-users
+
+**NAME**
+
+query monthly-users -  Number of active users per month, running jobs
+
+**SYNOPSIS**
+
+gxadmin query monthly-users [year]
+
+**NOTES**
+
+Number of unique users each month who ran jobs. NOTE: does not include anonymous users.
+
+    [galaxy@sn04 galaxy]$ gxadmin query monthly-users 2018
+     unique_users |        month
+    --------------+---------------------
+              811 | 2018-12-01 00:00:00
+              658 | 2018-11-01 00:00:00
+              583 | 2018-10-01 00:00:00
+              444 | 2018-09-01 00:00:00
+              342 | 2018-08-01 00:00:00
+              379 | 2018-07-01 00:00:00
+              370 | 2018-06-01 00:00:00
+              330 | 2018-05-01 00:00:00
+              274 | 2018-04-01 00:00:00
+              186 | 2018-03-01 00:00:00
+              168 | 2018-02-01 00:00:00
+              122 | 2018-01-01 00:00:00
+
+
 ### query old-histories
 
 **NAME**
@@ -606,6 +738,19 @@ query tool-available-metrics -  list all available metrics for a given tool
 
 gxadmin query tool-available-metrics <tool_id>
 
+**NOTES**
+
+Gives a list of available metrics, which can then be used to query.
+
+    [galaxy@sn04 galaxy]$ gxadmin query tool-available-metrics upload1
+                 metric_name
+    -------------------------------------
+     memory.stat.total_rss
+     memory.stat.total_swap
+     memory.stat.total_unevictable
+     memory.use_hierarchy
+     ...
+
 
 ### query tool-last-used-date
 
@@ -681,7 +826,7 @@ gxadmin query training [--all]
 
 **NOTES**
 
-This module is specific to EU's implementation of Training Infrastructure as a Service. But this specifically just checks for all groups with the name prefix
+This module is specific to EU's implementation of Training Infrastructure as a Service. But this specifically just checks for all groups with the name prefix 
 
     $ gxadmin query training
            name       |  created
@@ -764,11 +909,45 @@ gxadmin query ts-repos
 
 **NAME**
 
-query user-details -
+query user-details -  Quick overview of a Galaxy user in your system
 
 **SYNOPSIS**
 
-gxadmin query user-details
+gxadmin query user-details <user_id|username>
+
+**NOTES**
+
+This command lets you quickly find out information about a user. The output is formatted as markdown by default.
+
+    $ gxadmin query user-details helena-rasche
+    # Galaxy User 580
+
+      Property | Value
+    ---------- | -----
+            ID | helena-rasche (id=580) hxr@informatik.uni-freiburg.de
+       Created | 2017-07-26 14:47:37.575484
+    Properties | ext=f deleted=f purged=f active=t
+    Disk Usage | 137 GB
+
+    ## Groups/Roles
+
+    Groups: training-freiburg-rnaseq-2018, training-emc2018
+    Roles: admin, Backofen
+
+    ## Recent Jobs
+
+    Tool ID                                                                                |   Status   |   Created                      |   Exit Code   |   Runtime
+    ----                                                                                   |   ----     |   ----                         |   ---         |   ----
+    toolshed.g2.bx.psu.edu/repos/devteam/fasta_compute_length/fasta_compute_length/1.0.1   |   ok       |   2019-01-21 09:47:58.864848   |   0           |   00:02:11
+    Grep1                                                                                  |   ok       |   2019-01-21 07:27:24.472706   |   0           |   00:01:19
+    CONVERTER_fasta_to_tabular                                                             |   ok       |   2019-01-21 07:27:24.339862   |   0           |   00:03:34
+    secure_hash_message_digest                                                             |   ok       |   2019-01-18 16:43:44.262265   |   0           |   00:00:08
+    toolshed.g2.bx.psu.edu/repos/iuc/jbrowse/jbrowse/1.12.5+galaxy2                        |   ok       |   2019-01-18 14:43:24.314026   |   0           |   20:23:23
+    CONVERTER_gz_to_uncompressed                                                           |   ok       |   2019-01-18 10:18:23.99171    |   0           |   00:10:02
+    upload1                                                                                |   ok       |   2019-01-18 08:44:24.955622   |   0           |   01:11:07
+    echo_main_env                                                                          |   ok       |   2019-01-17 16:45:04.019233   |   0           |   00:00:29
+    secure_hash_message_digest                                                             |   ok       |   2019-01-17 16:03:21.33665    |   0           |   00:00:07
+    secure_hash_message_digest                                                             |   ok       |   2019-01-17 16:03:20.937433   |   0           |   00:00:09
 
 
 ### query users-count

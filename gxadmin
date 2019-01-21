@@ -25,7 +25,7 @@ usage(){
 		error $@
 	fi
 	echo "gxadmin usage:"
-	cmds="$(grep -o ' ## .*' $0 | grep -v grep | sort | sed 's/^ ## //g')"
+	cmds="$(grep -o '{ ## .*' $0 | grep -v grep | grep -v '| sed' | sort | sed 's/^{ ## //g')"
 	echo
 	echo "Zergling Commands:"
 	echo
@@ -62,7 +62,7 @@ handle_help() {
 
 			echo "**NAME**"
 			echo
-			invoke_desc=$(grep "## ${key}[ :]" $0 | sed "s/.*## /gxadmin /g")
+			invoke_desc=$(grep "{ ## ${key}[ :]" $0 | sed "s/.*## /gxadmin /g")
 			short_desc=$(echo $invoke_desc | sed 's/.*://g')
 			short_parm=$(echo $invoke_desc | sed 's/:.*//g')
 			echo "${key} - ${short_desc}"
@@ -1076,8 +1076,39 @@ query_disk_usage() { ## query disk-usage: Disk usage per object store.
 }
 
 
-query_user_details() { ## query user-details:
+query_user_details() { ## query user-details <user_id|username>: Quick overview of a Galaxy user in your system
 	handle_help "$@" <<-EOF
+		This command lets you quickly find out information about a user. The output is formatted as markdown by default.
+
+		    $ gxadmin query user-details helena-rasche
+		    # Galaxy User 580
+
+		      Property | Value
+		    ---------- | -----
+		            ID | helena-rasche (id=580) hxr@informatik.uni-freiburg.de
+		       Created | 2017-07-26 14:47:37.575484
+		    Properties | ext=f deleted=f purged=f active=t
+		    Disk Usage | 137 GB
+
+		    ## Groups/Roles
+
+		    Groups: training-freiburg-rnaseq-2018, training-emc2018
+		    Roles: admin, Backofen
+
+		    ## Recent Jobs
+
+		    Tool ID                                                                                |   Status   |   Created                      |   Exit Code   |   Runtime
+		    ----                                                                                   |   ----     |   ----                         |   ---         |   ----
+		    toolshed.g2.bx.psu.edu/repos/devteam/fasta_compute_length/fasta_compute_length/1.0.1   |   ok       |   2019-01-21 09:47:58.864848   |   0           |   00:02:11
+		    Grep1                                                                                  |   ok       |   2019-01-21 07:27:24.472706   |   0           |   00:01:19
+		    CONVERTER_fasta_to_tabular                                                             |   ok       |   2019-01-21 07:27:24.339862   |   0           |   00:03:34
+		    secure_hash_message_digest                                                             |   ok       |   2019-01-18 16:43:44.262265   |   0           |   00:00:08
+		    toolshed.g2.bx.psu.edu/repos/iuc/jbrowse/jbrowse/1.12.5+galaxy2                        |   ok       |   2019-01-18 14:43:24.314026   |   0           |   20:23:23
+		    CONVERTER_gz_to_uncompressed                                                           |   ok       |   2019-01-18 10:18:23.99171    |   0           |   00:10:02
+		    upload1                                                                                |   ok       |   2019-01-18 08:44:24.955622   |   0           |   01:11:07
+		    echo_main_env                                                                          |   ok       |   2019-01-17 16:45:04.019233   |   0           |   00:00:29
+		    secure_hash_message_digest                                                             |   ok       |   2019-01-17 16:03:21.33665    |   0           |   00:00:07
+		    secure_hash_message_digest                                                             |   ok       |   2019-01-17 16:03:20.937433   |   0           |   00:00:09
 	EOF
 
 	# Metada
@@ -1324,6 +1355,16 @@ query_tool_metrics() { ## query tool-metrics <tool_id> <metric_id> [--like]: See
 
 query_tool_available_metrics() { ## query tool-available-metrics <tool_id>: list all available metrics for a given tool
 	handle_help "$@" <<-EOF
+		Gives a list of available metrics, which can then be used to query.
+
+		    [galaxy@sn04 galaxy]$ gxadmin query tool-available-metrics upload1
+		                 metric_name
+		    -------------------------------------
+		     memory.stat.total_rss
+		     memory.stat.total_swap
+		     memory.stat.total_unevictable
+		     memory.use_hierarchy
+		     ...
 	EOF
 
 	assert_count $# 1 "Missing Tool ID"
@@ -1335,11 +1376,29 @@ query_tool_available_metrics() { ## query tool-available-metrics <tool_id>: list
 		WHERE job_id in (
 			SELECT id FROM job WHERE tool_id = '$1'
 		)
+		ORDER BY metric_name asc
 	EOF
 }
 
-query_month_data(){ ## query monthly data-created [year]: Number of active users per month, running jobs
+query_month_data(){ ## query monthly-data [year]: Number of active users per month, running jobs
 	handle_help "$@" <<-EOF
+		Find out how much data was ingested or created by Galaxy during the past months.
+
+		    $ gxadmin query monthly-data 2018
+		     pg_size_pretty |        month
+		    ----------------+---------------------
+		     62 TB          | 2018-12-01 00:00:00
+		     50 TB          | 2018-11-01 00:00:00
+		     59 TB          | 2018-10-01 00:00:00
+		     32 TB          | 2018-09-01 00:00:00
+		     26 TB          | 2018-08-01 00:00:00
+		     42 TB          | 2018-07-01 00:00:00
+		     34 TB          | 2018-06-01 00:00:00
+		     33 TB          | 2018-05-01 00:00:00
+		     27 TB          | 2018-04-01 00:00:00
+		     32 TB          | 2018-03-01 00:00:00
+		     18 TB          | 2018-02-01 00:00:00
+		     16 TB          | 2018-01-01 00:00:00
 	EOF
 
 	if (( $# > 0 )); then
@@ -1359,8 +1418,25 @@ query_month_data(){ ## query monthly data-created [year]: Number of active users
 	EOF
 }
 
-query_month_users(){ ## query monthly active-users [year]: Number of active users per month, running jobs
+query_month_users(){ ## query monthly-users [year]: Number of active users per month, running jobs
 	handle_help "$@" <<-EOF
+		Number of unique users each month who ran jobs. NOTE: does not include anonymous users.
+
+		    [galaxy@sn04 galaxy]$ gxadmin query monthly-users 2018
+		     unique_users |        month
+		    --------------+---------------------
+		              811 | 2018-12-01 00:00:00
+		              658 | 2018-11-01 00:00:00
+		              583 | 2018-10-01 00:00:00
+		              444 | 2018-09-01 00:00:00
+		              342 | 2018-08-01 00:00:00
+		              379 | 2018-07-01 00:00:00
+		              370 | 2018-06-01 00:00:00
+		              330 | 2018-05-01 00:00:00
+		              274 | 2018-04-01 00:00:00
+		              186 | 2018-03-01 00:00:00
+		              168 | 2018-02-01 00:00:00
+		              122 | 2018-01-01 00:00:00
 	EOF
 
 	if (( $# > 0 )); then
@@ -1378,8 +1454,25 @@ query_month_users(){ ## query monthly active-users [year]: Number of active user
 	EOF
 }
 
-query_month_jobs(){ ## query monthly jobs [year]: Number of jobs run each month
+query_month_jobs(){ ## query monthly-jobs [year]: Number of jobs run each month
 	handle_help "$@" <<-EOF
+		Count jobs run each month
+
+		    [galaxy@sn04 galaxy]$ gxadmin query monthly-jobs 2018
+		            month        | count
+		    ---------------------+--------
+		     2018-12-01 00:00:00 |  96941
+		     2018-11-01 00:00:00 |  94625
+		     2018-10-01 00:00:00 | 156940
+		     2018-09-01 00:00:00 | 103331
+		     2018-08-01 00:00:00 | 128658
+		     2018-07-01 00:00:00 |  90852
+		     2018-06-01 00:00:00 | 230470
+		     2018-05-01 00:00:00 | 182331
+		     2018-04-01 00:00:00 | 109032
+		     2018-03-01 00:00:00 | 197125
+		     2018-02-01 00:00:00 | 260931
+		     2018-01-01 00:00:00 |  25378
 	EOF
 
 	if (( $# > 0 )); then
@@ -1543,9 +1636,11 @@ version() {
 cmdlist() {
 	IFS=$'\n'
 	# TOC
+	echo "## Commands"
+	echo
 	echo "Command | Description"
 	echo "------- | -----------"
-	for command in $(grep -o ' ## .*' $0 | grep -v grep | sort | sed 's/^ ## //g'); do
+	for command in $(grep -o '{ ## .*' $0 | grep -v grep | grep -v '| sed' | sort | sed 's/^{ ## //g'); do
 		cmd_part="$(echo $command | sed 's/:.*//g;s/\s*<.*//g;s/\s*\[.*//')"
 		desc_part="$(echo $command | sed 's/^[^:]*:\s*//g')"
 		key_part="$(echo $cmd_part | sed 's/ /-/g')"
@@ -1554,7 +1649,7 @@ cmdlist() {
 	echo
 
 	# Now for sections
-	for command in $(grep -o ' ## .*' $0 | grep -v grep | sort | sed 's/^ ## //g'); do
+	for command in $(grep -o '{ ## .*' $0 | grep -v grep | grep -v '| sed' | sort | sed 's/^{ ## //g'); do
 		cmd_part="$(echo $command | sed 's/:.*//g;s/\s*<.*//g;s/\s*\[.*//')"
 		echo
 		echo "### $cmd_part"
