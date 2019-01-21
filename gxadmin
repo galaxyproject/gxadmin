@@ -244,11 +244,11 @@ assert_count_ge() {
 }
 
 query_tbl() {
-	psql -c "$1"
+	psql -c "$1" | sed 's/--+--/- | -/g'
 }
 
 query_tsv() {
-	psql -c "COPY ($1) to STDOUT with CSV DELIMITER E'\t'" | sed 's/--+--/- | -/g'
+	psql -c "COPY ($1) to STDOUT with CSV DELIMITER E'\t'"
 }
 
 query_csv() {
