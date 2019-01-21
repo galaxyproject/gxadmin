@@ -248,7 +248,7 @@ query_tbl() {
 }
 
 query_tsv() {
-	psql -c "COPY ($1) to STDOUT with CSV DELIMITER E'\t'"
+	psql -c "COPY ($1) to STDOUT with CSV DELIMITER E'\t'" | sed 's/--+--/- | -/g'
 }
 
 query_csv() {
