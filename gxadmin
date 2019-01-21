@@ -1645,11 +1645,25 @@ pg2md() { ## filter pg2md: Convert postgres table format outputs to something th
 	handle_help "$@" <<-EOF
 		Imagine doing something like:
 
-		    gxadmin query active-users 2018 | gxadmin filter pg2md
+		    $ gxadmin query active-users 2018 | gxadmin filter pg2md
+		    unique_users  |        month
+		    ------------- | --------------------
+		    811           | 2018-12-01 00:00:00
+		    658           | 2018-11-01 00:00:00
+		    583           | 2018-10-01 00:00:00
+		    444           | 2018-09-01 00:00:00
+		    342           | 2018-08-01 00:00:00
+		    379           | 2018-07-01 00:00:00
+		    370           | 2018-06-01 00:00:00
+		    330           | 2018-05-01 00:00:00
+		    274           | 2018-04-01 00:00:00
+		    186           | 2018-03-01 00:00:00
+		    168           | 2018-02-01 00:00:00
+		    122           | 2018-01-01 00:00:00
 
 		and it should produce a nicely formatted table
 	EOF
-	cat /dev/stdin | sed 's/--+--/- | -/g;s/^\(\s\+\)\([^|]\+\) |/\2 \1|/g'
+	cat /dev/stdin | sed 's/--+--/- | -/g;s/^\(\s\+\)\([^|]\+\) |/\2 \1|/g' | head -n -2
 }
 
 hexdecode() { ## filter hexdecode: Decodes any hex blobs from postgres outputs
