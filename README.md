@@ -45,6 +45,10 @@ Example .pgpass:
 <pg_host>:5432:*:<pg_user>:<pg_password>
 ```
 
+### GDPR
+
+You may want to set `GDPR_MODE=1`. Please determine your own legal responsibilities, the authors take no responsibility for anything you may have done wrong.
+
 ## Commands
 
 Command | Description
@@ -826,7 +830,7 @@ gxadmin query training [--all]
 
 **NOTES**
 
-This module is specific to EU's implementation of Training Infrastructure as a Service. But this specifically just checks for all groups with the name prefix 
+This module is specific to EU's implementation of Training Infrastructure as a Service. But this specifically just checks for all groups with the name prefix
 
     $ gxadmin query training
            name       |  created
