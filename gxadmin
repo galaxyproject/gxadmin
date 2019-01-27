@@ -586,6 +586,14 @@ migrate_to_sqlite() { ## migrate-tool-install-to-sqlite: Converts normal potsgre
 	success "Complete"
 }
 
+gdpr_safe() {
+	if [ -z "$GDPR_MODE"  ]; then
+		echo "$1"
+	else
+		echo "'****' as $1"
+	fi
+}
+
 query_latest_users() { ## query latest-users: 40 recently registered users
 	handle_help "$@" <<-EOF
 		Returns 40 most recently registered users
@@ -596,14 +604,16 @@ query_latest_users() { ## query latest-users: 40 recently registered users
 		      1 | 2018-10-05 11:40:42.90119 |                | helena-rasche | hxr@informatik.uni-freiburg.de
 	EOF
 
+	username=$(gdpr_safe username)
+	email=$(gdpr_safe email)
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
 			id,
 			create_time,
 			pg_size_pretty(disk_usage) as disk_usage,
-			username,
-			email,
+			$username,
+			$email,
 			array_to_string(ARRAY(
 				select galaxy_group.name from galaxy_group where id in (
 					select group_id from user_group_association where user_group_association.user_id = galaxy_user.id
@@ -614,6 +624,8 @@ query_latest_users() { ## query latest-users: 40 recently registered users
 		ORDER BY create_time desc
 		LIMIT 40
 	EOF
+
+	echo $QUERY
 }
 
 query_tool_usage() { ## query tool-usage: Counts of tool runs
@@ -654,9 +666,10 @@ query_job_info() { ## query job-info <id> [id] ...: Information about a specific
 
 	assert_count_ge $# 1 "Missing Job ID"
 	job_ids="$(echo $@ | sed 's/\s\+/,/g')"
+	username=$(gdpr_safe galaxy_user.username)
 
 	read -r -d '' QUERY <<-EOF
-		SELECT job.id, job.tool_id, job.state, job.handler, galaxy_user.username, job.create_time, job.job_runner_name, job.job_runner_external_id
+		SELECT job.id, job.tool_id, job.state, job.handler, $username, job.create_time, job.job_runner_name, job.job_runner_external_id
 		FROM job, galaxy_user
 		WHERE job.id in ($job_ids) AND job.user_id = galaxy_user.id
 	EOF
@@ -799,19 +812,19 @@ query_queue_overview() { ## query queue-overview: View used mostly for monitorin
 query_queue_detail() { ## query queue-detail [--all]: Detailed overview of running and queued jobs
 	handle_help "$@" <<-EOF
 		    $ gxadmin query queue-detail
-		      state  |   id    |  extid  |                                 tool_id                                   |      username       | time_since_creation
-		    ---------+---------+---------+---------------------------------------------------------------------------+---------------------+---------------------
-		     running | 4360629 | 229333  | toolshed.g2.bx.psu.edu/repos/bgruening/infernal/infernal_cmsearch/1.1.2.0 |                     | 5 days 11:00:00
-		     running | 4362676 | 230237  | toolshed.g2.bx.psu.edu/repos/iuc/mothur_venn/mothur_venn/1.36.1.0         |                     | 4 days 18:00:00
-		     running | 4364499 | 231055  | toolshed.g2.bx.psu.edu/repos/iuc/mothur_venn/mothur_venn/1.36.1.0         |                     | 4 days 05:00:00
-		     running | 4366604 | 5183013 | toolshed.g2.bx.psu.edu/repos/iuc/dexseq/dexseq_count/1.24.0.0             |                     | 3 days 20:00:00
-		     running | 4366605 | 5183016 | toolshed.g2.bx.psu.edu/repos/iuc/dexseq/dexseq_count/1.24.0.0             |                     | 3 days 20:00:00
-		     queued  | 4350274 | 225743  | toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.6.0              |                     | 9 days 05:00:00
-		     queued  | 4353435 | 227038  | toolshed.g2.bx.psu.edu/repos/iuc/trinity/trinity/2.8.3                    |                     | 8 days 08:00:00
-		     queued  | 4361914 | 229712  | toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.6.0              |                     | 5 days -01:00:00
-		     queued  | 4361812 | 229696  | toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.6.0              |                     | 5 days -01:00:00
-		     queued  | 4361939 | 229728  | toolshed.g2.bx.psu.edu/repos/nml/spades/spades/1.2                        |                     | 4 days 21:00:00
-		     queued  | 4361941 | 229731  | toolshed.g2.bx.psu.edu/repos/nml/spades/spades/1.2                        |                     | 4 days 21:00:00
+		      state  |   id    |  extid  |                                 tool_id                                   | username | time_since_creation
+		    ---------+---------+---------+---------------------------------------------------------------------------+----------+---------------------
+		     running | 4360629 | 229333  | toolshed.g2.bx.psu.edu/repos/bgruening/infernal/infernal_cmsearch/1.1.2.0 | ****     | 5 days 11:00:00
+		     running | 4362676 | 230237  | toolshed.g2.bx.psu.edu/repos/iuc/mothur_venn/mothur_venn/1.36.1.0         | ****     | 4 days 18:00:00
+		     running | 4364499 | 231055  | toolshed.g2.bx.psu.edu/repos/iuc/mothur_venn/mothur_venn/1.36.1.0         | ****     | 4 days 05:00:00
+		     running | 4366604 | 5183013 | toolshed.g2.bx.psu.edu/repos/iuc/dexseq/dexseq_count/1.24.0.0             | ****     | 3 days 20:00:00
+		     running | 4366605 | 5183016 | toolshed.g2.bx.psu.edu/repos/iuc/dexseq/dexseq_count/1.24.0.0             | ****     | 3 days 20:00:00
+		     queued  | 4350274 | 225743  | toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.6.0              | ****     | 9 days 05:00:00
+		     queued  | 4353435 | 227038  | toolshed.g2.bx.psu.edu/repos/iuc/trinity/trinity/2.8.3                    | ****     | 8 days 08:00:00
+		     queued  | 4361914 | 229712  | toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.6.0              | ****     | 5 days -01:00:00
+		     queued  | 4361812 | 229696  | toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.6.0              | ****     | 5 days -01:00:00
+		     queued  | 4361939 | 229728  | toolshed.g2.bx.psu.edu/repos/nml/spades/spades/1.2                        | ****     | 4 days 21:00:00
+		     queued  | 4361941 | 229731  | toolshed.g2.bx.psu.edu/repos/nml/spades/spades/1.2                        | ****     | 4 days 21:00:00
 	EOF
 
 	d=""
@@ -819,11 +832,13 @@ query_queue_detail() { ## query queue-detail [--all]: Detailed overview of runni
 		d=", 'new'"
 	fi
 
-		read -r -d '' QUERY <<-EOF
-			SELECT job.state, job.id, job.job_runner_external_id as extid, job.tool_id, galaxy_user.username, date_trunc('hour', (now() - job.create_time - '2 hours'::interval)) as time_since_creation
-			FROM job, galaxy_user
-			WHERE state in ('running', 'queued'$d) and job.user_id = galaxy_user.id
-			ORDER BY state desc, time_since_creation desc
+	username=$(gdpr_safe galaxy_user.username)
+
+	read -r -d '' QUERY <<-EOF
+		SELECT job.state, job.id, job.job_runner_external_id as extid, job.tool_id, $username, date_trunc('hour', (now() - job.create_time - '2 hours'::interval)) as time_since_creation
+		FROM job, galaxy_user
+		WHERE state in ('running', 'queued'$d) and job.user_id = galaxy_user.id
+		ORDER BY state desc, time_since_creation desc
 	EOF
 }
 
@@ -889,12 +904,14 @@ query_recent_jobs() { ## query recent-jobs <hours>: Jobs run in the past <hours>
 
 	assert_count $# 1 "Missing hours"
 
+	username=$(gdpr_safe galaxy_user.username)
+
 	read -r -d '' QUERY <<-EOF
-			SELECT
-				job.id, date_trunc('minute', job.create_time), job.tool_id, job.state, galaxy_user.username
-			FROM job, galaxy_user
-			WHERE job.create_time > (now() - '$1 hours'::interval) AND job.user_id = galaxy_user.id
-			ORDER BY id desc
+		SELECT
+			job.id, date_trunc('minute', job.create_time), job.tool_id, job.state, $username
+		FROM job, galaxy_user
+		WHERE job.create_time > (now() - '$1 hours'::interval) AND job.user_id = galaxy_user.id
+		ORDER BY id desc
 	EOF
 }
 
@@ -937,10 +954,11 @@ query_training_members() { ## query training-members <tr_id>: List users in a sp
 	assert_count $# 1 "Missing Training ID"
 	# Remove training- if they used it.
 	ww=$(echo "$1" | sed 's/^training-//g')
+	username=$(gdpr_safe galaxy_user.username)
 
 	read -r -d '' QUERY <<-EOF
 			SELECT
-				galaxy_user.username,
+				$username,
 				date_trunc('second', user_group_association.create_time) as joined
 			FROM galaxy_user, user_group_association, galaxy_group
 			WHERE galaxy_group.name = 'training-$ww'
@@ -1592,12 +1610,14 @@ query_old_histories(){ ## query old-histories <weeks>: Lists histories that have
 	EOF
 
 	weeks=15
+	email=$(gdpr_safe h.email)
+
 	read -r -d '' QUERY <<-EOF
 		SELECT
 			h.id,
 			h.update_time,
 			h.user_id,
-			u.email,
+			$email,
 			h.name,
 			h.published,
 			h.deleted,
