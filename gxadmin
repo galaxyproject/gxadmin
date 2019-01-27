@@ -1607,30 +1607,32 @@ query_old_histories(){ ## query old-histories <weeks>: Lists histories that have
 		 39523 | 2017-06-21 01:34:52.226653 |       9 | xxx@xxx | OSCC Cell Lines    | f         | f       | f      |         139
 	EOF
 
-	weeks=15
-	email=$(gdpr_safe h.email)
+	assert_count_ge $# 1 "Missing <weeks>"
+
+	weeks=$1
+	email=$(gdpr_safe galaxy_user.email 'email')
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			h.id,
-			h.update_time,
-			h.user_id,
+			history.id,
+			history.update_time,
+			history.user_id,
 			$email,
-			h.name,
-			h.published,
-			h.deleted,
-			h.purged,
-			h.hid_counter
+			history.name,
+			history.published,
+			history.deleted,
+			history.purged,
+			history.hid_counter
 		FROM
-			history h,
-			galaxy_user u
+			history,
+			galaxy_user
 		WHERE
-			h.update_time < (now() - '$weeks weeks'::interval) AND
-			h.user_id = u.id AND
-			h.deleted = FALSE AND
-			h.published = FALSE
+			history.update_time < (now() - '$weeks weeks'::interval) AND
+			history.user_id = galaxy_user.id AND
+			history.deleted = FALSE AND
+			history.published = FALSE
 		ORDER BY
-			h.update_time
+			history.update_time desc
 	EOF
 }
 
