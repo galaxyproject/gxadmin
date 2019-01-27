@@ -590,7 +590,7 @@ gdpr_safe() {
 	if [ -z "$GDPR_MODE"  ]; then
 		echo "$1"
 	else
-		echo "'****' as $1"
+		echo "'****' as ${2:-$1}"
 	fi
 }
 
@@ -664,7 +664,7 @@ query_job_info() { ## query job-info <id> [id] ...: Information about a specific
 
 	assert_count_ge $# 1 "Missing Job ID"
 	job_ids="$(echo $@ | sed 's/\s\+/,/g')"
-	username=$(gdpr_safe galaxy_user.username)
+	username=$(gdpr_safe galaxy_user.username username)
 
 	read -r -d '' QUERY <<-EOF
 		SELECT job.id, job.tool_id, job.state, job.handler, $username, job.create_time, job.job_runner_name, job.job_runner_external_id
@@ -830,7 +830,7 @@ query_queue_detail() { ## query queue-detail [--all]: Detailed overview of runni
 		d=", 'new'"
 	fi
 
-	username=$(gdpr_safe galaxy_user.username)
+	username=$(gdpr_safe galaxy_user.username username)
 
 	read -r -d '' QUERY <<-EOF
 		SELECT job.state, job.id, job.job_runner_external_id as extid, job.tool_id, $username, date_trunc('hour', (now() - job.create_time - '2 hours'::interval)) as time_since_creation
@@ -902,7 +902,7 @@ query_recent_jobs() { ## query recent-jobs <hours>: Jobs run in the past <hours>
 
 	assert_count $# 1 "Missing hours"
 
-	username=$(gdpr_safe galaxy_user.username)
+	username=$(gdpr_safe galaxy_user.username username)
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
@@ -952,7 +952,7 @@ query_training_members() { ## query training-members <tr_id>: List users in a sp
 	assert_count $# 1 "Missing Training ID"
 	# Remove training- if they used it.
 	ww=$(echo "$1" | sed 's/^training-//g')
-	username=$(gdpr_safe galaxy_user.username)
+	username=$(gdpr_safe galaxy_user.username username)
 
 	read -r -d '' QUERY <<-EOF
 			SELECT
