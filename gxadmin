@@ -624,8 +624,6 @@ query_latest_users() { ## query latest-users: 40 recently registered users
 		ORDER BY create_time desc
 		LIMIT 40
 	EOF
-
-	echo $QUERY
 }
 
 query_tool_usage() { ## query tool-usage: Counts of tool runs
