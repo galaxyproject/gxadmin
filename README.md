@@ -21,10 +21,12 @@ chmod +x /usr/bin/gxadmin
 
 [Changelog](CHANGELOG.md)
 
-## Authors
+## Contributors
 
 - Helena Rasche (@erasche)
 - Nate Coraor (@natefoo)
+- Simon Gladman (@slugger70)
+- Anthony Bretaudeau (@abretaud)
 
 ## License
 
