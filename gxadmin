@@ -1144,7 +1144,7 @@ query_disk_usage() { ## query disk-usage: Disk usage per object store.
 }
 
 
-query_user_details() { ## query user-details <user_id|username>: Quick overview of a Galaxy user in your system
+query_user_details() { ## query user-details <user_id|username|email>: Quick overview of a Galaxy user in your system
 	handle_help "$@" <<-EOF
 		This command lets you quickly find out information about a user. The output is formatted as markdown by default.
 
@@ -1186,7 +1186,7 @@ query_user_details() { ## query user-details <user_id|username>: Quick overview 
 		FROM
 			galaxy_user
 		WHERE
-			username = '$1' or id = CAST(REGEXP_REPLACE(COALESCE('$1','0'), '[^0-9]+', '0', 'g') AS INTEGER)
+			(galaxy_user.email = '$1' or galaxy_user.username = '$1' or galaxy_user.id = CAST(REGEXP_REPLACE(COALESCE('$1','0'), '[^0-9]+', '0', 'g') AS INTEGER))
 	EOF
 	results=$(query_tsv "$qstr")
 	user_id=$(echo "$results" | awk '{print $2}')
