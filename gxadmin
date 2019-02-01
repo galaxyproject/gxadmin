@@ -877,7 +877,7 @@ query_jobs_nonterminal() { ## query jobs-nonterminal [user]: Job info of nonterm
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			job.id, job.tool_id, job.state, job.create_time, job.job_runner_name, job.job_runner_external_id, job.handler
+			job.id, job.tool_id, job.state, job.create_time, job.job_runner_name, job.job_runner_external_id, job.handler, job.user_id
 		FROM
 			job
 		JOIN
@@ -1161,6 +1161,11 @@ query_user_details() { ## query user-details <user_id|username>: Quick overview 
 	EOF
 	results=$(query_tsv "$qstr")
 	user_id=$(echo "$results" | awk '{print $2}')
+
+	if [[ -z "$user_id" ]]; then
+		error "Unknown user"
+		exit 1
+	fi
 
 	# Groups
 	read -r -d '' qstr <<-EOF
