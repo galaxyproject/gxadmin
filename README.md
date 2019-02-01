@@ -71,6 +71,7 @@ Command | Description
 [query job-info](#query-job-info) | Information about a specific job
 [query job-inputs](#query-job-inputs) | Input datasets to a specific job
 [query job-outputs](#query-job-outputs) | Output datasets from a specific job
+[query jobs-nonterminal](#query-jobs-nonterminal) | Job info of nonterminal jobs separated by user
 [query jobs-per-user](#query-jobs-per-user) | Number of jobs run by a specific user
 [query largest-collection](#query-largest-collection) | Returns the size of the single largest collection
 [query latest-users](#query-latest-users) | 40 recently registered users
@@ -429,6 +430,49 @@ query job-outputs -  Output datasets from a specific job
 gxadmin query job-outputs <id>
 
 
+### query jobs-nonterminal
+
+**NAME**
+
+query jobs-nonterminal -  Job info of nonterminal jobs separated by user
+
+**SYNOPSIS**
+
+gxadmin query jobs-nonterminal [username|id|email]
+
+**NOTES**
+
+You can request the user information by username, id, and user email
+
+    $ gxadmin query jobs-nonterminal helena-rasche
+       id    | tool_id             |  state  |        create_time         | runner | id     |     handler     | user_id
+    ---------+---------------------+---------+----------------------------+--------+--------+-----------------+---------
+     4760549 | featurecounts/1.6.3 | running | 2019-01-18 14:05:14.871711 | condor | 197549 | handler_main_7  | 599
+     4760552 | featurecounts/1.6.3 | running | 2019-01-18 14:05:16.205867 | condor | 197552 | handler_main_7  | 599
+     4760554 | featurecounts/1.6.3 | running | 2019-01-18 14:05:17.170157 | condor | 197580 | handler_main_8  | 599
+     4760557 | featurecounts/1.6.3 | running | 2019-01-18 14:05:18.25044  | condor | 197545 | handler_main_10 | 599
+     4760573 | featurecounts/1.6.3 | running | 2019-01-18 14:05:47.20392  | condor | 197553 | handler_main_2  | 599
+     4760984 | deseq2/2.11.40.4    | new     | 2019-01-18 14:56:37.700714 |        |        | handler_main_1  | 599
+     4766092 | deseq2/2.11.40.4    | new     | 2019-01-21 07:24:16.232376 |        |        | handler_main_5  | 599
+     4811598 | cuffnorm/2.2.1.2    | running | 2019-02-01 13:08:30.400016 | condor | 248432 | handler_main_0  | 599
+    (8 rows)
+
+
+You can also query all non-terminal jobs by all users
+
+    $ gxadmin query jobs-nonterminal | head
+       id    |  tool_id            |  state  |        create_time         | runner | id     |     handler     | user_id
+    ---------+---------------------+---------+----------------------------+--------+--------+-----------------+---------
+     4760549 | featurecounts/1.6.3 | running | 2019-01-18 14:05:14.871711 | condor | 197549 | handler_main_7  |     599
+     4760552 | featurecounts/1.6.3 | running | 2019-01-18 14:05:16.205867 | condor | 197552 | handler_main_7  |     599
+     4760554 | featurecounts/1.6.3 | running | 2019-01-18 14:05:17.170157 | condor | 197580 | handler_main_8  |     599
+     4760557 | featurecounts/1.6.3 | running | 2019-01-18 14:05:18.25044  | condor | 197545 | handler_main_10 |     599
+     4760573 | featurecounts/1.6.3 | running | 2019-01-18 14:05:47.20392  | condor | 197553 | handler_main_2  |     599
+     4760588 | featurecounts/1.6.3 | new     | 2019-01-18 14:11:03.766558 |        |        | handler_main_9  |      11
+     4760589 | featurecounts/1.6.3 | new     | 2019-01-18 14:11:05.895232 |        |        | handler_main_1  |      11
+     4760590 | featurecounts/1.6.3 | new     | 2019-01-18 14:11:07.328533 |        |        | handler_main_2  |      11
+
+
 ### query jobs-per-user
 
 **NAME**
@@ -639,19 +683,19 @@ gxadmin query queue-detail [--all]
 **NOTES**
 
     $ gxadmin query queue-detail
-      state  |   id    |  extid  |                                 tool_id                                   |      username       | time_since_creation
-    ---------+---------+---------+---------------------------------------------------------------------------+---------------------+---------------------
-     running | 4360629 | 229333  | toolshed.g2.bx.psu.edu/repos/bgruening/infernal/infernal_cmsearch/1.1.2.0 |                     | 5 days 11:00:00
-     running | 4362676 | 230237  | toolshed.g2.bx.psu.edu/repos/iuc/mothur_venn/mothur_venn/1.36.1.0         |                     | 4 days 18:00:00
-     running | 4364499 | 231055  | toolshed.g2.bx.psu.edu/repos/iuc/mothur_venn/mothur_venn/1.36.1.0         |                     | 4 days 05:00:00
-     running | 4366604 | 5183013 | toolshed.g2.bx.psu.edu/repos/iuc/dexseq/dexseq_count/1.24.0.0             |                     | 3 days 20:00:00
-     running | 4366605 | 5183016 | toolshed.g2.bx.psu.edu/repos/iuc/dexseq/dexseq_count/1.24.0.0             |                     | 3 days 20:00:00
-     queued  | 4350274 | 225743  | toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.6.0              |                     | 9 days 05:00:00
-     queued  | 4353435 | 227038  | toolshed.g2.bx.psu.edu/repos/iuc/trinity/trinity/2.8.3                    |                     | 8 days 08:00:00
-     queued  | 4361914 | 229712  | toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.6.0              |                     | 5 days -01:00:00
-     queued  | 4361812 | 229696  | toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.6.0              |                     | 5 days -01:00:00
-     queued  | 4361939 | 229728  | toolshed.g2.bx.psu.edu/repos/nml/spades/spades/1.2                        |                     | 4 days 21:00:00
-     queued  | 4361941 | 229731  | toolshed.g2.bx.psu.edu/repos/nml/spades/spades/1.2                        |                     | 4 days 21:00:00
+      state  |   id    |  extid  |                                 tool_id                                   | username | time_since_creation
+    ---------+---------+---------+---------------------------------------------------------------------------+----------+---------------------
+     running | 4360629 | 229333  | toolshed.g2.bx.psu.edu/repos/bgruening/infernal/infernal_cmsearch/1.1.2.0 | xxxx     | 5 days 11:00:00
+     running | 4362676 | 230237  | toolshed.g2.bx.psu.edu/repos/iuc/mothur_venn/mothur_venn/1.36.1.0         | xxxx     | 4 days 18:00:00
+     running | 4364499 | 231055  | toolshed.g2.bx.psu.edu/repos/iuc/mothur_venn/mothur_venn/1.36.1.0         | xxxx     | 4 days 05:00:00
+     running | 4366604 | 5183013 | toolshed.g2.bx.psu.edu/repos/iuc/dexseq/dexseq_count/1.24.0.0             | xxxx     | 3 days 20:00:00
+     running | 4366605 | 5183016 | toolshed.g2.bx.psu.edu/repos/iuc/dexseq/dexseq_count/1.24.0.0             | xxxx     | 3 days 20:00:00
+     queued  | 4350274 | 225743  | toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.6.0              | xxxx     | 9 days 05:00:00
+     queued  | 4353435 | 227038  | toolshed.g2.bx.psu.edu/repos/iuc/trinity/trinity/2.8.3                    | xxxx     | 8 days 08:00:00
+     queued  | 4361914 | 229712  | toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.6.0              | xxxx     | 5 days -01:00:00
+     queued  | 4361812 | 229696  | toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.6.0              | xxxx     | 5 days -01:00:00
+     queued  | 4361939 | 229728  | toolshed.g2.bx.psu.edu/repos/nml/spades/spades/1.2                        | xxxx     | 4 days 21:00:00
+     queued  | 4361941 | 229731  | toolshed.g2.bx.psu.edu/repos/nml/spades/spades/1.2                        | xxxx     | 4 days 21:00:00
 
 
 ### query queue-overview
@@ -832,7 +876,7 @@ gxadmin query training [--all]
 
 **NOTES**
 
-This module is specific to EU's implementation of Training Infrastructure as a Service. But this specifically just checks for all groups with the name prefix
+This module is specific to EU's implementation of Training Infrastructure as a Service. But this specifically just checks for all groups with the name prefix 
 
     $ gxadmin query training
            name       |  created
@@ -919,7 +963,7 @@ query user-details -  Quick overview of a Galaxy user in your system
 
 **SYNOPSIS**
 
-gxadmin query user-details <user_id|username>
+gxadmin query user-details <user_id|username|email>
 
 **NOTES**
 
