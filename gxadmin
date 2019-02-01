@@ -865,8 +865,37 @@ query_runtime_per_user() { ## query runtime-per-user <email>: computation time o
 	EOF
 }
 
-query_jobs_nonterminal() { ## query jobs-nonterminal [user]: Job info of nonterminal jobs separated by user
+query_jobs_nonterminal() { ## query jobs-nonterminal [username|id|email]: Job info of nonterminal jobs separated by user
 	handle_help "$@" <<-EOF
+		You can request the user information by username, id, and user email
+
+		    $ gxadmin query jobs-nonterminal helena-rasche
+		       id    | tool_id             |  state  |        create_time         | runner | id     |     handler     | user_id
+		    ---------+---------------------+---------+----------------------------+--------+--------+-----------------+---------
+		     4760549 | featurecounts/1.6.3 | running | 2019-01-18 14:05:14.871711 | condor | 197549 | handler_main_7  | 599
+		     4760552 | featurecounts/1.6.3 | running | 2019-01-18 14:05:16.205867 | condor | 197552 | handler_main_7  | 599
+		     4760554 | featurecounts/1.6.3 | running | 2019-01-18 14:05:17.170157 | condor | 197580 | handler_main_8  | 599
+		     4760557 | featurecounts/1.6.3 | running | 2019-01-18 14:05:18.25044  | condor | 197545 | handler_main_10 | 599
+		     4760573 | featurecounts/1.6.3 | running | 2019-01-18 14:05:47.20392  | condor | 197553 | handler_main_2  | 599
+		     4760984 | deseq2/2.11.40.4    | new     | 2019-01-18 14:56:37.700714 |        |        | handler_main_1  | 599
+		     4766092 | deseq2/2.11.40.4    | new     | 2019-01-21 07:24:16.232376 |        |        | handler_main_5  | 599
+		     4811598 | cuffnorm/2.2.1.2    | running | 2019-02-01 13:08:30.400016 | condor | 248432 | handler_main_0  | 599
+		    (8 rows)
+
+
+		You can also query all non-terminal jobs by all users
+
+		    $ gxadmin query jobs-nonterminal | head
+		       id    |  tool_id            |  state  |        create_time         | runner | id     |     handler     | user_id
+		    ---------+---------------------+---------+----------------------------+--------+--------+-----------------+---------
+		     4760549 | featurecounts/1.6.3 | running | 2019-01-18 14:05:14.871711 | condor | 197549 | handler_main_7  |     599
+		     4760552 | featurecounts/1.6.3 | running | 2019-01-18 14:05:16.205867 | condor | 197552 | handler_main_7  |     599
+		     4760554 | featurecounts/1.6.3 | running | 2019-01-18 14:05:17.170157 | condor | 197580 | handler_main_8  |     599
+		     4760557 | featurecounts/1.6.3 | running | 2019-01-18 14:05:18.25044  | condor | 197545 | handler_main_10 |     599
+		     4760573 | featurecounts/1.6.3 | running | 2019-01-18 14:05:47.20392  | condor | 197553 | handler_main_2  |     599
+		     4760588 | featurecounts/1.6.3 | new     | 2019-01-18 14:11:03.766558 |        |        | handler_main_9  |      11
+		     4760589 | featurecounts/1.6.3 | new     | 2019-01-18 14:11:05.895232 |        |        | handler_main_1  |      11
+		     4760590 | featurecounts/1.6.3 | new     | 2019-01-18 14:11:07.328533 |        |        | handler_main_2  |      11
 	EOF
 
 	if (( $# > 0 )); then
