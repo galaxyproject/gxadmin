@@ -468,6 +468,15 @@ elif [[ $1 == *"query" ]]; then
 					where email = '$3'
 				)
 			) AND metric_name = 'runtime_seconds'"
+	elif [[ $2 == "user-jobs" ]]; then ## {,csv,tsv}query   user-jobs <email>: Job info of nonterminal jobs run by user
+		assert_count $# 3 "Missing user"
+		qstr="
+			SELECT job.id, job.tool_id, job.state, job.create_time, job.job_runner_name, job.job_runner_external_id, job.handler
+			FROM job
+			JOIN galaxy_user ON galaxy_user.id = job.user_id
+			WHERE galaxy_user.email = '$3'
+				AND job.state IN ('new', 'queued', 'running')
+			ORDER BY job.id ASC"
 	elif [[ $2 == "jobs-per-user" ]]; then ## {,csv,tsv}query   jobs-per-user <email>: Number of jobs run by a specific user
 		assert_count $# 3 "Missing user"
 		qstr="
