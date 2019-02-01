@@ -865,6 +865,29 @@ query_runtime_per_user() { ## query runtime-per-user <email>: computation time o
 	EOF
 }
 
+query_jobs_nonterminal() { ## query jobs-nonterminal [user]: Job info of nonterminal jobs separated by user
+	handle_help "$@" <<-EOF
+	EOF
+
+	if (( $# > 0 )); then
+		user_filter="(galaxy_user.email = '$1' or galaxy_user.username = '$1' or galaxy_user.id = CAST(REGEXP_REPLACE(COALESCE('$1','0'), '[^0-9]+', '0', 'g') AS INTEGER))"
+	else
+		user_filter="true"
+	fi
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			job.id, job.tool_id, job.state, job.create_time, job.job_runner_name, job.job_runner_external_id, job.handler
+		FROM
+			job
+		JOIN
+			galaxy_user ON galaxy_user.id = job.user_id
+		WHERE
+			$user_filter AND job.state IN ('new', 'queued', 'running')
+		ORDER BY job.id ASC
+	EOF
+}
+
 query_jobs_per_user() { ## query jobs-per-user <email>: Number of jobs run by a specific user
 	handle_help "$@" <<-EOF
 		    $ gxadmin query jobs-per-user hxr@informatik.uni-freiburg.de
@@ -1694,6 +1717,7 @@ obtain_query() {
 		job-inputs             ) query_job_inputs             "$@" ;;
 		job-outputs            ) query_job_outputs            "$@" ;;
 		jobs-per-user          ) query_jobs_per_user          "$@" ;;
+		jobs-nonterminal       ) query_jobs_nonterminal       "$@" ;;
 		largest-collection     ) query_largest_collection     "$@" ;;
 		latest-users           ) query_latest_users           "$@" ;;
 		monthly-data           ) query_month_data             "$@" ;;
