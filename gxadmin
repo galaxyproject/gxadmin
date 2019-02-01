@@ -1388,7 +1388,7 @@ query_tool_metrics() { ## query tool-metrics <tool_id> <metric_id> [--like]: See
 		do some aggregations. The following requires [data_hacks](https://github.com/bitly/data_hacks)
 
 		    $ gxadmin tsvquery tool-metrics %rgrnastar/rna_star% memory.max_usage_in_bytes --like | \\
-		        awk '{print $1 / 1024 / 1024 / 1024}' | \\
+		        awk '{print \$1 / 1024 / 1024 / 1024}' | \\
 		        histogram.py --percentage
 		    # NumSamples = 441; Min = 2.83; Max = 105.88
 		    # Mean = 45.735302; Variance = 422.952289; SD = 20.565804; Median 51.090900
@@ -1650,18 +1650,18 @@ query_old_histories(){ ## query old-histories <weeks>: Lists histories that have
 	handle_help "$@" <<-EOF
 		Histories and their users who haven't been updated for a year. Default number of weeks is 15.
 
-		$gxadmin query old-histories 52
-		  id   |        update_time         | user_id |  email  |       name         | published | deleted | purged | hid_counter
-		-------+----------------------------+---------+---------+--------------------+-----------+---------+--------+-------------
-		 39903 | 2017-06-13 12:35:07.174749 |     834 | xxx@xxx | Unnamed history    | f         | f       | f      |          23
-		  1674 | 2017-06-13 14:08:30.017574 |       9 | xxx@xxx | SAHA project       | f         | f       | f      |          47
-		 40088 | 2017-06-15 04:10:48.879122 |     986 | xxx@xxx | Unnamed history    | f         | f       | f      |           3
-		 39023 | 2017-06-15 09:33:12.007002 |     849 | xxx@xxx | prac 4 new final   | f         | f       | f      |         297
-		 35437 | 2017-06-16 04:41:13.15785  |     731 | xxx@xxx | Unnamed history    | f         | f       | f      |          98
-		 40123 | 2017-06-16 13:43:24.948344 |     987 | xxx@xxx | Unnamed history    | f         | f       | f      |          22
-		 40050 | 2017-06-19 00:46:29.032462 |     193 | xxx@xxx | Telmatactis        | f         | f       | f      |          74
-		 12212 | 2017-06-20 14:41:03.762881 |     169 | xxx@xxx | Unnamed history    | f         | f       | f      |          24
-		 39523 | 2017-06-21 01:34:52.226653 |       9 | xxx@xxx | OSCC Cell Lines    | f         | f       | f      |         139
+		    $gxadmin query old-histories 52
+		      id   |        update_time         | user_id |  email  |       name         | published | deleted | purged | hid_counter
+		    -------+----------------------------+---------+---------+--------------------+-----------+---------+--------+-------------
+		     39903 | 2017-06-13 12:35:07.174749 |     834 | xxx@xxx | Unnamed history    | f         | f       | f      |          23
+		      1674 | 2017-06-13 14:08:30.017574 |       9 | xxx@xxx | SAHA project       | f         | f       | f      |          47
+		     40088 | 2017-06-15 04:10:48.879122 |     986 | xxx@xxx | Unnamed history    | f         | f       | f      |           3
+		     39023 | 2017-06-15 09:33:12.007002 |     849 | xxx@xxx | prac 4 new final   | f         | f       | f      |         297
+		     35437 | 2017-06-16 04:41:13.15785  |     731 | xxx@xxx | Unnamed history    | f         | f       | f      |          98
+		     40123 | 2017-06-16 13:43:24.948344 |     987 | xxx@xxx | Unnamed history    | f         | f       | f      |          22
+		     40050 | 2017-06-19 00:46:29.032462 |     193 | xxx@xxx | Telmatactis        | f         | f       | f      |          74
+		     12212 | 2017-06-20 14:41:03.762881 |     169 | xxx@xxx | Unnamed history    | f         | f       | f      |          24
+		     39523 | 2017-06-21 01:34:52.226653 |       9 | xxx@xxx | OSCC Cell Lines    | f         | f       | f      |         139
 	EOF
 
 	assert_count_ge $# 1 "Missing <weeks>"
