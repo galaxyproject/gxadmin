@@ -1693,7 +1693,7 @@ query_old_histories(){ ## query old-histories <weeks>: Lists histories that have
 	EOF
 }
 
-query_errored_jobs(){ ## query errored-jobs <hours>: Lists jobs that errored in the last $hours hours.
+query_errored_jobs(){ ## query errored-jobs <hours>: Lists jobs that errored in the last N hours.
 	handle_help "$@" <<-EOF
 		Lists details of jobs that have status = 'error' for the specified number of hours. Default = 24 hours
 

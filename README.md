@@ -66,7 +66,7 @@ Command | Description
 [query collection-usage](#query-collection-usage) | Information about how many collections of various types are used
 [query datasets-created-daily](#query-datasets-created-daily) | The min/max/average/p95/p99 of total size of datasets created in a single day.
 [query disk-usage](#query-disk-usage) | Disk usage per object store.
-[query errored-jobs](#query-errored-jobs) | Lists jobs that errored in the last $hours hours.
+[query errored-jobs](#query-errored-jobs) | Lists jobs that errored in the last N hours.
 [query groups-list](#query-groups-list) | List all groups known to Galaxy
 [query job-history](#query-job-history) | Job state history for a specific job
 [query job-info](#query-job-info) | Information about a specific job
@@ -362,7 +362,7 @@ TODO: implement flag for --nice numbers
 
 **NAME**
 
-query errored-jobs -  Lists jobs that errored in the last $hours hours.
+query errored-jobs -  Lists jobs that errored in the last N hours.
 
 **SYNOPSIS**
 

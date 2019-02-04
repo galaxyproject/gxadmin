@@ -5,6 +5,7 @@
 	- uwsgi stats\_influx: which fetches stats from uWSGI zerglings
 	- filter pg2md: Convert postgres tables into markdown compatible tables
 	- `GDPR_MODE` env var which blanks out usernames and emails
+	- errored-jobs: Lists jobs that errored in the last N hours.
 - Improved:
 	- user-details: now reports in markdown compatible output and with more information about the user
 
