@@ -1702,7 +1702,6 @@ query_errored_jobs(){ ## query errored-jobs <hours>: Lists jobs that errored in 
 
 	EOF
 
-	assert_count_ge $# 1 "Missing <hours>"
 
 	hours=$1
 	email=$(gdpr_safe galaxy_user.email 'email')
