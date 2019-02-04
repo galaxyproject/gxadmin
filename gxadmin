@@ -1755,7 +1755,7 @@ cmdlist() {
 		cmd_part="$(echo $command | sed 's/:.*//g;s/\s*<.*//g;s/\s*\[.*//')"
 		desc_part="$(echo $command | sed 's/^[^:]*:\s*//g')"
 		key_part="$(echo $cmd_part | sed 's/ /-/g')"
-		echo "[${cmd_part}](#${key_part}) | $desc_part"
+		echo "[\`${cmd_part}\`](#${key_part}) | $desc_part"
 	done
 	echo
 

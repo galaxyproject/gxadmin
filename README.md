@@ -55,56 +55,56 @@ You may want to set `GDPR_MODE=1`. Please determine your own legal responsibilit
 
 Command | Description
 ------- | -----------
-[cleanup](#cleanup) | Cleanup histories/hdas/etc for past N days (default=30)
-[filter hexdecode](#filter-hexdecode) | Decodes any hex blobs from postgres outputs
-[filter pg2md](#filter-pg2md) | Convert postgres table format outputs to something that can be pasted as markdown
-[handler restart](#handler-restart) | restart handlers
-[handler strace](#handler-strace) | Run an strace on a specific handler (to watch it load files.)
-[handler tail](#handler-tail) | tail handler logs
-[migrate-tool-install-to-sqlite](#migrate-tool-install-to-sqlite) | Converts normal potsgres toolshed repository tables into the SQLite version
-[query active-users](#query-active-users) | Count of users who ran jobs in past 1 week (default = 1)
-[query collection-usage](#query-collection-usage) | Information about how many collections of various types are used
-[query datasets-created-daily](#query-datasets-created-daily) | The min/max/average/p95/p99 of total size of datasets created in a single day.
-[query disk-usage](#query-disk-usage) | Disk usage per object store.
-[query errored-jobs](#query-errored-jobs) | Lists jobs that errored in the last N hours.
-[query groups-list](#query-groups-list) | List all groups known to Galaxy
-[query job-history](#query-job-history) | Job state history for a specific job
-[query job-info](#query-job-info) | Information about a specific job
-[query job-inputs](#query-job-inputs) | Input datasets to a specific job
-[query job-outputs](#query-job-outputs) | Output datasets from a specific job
-[query jobs-nonterminal](#query-jobs-nonterminal) | Job info of nonterminal jobs separated by user
-[query jobs-per-user](#query-jobs-per-user) | Number of jobs run by a specific user
-[query largest-collection](#query-largest-collection) | Returns the size of the single largest collection
-[query latest-users](#query-latest-users) | 40 recently registered users
-[query monthly-data](#query-monthly-data) | Number of active users per month, running jobs
-[query monthly-jobs](#query-monthly-jobs) | Number of jobs run each month
-[query monthly-users](#query-monthly-users) | Number of active users per month, running jobs
-[query old-histories](#query-old-histories) | Lists histories that haven't been updated (used) for <weeks>
-[query queue](#query-queue) | Brief overview of currently running jobs
-[query queue-detail](#query-queue-detail) | Detailed overview of running and queued jobs
-[query queue-overview](#query-queue-overview) | View used mostly for monitoring
-[query queue-time](#query-queue-time) | The average/95%/99% a specific tool spends in queue state.
-[query recent-jobs](#query-recent-jobs) | Jobs run in the past <hours> (in any state)
-[query runtime-per-user](#query-runtime-per-user) | computation time of user (by email)
-[query tool-available-metrics](#query-tool-available-metrics) | list all available metrics for a given tool
-[query tool-last-used-date](#query-tool-last-used-date) | When was the most recent invocation of every tool
-[query tool-metrics](#query-tool-metrics) | See values of a specific metric
-[query tool-usage](#query-tool-usage) | Counts of tool runs
-[query training](#query-training) | List known trainings
-[query training-memberof](#query-training-memberof) | List trainings that a user is part of
-[query training-members](#query-training-members) | List users in a specific training
-[query training-queue](#query-training-queue) | Jobs currently being run by people in a given training
-[query training-remove-member](#query-training-remove-member) | Remove a user from a training
-[query ts-repos](#query-ts-repos) | Counts of toolshed repositories by toolshed and owner.
-[query user-details](#query-user-details) | Quick overview of a Galaxy user in your system
-[query users-count](#query-users-count) | Shows sums of active/external/deleted/purged accounts
-[query users-total](#query-users-total) | Total number of Galaxy users (incl deleted, purged, inactive)
-[update](#update) | Update the script
-[uwsgi stats_influx](#uwsgi-stats_influx) | InfluxDB formatted output for the current stats
-[validate](#validate) | validate config files
-[zerg strace](#zerg-strace) | swap zerglings
-[zerg swap](#zerg-swap) | swap zerglings
-[zerg tail](#zerg-tail) | tail zergling logs
+[`cleanup`](#cleanup) | Cleanup histories/hdas/etc for past N days (default=30)
+[`filter hexdecode`](#filter-hexdecode) | Decodes any hex blobs from postgres outputs
+[`filter pg2md`](#filter-pg2md) | Convert postgres table format outputs to something that can be pasted as markdown
+[`handler restart`](#handler-restart) | restart handlers
+[`handler strace`](#handler-strace) | Run an strace on a specific handler (to watch it load files.)
+[`handler tail`](#handler-tail) | tail handler logs
+[`migrate-tool-install-to-sqlite`](#migrate-tool-install-to-sqlite) | Converts normal potsgres toolshed repository tables into the SQLite version
+[`query active-users`](#query-active-users) | Count of users who ran jobs in past 1 week (default = 1)
+[`query collection-usage`](#query-collection-usage) | Information about how many collections of various types are used
+[`query datasets-created-daily`](#query-datasets-created-daily) | The min/max/average/p95/p99 of total size of datasets created in a single day.
+[`query disk-usage`](#query-disk-usage) | Disk usage per object store.
+[`query errored-jobs`](#query-errored-jobs) | Lists jobs that errored in the last N hours.
+[`query groups-list`](#query-groups-list) | List all groups known to Galaxy
+[`query job-history`](#query-job-history) | Job state history for a specific job
+[`query job-info`](#query-job-info) | Information about a specific job
+[`query job-inputs`](#query-job-inputs) | Input datasets to a specific job
+[`query job-outputs`](#query-job-outputs) | Output datasets from a specific job
+[`query jobs-nonterminal`](#query-jobs-nonterminal) | Job info of nonterminal jobs separated by user
+[`query jobs-per-user`](#query-jobs-per-user) | Number of jobs run by a specific user
+[`query largest-collection`](#query-largest-collection) | Returns the size of the single largest collection
+[`query latest-users`](#query-latest-users) | 40 recently registered users
+[`query monthly-data`](#query-monthly-data) | Number of active users per month, running jobs
+[`query monthly-jobs`](#query-monthly-jobs) | Number of jobs run each month
+[`query monthly-users`](#query-monthly-users) | Number of active users per month, running jobs
+[`query old-histories`](#query-old-histories) | Lists histories that haven't been updated (used) for <weeks>
+[`query queue`](#query-queue) | Brief overview of currently running jobs
+[`query queue-detail`](#query-queue-detail) | Detailed overview of running and queued jobs
+[`query queue-overview`](#query-queue-overview) | View used mostly for monitoring
+[`query queue-time`](#query-queue-time) | The average/95%/99% a specific tool spends in queue state.
+[`query recent-jobs`](#query-recent-jobs) | Jobs run in the past <hours> (in any state)
+[`query runtime-per-user`](#query-runtime-per-user) | computation time of user (by email)
+[`query tool-available-metrics`](#query-tool-available-metrics) | list all available metrics for a given tool
+[`query tool-last-used-date`](#query-tool-last-used-date) | When was the most recent invocation of every tool
+[`query tool-metrics`](#query-tool-metrics) | See values of a specific metric
+[`query tool-usage`](#query-tool-usage) | Counts of tool runs
+[`query training`](#query-training) | List known trainings
+[`query training-memberof`](#query-training-memberof) | List trainings that a user is part of
+[`query training-members`](#query-training-members) | List users in a specific training
+[`query training-queue`](#query-training-queue) | Jobs currently being run by people in a given training
+[`query training-remove-member`](#query-training-remove-member) | Remove a user from a training
+[`query ts-repos`](#query-ts-repos) | Counts of toolshed repositories by toolshed and owner.
+[`query user-details`](#query-user-details) | Quick overview of a Galaxy user in your system
+[`query users-count`](#query-users-count) | Shows sums of active/external/deleted/purged accounts
+[`query users-total`](#query-users-total) | Total number of Galaxy users (incl deleted, purged, inactive)
+[`update`](#update) | Update the script
+[`uwsgi stats_influx`](#uwsgi-stats_influx) | InfluxDB formatted output for the current stats
+[`validate`](#validate) | validate config files
+[`zerg strace`](#zerg-strace) | swap zerglings
+[`zerg swap`](#zerg-swap) | swap zerglings
+[`zerg tail`](#zerg-tail) | tail zergling logs
 
 
 ### cleanup
