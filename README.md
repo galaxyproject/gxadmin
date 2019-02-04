@@ -66,6 +66,7 @@ Command | Description
 [query collection-usage](#query-collection-usage) | Information about how many collections of various types are used
 [query datasets-created-daily](#query-datasets-created-daily) | The min/max/average/p95/p99 of total size of datasets created in a single day.
 [query disk-usage](#query-disk-usage) | Disk usage per object store.
+[query errored-jobs](#query-errored-jobs) | Lists jobs that errored in the last $hours hours.
 [query groups-list](#query-groups-list) | List all groups known to Galaxy
 [query job-history](#query-job-history) | Job state history for a specific job
 [query job-info](#query-job-info) | Information about a specific job
@@ -357,6 +358,24 @@ TODO: implement flag for --nice numbers
     (10 rows)
 
 
+### query errored-jobs
+
+**NAME**
+
+query errored-jobs -  Lists jobs that errored in the last $hours hours.
+
+**SYNOPSIS**
+
+gxadmin query errored-jobs <hours>
+
+**NOTES**
+
+Lists details of jobs that have status = 'error' for the specified number of hours. Default = 24 hours
+
+     query errored-jobs 24
+    TO_DO: Add output of query here!
+
+
 ### query groups-list
 
 **NAME**
@@ -627,7 +646,7 @@ gxadmin query old-histories <weeks>
 
 **NOTES**
 
-Histories and their users who haven't been updated for a year. Default number of weeks is 15.
+Histories and their users who haven't been updated for a specified number of weeks. Default number of weeks is 15.
 
      query old-histories 52
       id   |        update_time         | user_id |  email  |       name         | published | deleted | purged | hid_counter
