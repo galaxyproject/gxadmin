@@ -247,15 +247,21 @@ assert_count_ge() {
 }
 
 query_tbl() {
-	psql -c "$1"
+	psql <<-EOF
+	$1
+	EOF
 }
 
 query_tsv() {
-	psql -c "COPY ($1) to STDOUT with CSV DELIMITER E'\t'"
+	psql <<-EOF
+	COPY ($1) to STDOUT with CSV DELIMITER E'\t'
+	EOF
 }
 
 query_csv() {
-	psql -c "COPY ($1) to STDOUT with CSV DELIMITER ','"
+	psql <<-EOF
+	COPY ($1) to STDOUT with CSV DELIMITER ','
+	EOF
 }
 
 query_influx() {
@@ -280,7 +286,9 @@ for line in sys.stdin.read().split('\n'):
 EOF
 )
 
-	psql -c "COPY ($1) to STDOUT with CSV DELIMITER E','" | python -c "$arr2py" "$2" "$3" "$4"
+	psql <<-EOF
+	COPY ($1) to STDOUT with CSV DELIMITER E','
+	EOF | python -c "$arr2py" "$2" "$3" "$4"
 }
 
 if (( $# == 0 )); then
