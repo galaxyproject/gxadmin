@@ -62,6 +62,7 @@ Command | Description
 [`handler strace`](#handler-strace) | Run an strace on a specific handler (to watch it load files.)
 [`handler tail`](#handler-tail) | tail handler logs
 [`migrate-tool-install-to-sqlite`](#migrate-tool-install-to-sqlite) | Converts normal potsgres toolshed repository tables into the SQLite version
+[`mutate fail-terminal-datasets`](#mutate-fail-terminal-datasets) | Causes the output datasets of jobs which were manually failed, to be marked as failed
 [`query active-users`](#query-active-users) | Count of users who ran jobs in past 1 week (default = 1)
 [`query collection-usage`](#query-collection-usage) | Information about how many collections of various types are used
 [`query datasets-created-daily`](#query-datasets-created-daily) | The min/max/average/p95/p99 of total size of datasets created in a single day.
@@ -108,18 +109,6 @@ Command | Description
 
 
 ### cleanup
-
-**NAME**
-
-cleanup -  Cleanup histories/hdas/etc for past N days (default=30)
-
-**SYNOPSIS**
-
-gxadmin cleanup [days]
-
-**NOTES**
-
-Cleanup histories/hdas/etc for past N days using the python objects-based method
 
 
 ### filter hexdecode
@@ -269,6 +258,68 @@ gxadmin migrate-tool-install-to-sqlite
       export: repository_repository_dependency_association
       import: repository_repository_dependency_association
     Complete
+
+
+### mutate fail-terminal-datasets
+
+**NAME**
+
+mutate fail-terminal-datasets -  Causes the output datasets of jobs which were manually failed, to be marked as failed
+
+**SYNOPSIS**
+
+gxadmin mutate fail-terminal-datasets [--commit]
+
+**NOTES**
+
+Whenever an admin marks a job as failed manually (e.g. by updating the
+state in the database), the output datasets are not accordingly updated
+by default. And this causes users to mistakenly think their jobs are
+still running when they have long since failed.
+
+This command provides a way to select those jobs in error states
+(deleted, deleted_new, error, error_manually_dropped,
+new_manually_dropped), find their associated output datasets, and fail
+them with a blurb mentionining that they should contact the admin in
+case of any question
+
+Running without any arguments will execute the command within a
+transaction and then roll it back, allowing you to see counts of rows
+and giving you an idea if it is doing the right thing.
+
+**WARNINGS**
+
+This does NOT currently work on collections
+
+**EXAMPLES**
+
+The process is to first query how many datasets will be failed, if this looks correct you're ready to go.
+
+    $ gxadmin mutate fail-terminal-datasets
+    BEGIN
+    SELECT 1
+    jobs_per_month_to_be_failed | count
+    -----------------------------+-------
+    2019-02-01 00:00:00         |     1
+    (1 row)
+
+    UPDATE 1
+    UPDATE 1
+    ROLLBACK
+
+Then to run with the --commit flag to commit the changes
+
+    $ gxadmin mutate fail-terminal-datasets --commit
+    BEGIN
+    SELECT 1
+    jobs_per_month_to_be_failed | count
+    -----------------------------+-------
+    2019-02-01 00:00:00         |     1
+    (1 row)
+
+    UPDATE 1
+    UPDATE 1
+    COMMIT
 
 
 ### query active-users
@@ -822,6 +873,13 @@ Gives a list of available metrics, which can then be used to query.
 
 
 ### query tool-last-used-date
+
+         max         |          tool_id          
+---------------------+---------------------------
+ 2019-02-01 00:00:00 | test_history_sanitization
+ 2018-12-01 00:00:00 | require_format
+ 2018-11-01 00:00:00 | upload1
+(3 rows)
 
 
 ### query tool-metrics

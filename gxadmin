@@ -1279,6 +1279,8 @@ query_users_count() { ## query users-count: Shows sums of active/external/delete
 
 query_tool_last_used_date() { ## query tool-last-used-date: When was the most recent invocation of every tool
 	handle_help "@" <<-EOF
+		**WARNING**
+
 		It is not truly every tool, there is no easy way to find the tools which have never been run.
 	EOF
 
