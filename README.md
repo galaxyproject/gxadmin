@@ -110,6 +110,18 @@ Command | Description
 
 ### cleanup
 
+**NAME**
+
+cleanup -  Cleanup histories/hdas/etc for past N days (default=30)
+
+**SYNOPSIS**
+
+gxadmin cleanup [days]
+
+**NOTES**
+
+Cleanup histories/hdas/etc for past N days using the python objects-based method
+
 
 ### filter hexdecode
 
@@ -874,12 +886,29 @@ Gives a list of available metrics, which can then be used to query.
 
 ### query tool-last-used-date
 
-         max         |          tool_id          
----------------------+---------------------------
- 2019-02-01 00:00:00 | test_history_sanitization
- 2018-12-01 00:00:00 | require_format
- 2018-11-01 00:00:00 | upload1
-(3 rows)
+**NAME**
+
+query tool-last-used-date -  When was the most recent invocation of every tool
+
+**SYNOPSIS**
+
+gxadmin query tool-last-used-date
+
+**NOTES**
+
+Example invocation:
+
+    $ gxadmin query tool-last-used-date
+             max         |          tool_id
+    ---------------------+---------------------------
+     2019-02-01 00:00:00 | test_history_sanitization
+     2018-12-01 00:00:00 | require_format
+     2018-11-01 00:00:00 | upload1
+    (3 rows)
+
+**WARNING**
+
+It is not truly every tool, there is no easy way to find the tools which have never been run.
 
 
 ### query tool-metrics

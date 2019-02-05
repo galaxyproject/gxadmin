@@ -21,38 +21,53 @@ EOF
 )
 
 usage(){
-	if (( $# > 0 )) && [[ $1 != "safe" ]]; then
-		error $@
+	if (( $# > 0 )); then
+		if [[ $1 != "safe" ]] && [[ $1 != "query" ]]; then
+			error $@
+		fi
 	fi
 	cmds="$(grep -o '{ ## .*' $0 | grep -v grep | grep -v '| sed' | sort | sed 's/^{ ## //g')"
 
-	cat <<-EOF
-		gxadmin usage:
+	if [[ $1 == "query" ]]; then
+		cat <<-EOF
+			gxadmin usage:
 
-		Zergling Commands:
+			DB Queries:
+			'query' can be exchanged with 'tsvquery' or 'csvquery' for tab- and comma-separated variants
 
-		$(echo "$cmds" | grep '^zerg' | column -s: -t | sed 's/^/    /')
+			$(echo "$cmds" | grep 'query ' | sort -k2 | column -s: -t | sed 's/^/    /')
 
-		Handler Commands:
+			help / -h / --help : this message. Invoke '--help' on any subcommand for help specific to that subcommand
+		EOF
+	else
+		cat <<-EOF
+			gxadmin usage:
 
-		$(echo "$cmds" | grep '^handler' | column -s: -t | sed 's/^/    /')
+			Zergling Commands:
 
-		DB Queries:
-		'query' can be exchanged with 'tsvquery' or 'csvquery' for tab- and comma-separated variants
+			$(echo "$cmds" | grep '^zerg' | column -s: -t | sed 's/^/    /')
 
-		$(echo "$cmds" | grep 'query ' | sort -k2 | column -s: -t | sed 's/^/    /')
+			Handler Commands:
 
-		DB Queries (Mutations): (csv/tsv queries are not available)
+			$(echo "$cmds" | grep '^handler' | column -s: -t | sed 's/^/    /')
 
-		$(echo "$cmds" | grep 'mutate ' | sort -k2 | column -s: -t | sed 's/^/    /')
+			DB Queries:
+			'query' can be exchanged with 'tsvquery' or 'csvquery' for tab- and comma-separated variants
 
-		Other:
+			$(echo "$cmds" | grep 'query ' | sort -k2 | column -s: -t | sed 's/^/    /')
 
-		$(echo "$cmds" | grep -v 'query ' | grep -v '^zerg' | grep -v '^mutate ' | grep -v handler | column -s: -t | sed 's/^/    /')
+			DB Queries (Mutations): (csv/tsv queries are not available)
 
-		help / -h / --help : this message. Invoke '--help' on any subcommand for help specific to that subcommand
-	EOF
-	if [[ $1 == "safe" ]]; then
+			$(echo "$cmds" | grep 'mutate ' | sort -k2 | column -s: -t | sed 's/^/    /')
+
+			Other:
+
+			$(echo "$cmds" | grep -v 'query ' | grep -v '^zerg' | grep -v '^mutate ' | grep -v handler | column -s: -t | sed 's/^/    /')
+
+			help / -h / --help : this message. Invoke '--help' on any subcommand for help specific to that subcommand
+		EOF
+	fi
+	if [[ $1 == "safe" ]] || [[ $1 == "query" ]]; then
 		exit 0;
 	fi
 	exit 1
@@ -304,9 +319,7 @@ for line in sys.stdin.read().split('\n'):
 EOF
 )
 
-	psql <<-EOF
-	COPY ($1) to STDOUT with CSV DELIMITER E','
-	EOF | python -c "$arr2py" "$2" "$3" "$4"
+	psql -c "COPY ($1) to STDOUT with CSV DELIMITER E','"| python -c "$arr2py" "$2" "$3" "$4"
 }
 
 if (( $# == 0 )); then
@@ -1278,7 +1291,17 @@ query_users_count() { ## query users-count: Shows sums of active/external/delete
 }
 
 query_tool_last_used_date() { ## query tool-last-used-date: When was the most recent invocation of every tool
-	handle_help "@" <<-EOF
+	handle_help "$@" <<-EOF
+		Example invocation:
+
+		    $ gxadmin query tool-last-used-date
+		             max         |          tool_id
+		    ---------------------+---------------------------
+		     2019-02-01 00:00:00 | test_history_sanitization
+		     2018-12-01 00:00:00 | require_format
+		     2018-11-01 00:00:00 | upload1
+		    (3 rows)
+
 		**WARNING**
 
 		It is not truly every tool, there is no easy way to find the tools which have never been run.
@@ -1972,7 +1995,7 @@ query() {
 		#exit 0
 	#fi
 	if [[ "$QUERY" == "ERROR" ]]; then
-		usage
+		usage query
 	fi
 
 	# Run the queries
