@@ -7,16 +7,16 @@ import re
 import binascii
 query = re.compile(r'^(.*)\\\\x([0-9a-f]+)(.*)$')
 for line in sys.stdin:
-	asdf = '%s' % line.replace('\\\\\\\\', '\\\\')
+	out = '%s' % line.replace('\\\\\\\\', '\\\\')
 	while True:
-		m = query.match(asdf)
+		m = query.match(out)
 		if m:
-			asdf = m.groups()[0]
-			asdf += binascii.unhexlify(m.groups()[1])
-			asdf += m.groups()[2] + '\\n'
+			out = m.groups()[0]
+			out += binascii.unhexlify(m.groups()[1])
+			out += m.groups()[2] + '\\n'
 		else:
 			break
-	sys.stdout.write(asdf)
+	sys.stdout.write(out)
 EOF
 )
 
@@ -707,13 +707,13 @@ query_largest_collection() { ## query largest-collection: Returns the size of th
 	tags=""
 
 	read -r -d '' QUERY <<-EOF
-		WITH asdf AS (
+		WITH temp_table_collection_count AS (
 			SELECT count(*)
 			FROM dataset_collection_element
 			GROUP BY dataset_collection_id
 			ORDER BY count desc
 		)
-		select max(count) as count from asdf
+		select max(count) as count from temp_table_collection_count
 	EOF
 }
 
