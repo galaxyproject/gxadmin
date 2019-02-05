@@ -1720,18 +1720,18 @@ query_errored_jobs(){ ## query errored-jobs <hours>: Lists jobs that errored in 
 	read -r -d '' QUERY <<-EOF
 		SELECT
 			job.id,
-            job.create_time,
-            job.tool_id,
-            job.tool_version,
-            job.handler,
-            job.destination_id,
-            $email
+			job.create_time,
+			job.tool_id,
+			job.tool_version,
+			job.handler,
+			job.destination_id,
+			$email
 		FROM
 			job,
 			galaxy_user
 		WHERE
 			job.create_time >= (now() - '$hours hours'::interval) AND
-            job.state = 'error' AND
+			job.state = 'error' AND
 			job.user_id = galaxy_user.id
 		ORDER BY
 		    job.id
