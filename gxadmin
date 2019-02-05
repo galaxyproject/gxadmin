@@ -42,9 +42,13 @@ usage(){
 
 		$(echo "$cmds" | grep 'query ' | sort -k2 | column -s: -t | sed 's/^/    /')
 
+		DB Queries (Mutations): (csv/tsv queries are not available)
+
+		$(echo "$cmds" | grep 'mutate ' | sort -k2 | column -s: -t | sed 's/^/    /')
+
 		Other:
 
-		$(echo "$cmds" | grep -v 'query ' | grep -v '^zerg' | grep -v handler | column -s: -t | sed 's/^/    /')
+		$(echo "$cmds" | grep -v 'query ' | grep -v '^zerg' | grep -v '^mutate ' | grep -v handler | column -s: -t | sed 's/^/    /')
 
 		help / -h / --help : this message. Invoke '--help' on any subcommand for help specific to that subcommand
 	EOF
@@ -1738,7 +1742,7 @@ query_errored_jobs(){ ## query errored-jobs <hours>: Lists jobs that errored in 
 	EOF
 }
 
-#mutate_fail_job() { ## mutate fail-job <job-id>: Cause a specific job and all of its outputs to be marked as failing
+#mutate_fail_job() { # mutate fail-job <job-id>: Cause a specific job and all of its outputs to be marked as failing
 	#handle_help "$@" <<-EOF
 	#EOF
 
@@ -2191,5 +2195,5 @@ case "$mode" in
 	-h        ) usage safe ;;
 	--help    ) usage safe ;;
 	# anything else
-	*         ) usage "Unknown command";;
+	*         ) usage safe;;
 esac
