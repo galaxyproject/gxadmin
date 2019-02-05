@@ -24,27 +24,30 @@ usage(){
 	if (( $# > 0 )) && [[ $1 != "safe" ]]; then
 		error $@
 	fi
-	echo "gxadmin usage:"
 	cmds="$(grep -o '{ ## .*' $0 | grep -v grep | grep -v '| sed' | sort | sed 's/^{ ## //g')"
-	echo
-	echo "Zergling Commands:"
-	echo
-	echo "$cmds" | grep '^zerg' | column -s: -t | sed 's/^/    /'
-	echo
-	echo "Handler Commands:"
-	echo
-	echo "$cmds" | grep '^handler' | column -s: -t | sed 's/^/    /'
-	echo
-	echo "DB Queries:"
-	echo "  'query' can be exchanged with 'tsvquery' or 'csvquery' for tab- and comma-separated variants"
-	echo
-	echo "$cmds" | grep 'query ' | sort -k2 | column -s: -t | sed 's/^/    /'
-	echo
-	echo "Other:"
-	echo
-	echo "$cmds" | grep -v 'query ' | grep -v '^zerg' | grep -v handler | column -s: -t | sed 's/^/    /'
-	echo
-	echo "help / -h / --help : this message. Invoke '--help' on any subcommand for help specific to that subcommand"
+
+	cat <<-EOF
+		gxadmin usage:
+
+		Zergling Commands:
+
+		$(echo "$cmds" | grep '^zerg' | column -s: -t | sed 's/^/    /')
+
+		Handler Commands:
+
+		$(echo "$cmds" | grep '^handler' | column -s: -t | sed 's/^/    /')
+
+		DB Queries:
+		'query' can be exchanged with 'tsvquery' or 'csvquery' for tab- and comma-separated variants
+
+		$(echo "$cmds" | grep 'query ' | sort -k2 | column -s: -t | sed 's/^/    /')
+
+		Other:
+
+		$(echo "$cmds" | grep -v 'query ' | grep -v '^zerg' | grep -v handler | column -s: -t | sed 's/^/    /')
+
+		help / -h / --help : this message. Invoke '--help' on any subcommand for help specific to that subcommand
+	EOF
 	if [[ $1 == "safe" ]]; then
 		exit 0;
 	fi
