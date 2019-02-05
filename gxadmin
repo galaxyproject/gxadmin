@@ -1734,7 +1734,132 @@ query_errored_jobs(){ ## query errored-jobs <hours>: Lists jobs that errored in 
 			job.state = 'error' AND
 			job.user_id = galaxy_user.id
 		ORDER BY
-		    job.id
+			job.id
+	EOF
+}
+
+#mutate_fail_job() { ## mutate fail-job <job-id>: Cause a specific job and all of its outputs to be marked as failing
+	#handle_help "$@" <<-EOF
+	#EOF
+
+	#commit="ROLLBACK;"
+	##if [[ $1 == "--commit" ]]; then
+		##commit="COMMIT;"
+	##fi
+
+	#read -r -d '' QUERY <<-EOF
+		#BEGIN TRANSACTION;
+
+		#UPDATE dataset
+		#SET
+			#state = 'error'
+		#WHERE id in (select id from dataset where )
+
+
+
+		#UPDATE history_dataset_association
+		#SET
+			#blurb = 'execution error',
+			#info = 'This dataset''s job failed and has been manually addressed by a Galaxy administrator. Please use the bug icon to report this if you need assistance.'
+		#WHERE id in (select hda_id from terminal_jobs_temp)
+
+		#$COMMIT
+	#EOF
+#}
+
+mutate_fail_terminal_datasets() { ## mutate fail-terminal-datasets [--commit]: Causes the output datasets of jobs which were manually failed, to be marked as failed
+	handle_help "$@" <<-EOF
+		Whenever an admin marks a job as failed manually (e.g. by updating the
+		state in the database), the output datasets are not accordingly updated
+		by default. And this causes users to mistakenly think their jobs are
+		still running when they have long since failed.
+
+		This command provides a way to select those jobs in error states
+		(deleted, deleted_new, error, error_manually_dropped,
+		new_manually_dropped), find their associated output datasets, and fail
+		them with a blurb mentionining that they should contact the admin in
+		case of any question
+
+		Running without any arguments will execute the command within a
+		transaction and then roll it back, allowing you to see counts of rows
+		and giving you an idea if it is doing the right thing.
+
+		**WARNINGS**
+
+		This does NOT currently work on collections
+
+		**EXAMPLES**
+
+		The process is to first query how many datasets will be failed, if this looks correct you're ready to go.
+
+		    $ gxadmin mutate fail-terminal-datasets
+		    BEGIN
+		    SELECT 1
+		    jobs_per_month_to_be_failed | count
+		    -----------------------------+-------
+		    2019-02-01 00:00:00         |     1
+		    (1 row)
+
+		    UPDATE 1
+		    UPDATE 1
+		    ROLLBACK
+
+		Then to run with the --commit flag to commit the changes
+
+		    $ gxadmin mutate fail-terminal-datasets --commit
+		    BEGIN
+		    SELECT 1
+		    jobs_per_month_to_be_failed | count
+		    -----------------------------+-------
+		    2019-02-01 00:00:00         |     1
+		    (1 row)
+
+		    UPDATE 1
+		    UPDATE 1
+		    COMMIT
+	EOF
+	# TODO(hxr): support collections
+
+	commit="ROLLBACK;"
+	if [[ $1 == "--commit" ]]; then
+		commit="COMMIT;"
+	fi
+
+	read -r -d '' QUERY <<-EOF
+		BEGIN TRANSACTION;
+
+		CREATE TEMP TABLE terminal_jobs_temp AS
+			SELECT
+				dataset.id as ds_id,
+				history_dataset_association.id as hda_id,
+				dataset.create_time as ds_create
+			FROM
+				dataset,
+				history_dataset_association,
+				job_to_output_dataset,
+				job
+			WHERE
+				dataset.id = history_dataset_association.dataset_id
+				AND history_dataset_association.id = job_to_output_dataset.dataset_id
+				AND job.id = job_to_output_dataset.job_id
+				AND dataset.state IN ('queued', 'running')
+				AND job.state
+					IN ('deleted', 'deleted_new', 'error', 'error_manually_dropped', 'new_manually_dropped');
+
+		SELECT date_trunc('month', ds_create) as jobs_per_month_to_be_failed, count(*) from terminal_jobs_temp group by jobs_per_month_to_be_failed;
+
+		UPDATE dataset
+		SET
+			state = 'error'
+		WHERE id in (select ds_id from terminal_jobs_temp);
+
+		UPDATE history_dataset_association
+		SET
+			blurb = 'execution error',
+			info = 'This dataset''s job failed and has been manually addressed by a Galaxy administrator. Please use the bug icon to report this if you need assistance.'
+		WHERE id in (select hda_id from terminal_jobs_temp);
+
+		$commit
 	EOF
 }
 
@@ -1857,6 +1982,31 @@ query() {
 		# default
 		*        )  usage "Error";;
 	esac
+}
+
+obtain_mutate() {
+	query_name="$1"; shift
+
+	case "$query_name" in
+		fail-terminal-datasets ) mutate_fail_terminal_datasets "$@" ;;
+		# default
+		* ) export QUERY="ERROR" ;;
+	esac
+}
+
+mutate() {
+	query_type="$1"; shift
+	subfunc="$1"; shift
+
+	# We do not run this in a subshell because we need to "return" multiple things.
+	obtain_mutate $subfunc "$@"
+
+	# TODO(hxr)
+	if [[ "$QUERY" == "ERROR" ]]; then
+		usage
+	fi
+
+	query_tbl "$QUERY";
 }
 
 
@@ -2026,8 +2176,9 @@ case "$mode" in
 	migrate-tool-install-to-sqlite ) migrate_to_sqlite "$@" ;;
 	update                         ) update            "$@" ;;
 	uwsgi                          ) uwsgi             "$@" ;;
-        filter                         ) filter            "$@" ;;
-        *query                         ) query "$mode"     "$@" ;;
+	filter                         ) filter            "$@" ;;
+	mutate                         ) mutate "$mode"    "$@" ;;
+	*query                         ) query "$mode"     "$@" ;;
 
 	# Generate for readme:
 	cmdlist   ) cmdlist ;;
