@@ -723,10 +723,32 @@ query_job_info() { ## query job-info <id>: Information about a specific job
 	FROM
 	    job_to_input_dataset AS jtid, history_dataset_association AS hda, dataset AS ds
 	WHERE
-	    job_id = $1 AND jtid.dataset_id = hda.id AND hda.dataset_id = ds.id
+	    jtid.job_id = $1 AND jtid.dataset_id = hda.id AND hda.dataset_id = ds.id
 	EOF
 	input_ds=$(query_tsv "$qstr")
 	input_ds_tbl=$(printf "Name\tExtension\thda-id\thda-state\thda-deleted\thda-purged\tds-id\tds-state\tds-deleted\tds-purged\tSize\n----\t----\t----\t----\t----\t----\t----\t----\t----\t----\t----\n%s" "$input_ds" | sed 's/\t/\t | \t/g' | column -t -s'	')
+
+	# Outputs
+	read -r -d '' qstr <<-EOF
+	SELECT
+	    hda.name,
+	    hda.extension,
+	    hda.id,
+	    hda.state,
+	    hda.deleted,
+	    hda.purged,
+	    ds.id,
+	    ds.state,
+	    ds.deleted,
+	    ds.purged,
+	    pg_size_pretty(ds.total_size)
+	FROM
+	    job_to_output_dataset AS jtod, history_dataset_association AS hda, dataset AS ds
+	WHERE
+	    jtod.job_id = $1 AND jtod.dataset_id = hda.id AND hda.dataset_id = ds.id
+	EOF
+	output_ds=$(query_tsv "$qstr")
+	output_ds_tbl=$(printf "Name\tExtension\thda-id\thda-state\thda-deleted\thda-purged\tds-id\tds-state\tds-deleted\tds-purged\tSize\n----\t----\t----\t----\t----\t----\t----\t----\t----\t----\t----\n%s" "$output_ds" | sed 's/\t/\t | \t/g' | column -t -s'	')
 
 	read -r -d '' template <<EOF
 # Galaxy Job $job_id
@@ -744,9 +766,13 @@ Job Runner/ID | %s / %s
 
 %s
 
+## Outputs
+
+%s
+
 \n
 EOF
-	printf "$template" $results "$input_ds_tbl"
+	printf "$template" $results "$input_ds_tbl" "$output_ds_tbl"
 
 
 
