@@ -678,7 +678,7 @@ query_tool_usage() { ## query tool-usage: Counts of tool runs
 	EOF
 }
 
-query_job_info() { ## query job-info <id> [id] ...: Information about a specific job
+query_job_info() { ## query job-info <id>: Information about a specific job
 	handle_help "$@" <<-EOF
 		    $ gxadmin query job-info 1
 		     tool_id | state | username |        create_time         | job_runner_name | job_runner_external_id
@@ -686,15 +686,79 @@ query_job_info() { ## query job-info <id> [id] ...: Information about a specific
 		     upload1 | ok    | admin    | 2012-12-06 16:34:27.492711 | local:///       | 9347
 	EOF
 
-	assert_count_ge $# 1 "Missing Job ID"
-	job_ids="$(echo $@ | sed 's/\s\+/,/g')"
+	assert_count $# 1 "Missing Job ID"
 	username=$(gdpr_safe galaxy_user.username username)
+	job_id=$1
 
-	read -r -d '' QUERY <<-EOF
-		SELECT job.id, job.tool_id, job.state, job.handler, $username, job.create_time, job.job_runner_name, job.job_runner_external_id
+	read -r -d '' qstr <<-EOF
+		SELECT
+			job.tool_id,
+			job.state,
+			job.handler,
+			job.create_time,
+			(now() - job.create_time)::interval,
+			job.job_runner_name,
+			job.job_runner_external_id,
+			$username,
+			job.user_id
 		FROM job, galaxy_user
-		WHERE job.id in ($job_ids) AND job.user_id = galaxy_user.id
+		WHERE job.id = $job_id AND job.user_id = galaxy_user.id
 	EOF
+	results=$(query_tsv "$qstr")
+
+	# Inputs
+	read -r -d '' qstr <<-EOF
+	SELECT
+	    hda.name,
+	    hda.extension,
+	    hda.id,
+	    hda.state,
+	    hda.deleted,
+	    hda.purged,
+	    ds.id,
+	    ds.state,
+	    ds.deleted,
+	    ds.purged,
+	    pg_size_pretty(ds.total_size)
+	FROM
+	    job_to_input_dataset AS jtid, history_dataset_association AS hda, dataset AS ds
+	WHERE
+	    job_id = $1 AND jtid.dataset_id = hda.id AND hda.dataset_id = ds.id
+	EOF
+	input_ds=$(query_tsv "$qstr")
+	input_ds_tbl=$(printf "Name\tExtension\thda-id\thda-state\thda-deleted\thda-purged\tds-id\tds-state\tds-deleted\tds-purged\tSize\n----\t----\t----\t----\t----\t----\t----\t----\t----\t----\t----\n%s" "$input_ds" | sed 's/\t/\t | \t/g' | column -t -s'	')
+
+	read -r -d '' template <<EOF
+# Galaxy Job $job_id
+
+Property      | Value
+------------- | -----
+         Tool | %s
+        State | %s
+      Handler | %s
+      Created | %s %s (%s %s %s ago)
+Job Runner/ID | %s / %s
+        Owner | %s (id=%s)
+
+## Inputs
+
+%s
+
+\n
+EOF
+	printf "$template" $results "$input_ds_tbl"
+
+
+
+
+
+
+
+
+
+
+
+
 }
 
 query_datasets_created_daily() { ## query datasets-created-daily: The min/max/average/p95/p99 of total size of datasets created in a single day.
