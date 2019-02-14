@@ -698,7 +698,7 @@ query_job_info() { ## query job-info <id>: Information about a specific job
 			job.create_time,
 			(now() - job.create_time)::interval,
 			job.job_runner_name,
-			job.job_runner_external_id,
+			COALESCE(job.job_runner_external_id, '?'),
 			$username,
 			job.user_id
 		FROM job, galaxy_user
