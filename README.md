@@ -1171,7 +1171,7 @@ gxadmin query workflow-connections
 
 This is used by the usegalaxy.eu tool prediction workflow, allowing for building models out of tool connections in workflows.
 
-$ gxadmin query workflow-connections
+    $ gxadmin query workflow-connections
      wf_id |     wf_updated      | in_id |      in_tool      | in_tool_v | out_id |     out_tool      | out_tool_v
     -------+---------------------+-------+-------------------+-----------+--------+-------------------+------------
          3 | 2013-02-07 16:48:00 |     5 | Grep1             | 1.0.1     |     12 |                   |
