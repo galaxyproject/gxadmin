@@ -813,7 +813,7 @@ query_workflow_connections() { ## query workflow-connections: The connections of
 				FROM
 				 stored_workflow
 				LEFT JOIN
-				 workflow on stored_workflow.latest_workflow_id = workflow.id;
+				 workflow on stored_workflow.latest_workflow_id = workflow.id
 			)
 	EOF
 }
