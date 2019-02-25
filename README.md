@@ -68,6 +68,7 @@ Command | Description
 [`query datasets-created-daily`](#query-datasets-created-daily) | The min/max/average/p95/p99 of total size of datasets created in a single day.
 [`query disk-usage`](#query-disk-usage) | Disk usage per object store.
 [`query errored-jobs`](#query-errored-jobs) | Lists jobs that errored in the last N hours.
+[`query failed-terminal-datasets`](#query-failed-terminal-datasets) | Identify the list of datasets which had issues
 [`query groups-list`](#query-groups-list) | List all groups known to Galaxy
 [`query job-history`](#query-job-history) | Job state history for a specific job
 [`query job-info`](#query-job-info) | Information about a specific job
@@ -100,6 +101,7 @@ Command | Description
 [`query user-details`](#query-user-details) | Quick overview of a Galaxy user in your system
 [`query users-count`](#query-users-count) | Shows sums of active/external/deleted/purged accounts
 [`query users-total`](#query-users-total) | Total number of Galaxy users (incl deleted, purged, inactive)
+[`query workflow-connections`](#query-workflow-connections) | The connections of tools, from output to input, in the latest versions of user workflows
 [`update`](#update) | Update the script
 [`uwsgi stats_influx`](#uwsgi-stats_influx) | InfluxDB formatted output for the current stats
 [`validate`](#validate) | validate config files
@@ -439,6 +441,24 @@ Lists details of jobs that have status = 'error' for the specified number of hou
     TO_DO: Add output of query here!
 
 
+### query failed-terminal-datasets
+
+**NAME**
+
+query failed-terminal-datasets -  Identify the list of datasets which had issues
+
+**SYNOPSIS**
+
+gxadmin query failed-terminal-datasets
+
+**NOTES**
+
+Whenever an admin marks a job as failed manually (e.g. by updating the
+state in the database), the output datasets are not accordingly updated
+by default. And this causes users to mistakenly think their jobs are
+still running when they have long since failed.
+
+
 ### query groups-list
 
 **NAME**
@@ -480,7 +500,7 @@ query job-info -  Information about a specific job
 
 **SYNOPSIS**
 
-gxadmin query job-info <id> [id] ...
+gxadmin query job-info <id>
 
 **NOTES**
 
@@ -538,7 +558,6 @@ You can request the user information by username, id, and user email
      4766092 | deseq2/2.11.40.4    | new     | 2019-01-21 07:24:16.232376 |        |        | handler_main_5  | 599
      4811598 | cuffnorm/2.2.1.2    | running | 2019-02-01 13:08:30.400016 | condor | 248432 | handler_main_0  | 599
     (8 rows)
-
 
 You can also query all non-terminal jobs by all users
 
@@ -1136,6 +1155,35 @@ query users-total -  Total number of Galaxy users (incl deleted, purged, inactiv
 **SYNOPSIS**
 
 gxadmin query users-total
+
+
+### query workflow-connections
+
+**NAME**
+
+query workflow-connections -  The connections of tools, from output to input, in the latest versions of user workflows
+
+**SYNOPSIS**
+
+gxadmin query workflow-connections
+
+**NOTES**
+
+This is used by the usegalaxy.eu tool prediction workflow, allowing for building models out of tool connections in workflows.
+
+$ gxadmin query workflow-connections
+     wf_id |     wf_updated      | in_id |      in_tool      | in_tool_v | out_id |     out_tool      | out_tool_v
+    -------+---------------------+-------+-------------------+-----------+--------+-------------------+------------
+         3 | 2013-02-07 16:48:00 |     5 | Grep1             | 1.0.1     |     12 |                   |
+         3 | 2013-02-07 16:48:00 |     6 | Cut1              | 1.0.1     |      7 | Remove beginning1 | 1.0.0
+         3 | 2013-02-07 16:48:00 |     7 | Remove beginning1 | 1.0.0     |      5 | Grep1             | 1.0.1
+         3 | 2013-02-07 16:48:00 |     8 | addValue          | 1.0.0     |      6 | Cut1              | 1.0.1
+         3 | 2013-02-07 16:48:00 |     9 | Cut1              | 1.0.1     |      7 | Remove beginning1 | 1.0.0
+         3 | 2013-02-07 16:48:00 |    10 | addValue          | 1.0.0     |     11 | Paste1            | 1.0.0
+         3 | 2013-02-07 16:48:00 |    11 | Paste1            | 1.0.0     |      9 | Cut1              | 1.0.1
+         3 | 2013-02-07 16:48:00 |    11 | Paste1            | 1.0.0     |      8 | addValue          | 1.0.0
+         4 | 2013-02-07 16:48:00 |    13 | cat1              | 1.0.0     |     18 | addValue          | 1.0.0
+         4 | 2013-02-07 16:48:00 |    13 | cat1              | 1.0.0     |     20 | Count1            | 1.0.0
 
 
 ### update

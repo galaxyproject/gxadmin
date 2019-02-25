@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 hexdecodelines=$(cat <<EOF
 import sys
 import re
@@ -326,7 +325,6 @@ if (( $# == 0 )); then
 	usage safe
 fi
 
-
 ##############################################################
 # Functions
 ##############################################################
@@ -446,7 +444,6 @@ handler() {
 		restart ) handler_restart "$@";;
 	esac
 }
-
 
 migrate_to_sqlite() { ## migrate-tool-install-to-sqlite: Converts normal potsgres toolshed repository tables into the SQLite version
 	handle_help "$@" <<-EOF
@@ -572,7 +569,6 @@ migrate_to_sqlite() { ## migrate-tool-install-to-sqlite: Converts normal potsgre
 	rm ${empty_schema}
 
 	success "Migrating tables"
-
 
 	# tool_shed_repository is special :(
 	table=tool_shed_repository
@@ -773,18 +769,53 @@ Job Runner/ID | %s / %s
 \n
 EOF
 	printf "$template" $results "$input_ds_tbl" "$output_ds_tbl"
+}
 
+query_workflow_connections() { ## query workflow-connections: The connections of tools, from output to input, in the latest versions of user workflows
+	handle_help "$@" <<-EOF
+		This is used by the usegalaxy.eu tool prediction workflow, allowing for building models out of tool connections in workflows.
 
+		$ gxadmin query workflow-connections
+		     wf_id |     wf_updated      | in_id |      in_tool      | in_tool_v | out_id |     out_tool      | out_tool_v
+		    -------+---------------------+-------+-------------------+-----------+--------+-------------------+------------
+		         3 | 2013-02-07 16:48:00 |     5 | Grep1             | 1.0.1     |     12 |                   |
+		         3 | 2013-02-07 16:48:00 |     6 | Cut1              | 1.0.1     |      7 | Remove beginning1 | 1.0.0
+		         3 | 2013-02-07 16:48:00 |     7 | Remove beginning1 | 1.0.0     |      5 | Grep1             | 1.0.1
+		         3 | 2013-02-07 16:48:00 |     8 | addValue          | 1.0.0     |      6 | Cut1              | 1.0.1
+		         3 | 2013-02-07 16:48:00 |     9 | Cut1              | 1.0.1     |      7 | Remove beginning1 | 1.0.0
+		         3 | 2013-02-07 16:48:00 |    10 | addValue          | 1.0.0     |     11 | Paste1            | 1.0.0
+		         3 | 2013-02-07 16:48:00 |    11 | Paste1            | 1.0.0     |      9 | Cut1              | 1.0.1
+		         3 | 2013-02-07 16:48:00 |    11 | Paste1            | 1.0.0     |      8 | addValue          | 1.0.0
+		         4 | 2013-02-07 16:48:00 |    13 | cat1              | 1.0.0     |     18 | addValue          | 1.0.0
+		         4 | 2013-02-07 16:48:00 |    13 | cat1              | 1.0.0     |     20 | Count1            | 1.0.0
+	EOF
 
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			ws_in.workflow_id as wf_id,
+			date_trunc('minute', workflow.update_time) as wf_updated,
+			wfc.input_step_id as in_id,
+			ws_in.tool_id as in_tool,
+			ws_in.tool_version as in_tool_v,
+			wfc.output_step_id as out_id,
+			ws_out.tool_id as out_tool,
+			ws_out.tool_version as out_tool_v
+		FROM
+			workflow_step_connection wfc
+		JOIN workflow_step ws_in  ON ws_in.id = wfc.input_step_id
+		JOIN workflow_step ws_out ON ws_out.id = wfc.output_step_id
+		JOIN workflow on ws_in.workflow_id = workflow.id
 
-
-
-
-
-
-
-
-
+		WHERE
+			workflow.id in (
+				SELECT
+				 workflow.id
+				FROM
+				 stored_workflow
+				LEFT JOIN
+				 workflow on stored_workflow.latest_workflow_id = workflow.id;
+			)
+	EOF
 }
 
 query_datasets_created_daily() { ## query datasets-created-daily: The min/max/average/p95/p99 of total size of datasets created in a single day.
@@ -995,7 +1026,6 @@ query_jobs_nonterminal() { ## query jobs-nonterminal [username|id|email]: Job in
 		     4766092 | deseq2/2.11.40.4    | new     | 2019-01-21 07:24:16.232376 |        |        | handler_main_5  | 599
 		     4811598 | cuffnorm/2.2.1.2    | running | 2019-02-01 13:08:30.400016 | condor | 248432 | handler_main_0  | 599
 		    (8 rows)
-
 
 		You can also query all non-terminal jobs by all users
 
@@ -1257,7 +1287,6 @@ query_disk_usage() { ## query disk-usage: Disk usage per object store.
 	EOF
 }
 
-
 query_user_details() { ## query user-details <user_id|username|email>: Quick overview of a Galaxy user in your system
 	handle_help "$@" <<-EOF
 		This command lets you quickly find out information about a user. The output is formatted as markdown by default.
@@ -1495,7 +1524,6 @@ query_active_users() { ## query active-users [weeks]: Count of users who ran job
 
 	fields="count=1"
 	tags="weeks=0"
-
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
@@ -1828,7 +1856,6 @@ query_errored_jobs(){ ## query errored-jobs <hours>: Lists jobs that errored in 
 
 	EOF
 
-
 	hours=$1
 	email=$(gdpr_safe galaxy_user.email 'email')
 
@@ -1870,8 +1897,6 @@ query_errored_jobs(){ ## query errored-jobs <hours>: Lists jobs that errored in 
 			#state = 'error'
 		#WHERE id in (select id from dataset where )
 
-
-
 		#UPDATE history_dataset_association
 		#SET
 			#blurb = 'execution error',
@@ -1882,7 +1907,7 @@ query_errored_jobs(){ ## query errored-jobs <hours>: Lists jobs that errored in 
 	#EOF
 #}
 
-query_failed_terminal_datasets() { ## query fail-terminal-datasets: Identify the list of datasets which had issues
+query_failed_terminal_datasets() { ## query failed-terminal-datasets: Identify the list of datasets which had issues
 	handle_help "$@" <<-EOF
 		Whenever an admin marks a job as failed manually (e.g. by updating the
 		state in the database), the output datasets are not accordingly updated
@@ -2034,7 +2059,6 @@ version() {
 	echo 11
 }
 
-
 cmdlist() {
 	IFS=$'\n'
 	# TOC
@@ -2061,7 +2085,6 @@ cmdlist() {
 
 }
 
-
 obtain_query() {
 	query_name="$1"; shift
 
@@ -2070,6 +2093,7 @@ obtain_query() {
 		collection-usage        ) query_collection_usage         "$@" ;;
 		datasets-created-daily  ) query_datasets_created_daily   "$@" ;;
 		disk-usage              ) query_disk_usage               "$@" ;;
+		errored-jobs            ) query_errored_jobs             "$@" ;;
 		failed-terminal-datasets) query_failed_terminal_datasets "$@" ;;
 		groups-list             ) query_groups_list              "$@" ;;
 		job-history             ) query_job_history              "$@" ;;
@@ -2104,7 +2128,7 @@ obtain_query() {
 		user-info               ) query_user_details             "$@" ;;
 		users-count             ) query_users_count              "$@" ;;
 		users-total             ) query_users_total              "$@" ;;
-        errored-jobs            ) query_errored_jobs             "$@" ;;
+		workflow-connections    ) query_workflow_connections     "$@" ;;
 
 		# default
 		* ) export QUERY="ERROR" ;;
@@ -2164,7 +2188,6 @@ mutate() {
 
 	query_tbl "$QUERY";
 }
-
 
 pg2md() { ## filter pg2md: Convert postgres table format outputs to something that can be pasted as markdown
 	handle_help "$@" <<-EOF
@@ -2239,13 +2262,10 @@ hexdecode() { ## filter hexdecode: Decodes any hex blobs from postgres outputs
 		          1 TAIR10
 		          1 hg38
 		          1 ce10
-
-
 	EOF
 
 	cat /dev/stdin | python -c "$hexdecodelines"
 }
-
 
 filter() {
 	subfunc="$1"; shift
@@ -2318,9 +2338,6 @@ uwsgi_stats_influx(){ ## uwsgi stats_influx <addr>: InfluxDB formatted output fo
 		jq -r '.workers[] | "uwsgi.worker,addr='$address',id=\(.id) accepting=\(.accepting),requests=\(.requests),exceptions=\(.exceptions),harakiri_count=\(.harakiri_count),signals=\(.signals),signal_queue=\(.signal_queue),status=\"\(.status)\",rss=\(.rss),vsz=\(.vsz),running_time=\(.running_time),respawn_count=\(.respawn_count),tx=\(.tx),avg_rt=\(.avg_rt)"' | \
 		sed 's/"busy"/1/g;s/"idle"/0/g;'
 }
-
-
-
 
 mode="$1"; shift
 
