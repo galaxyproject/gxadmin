@@ -680,6 +680,10 @@ query_job_info() { ## query job-info <id>: Information about a specific job
 	username=$(gdpr_safe galaxy_user.username username)
 	job_id=$1
 
+	###       ###
+	#  JOB INFO #
+	###       ###
+
 	read -r -d '' qstr <<-EOF
 		SELECT
 			job.tool_id,
@@ -687,16 +691,69 @@ query_job_info() { ## query job-info <id>: Information about a specific job
 			job.handler,
 			job.create_time,
 			(now() - job.create_time)::interval,
-			job.job_runner_name,
-			COALESCE(job.job_runner_external_id, '?'),
+			COALESCE(job.job_runner_name, '?'),
+			COALESCE(job.job_runner_external_id, '?')
+		FROM job
+		WHERE job.id = $job_id
+	EOF
+	results=$(query_tsv "$qstr")
+	read -r -d '' template <<EOF
+# Galaxy Job $job_id
+
+Property      | Value
+------------- | -----
+         Tool | %s
+        State | %s
+      Handler | %s
+      Created | %s %s (%s %s %s ago)
+Job Runner/ID | %s / %s
+EOF
+	printf "$template"  $results 
+
+	###       ###
+	# USER INFO #
+	###       ###
+
+	read -r -d '' qstr <<-EOF
+		SELECT
 			$username,
 			job.user_id
 		FROM job, galaxy_user
 		WHERE job.id = $job_id AND job.user_id = galaxy_user.id
 	EOF
-	results=$(query_tsv "$qstr")
+	job_owner=$(query_tsv "$qstr")
+	printf "\n        Owner | %s (id=%s)\n\n" $job_owner
 
-	# Inputs
+
+	###         ###
+	# DEST PARAMS #
+	###         ###
+	read -r -d '' qstr <<-EOF
+		SELECT destination_params
+		FROM job
+		WHERE job.id = $job_id
+	EOF
+	results=$(query_tsv "$qstr")
+	printf "## Destination Parameters\n\n"
+	tbl=$(echo "$results" | python -c "$hexdecodelines" | jq -S '. | to_entries[] | [.key, .value] | @tsv' -r | sed 's/\t/\t`/g;s/$/`/g')
+	printf "Key\tValue\n---\t---\n$tbl" | sed 's/\t/\t | \t/g' | column -t -s'	'
+
+	###          ###
+	# DEPENDENCIES #
+	###          ###
+	read -r -d '' qstr <<-EOF
+		SELECT dependencies
+		FROM job
+		WHERE job.id = $job_id
+	EOF
+	results=$(query_tsv "$qstr")
+	printf "## Dependencies\n\n"
+	tbl=$(echo "$results" | python -c "$hexdecodelines" | jq -S '.[] | [.name, .version, .dependency_type, .cacheable, .exact, .environment_path, .model_class] | @tsv' -r)
+	printf "Name\tVersion\tDependency Type\tCacheable\tExact\tEnvironment Path\tModel Class\n----\t-------\t---------------\t---------\t-----\t----------------\t-----------\n$tbl\n" | sed 's/\t/\t | \t/g' | column -t -s'	'
+
+	###      ###
+	#  INPUTS  #
+	###      ###
 	read -r -d '' qstr <<-EOF
 	SELECT
 	    hda.name,
@@ -718,7 +775,9 @@ query_job_info() { ## query job-info <id>: Information about a specific job
 	input_ds=$(query_tsv "$qstr")
 	input_ds_tbl=$(printf "Name\tExtension\thda-id\thda-state\thda-deleted\thda-purged\tds-id\tds-state\tds-deleted\tds-purged\tSize\n----\t----\t----\t----\t----\t----\t----\t----\t----\t----\t----\n%s" "$input_ds" | sed 's/\t/\t | \t/g' | column -t -s'	')
 
-	# Outputs
+	###       ###
+	#  OUTPUTS  #
+	###       ###
 	read -r -d '' qstr <<-EOF
 	SELECT
 	    hda.name,
@@ -740,18 +799,8 @@ query_job_info() { ## query job-info <id>: Information about a specific job
 	output_ds=$(query_tsv "$qstr")
 	output_ds_tbl=$(printf "Name\tExtension\thda-id\thda-state\thda-deleted\thda-purged\tds-id\tds-state\tds-deleted\tds-purged\tSize\n----\t----\t----\t----\t----\t----\t----\t----\t----\t----\t----\n%s" "$output_ds" | sed 's/\t/\t | \t/g' | column -t -s'	')
 
-	read -r -d '' template <<EOF
-# Galaxy Job $job_id
 
-Property      | Value
-------------- | -----
-         Tool | %s
-        State | %s
-      Handler | %s
-      Created | %s %s (%s %s %s ago)
-Job Runner/ID | %s / %s
-        Owner | %s (id=%s)
-
+	read -r -d '' template3 <<EOF
 ## Inputs
 
 %s
@@ -762,7 +811,7 @@ Job Runner/ID | %s / %s
 
 \n
 EOF
-	printf "$template" $results "$input_ds_tbl" "$output_ds_tbl"
+	printf "$template3" "$input_ds_tbl" "$output_ds_tbl"
 }
 
 query_workflow_connections() { ## query workflow-connections [--all]: The connections of tools, from output to input, in the latest (or all) versions of user workflows
