@@ -56,6 +56,7 @@ You may want to set `GDPR_MODE=1`. Please determine your own legal responsibilit
 Command | Description
 ------- | -----------
 [`cleanup`](#cleanup) | Cleanup histories/hdas/etc for past N days (default=30)
+[`dump-config`](#dump-config) | Dump Galaxy configuration as JSON
 [`filter hexdecode`](#filter-hexdecode) | Decodes any hex blobs from postgres outputs
 [`filter pg2md`](#filter-pg2md) | Convert postgres table format outputs to something that can be pasted as markdown
 [`handler restart`](#handler-restart) | restart handlers
@@ -123,6 +124,33 @@ gxadmin cleanup [days]
 **NOTES**
 
 Cleanup histories/hdas/etc for past N days using the python objects-based method
+
+
+### dump-config
+
+**NAME**
+
+dump-config -  Dump Galaxy configuration as JSON
+
+**SYNOPSIS**
+
+gxadmin dump-config
+
+**NOTES**
+
+This function was added with the intention to use it internally, but it may be useful in your workflows. It uses the python code from the Galaxy codebase in order to properly load the configuration which is then dumped as JSON.
+
+    (.venv)$ gxadmin dump-config | jq -S . | head
+    {
+      "activation_grace_period": 3,
+      "admin_users": "hxr@local.host",
+      "admin_users_list": [
+        "hxr@local.host"
+      ],
+      "allow_library_path_paste": false,
+      "allow_path_paste": false,
+      "allow_user_creation": true,
+      "allow_user_dataset_purge": true,
 
 
 ### filter hexdecode

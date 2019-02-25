@@ -5,7 +5,9 @@
 	- uwsgi stats\_influx: which fetches stats from uWSGI zerglings
 	- filter pg2md: Convert postgres tables into markdown compatible tables
 	- `GDPR_MODE` env var which blanks out usernames and emails
-	- errored-jobs: Lists jobs that errored in the last N hours.
+	- errored-jobs: Lists jobs that errored in the last N hours
+	- workflow-connections: Exports worfklow connections, input to output tools
+	- dump-config: Dump Galaxy configuration as JSON
 - Improved:
 	- user-details: now reports in markdown compatible output and with more information about the user
 

@@ -1255,6 +1255,51 @@ query_training_queue() { ## query training-queue <training_id>: Jobs currently b
 	EOF
 }
 
+dump_config() { ## dump-config: Dump Galaxy configuration as JSON
+	handle_help "$@" <<-EOF
+		This function was added with the intention to use it internally, but it may be useful in your workflows. It uses the python code from the Galaxy codebase in order to properly load the configuration which is then dumped as JSON.
+
+		    (.venv)$ gxadmin dump-config | jq -S . | head
+		    {
+		      "activation_grace_period": 3,
+		      "admin_users": "hxr@local.host",
+		      "admin_users_list": [
+		        "hxr@local.host"
+		      ],
+		      "allow_library_path_paste": false,
+		      "allow_path_paste": false,
+		      "allow_user_creation": true,
+		      "allow_user_dataset_purge": true,
+	EOF
+
+	assert_set_env GALAXY_ROOT
+	assert_set_env GALAXY_CONFIG_FILE
+
+	dump_config_python=$(cat <<EOF
+import argparse
+import json
+import os
+import sys
+
+sys.path.insert(1, '$GALAXY_ROOT/lib')
+
+import galaxy.config
+from galaxy.util.script import app_properties_from_args, populate_config_args
+
+parser = argparse.ArgumentParser()
+populate_config_args(parser)
+args = parser.parse_args()
+args.config_file = '$GALAXY_CONFIG_FILE'
+
+app_properties = app_properties_from_args(args)
+config = galaxy.config.Configuration(**app_properties)
+
+sys.stdout.write(json.dumps(config.__dict__, default=lambda o: '<fail>'))
+EOF
+)
+	echo "$dump_config_python" | python
+}
+
 query_disk_usage() { ## query disk-usage: Disk usage per object store.
 	handle_help "$@" <<-EOF
 		TODO: implement flag for --nice numbers
@@ -2347,6 +2392,7 @@ case "$mode" in
 	zerg                           ) zerg              "$@" ;;
 	handler                        ) handler           "$@" ;;
 	migrate-tool-install-to-sqlite ) migrate_to_sqlite "$@" ;;
+	dump-config                    ) dump_config       "$@" ;;
 	update                         ) update            "$@" ;;
 	uwsgi                          ) uwsgi             "$@" ;;
 	filter                         ) filter            "$@" ;;
