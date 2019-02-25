@@ -101,7 +101,7 @@ Command | Description
 [`query user-details`](#query-user-details) | Quick overview of a Galaxy user in your system
 [`query users-count`](#query-users-count) | Shows sums of active/external/deleted/purged accounts
 [`query users-total`](#query-users-total) | Total number of Galaxy users (incl deleted, purged, inactive)
-[`query workflow-connections`](#query-workflow-connections) | The connections of tools, from output to input, in the latest versions of user workflows
+[`query workflow-connections`](#query-workflow-connections) | The connections of tools, from output to input, in the latest (or all) versions of user workflows
 [`update`](#update) | Update the script
 [`uwsgi stats_influx`](#uwsgi-stats_influx) | InfluxDB formatted output for the current stats
 [`validate`](#validate) | validate config files
@@ -1161,11 +1161,11 @@ gxadmin query users-total
 
 **NAME**
 
-query workflow-connections -  The connections of tools, from output to input, in the latest versions of user workflows
+query workflow-connections -  The connections of tools, from output to input, in the latest (or all) versions of user workflows
 
 **SYNOPSIS**
 
-gxadmin query workflow-connections
+gxadmin query workflow-connections [--all]
 
 **NOTES**
 

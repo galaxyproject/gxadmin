@@ -771,7 +771,7 @@ EOF
 	printf "$template" $results "$input_ds_tbl" "$output_ds_tbl"
 }
 
-query_workflow_connections() { ## query workflow-connections: The connections of tools, from output to input, in the latest versions of user workflows
+query_workflow_connections() { ## query workflow-connections [--all]: The connections of tools, from output to input, in the latest (or all) versions of user workflows
 	handle_help "$@" <<-EOF
 		This is used by the usegalaxy.eu tool prediction workflow, allowing for building models out of tool connections in workflows.
 
@@ -790,6 +790,21 @@ query_workflow_connections() { ## query workflow-connections: The connections of
 		         4 | 2013-02-07 16:48:00 |    13 | cat1              | 1.0.0     |     20 | Count1            | 1.0.0
 	EOF
 
+	read -r -d '' wf_filter <<-EOF
+	WHERE
+		workflow.id in (
+			SELECT
+			 workflow.id
+			FROM
+			 stored_workflow
+			LEFT JOIN
+			 workflow on stored_workflow.latest_workflow_id = workflow.id
+		)
+	EOF
+	if [[ $1 == "--all" ]]; then
+		wf_filter=""
+	fi
+
 	read -r -d '' QUERY <<-EOF
 		SELECT
 			ws_in.workflow_id as wf_id,
@@ -805,16 +820,7 @@ query_workflow_connections() { ## query workflow-connections: The connections of
 		JOIN workflow_step ws_in  ON ws_in.id = wfc.input_step_id
 		JOIN workflow_step ws_out ON ws_out.id = wfc.output_step_id
 		JOIN workflow on ws_in.workflow_id = workflow.id
-
-		WHERE
-			workflow.id in (
-				SELECT
-				 workflow.id
-				FROM
-				 stored_workflow
-				LEFT JOIN
-				 workflow on stored_workflow.latest_workflow_id = workflow.id
-			)
+		$wf_filter
 	EOF
 }
 
