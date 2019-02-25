@@ -27,6 +27,7 @@ chmod +x /usr/bin/gxadmin
 - Nate Coraor (@natefoo)
 - Simon Gladman (@slugger70)
 - Anthony Bretaudeau (@abretaud)
+- Manuel Messner (mm@skellet.io)
 
 ## License
 
@@ -1029,7 +1030,7 @@ gxadmin query training [--all]
 
 **NOTES**
 
-This module is specific to EU's implementation of Training Infrastructure as a Service. But this specifically just checks for all groups with the name prefix 
+This module is specific to EU's implementation of Training Infrastructure as a Service. But this specifically just checks for all groups with the name prefix
 
     $ gxadmin query training
            name       |  created
