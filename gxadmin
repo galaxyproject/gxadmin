@@ -19,6 +19,7 @@ for line in sys.stdin:
 EOF
 )
 
+
 usage(){
 	if (( $# > 0 )); then
 		if [[ $1 != "safe" ]] && [[ $1 != "query" ]]; then
@@ -113,6 +114,14 @@ assert_restart_lock(){
 	fi
 }
 
+assert_set_env() {
+	env_var=$1
+	if [[ -z "${!env_var}" ]]; then
+		error Please set \$${env_var}
+		exit 1
+	fi
+}
+
 error() {
 	echo -e "\e[48;5;09m$@\e[m"
 }
@@ -145,14 +154,8 @@ validate() { ## validate: validate config files
 		    All XML files validated
 	EOF
 
-	if [[ -z "$GALAXY_CONFIG_DIR" ]]; then
-		error Please set \$GALAXY_CONFIG_DIR
-		exit 1
-	fi
-	if [[ -z "$GALAXY_MUTABLE_CONFIG_DIR" ]]; then
-		error Please set \$GALAXY_MUTABLE_CONFIG_DIR
-		exit 1
-	fi
+	assert_set_env GALAXY_CONFIG_DIR
+	assert_set_env GALAXY_MUTABLE_CONFIG_DIR
 
 	fail_count=0
 	for file in ${GALAXY_CONFIG_DIR}/*.xml; do
@@ -339,19 +342,10 @@ cleanup() { ## cleanup [days]: Cleanup histories/hdas/etc for past N days (defau
 		days=$1
 	fi
 
-	# TODO(hxr): nicer syntax?
-	if [[ -z "$GALAXY_ROOT" ]]; then
-		error Please set \$GALAXY_ROOT
-		exit 1
-	fi
-	if [[ -z "$GALAXY_CONFIG_FILE" ]]; then
-		error Please set \$GALAXY_CONFIG_FILE
-		exit 1
-	fi
-	if [[ -z "$GALAXY_LOG_DIR" ]]; then
-		error Please set \$GALAXY_LOG_DIR
-		exit 1
-	fi
+	assert_set_env GALAXY_ROOT
+	assert_set_env GALAXY_CONFIG_FILE
+	assert_set_env GALAXY_LOG_DIR
+
 	run_date=$(date --rfc-3339=seconds)
 
 	for action in {delete_userless_histories,delete_exported_histories,purge_deleted_histories,purge_deleted_hdas,delete_datasets,purge_datasets}; do
