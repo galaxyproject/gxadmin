@@ -8,8 +8,10 @@
 	- errored-jobs: Lists jobs that errored in the last N hours
 	- workflow-connections: Exports worfklow connections, input to output tools
 	- dump-config: Dump Galaxy configuration as JSON
-- Improved:
+- Changed:
 	- user-details: now reports in markdown compatible output and with more information about the user
+	- job-info: now reports in markdown compatible output, including job inputs + outputs
+	- queue-overview: now includes user ID by default (`GDPR_MODE=1` will set the value to `0`), and allows using shorter tool IDs
 
 # 10
 

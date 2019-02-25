@@ -929,26 +929,46 @@ query_queue() { ## query queue: Brief overview of currently running jobs
 	EOF
 }
 
-query_queue_overview() { ## query queue-overview: View used mostly for monitoring
+query_queue_overview() { ## query queue-overview [--short-tool-id]: View used mostly for monitoring
 	handle_help "$@" <<-EOF
 		Primarily for monitoring of queue. Optimally used with 'iquery' and passed to Telegraf.
 
 		    $ gxadmin iquery queue-overview
-		    queue-overview,tool_id=test_history_sanitization,tool_version=0.0.1,state=running,handler=main.web.1,destination_id=condor,job_runner_name=condor count=1
+		    queue-overview,tool_id=upload1,tool_version=0.0.1,state=running,handler=main.web.1,destination_id=condor,job_runner_name=condor,user=1 count=1
 
 	EOF
 
+	# Use full tool id by default
+	tool_id="tool_id"
+	if [[ $1 = --short-tool-id ]]; then
+		tool_id="regexp_replace(tool_id, '.*toolshed.*/repos/', '')"
+	fi
+
+	# Include by default
+	if [ -z "$GDPR_MODE"  ]; then
+		user_id='user_id'
+	else
+		user_id="'0'"
+	fi
+
 	fields="count=6"
-	tags="tool_id=0;tool_version=1;destination_id=2;handler=3;state=4;job_runner_name=5"
+	tags="tool_id=0;tool_version=1;destination_id=2;handler=3;state=4;job_runner_name=5;user_id=7"
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			tool_id, tool_version, destination_id, handler, state, job_runner_name, count(*) as count
+			regexp_replace($tool_id, '/[0-9.a-z+-]+$', '') as tool_id,
+			tool_version,
+			destination_id,
+			handler,
+			state,
+			job_runner_name,
+			count(*) as count,
+			$user_id as user_id
 		FROM job
 		WHERE
 			state = 'running' or state = 'queued'
 		GROUP BY
-			tool_id, tool_version, destination_id, handler, state, job_runner_name
+			tool_id, tool_version, destination_id, handler, state, job_runner_name, user_id
 	EOF
 }
 
