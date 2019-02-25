@@ -431,25 +431,29 @@ query disk-usage -  Disk usage per object store.
 
 **SYNOPSIS**
 
-gxadmin query disk-usage
+gxadmin query disk-usage [--nice]
 
 **NOTES**
 
-TODO: implement flag for --nice numbers
+Query the different object stores referenced in your Galaxy database
 
+    $ gxadmin query disk-usage
      object_store_id |      sum
     -----------------+----------------
      files8          | 88109503720067
      files6          | 64083627169725
      files9          | 53690953947700
      files7          | 30657241908566
-     files1          | 30633153627407
-     files2          | 22117477087642
-     files3          | 21571951600351
-     files4          | 13969690603365
-                     |  6943415154832
-     secondary       |   594632335718
-    (10 rows)
+
+Or you can supply the --nice flag, but this should not be used with iquery/InfluxDB
+
+    $ gxadmin query disk-usage --nice
+     object_store_id |   sum
+    -----------------+---------
+     files9          | 114 TB
+     files8          | 77 TB
+     files7          | 56 TB
+     files6          | 17 TB
 
 
 ### query errored-jobs
@@ -836,14 +840,14 @@ query queue-overview -  View used mostly for monitoring
 
 **SYNOPSIS**
 
-gxadmin query queue-overview
+gxadmin query queue-overview [--short-tool-id]
 
 **NOTES**
 
 Primarily for monitoring of queue. Optimally used with 'iquery' and passed to Telegraf.
 
     $ gxadmin iquery queue-overview
-    queue-overview,tool_id=test_history_sanitization,tool_version=0.0.1,state=running,handler=main.web.1,destination_id=condor,job_runner_name=condor count=1
+    queue-overview,tool_id=upload1,tool_version=0.0.1,state=running,handler=main.web.1,destination_id=condor,job_runner_name=condor,user=1 count=1
 
 
 ### query queue-time
@@ -1030,7 +1034,7 @@ gxadmin query training [--all]
 
 **NOTES**
 
-This module is specific to EU's implementation of Training Infrastructure as a Service. But this specifically just checks for all groups with the name prefix
+This module is specific to EU's implementation of Training Infrastructure as a Service. But this specifically just checks for all groups with the name prefix 
 
     $ gxadmin query training
            name       |  created

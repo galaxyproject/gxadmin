@@ -1320,35 +1320,44 @@ EOF
 	echo "$dump_config_python" | python
 }
 
-query_disk_usage() { ## query disk-usage: Disk usage per object store.
+query_disk_usage() { ## query disk-usage [--nice]: Disk usage per object store.
 	handle_help "$@" <<-EOF
-		TODO: implement flag for --nice numbers
+		Query the different object stores referenced in your Galaxy database
 
+		    $ gxadmin query disk-usage
 		     object_store_id |      sum
 		    -----------------+----------------
 		     files8          | 88109503720067
 		     files6          | 64083627169725
 		     files9          | 53690953947700
 		     files7          | 30657241908566
-		     files1          | 30633153627407
-		     files2          | 22117477087642
-		     files3          | 21571951600351
-		     files4          | 13969690603365
-		                     |  6943415154832
-		     secondary       |   594632335718
-		    (10 rows)
+
+		Or you can supply the --nice flag, but this should not be used with iquery/InfluxDB
+
+		    $ gxadmin query disk-usage --nice
+		     object_store_id |   sum
+		    -----------------+---------
+		     files9          | 114 TB
+		     files8          | 77 TB
+		     files7          | 56 TB
+		     files6          | 17 TB
 	EOF
 
 	fields="count=1"
 	tags="object_store_id=0"
 
+	size="sum(total_size)"
+	if [[ $1 == "--nice" ]]; then
+		size="pg_size_pretty(sum(total_size)) as sum"
+	fi
+
 	read -r -d '' QUERY <<-EOF
 			SELECT
-				object_store_id, sum(total_size)
+				object_store_id, $size
 			FROM dataset
 			WHERE NOT purged
 			GROUP BY object_store_id
-			ORDER BY sum DESC
+			ORDER BY sum(total_size) DESC
 	EOF
 }
 
