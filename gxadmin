@@ -668,6 +668,41 @@ query_tool_usage() { ## query tool-usage: Counts of tool runs
 	EOF
 }
 
+query_tool_popularity() { ## query tool-popularity [months|24]: Most run tools by month
+	handle_help "$@" <<-EOF
+		See most popular tools by month
+
+		    $ ./gxadmin query tool-popularity 1
+		              tool_id          |   month    | count
+		    ---------------------------+------------+-------
+		     circos                    | 2019-02-01 |    20
+		     upload1                   | 2019-02-01 |    12
+		     require_format            | 2019-02-01 |     9
+		     circos_gc_skew            | 2019-02-01 |     7
+		     circos_wiggle_to_scatter  | 2019-02-01 |     3
+		     test_history_sanitization | 2019-02-01 |     2
+		     circos_interval_to_tile   | 2019-02-01 |     1
+		     __SET_METADATA__          | 2019-02-01 |     1
+		    (8 rows)
+	EOF
+
+	fields="count=2"
+	tags="tool_id=0;month=1"
+
+	months=${1:-24}
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			tool_id,
+			date_trunc('month', create_time)::date as month,
+			count(*)
+		FROM job
+		WHERE create_time > (now() - '$months months'::interval)
+		GROUP BY tool_id, month
+		ORDER BY month desc, count desc
+	EOF
+}
+
 query_job_info() { ## query job-info <id>: Information about a specific job
 	handle_help "$@" <<-EOF
 		    $ gxadmin query job-info 1
@@ -708,7 +743,7 @@ Property      | Value
       Created | %s %s (%s %s %s ago)
 Job Runner/ID | %s / %s
 EOF
-	printf "$template"  $results 
+	printf "$template"  $results
 
 	###       ###
 	# USER INFO #
@@ -1180,7 +1215,7 @@ query_recent_jobs() { ## query recent-jobs <hours>: Jobs run in the past <hours>
 
 query_training() { ## query training [--all]: List known trainings
 	handle_help "$@" <<-EOF
-		This module is specific to EU's implementation of Training Infrastructure as a Service. But this specifically just checks for all groups with the name prefix `training-`
+		This module is specific to EU's implementation of Training Infrastructure as a Service. But this specifically just checks for all groups with the name prefix 'training-'
 
 		    $ gxadmin query training
 		           name       |  created
@@ -2241,6 +2276,7 @@ obtain_query() {
 		tool-last-used-date     ) query_tool_last_used_date      "$@" ;;
 		tool-metrics            ) query_tool_metrics             "$@" ;;
 		tool-usage              ) query_tool_usage               "$@" ;;
+		tool-popularity         ) query_tool_popularity          "$@" ;;
 		training                ) query_training                 "$@" ;;
 		training-memberof       ) query_training_memberof        "$@" ;;
 		training-members        ) query_training_members         "$@" ;;

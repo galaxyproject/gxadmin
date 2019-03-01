@@ -93,6 +93,7 @@ Command | Description
 [`query tool-available-metrics`](#query-tool-available-metrics) | list all available metrics for a given tool
 [`query tool-last-used-date`](#query-tool-last-used-date) | When was the most recent invocation of every tool
 [`query tool-metrics`](#query-tool-metrics) | See values of a specific metric
+[`query tool-popularity`](#query-tool-popularity) | Most run tools by month
 [`query tool-usage`](#query-tool-usage) | Counts of tool runs
 [`query training`](#query-training) | List known trainings
 [`query training-memberof`](#query-training-memberof) | List trainings that a user is part of
@@ -996,6 +997,34 @@ do some aggregations. The following requires [data_hacks](https://github.com/bit
        95.5703 -   105.8750 [     1]: ∎ (0.23%)
 
 
+### query tool-popularity
+
+**NAME**
+
+query tool-popularity -  Most run tools by month
+
+**SYNOPSIS**
+
+gxadmin query tool-popularity [months|24]
+
+**NOTES**
+
+See most popular tools by month
+
+    $ ./gxadmin query tool-popularity 1
+              tool_id          |   month    | count
+    ---------------------------+------------+-------
+     circos                    | 2019-02-01 |    20
+     upload1                   | 2019-02-01 |    12
+     require_format            | 2019-02-01 |     9
+     circos_gc_skew            | 2019-02-01 |     7
+     circos_wiggle_to_scatter  | 2019-02-01 |     3
+     test_history_sanitization | 2019-02-01 |     2
+     circos_interval_to_tile   | 2019-02-01 |     1
+     __SET_METADATA__          | 2019-02-01 |     1
+    (8 rows)
+
+
 ### query tool-usage
 
 **NAME**
@@ -1034,7 +1063,7 @@ gxadmin query training [--all]
 
 **NOTES**
 
-This module is specific to EU's implementation of Training Infrastructure as a Service. But this specifically just checks for all groups with the name prefix 
+This module is specific to EU's implementation of Training Infrastructure as a Service. But this specifically just checks for all groups with the name prefix 'training-'
 
     $ gxadmin query training
            name       |  created

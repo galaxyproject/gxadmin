@@ -8,6 +8,7 @@
 	- errored-jobs: Lists jobs that errored in the last N hours
 	- workflow-connections: Exports worfklow connections, input to output tools
 	- dump-config: Dump Galaxy configuration as JSON
+	- tool-popularity: Most popular tools per month
 - Changed:
 	- user-details: now reports in markdown compatible output and with more information about the user
 	- job-info: now reports in markdown compatible output, including job inputs + outputs
