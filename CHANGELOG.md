@@ -13,6 +13,8 @@
 	- user-details: now reports in markdown compatible output and with more information about the user
 	- job-info: now reports in markdown compatible output, including job inputs + outputs
 	- queue-overview: now includes user ID by default (`GDPR_MODE=1` will set the value to `0`), and allows using shorter tool IDs
+	- user-details: renamed to user-info
+	- user-info: includes largest histories
 
 # 10
 
