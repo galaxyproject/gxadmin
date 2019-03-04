@@ -1445,11 +1445,11 @@ query_disk_usage() { ## query disk-usage [--nice]: Disk usage per object store.
 	EOF
 }
 
-query_user_details() { ## query user-details <user_id|username|email>: Quick overview of a Galaxy user in your system
+query_user_info() { ## query user-info <user_id|username|email>: Quick overview of a Galaxy user in your system
 	handle_help "$@" <<-EOF
 		This command lets you quickly find out information about a user. The output is formatted as markdown by default.
 
-		    $ gxadmin query user-details helena-rasche
+		    $ gxadmin query user-info helena-rasche
 		    # Galaxy User 580
 
 		      Property | Value
@@ -1466,18 +1466,31 @@ query_user_details() { ## query user-details <user_id|username|email>: Quick ove
 
 		    ## Recent Jobs
 
-		    Tool ID                                                                                |   Status   |   Created                      |   Exit Code   |   Runtime
-		    ----                                                                                   |   ----     |   ----                         |   ---         |   ----
-		    toolshed.g2.bx.psu.edu/repos/devteam/fasta_compute_length/fasta_compute_length/1.0.1   |   ok       |   2019-01-21 09:47:58.864848   |   0           |   00:02:11
-		    Grep1                                                                                  |   ok       |   2019-01-21 07:27:24.472706   |   0           |   00:01:19
-		    CONVERTER_fasta_to_tabular                                                             |   ok       |   2019-01-21 07:27:24.339862   |   0           |   00:03:34
-		    secure_hash_message_digest                                                             |   ok       |   2019-01-18 16:43:44.262265   |   0           |   00:00:08
-		    toolshed.g2.bx.psu.edu/repos/iuc/jbrowse/jbrowse/1.12.5+galaxy2                        |   ok       |   2019-01-18 14:43:24.314026   |   0           |   20:23:23
-		    CONVERTER_gz_to_uncompressed                                                           |   ok       |   2019-01-18 10:18:23.99171    |   0           |   00:10:02
-		    upload1                                                                                |   ok       |   2019-01-18 08:44:24.955622   |   0           |   01:11:07
-		    echo_main_env                                                                          |   ok       |   2019-01-17 16:45:04.019233   |   0           |   00:00:29
-		    secure_hash_message_digest                                                             |   ok       |   2019-01-17 16:03:21.33665    |   0           |   00:00:07
-		    secure_hash_message_digest                                                             |   ok       |   2019-01-17 16:03:20.937433   |   0           |   00:00:09
+		    Tool ID                      | Status | Created                    | Exit Code | Runtime
+		    ----                         | ----   | ----                       | ---       | ----
+		    Grep1                        | ok     | 2019-01-21 07:27:24.472706 | 0         | 00:01:19
+		    CONVERTER_fasta_to_tabular   | ok     | 2019-01-21 07:27:24.339862 | 0         | 00:03:34
+		    secure_hash_message_digest   | ok     | 2019-01-18 16:43:44.262265 | 0         | 00:00:08
+		    CONVERTER_gz_to_uncompressed | ok     | 2019-01-18 10:18:23.99171  | 0         | 00:10:02
+		    upload1                      | ok     | 2019-01-18 08:44:24.955622 | 0         | 01:11:07
+		    echo_main_env                | ok     | 2019-01-17 16:45:04.019233 | 0         | 00:00:29
+		    secure_hash_message_digest   | ok     | 2019-01-17 16:03:21.33665  | 0         | 00:00:07
+		    secure_hash_message_digest   | ok     | 2019-01-17 16:03:20.937433 | 0         | 00:00:09
+
+		    ## Largest Histories
+
+		    History ID | Name                         | Size
+		    ----       | ----                         | ----
+		    20467      | imported: RNASEQ             | 52 GB
+		    94748      | imported: ChIP-seq           | 49 GB
+		    94761      | reduced history-export problem |   49 GB
+		    102448     | Wheat Genome                 | 42 GB
+		    38923      | imported: Zooplankton        | 29 GB
+		    64974      | imported: 65991-A            | 17 GB
+		    20488      | Unnamed history              | 15 GB
+		    19414      | Unnamed history              | 12 GB
+		    92407      | Testing                      | 11 GB
+		    60522      | example1/wf3-shed-tools.ga   | 5923 MB
 	EOF
 
 	# Metada
@@ -1520,6 +1533,26 @@ query_user_details() { ## query user-details <user_id|username|email>: Quick ove
 	recent_jobs=$(query_tsv "$qstr")
 	recent_jobs2=$(printf "Tool ID\tStatus\tCreated\tExit Code\tRuntime\n----\t----\t----\t---\t----\n%s" "$recent_jobs" | sed 's/\t/\t | \t/g' | column -t -s'	')
 
+	# Largest Histories
+	read -r -d '' qstr <<-EOF
+		SELECT
+			history.id, history.name, pg_size_pretty(sum(COALESCE(dataset.total_size, 0))) AS size
+		FROM
+			history
+			LEFT JOIN history_dataset_association ON history.id = history_dataset_association.history_id
+			LEFT JOIN dataset ON history_dataset_association.dataset_id = dataset.id
+		WHERE
+			history.user_id = $user_id
+		GROUP BY
+			history.id, history.name
+		ORDER BY
+			sum(COALESCE(dataset.total_size, 0)) DESC
+		LIMIT
+			10
+	EOF
+	largest_histories=$(query_tsv "$qstr")
+	largest_histories=$(printf "History ID\tName\tSize\n----\t----\t----\n%s" "$largest_histories" | sed 's/\t/\t | \t/g' | column -t -s'	')
+
 	read -r -d '' template <<EOF
 # Galaxy User $user_id
 
@@ -1538,9 +1571,13 @@ Roles: %s
 ## Recent Jobs
 
 %s
+
+## Largest Histories
+
+%s
 \n
 EOF
-	printf "$template" $results "$group_membership" "$role_membership" "$recent_jobs2"
+	printf "$template" $results "$group_membership" "$role_membership" "$recent_jobs2" "$largest_histories"
 }
 
 query_users_count() { ## query users-count: Shows sums of active/external/deleted/purged accounts
@@ -2324,8 +2361,8 @@ obtain_query() {
 		training-queue          ) query_training_queue           "$@" ;;
 		training-remove-member  ) query_training_remove_member   "$@" ;;
 		ts-repos                ) query_ts_repos                 "$@" ;;
-		user-details            ) query_user_details             "$@" ;;
-		user-info               ) query_user_details             "$@" ;;
+		user-details            ) query_user_info                "$@" ;;
+		user-info               ) query_user_info                "$@" ;;
 		users-count             ) query_users_count              "$@" ;;
 		users-total             ) query_users_total              "$@" ;;
 		workflow-connections    ) query_workflow_connections     "$@" ;;
