@@ -604,7 +604,9 @@ gdpr_safe() {
 	if [ -z "$GDPR_MODE"  ]; then
 		echo "$1"
 	else
-		echo "'xxxx' as ${2:-$1}"
+		# Try and be privacy respecting while generating numbers that can allow
+		# linking data across tables if need be?
+		echo "substring(md5($1 || now()::date), 0, 12) as ${2:-$1}"
 	fi
 }
 
