@@ -793,7 +793,7 @@ EOF
 	###      ###
 	read -r -d '' qstr <<-EOF
 	SELECT
-		jtod.dataset_id,
+		jtod.job_id,
 	    hda.name,
 	    hda.extension,
 	    hda.id,
