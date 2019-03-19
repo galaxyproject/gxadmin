@@ -1102,7 +1102,10 @@ query_queue_detail() { ## query queue-detail [--all]: Detailed overview of runni
 			job.job_runner_external_id as extid,
 			job.tool_id,
 			$username,
-			date_trunc('hour', (now() AT TIME ZONE 'UTC' - job.create_time)) as time_since_creation
+			date_trunc('hour', (now() AT TIME ZONE 'UTC' - job.create_time)) as time_since_creation,
+			job.handler,
+			job.job_runner_name,
+			job.destination_id
 		FROM job, galaxy_user
 		WHERE
 			state in ('running', 'queued'$d)
