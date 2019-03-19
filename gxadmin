@@ -626,7 +626,7 @@ query_latest_users() { ## query latest-users: 40 recently registered users
 	read -r -d '' QUERY <<-EOF
 		SELECT
 			id,
-			create_time,
+			create_time AT TIME ZONE 'UTC' as create_time,
 			pg_size_pretty(disk_usage) as disk_usage,
 			$username,
 			$email,
@@ -696,10 +696,10 @@ query_tool_popularity() { ## query tool-popularity [months|24]: Most run tools b
 	read -r -d '' QUERY <<-EOF
 		SELECT
 			tool_id,
-			date_trunc('month', create_time)::date as month,
+			date_trunc('month', create_time AT TIME ZONE 'UTC')::date as month,
 			count(*)
 		FROM job
-		WHERE create_time > (now() - '$months months'::interval)
+		WHERE create_time > (now() AT TIME ZONE 'UTC' - '$months months'::interval)
 		GROUP BY tool_id, month
 		ORDER BY month desc, count desc
 	EOF
@@ -726,8 +726,8 @@ query_job_info() { ## query job-info <id>: Information about a specific job
 			job.tool_id,
 			job.state,
 			job.handler,
-			job.create_time,
-			(now() - job.create_time)::interval,
+			job.create_time AT TIME ZONE 'UTC' as create_time,
+			(now() AT TIME ZONE 'UTC' - job.create_time)::interval,
 			COALESCE(job.job_runner_name, '?'),
 			COALESCE(job.job_runner_external_id, '?')
 		FROM job
@@ -900,7 +900,7 @@ query_workflow_connections() { ## query workflow-connections [--all]: The connec
 	read -r -d '' QUERY <<-EOF
 		SELECT
 			ws_in.workflow_id as wf_id,
-			date_trunc('minute', workflow.update_time) as wf_updated,
+			date_trunc('minute', workflow.update_time AT TIME ZONE 'UTC') as wf_updated,
 			wfc.input_step_id as in_id,
 			ws_in.tool_id as in_tool,
 			ws_in.tool_version as in_tool_v,
@@ -927,7 +927,7 @@ query_datasets_created_daily() { ## query datasets-created-daily: The min/max/av
 	read -r -d '' QUERY <<-EOF
 		WITH temp_queue_times AS
 		(select
-			date_trunc('day', create_time),
+			date_trunc('day', create_time AT TIME ZONE 'UTC'),
 			sum(total_size)
 		from dataset
 		group by date_trunc
@@ -981,7 +981,7 @@ query_queue_time() { ## query queue-time <tool_id>: The average/95%/99% a specif
 		on
 			(a.job_id = b.job_id)
 		where
-			a.job_id in (select id from job where tool_id like '%$3%' and state = 'ok' and create_time > (now() - '3 months'::interval))
+			a.job_id in (select id from job where tool_id like '%$3%' and state = 'ok' and create_time > (now() AT TIME ZONE 'UTC' - '3 months'::interval))
 			and a.state = 'running'
 			and b.state = 'queued'
 		group by
@@ -1096,10 +1096,20 @@ query_queue_detail() { ## query queue-detail [--all]: Detailed overview of runni
 	username=$(gdpr_safe galaxy_user.username username)
 
 	read -r -d '' QUERY <<-EOF
-		SELECT job.state, job.id, job.job_runner_external_id as extid, job.tool_id, $username, date_trunc('hour', (now() AT TIME ZONE 'UTC' - job.create_time)) as time_since_creation
+		SELECT
+			job.state,
+			job.id,
+			job.job_runner_external_id as extid,
+			job.tool_id,
+			$username,
+			date_trunc('hour', (now() AT TIME ZONE 'UTC' - job.create_time)) as time_since_creation
 		FROM job, galaxy_user
-		WHERE state in ('running', 'queued'$d) and job.user_id = galaxy_user.id
-		ORDER BY state desc, time_since_creation desc
+		WHERE
+			state in ('running', 'queued'$d)
+			AND job.user_id = galaxy_user.id
+		ORDER BY
+			state desc,
+			time_since_creation desc
 	EOF
 }
 
@@ -1168,7 +1178,7 @@ query_jobs_nonterminal() { ## query jobs-nonterminal [username|id|email]: Job in
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			job.id, job.tool_id, job.state, job.create_time, job.job_runner_name, job.job_runner_external_id, job.handler, job.user_id
+			job.id, job.tool_id, job.state, job.create_time AT TIME ZONE 'UTC', job.job_runner_name, job.job_runner_external_id, job.handler, job.user_id
 		FROM
 			job
 		JOIN
@@ -1200,8 +1210,6 @@ query_jobs_per_user() { ## query jobs-per-user <email>: Number of jobs run by a 
 
 query_recent_jobs() { ## query recent-jobs <hours>: Jobs run in the past <hours> (in any state)
 	handle_help "$@" <<-EOF
-		Note that your database may have a different TZ than your querying. This is probably a misconfiguration on our end, please let me know how to fix it. Just add your offset to UTC to your query.
-
 		    $ gxadmin query recent-jobs 2.1
 		       id    |     date_trunc      |      tool_id          | state |    username
 		    ---------+---------------------+-----------------------+-------+-----------------
@@ -1220,9 +1228,12 @@ query_recent_jobs() { ## query recent-jobs <hours>: Jobs run in the past <hours>
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			job.id, date_trunc('minute', job.create_time), job.tool_id, job.state, $username
+			job.id,
+			date_trunc('minute', job.create_time AT TIME ZONE 'UTC'),
+			job.tool_id,
+			job.state, $username
 		FROM job, galaxy_user
-		WHERE job.create_time > (now() - '$1 hours'::interval) AND job.user_id = galaxy_user.id
+		WHERE job.create_time > (now() AT TIME ZONE 'UTC' - '$1 hours'::interval) AND job.user_id = galaxy_user.id
 		ORDER BY id desc
 	EOF
 }
@@ -1247,7 +1258,7 @@ query_training() { ## query training [--all]: List known trainings
 	read -r -d '' QUERY <<-EOF
 		SELECT
 			substring(name from 10) as name,
-			date_trunc('day', create_time)::date as created
+			date_trunc('day', create_time AT TIME ZONE 'UTC')::date as created
 			$d1
 		FROM galaxy_group
 		WHERE name like 'training-%' $d2
@@ -1271,7 +1282,7 @@ query_training_members() { ## query training-members <tr_id>: List users in a sp
 	read -r -d '' QUERY <<-EOF
 			SELECT
 				$username,
-				date_trunc('second', user_group_association.create_time) as joined
+				date_trunc('second', user_group_association.create_time AT TIME ZONE 'UTC') as joined
 			FROM galaxy_user, user_group_association, galaxy_group
 			WHERE galaxy_group.name = 'training-$ww'
 				AND galaxy_group.id = user_group_association.group_id
@@ -1351,12 +1362,12 @@ query_training_queue() { ## query training-queue <training_id>: Jobs currently b
 				job.job_runner_external_id AS extid,
 				job.tool_id,
 				galaxy_user.username,
-				date_trunc('hour', job.create_time) AS created
+				date_trunc('hour', job.create_time AT TIME ZONE 'UTC') AS created
 			FROM
 				job, galaxy_user
 			WHERE
 				job.user_id = galaxy_user.id
-				AND job.create_time > (now() - '3 hours'::interval)
+				AND job.create_time > (now() AT TIME ZONE 'UTC' - '3 hours'::interval)
 				AND galaxy_user.id
 					IN (
 							SELECT
@@ -1510,7 +1521,7 @@ query_user_info() { ## query user-info <user_id|username|email>: Quick overview 
 	# Metada
 	read -r -d '' qstr <<-EOF
 		SELECT
-			username, id, email, create_time, external, deleted, purged, active, pg_size_pretty(disk_usage)
+			username, id, email, create_time AT TIME ZONE 'UTC' as create_time, external, deleted, purged, active, pg_size_pretty(disk_usage)
 		FROM
 			galaxy_user
 		WHERE
@@ -1538,7 +1549,7 @@ query_user_info() { ## query user-info <user_id|username|email>: Quick overview 
 	# Recent jobs
 	read -r -d '' qstr <<-EOF
 		SELECT
-			tool_id, state, create_time, exit_code, metric_value::text::interval
+			tool_id, state, create_time AT TIME ZONE 'UTC' as create_time, exit_code, metric_value::text::interval
 		FROM
 			job, job_metric_numeric
 		WHERE
@@ -1636,7 +1647,7 @@ query_tool_last_used_date() { ## query tool-last-used-date: When was the most re
 	EOF
 
 	read -r -d '' QUERY <<-EOF
-		select max(date_trunc('month', create_time)), tool_id from job group by tool_id order by max desc
+		select max(date_trunc('month', create_time AT TIME ZONE 'UTC')), tool_id from job group by tool_id order by max desc
 	EOF
 }
 
@@ -1741,7 +1752,7 @@ query_active_users() { ## query active-users [weeks]: Count of users who ran job
 		FROM
 			job
 		WHERE
-			job.create_time > (now() - '$weeks weeks'::interval)
+			job.create_time > (now() AT TIME ZONE 'UTC' - '$weeks weeks'::interval)
 	EOF
 }
 
@@ -1838,12 +1849,12 @@ query_month_data(){ ## query monthly-data [year]: Number of active users per mon
 	EOF
 
 	if (( $# > 0 )); then
-		where="WHERE date_trunc('year', dataset.create_time) = '$1-01-01'::date"
+		where="WHERE date_trunc('year', dataset.create_time AT TIME ZONE 'UTC') = '$1-01-01'::date"
 	fi
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			pg_size_pretty(sum(total_size)), date_trunc('month', dataset.create_time) AS month
+			pg_size_pretty(sum(total_size)), date_trunc('month', dataset.create_time AT TIME ZONE 'UTC') AS month
 		FROM
 			dataset
 		$where
@@ -1876,13 +1887,13 @@ query_month_users(){ ## query monthly-users [year]: Number of active users per m
 	EOF
 
 	if (( $# > 0 )); then
-		where="WHERE date_trunc('year', job.create_time) = '$1-01-01'::date"
+		where="WHERE date_trunc('year', job.create_time AT TIME ZONE 'UTC') = '$1-01-01'::date"
 	fi
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
 			count(distinct user_id) as unique_users,
-			date_trunc('month', job.create_time) as month
+			date_trunc('month', job.create_time AT TIME ZONE 'UTC') as month
 		FROM job
 		$where
 		GROUP BY month
@@ -1912,12 +1923,12 @@ query_month_jobs(){ ## query monthly-jobs [year]: Number of jobs run each month
 	EOF
 
 	if (( $# > 0 )); then
-		where="WHERE date_trunc('year', job.create_time) = '$1-01-01'::date"
+		where="WHERE date_trunc('year', job.create_time AT TIME ZONE 'UTC') = '$1-01-01'::date"
 	fi
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			date_trunc('month', job.create_time) AS month,
+			date_trunc('month', job.create_time AT TIME ZONE 'UTC') AS month,
 			count(*)
 		FROM
 			job
@@ -1946,7 +1957,7 @@ query_job_history() { ## query job-history <id>: Job state history for a specifi
 
 	read -r -d '' QUERY <<-EOF
 			SELECT
-				date_trunc('second', create_time) as time,
+				date_trunc('second', create_time AT TIME ZONE 'UTC') as time,
 				state
 			FROM job_state_history
 			WHERE job_id = $1
@@ -2035,7 +2046,7 @@ query_old_histories(){ ## query old-histories <weeks>: Lists histories that have
 	read -r -d '' QUERY <<-EOF
 		SELECT
 			history.id,
-			history.update_time,
+			history.update_time AT TIME ZONE 'UTC' as update_time,
 			history.user_id,
 			$email,
 			history.name,
@@ -2047,7 +2058,7 @@ query_old_histories(){ ## query old-histories <weeks>: Lists histories that have
 			history,
 			galaxy_user
 		WHERE
-			history.update_time < (now() - '$weeks weeks'::interval) AND
+			history.update_time < (now() AT TIME ZONE 'UTC' - '$weeks weeks'::interval) AND
 			history.user_id = galaxy_user.id AND
 			history.deleted = FALSE AND
 			history.published = FALSE
@@ -2071,7 +2082,7 @@ query_errored_jobs(){ ## query errored-jobs <hours>: Lists jobs that errored in 
 	read -r -d '' QUERY <<-EOF
 		SELECT
 			job.id,
-			job.create_time,
+			job.create_time AT TIME ZONE 'UTC' as create_time,
 			job.tool_id,
 			job.tool_version,
 			job.handler,
@@ -2081,7 +2092,7 @@ query_errored_jobs(){ ## query errored-jobs <hours>: Lists jobs that errored in 
 			job,
 			galaxy_user
 		WHERE
-			job.create_time >= (now() - '$hours hours'::interval) AND
+			job.create_time >= (now() AT TIME ZONE 'UTC' - '$hours hours'::interval) AND
 			job.state = 'error' AND
 			job.user_id = galaxy_user.id
 		ORDER BY
@@ -2141,7 +2152,7 @@ query_failed_terminal_datasets() { ## query failed-terminal-datasets: Identify t
 			history_dataset_association.state,
 			history_dataset_association.purged,
 			history_dataset_association.deleted,
-			dataset.create_time as ds_create
+			dataset.create_time AT TIME ZONE 'UTC' as ds_create
 		FROM
 			dataset,
 			history_dataset_association,
@@ -2221,7 +2232,7 @@ mutate_fail_terminal_datasets() { ## mutate fail-terminal-datasets [--commit]: C
 			SELECT
 				dataset.id as ds_id,
 				history_dataset_association.id as hda_id,
-				dataset.create_time as ds_create
+				dataset.create_time AT TIME ZONE 'UTC' as ds_create
 			FROM
 				dataset,
 				history_dataset_association,
