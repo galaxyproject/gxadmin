@@ -1096,7 +1096,7 @@ query_queue_detail() { ## query queue-detail [--all]: Detailed overview of runni
 	username=$(gdpr_safe galaxy_user.username username)
 
 	read -r -d '' QUERY <<-EOF
-		SELECT job.state, job.id, job.job_runner_external_id as extid, job.tool_id, $username, date_trunc('hour', (now() - job.create_time - '2 hours'::interval)) as time_since_creation
+		SELECT job.state, job.id, job.job_runner_external_id as extid, job.tool_id, $username, date_trunc('hour', (now() AT TIME ZONE 'UTC' - job.create_time)) as time_since_creation
 		FROM job, galaxy_user
 		WHERE state in ('running', 'queued'$d) and job.user_id = galaxy_user.id
 		ORDER BY state desc, time_since_creation desc
