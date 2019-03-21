@@ -1,3 +1,10 @@
+# 12
+
+- Added:
+	- local functions, users can add functions to a separate file which are made available in gxadmin. @erasche resisted implementing these for a long time for fears that they won't be contributed back and everyone would keep their precious sql private. So they may nag you occasionally to contribute them back.
+- Fixed:
+	- Correct time zones in all queries to be client-side time zones rather than UTC encoded timestamps as stored in db (Thanks @slugger70!)
+
 # 11
 
 - Added:

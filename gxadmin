@@ -2548,13 +2548,10 @@ filter() {
 
 local_funcs() {
 	if [[ ! -f ${GXADMIN_SITE_SPECIFIC} ]]; then
-		error "No local functions are defined in ~/gxadmin-local.sh"
+		error "No local functions are defined in ${GXADMIN_SITE_SPECIFIC}"
 		exit 1
 	else
 		. ${GXADMIN_SITE_SPECIFIC}
-		if (( ($RANDOM % 25) == 0 )); then
-			warning "Hey! It's great that you're using gxadmin! You should contribute these functions back :) Other people might find these useful, or could learn something from the code you've written, even if you think it is too specific to your site."
-		fi
 	fi
 
 	subfunc="$1"; shift
@@ -2568,6 +2565,9 @@ local_funcs() {
 			help / -h / --help : this message. Invoke '--help' on any subcommand for help specific to that subcommand
 		EOF
 	else
+		if [[ -z "${GXADMIN_BUGGER_OFF}" ]] && (( ($RANDOM % 25) == 0 )); then
+			warning "Hey! It's great that you're using gxadmin! You should contribute these functions back :) Other people might find these useful, or could learn something from the code you've written, even if you think it is too specific to your site."
+		fi
 		${subfunc} "$@";
 	fi
 }
