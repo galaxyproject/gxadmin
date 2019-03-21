@@ -120,11 +120,11 @@ assert_set_env() {
 }
 
 error() {
-	(>&2 echo -e "\e[48;5;09m$@\e[m" > /dev/stderr)
+	(>&2 echo -e "\e[48;5;09m$@\e[m")
 }
 
 warning() {
-	(>&2 echo -e "\e[48;5;214m$@\e[m" )
+	(>&2 echo -e "\e[48;5;214m$@\e[m")
 }
 
 success() {
@@ -134,7 +134,7 @@ success() {
 wait_for_url() {
 	url=$1; shift;
 
-	while [ $(curl --silent $url | wc -c) -eq "0" ]; do
+	while [ $(curl --connect-timeout 5 --silent $url | wc -c) -eq "0" ]; do
 		sleep 5;
 		echo -n '.'
 	done
