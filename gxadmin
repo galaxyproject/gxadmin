@@ -1,4 +1,5 @@
 #!/bin/bash
+GXADMIN_SITE_SPECIFIC=${GXADMIN_SITE_SPECIFIC:-~/.config/gxadmin-local.sh}
 
 hexdecodelines=$(cat <<EOF
 import sys
@@ -26,7 +27,7 @@ usage(){
 			error $@
 		fi
 	fi
-	cmds="$(grep -o '{ ## .*' $0 | grep -v grep | grep -v '| sed' | sort | sed 's/^{ ## //g')"
+	cmds="$(grep -h -o '{ ## .*' $0 $GXADMIN_SITE_SPECIFIC | grep -v grep | grep -v '| sed' | sort | sed 's/^{ ## //g')"
 
 	if [[ $1 == "query" ]]; then
 		cat <<-EOF
@@ -62,7 +63,11 @@ usage(){
 
 			Other:
 
-			$(echo "$cmds" | grep -v 'query ' | grep -v '^zerg' | grep -v '^mutate ' | grep -v handler | column -s: -t | sed 's/^/    /')
+			$(echo "$cmds" | grep -v 'query ' | grep -v '^zerg' | grep -v '^mutate ' | grep -v '^handler' | grep -v '^local' | column -s: -t | sed 's/^/    /')
+
+			Local: (These can be configured in $GXADMIN_SITE_SPECIFIC)
+
+			$(echo "$cmds" | grep '^local' | column -s: -t | sed 's/^/    /')
 
 			help / -h / --help : this message. Invoke '--help' on any subcommand for help specific to that subcommand
 		EOF
@@ -84,7 +89,7 @@ handle_help() {
 
 			echo "**NAME**"
 			echo
-			invoke_desc=$(grep "{ ## ${key}[ :]" $0 | sed "s/.*## /gxadmin /g")
+			invoke_desc=$(grep -h "{ ## ${key}[ :]" $0 $GXADMIN_SITE_SPECIFIC | sed "s/.*## /gxadmin /g")
 			short_desc=$(echo $invoke_desc | sed 's/.*://g')
 			short_parm=$(echo $invoke_desc | sed 's/:.*//g')
 			echo "${key} - ${short_desc}"
@@ -123,7 +128,11 @@ assert_set_env() {
 }
 
 error() {
-	echo -e "\e[48;5;09m$@\e[m"
+	echo -e "\e[48;5;09m$@\e[m" > /dev/stderr
+}
+
+warning() {
+	echo -e "\e[48;5;214m$@\e[m" > /dev/stderr
 }
 
 success() {
@@ -2276,7 +2285,7 @@ update() { ## update: Update the script
 }
 
 version() {
-	echo 11
+	echo 12
 }
 
 completion() {
@@ -2537,6 +2546,32 @@ filter() {
 	esac
 }
 
+local_funcs() {
+	if [[ ! -f ${GXADMIN_SITE_SPECIFIC} ]]; then
+		error "No local functions are defined in ~/gxadmin-local.sh"
+		exit 1
+	else
+		. ${GXADMIN_SITE_SPECIFIC}
+		if (( ($RANDOM % 25) == 0 )); then
+			warning "Hey! It's great that you're using gxadmin! You should contribute these functions back :) Other people might find these useful, or could learn something from the code you've written, even if you think it is too specific to your site."
+		fi
+	fi
+
+	subfunc="$1"; shift
+	if [[ ! -n "$subfunc" || $subfunc == "-h" || $subfunc == "--help" || $subfunc == "help" ]]; then
+		cmds="$(grep -o '{ ## .*' ${GXADMIN_SITE_SPECIFIC} | grep -v grep | grep -v '| sed' | sort | sed 's/^{ ## //g')"
+		cat <<-EOF
+			gxadmin local functions usage:
+
+			$(echo "$cmds" | sort -k2 | column -s: -t | sed 's/^/    /')
+
+			help / -h / --help : this message. Invoke '--help' on any subcommand for help specific to that subcommand
+		EOF
+	else
+		${subfunc} "$@";
+	fi
+}
+
 uwsgi() {
 	subfunc="$1"; shift
 	case "$subfunc" in
@@ -2614,6 +2649,7 @@ case "$mode" in
 	uwsgi                          ) uwsgi             "$@" ;;
 	filter                         ) filter            "$@" ;;
 	mutate                         ) mutate "$mode"    "$@" ;;
+	local                          ) local_funcs       "$@" ;;
 	*query                         ) query "$mode"     "$@" ;;
 
 	# Generate for readme:

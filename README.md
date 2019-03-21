@@ -33,7 +33,11 @@ chmod +x /usr/bin/gxadmin
 
 GPLv3
 
-## Query Setup
+## Configuration
+
+`gxadmin` does not have much configuration, mostly env vars and functions will complain if you don't have them set properly.
+
+### Postgres
 
 Queries support being run in normal postgres table, csv, or tsv output as you
 need. Just use `gxadmin query`, `gxadmin tsvquery`, or `gxadmin csvquery` as
@@ -51,6 +55,32 @@ Example .pgpass:
 ### GDPR
 
 You may want to set `GDPR_MODE=1`. Please determine your own legal responsibilities, the authors take no responsibility for anything you may have done wrong.
+
+### Local Functions
+
+If you want to add some site-specific functions, you can do this in `~/.config/gxadmin-local.sh` (location can be overridden by setting `$GXADMIN_SITE_SPECIFIC`)
+
+You should write a bash script which looks like:
+
+```bash
+cats() { ## local cats: Makes cat noises
+	handle_help "$@" <<-EOF
+		Here is some documentation on this function
+	EOF
+
+	echo "Meow"
+}
+```
+
+This can then be called with `gxadmin` like:
+
+```console
+$ gxadmin local cats --help
+  <snip>
+$ gxadmin local cats
+Meow
+$
+```
 
 ## Commands
 
