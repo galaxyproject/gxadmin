@@ -197,83 +197,6 @@ validate() { ## validate: validate config files
 	fi
 }
 
-zerg_swap() {
-	# Ensure that we lock out other users.
-	assert_restart_lock
-
-	zerg0running=0
-	supervisorctl status z0:zergling0 | grep RUNNING
-	zerg0=$?
-	if (( $zerg0 == 0 )); then
-		echo "zerg 0 is running"
-		zerg0running=1
-	fi
-
-	zerg1running=0
-	supervisorctl status z1:zergling1 | grep RUNNING
-	zerg1=$?
-	if [ "$zerg1" -eq "0" ]; then
-		echo "zerg 1 is running"
-		zerg1running=1
-	fi
-
-	if [[ "$zerg1running" -eq "1" && "$zerg0running" -eq "1" ]] ; then
-		error "ERROR: BOTH ARE RUNNING"
-		exit 2
-	fi
-	if [[ "$zerg1running" -eq "0" && "$zerg0running" -eq "0" ]] ; then
-		error "ERROR: NEITHER ARE RUNNING"
-		exit 3
-	fi
-
-	supervisorctlstatus=`supervisorctl status | grep zergling | sed 's/\s\+/ /g'`
-
-	echo "Ok, everything looks good."
-	# And again even if everything looks good, just in case.
-
-	StartDate=`date "+%s"`
-	echo $$ > $HOME/.restart-lock
-
-	# Ok, so now we are sure that just one is running
-	if [ "$zerg1running" -eq "1" ] ; then
-		to_start="z0:zergling0"
-		to_stop="z1:zergling1"
-		check_url="localhost:9190"
-	else
-		to_start="z1:zergling1"
-		to_stop="z0:zergling0"
-		check_url="localhost:9191"
-	fi
-
-	echo "Starting $to_start"
-	supervisorctl start $to_start
-	echo "$to_start should be running. Now wait patiently while it starts. This script will continue when it is ready."
-
-	wait_for_url $check_url
-	echo
-
-	supervisorctl stop $to_stop
-
-	FinalDate=`date "+%s"`
-	timing=`date -u -d "0 $FinalDate seconds - $StartDate seconds" +"%H:%M:%S"`
-	success "Swap took $timing"
-	rm $HOME/.restart-lock
-}
-
-supervisor_strace() {
-	task=$1
-	state=$(supervisorctl status | grep $task)
-	echo "$state" | grep --quiet "RUNNING"
-	if (( $? > 0 )); then
-		error "$task is not running"
-		exit 1
-	fi
-
-	pid=$(echo $state | egrep -o 'pid ([0-9]*)' | sed 's/pid //g' | tr '\n' ' ')
-	pids=$(echo "$pid"  | sed 's/^\s*//g;s/\s*$//g;s/ / -p /g')
-	strace -e open,openat -p $pids
-}
-
 assert_count() {
 	if (( $1 != $2 )); then
 		error "$3"
@@ -375,77 +298,6 @@ cleanup() { ## cleanup [days]: Cleanup histories/hdas/etc for past N days (defau
 			echo "cleanup_datasets,group=$action success=0"
 		fi
 	done
-}
-
-func_zerg_swap() { ## zerg swap <message>: swap zerglings
-	handle_help "$@" <<-EOF
-	EOF
-
-	validate
-	#assert_count $# 1 "Restart now requires a message"
-	zerg_swap $1
-}
-
-func_zerg_tail() { ## zerg tail: tail zergling logs
-	handle_help "$@" <<-EOF
-	EOF
-
-	tail -f $GALAXY_LOG_DIR/*zerg*.log
-}
-
-zerg_strace() { ## zerg strace [0|1|pool]: swap zerglings
-	handle_help "$@" <<-EOF
-	EOF
-
-	param="$1";
-	shift;
-	if [[ $param == "pool" ]]; then
-		supervisor_strace "gx:zergpool"
-	elif [[ $param == "0" ]] || [[ $param == "1" ]]; then
-		supervisor_strace "zergling$param"
-	else
-		supervisor_strace "gx:zerg"
-	fi
-}
-
-zerg() {
-	subfunc="$1"; shift
-	case "$subfunc" in
-		swap   ) func_zerg_swap  "$@";;
-		tail   ) func_zerg_tail    "$@";;
-		strace ) zerg_strace "$@";;
-	esac
-}
-
-handler_strace() { ## handler strace <handler_id>: Run an strace on a specific handler (to watch it load files.)
-	handle_help "$@" <<-EOF
-	EOF
-
-	supervisor_strace "hd:handler$1"
-}
-
-handler_tail() { ## handler tail: tail handler logs
-	handle_help "$@" <<-EOF
-	EOF
-
-	tail -f $GALAXY_LOG_DIR/handler*.log
-}
-
-handler_restart() { ## handler restart <message>: restart handlers
-	handle_help "$@" <<-EOF
-	EOF
-
-	validate
-	supervisorctl restart hd:
-}
-
-handler() {
-	subfunc="$1"; shift
-	case "$subfunc" in
-		strace  ) handler_strace  "$@";;
-		tail    ) handler_tail    "$@";;
-		restart ) handler_restart "$@";;
-	esac
 }
 
 migrate_to_sqlite() { ## migrate-tool-install-to-sqlite: Converts normal potsgres toolshed repository tables into the SQLite version
@@ -2644,8 +2496,6 @@ mode="$1"; shift
 case "$mode" in
 	validate                       ) validate          "$@" ;;
 	cleanup                        ) cleanup           "$@" ;;
-	zerg                           ) zerg              "$@" ;;
-	handler                        ) handler           "$@" ;;
 	migrate-tool-install-to-sqlite ) migrate_to_sqlite "$@" ;;
 	dump-config                    ) dump_config       "$@" ;;
 	update                         ) update            "$@" ;;
