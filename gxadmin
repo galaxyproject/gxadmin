@@ -27,7 +27,7 @@ usage(){
 			error $@
 		fi
 	fi
-	cmds="$(grep -h -o '{ ## .*' $0 $GXADMIN_SITE_SPECIFIC | grep -v grep | grep -v '| sed' | sort | sed 's/^{ ## //g')"
+	cmds="$(grep -s -h -o '{ ## .*' $0 $GXADMIN_SITE_SPECIFIC | grep -v grep | grep -v '| sed' | sort | sed 's/^{ ## //g')"
 
 	if [[ $1 == "query" ]]; then
 		cat <<-EOF
@@ -43,14 +43,6 @@ usage(){
 	else
 		cat <<-EOF
 			gxadmin usage:
-
-			Zergling Commands:
-
-			$(echo "$cmds" | grep '^zerg' | column -s: -t | sed 's/^/    /')
-
-			Handler Commands:
-
-			$(echo "$cmds" | grep '^handler' | column -s: -t | sed 's/^/    /')
 
 			DB Queries:
 			'query' can be exchanged with 'tsvquery' or 'csvquery' for tab- and comma-separated variants
@@ -89,7 +81,7 @@ handle_help() {
 
 			echo "**NAME**"
 			echo
-			invoke_desc=$(grep -h "{ ## ${key}[ :]" $0 $GXADMIN_SITE_SPECIFIC | sed "s/.*## /gxadmin /g")
+			invoke_desc=$(grep -s -h "{ ## ${key}[ :]" $0 $GXADMIN_SITE_SPECIFIC | sed "s/.*## /gxadmin /g")
 			short_desc=$(echo $invoke_desc | sed 's/.*://g')
 			short_parm=$(echo $invoke_desc | sed 's/:.*//g')
 			echo "${key} - ${short_desc}"
