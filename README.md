@@ -60,10 +60,10 @@ You may want to set `GDPR_MODE=1`. Please determine your own legal responsibilit
 
 If you want to add some site-specific functions, you can do this in `~/.config/gxadmin-local.sh` (location can be overridden by setting `$GXADMIN_SITE_SPECIFIC`)
 
-You should write a bash script which looks like:
+You should write a bash script which looks like. **ALL functions must be prefixed with `local_`**
 
 ```bash
-cats() { ## local cats: Makes cat noises
+local_cats() { ## cats: Makes cat noises
 	handle_help "$@" <<-EOF
 		Here is some documentation on this function
 	EOF
@@ -76,7 +76,11 @@ This can then be called with `gxadmin` like:
 
 ```console
 $ gxadmin local cats --help
-  <snip>
+gxadmin local functions usage:
+
+    cats   Cute kitties
+
+help / -h / --help : this message. Invoke '--help' on any subcommand for help specific to that subcommand
 $ gxadmin local cats
 Meow
 $
