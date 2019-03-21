@@ -120,11 +120,11 @@ assert_set_env() {
 }
 
 error() {
-	echo -e "\e[48;5;09m$@\e[m" > /dev/stderr
+	(>&2 echo -e "\e[48;5;09m$@\e[m" > /dev/stderr)
 }
 
 warning() {
-	echo -e "\e[48;5;214m$@\e[m" > /dev/stderr
+	(>&2 echo -e "\e[48;5;214m$@\e[m" )
 }
 
 success() {
