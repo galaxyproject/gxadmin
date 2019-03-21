@@ -911,8 +911,6 @@ gxadmin query recent-jobs <hours>
 
 **NOTES**
 
-Note that your database may have a different TZ than your querying. This is probably a misconfiguration on our end, please let me know how to fix it. Just add your offset to UTC to your query.
-
     $ gxadmin query recent-jobs 2.1
        id    |     date_trunc      |      tool_id          | state |    username
     ---------+---------------------+-----------------------+-------+-----------------
