@@ -6,6 +6,8 @@
 	- Correct time zones in all queries to be client-side time zones rather than UTC encoded timestamps as stored in db (Thanks @slugger70!)
 - Removed:
 	- Removed highly EU specific handler and zerg functions
+- Changed:
+	- Major internal reorganisation and split into parts for easier editing. A bash script that needs a build system, truly horrifying.
 
 # 11
 

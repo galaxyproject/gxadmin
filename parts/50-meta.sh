@@ -10,11 +10,6 @@ meta_update() { ## meta update: Update the script
 	exit 0
 }
 
-
-version() {
-	echo 12
-}
-
 meta_cmdlist() {
 	IFS=$'\n'
 	# TOC
