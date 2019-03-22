@@ -137,7 +137,15 @@ Command | Description
 [`query users-count`](#query-users-count) | Shows sums of active/external/deleted/purged accounts
 [`query users-total`](#query-users-total) | Total number of Galaxy users (incl deleted, purged, inactive)
 [`query workflow-connections`](#query-workflow-connections) | The connections of tools, from output to input, in the latest (or all) versions of user workflows
+[`uwsgi memory`](#uwsgi-memory) | Current system memory usage
+[`uwsgi pids`](#uwsgi-pids) | Galaxy process PIDs
 [`uwsgi stats_influx`](#uwsgi-stats_influx) | InfluxDB formatted output for the current stats
+[`uwsgi stats`](#uwsgi-stats) | uwsgi stats
+[`uwsgi status`](#uwsgi-status) | Current system status
+[`uwsgi zerg-scale-down`](#uwsgi-zerg-scale-down) | Remove an extraneous zergling
+[`uwsgi zerg-scale-up`](#uwsgi-zerg-scale-up) | Add another zergling to deal with high load
+[`uwsgi zerg-strace`](#uwsgi-zerg-strace) | Strace a zergling
+[`uwsgi zerg-swap`](#uwsgi-zerg-swap) | Swap zerglings in order (unintelligent version)
 
 
 ### config dump
@@ -1271,11 +1279,41 @@ This is used by the usegalaxy.eu tool prediction workflow, allowing for building
          4 | 2013-02-07 16:48:00 |    13 | cat1              | 1.0.0     |     20 | Count1            | 1.0.0
 
 
+### uwsgi memory
+
+**NAME**
+
+uwsgi -  Strace a zergling
+
+**SYNOPSIS**
+
+gxadmin uwsgi stats_influx <addr>
+
+**NOTES**
+
+Obtain memory usage of the various Galaxy processes
+
+
+### uwsgi pids
+
+**NAME**
+
+uwsgi -  Strace a zergling
+
+**SYNOPSIS**
+
+gxadmin uwsgi stats_influx <addr>
+
+**NOTES**
+
+Obtain memory usage of the various Galaxy processes
+
+
 ### uwsgi stats_influx
 
 **NAME**
 
-uwsgi -  InfluxDB formatted output for the current stats
+uwsgi -  Strace a zergling
 
 **SYNOPSIS**
 
@@ -1316,4 +1354,70 @@ For multiple zerglings you can run this for each and just 2>/dev/null
     exit 0
 
 And it will fetch only data for responding uwsgis.
+
+
+### uwsgi stats
+
+
+### uwsgi status
+
+**NAME**
+
+uwsgi -  Strace a zergling
+
+**SYNOPSIS**
+
+gxadmin uwsgi stats_influx <addr>
+
+**NOTES**
+
+Current status of all uwsgi processes
+
+
+### uwsgi zerg-scale-down
+
+**NAME**
+
+uwsgi -  Strace a zergling
+
+**SYNOPSIS**
+
+gxadmin uwsgi stats_influx <addr>
+
+
+### uwsgi zerg-scale-up
+
+**NAME**
+
+uwsgi -  Strace a zergling
+
+**SYNOPSIS**
+
+gxadmin uwsgi stats_influx <addr>
+
+
+### uwsgi zerg-strace
+
+**NAME**
+
+uwsgi -  Strace a zergling
+
+**SYNOPSIS**
+
+gxadmin uwsgi stats_influx <addr>
+
+
+### uwsgi zerg-swap
+
+**NAME**
+
+uwsgi -  Strace a zergling
+
+**SYNOPSIS**
+
+gxadmin uwsgi stats_influx <addr>
+
+**NOTES**
+
+This is the "dumb" version which loops across the zerglings and restarts them in series
 

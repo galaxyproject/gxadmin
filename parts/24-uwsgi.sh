@@ -98,7 +98,10 @@ uwsgi_pids() { ## uwsgi pids: Galaxy process PIDs
 }
 
 uwsgi_stats() { ## uwsgi stats: uwsgi stats
-	/usr/bin/telegraf_uwsgi.sh
+	uwsgi_stats-influx 127.0.0.1:4010 2>/dev/null || true
+	uwsgi_stats-influx 127.0.0.1:4011 2>/dev/null || true
+	uwsgi_stats-influx 127.0.0.1:4012 2>/dev/null || true
+	uwsgi_stats-influx 127.0.0.1:4013 2>/dev/null || true
 }
 
 uwsgi_zerg-swap() { ## uwsgi zerg-swap: Swap zerglings in order (unintelligent version)
@@ -145,9 +148,12 @@ uwsgi_zerg-scale-down() { ## uwsgi zerg-scale-down: Remove an extraneous zerglin
 }
 
 uwsgi_zerg-strace() { ## uwsgi zerg-strace [number]: Strace a zergling
+	handle_help "$@" <<-EOF
+	EOF
+
 	if (( $# > 0 )); then
 		number=$1;
 	fi
-	procs=$(pids | grep zergling@${number} | cut -d':' -f2 | sed 's/\s*//g;' | tr '\n' ' ' | sed 's/^\s*//;s/\s*$//g;s/ / -p /g')
+	procs=$(uwsgi_pids | grep zergling@${number} | cut -d':' -f2 | sed 's/\s*//g;' | tr '\n' ' ' | sed 's/^\s*//;s/\s*$//g;s/ / -p /g')
 	strace -e open,openat -p $procs
 }

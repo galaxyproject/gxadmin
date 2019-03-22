@@ -2062,6 +2062,109 @@ uwsgi_stats_influx(){ ## uwsgi stats_influx <addr>: InfluxDB formatted output fo
 		jq -r '.workers[] | "uwsgi.worker,addr='$address',id=\(.id) accepting=\(.accepting),requests=\(.requests),exceptions=\(.exceptions),harakiri_count=\(.harakiri_count),signals=\(.signals),signal_queue=\(.signal_queue),status=\"\(.status)\",rss=\(.rss),vsz=\(.vsz),running_time=\(.running_time),respawn_count=\(.respawn_count),tx=\(.tx),avg_rt=\(.avg_rt)"' | \
 		sed 's/"busy"/1/g;s/"idle"/0/g;'
 }
+
+uwsgi_status() { ## uwsgi status: Current system status
+	handle_help "$@" <<-EOF
+		Current status of all uwsgi processes
+	EOF
+
+	echo "galaxy-zergpool:   $(systemctl status galaxy-zergpool | grep Active:)"
+	for i in {0..3}; do
+		echo "galaxy-zergling@$i: $(systemctl status galaxy-zergling@$i | grep Active:)"
+	done
+	for i in {0..11}; do
+		echo "galaxy-handler@$i:  $(systemctl status galaxy-handler@$i | grep Active:)"
+	done
+}
+
+uwsgi_memory() { ## uwsgi memory: Current system memory usage
+	handle_help "$@" <<-EOF
+		Obtain memory usage of the various Galaxy processes
+	EOF
+
+	echo "galaxy-zergpool:   $(systemctl status galaxy-zergpool | grep Memory:)"
+	for i in {0..3}; do
+		echo "galaxy-zergling@$i: $(systemctl status galaxy-zergling@$i | grep Memory:)"
+	done
+	for i in {0..11}; do
+		echo "galaxy-handler@$i:  $(systemctl status galaxy-handler@$i | grep Memory:)"
+	done
+}
+
+uwsgi_pids() { ## uwsgi pids: Galaxy process PIDs
+	handle_help "$@" <<-EOF
+		Obtain memory usage of the various Galaxy processes
+	EOF
+
+	echo "galaxy-zergpool:   $(systemctl status galaxy-zergpool   | grep PID: | cut -d' ' -f 4)"
+	for i in {0..3}; do
+		echo "galaxy-zergling@$i: $(systemctl status galaxy-zergling@$i | grep PID: | cut -d' ' -f 4)"
+	done
+	for i in {0..11}; do
+		echo "galaxy-handler@$i:  $(systemctl status galaxy-handler@$i | grep PID: | cut -d' ' -f 4)"
+	done
+}
+
+uwsgi_stats() { ## uwsgi stats: uwsgi stats
+	uwsgi_stats-influx 127.0.0.1:4010 2>/dev/null || true
+	uwsgi_stats-influx 127.0.0.1:4011 2>/dev/null || true
+	uwsgi_stats-influx 127.0.0.1:4012 2>/dev/null || true
+	uwsgi_stats-influx 127.0.0.1:4013 2>/dev/null || true
+}
+
+uwsgi_zerg-swap() { ## uwsgi zerg-swap: Swap zerglings in order (unintelligent version)
+	handle_help "$@" <<-EOF
+		This is the "dumb" version which loops across the zerglings and restarts them in series
+	EOF
+
+	# Obtain current running ones
+	for zergling in $(status | grep -v inactive | grep zergling | cut -d: -f1); do
+		systemctl restart $zergling
+		number=$(echo "$zergling" | sed 's/.*@//g')
+		stats="127.0.0.1:401$number"
+		wait_for_url $stats
+		success "$zergling is alive"
+	done
+}
+
+uwsgi_zerg-scale-up() { ## uwsgi zerg-scale-up: Add another zergling to deal with high load
+	handle_help "$@" <<-EOF
+	EOF
+
+	# Obtain current running ones
+	an_inactive=$(status | grep inactive | grep zergling | head -n1 | cut -d: -f1)
+	echo "$an_inactive is inactive, starting"
+	systemctl start $an_inactive
+}
+
+uwsgi_zerg-scale-down() { ## uwsgi zerg-scale-down: Remove an extraneous zergling
+	handle_help "$@" <<-EOF
+	EOF
+
+	# Obtain current running ones
+	active="$(status | grep -v inactive | grep zergling | cut -d: -f1)"
+	num_active=$(echo "$active" | wc -l)
+
+	if (( $num_active <= 2 )); then
+		error "We do not permit scaling below 2 zerglings"
+		exit 1
+	fi
+
+	# Kill highest numbered one
+	warning "$to_kill will be stopped"
+	systemctl stop $to_kill
+}
+
+uwsgi_zerg-strace() { ## uwsgi zerg-strace [number]: Strace a zergling
+	handle_help "$@" <<-EOF
+	EOF
+
+	if (( $# > 0 )); then
+		number=$1;
+	fi
+	procs=$(uwsgi_pids | grep zergling@${number} | cut -d':' -f2 | sed 's/\s*//g;' | tr '\n' ' ' | sed 's/^\s*//;s/\s*$//g;s/ / -p /g')
+	strace -e open,openat -p $procs
+}
 galaxy_cleanup() { ## galaxy cleanup [days]: Cleanup histories/hdas/etc for past N days (default=30)
 	handle_help "$@" <<-EOF
 		Cleanup histories/hdas/etc for past N days using the python objects-based method
