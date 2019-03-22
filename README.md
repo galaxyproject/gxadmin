@@ -95,8 +95,8 @@ Command | Description
 [`filter hexdecode`](#filter-hexdecode) | Decodes any hex blobs from postgres outputs
 [`filter pg2md`](#filter-pg2md) | Convert postgres table format outputs to something that can be pasted as markdown
 [`galaxy cleanup`](#galaxy-cleanup) | Cleanup histories/hdas/etc for past N days (default=30)
+[`galaxy migrate-tool-install-to-sqlite`](#galaxy-migrate-tool-install-to-sqlite) | Converts normal potsgres toolshed repository tables into the SQLite version
 [`meta update`](#meta-update) | Update the script
-[`migrate-tool-install-to-sqlite`](#migrate-tool-install-to-sqlite) | Converts normal potsgres toolshed repository tables into the SQLite version
 [`mutate fail-terminal-datasets`](#mutate-fail-terminal-datasets) | Causes the output datasets of jobs which were manually failed, to be marked as failed
 [`query active-users`](#query-active-users) | Count of users who ran jobs in past 1 week (default = 1)
 [`query collection-usage`](#query-collection-usage) | Information about how many collections of various types are used
@@ -289,7 +289,7 @@ and it should produce a nicely formatted table
 
 **NAME**
 
-galaxy -  Cleanup histories/hdas/etc for past N days (default=30)
+galaxy -  Converts normal potsgres toolshed repository tables into the SQLite version
 
 **SYNOPSIS**
 
@@ -298,6 +298,29 @@ gxadmin galaxy cleanup [days]
 **NOTES**
 
 Cleanup histories/hdas/etc for past N days using the python objects-based method
+
+
+### galaxy migrate-tool-install-to-sqlite
+
+**NAME**
+
+galaxy -  Converts normal potsgres toolshed repository tables into the SQLite version
+
+**SYNOPSIS**
+
+gxadmin galaxy cleanup [days]
+
+**NOTES**
+
+    $ gxadmin migrate-tool-install-to-sqlite
+    Creating new sqlite database: galaxy_install.sqlite
+    Migrating tables
+      export: tool_shed_repository
+      import: tool_shed_repository
+      ...
+      export: repository_repository_dependency_association
+      import: repository_repository_dependency_association
+    Complete
 
 
 ### meta update
@@ -310,90 +333,6 @@ meta -  Update the script
 
 gxadmin meta update
 
-
-### migrate-tool-install-to-sqlite
-
-gxadmin usage:
-
-Configuration:
-
-    config dump       Dump Galaxy configuration as JSON
-    config validate   validate config files
-
-Filters:
-
-    filter hexdecode   Decodes any hex blobs from postgres outputs
-    filter pg2md       Convert postgres table format outputs to something that can be pasted as markdown
-
-Galaxy Administration:
-
-    galaxy cleanup [days]   Cleanup histories/hdas/etc for past N days (default=30)
-
-uwsgi:
-
-    uwsgi stats_influx <addr>   InfluxDB formatted output for the current stats
-
-DB Queries:
-'query' can be exchanged with 'tsvquery' or 'csvquery' for tab- and comma-separated variants
-
-    query active-users [weeks]                                     Count of users who ran jobs in past 1 week (default = 1)
-    query collection-usage                                         Information about how many collections of various types are used
-    query datasets-created-daily                                   The min/max/average/p95/p99 of total size of datasets created in a single day.
-    query disk-usage [--nice]                                      Disk usage per object store.
-    query errored-jobs <hours>                                     Lists jobs that errored in the last N hours.
-    query groups-list                                              List all groups known to Galaxy
-    query job-history <id>                                         Job state history for a specific job
-    query job-info <id>                                            Information about a specific job
-    query job-inputs <id>                                          Input datasets to a specific job
-    query job-outputs <id>                                         Output datasets from a specific job
-    query jobs-nonterminal [username|id|email]                     Job info of nonterminal jobs separated by user
-    query jobs-per-user <email>                                    Number of jobs run by a specific user
-    query largest-collection                                       Returns the size of the single largest collection
-    query latest-users                                             40 recently registered users
-    query monthly-data [year]                                      Number of active users per month, running jobs
-    query monthly-jobs [year]                                      Number of jobs run each month
-    query monthly-users [year]                                     Number of active users per month, running jobs
-    query old-histories <weeks>                                    Lists histories that haven't been updated (used) for <weeks>
-    query queue                                                    Brief overview of currently running jobs
-    query queue-detail [--all]                                     Detailed overview of running and queued jobs
-    query queue-overview [--short-tool-id]                         View used mostly for monitoring
-    query queue-time <tool_id>                                     The average/95%/99% a specific tool spends in queue state.
-    query recent-jobs <hours>                                      Jobs run in the past <hours> (in any state)
-    query runtime-per-user <email>                                 computation time of user (by email)
-    query tool-available-metrics <tool_id>                         list all available metrics for a given tool
-    query tool-last-used-date                                      When was the most recent invocation of every tool
-    query tool-metrics <tool_id> <metric_id> [--like]              See values of a specific metric
-    query tool-popularity [months|24]                              Most run tools by month
-    query tool-usage                                               Counts of tool runs
-    query training [--all]                                         List known trainings
-    query training-memberof <username>                             List trainings that a user is part of
-    query training-members <tr_id>                                 List users in a specific training
-    query training-queue <training_id>                             Jobs currently being run by people in a given training
-    query training-remove-member <training> <username> [YESDOIT]   Remove a user from a training
-    query ts-repos                                                 Counts of toolshed repositories by toolshed and owner.
-    query user-info <user_id|username|email>                       Quick overview of a Galaxy user in your system
-    query users-count                                              Shows sums of active/external/deleted/purged accounts
-    query users-total                                              Total number of Galaxy users (incl deleted, purged, inactive)
-    query workflow-connections [--all]                             The connections of tools, from output to input, in the latest (or all) versions of user workflows
-
-DB Mutations: (csv/tsv queries are NOT available)
-
-    mutate fail-terminal-datasets [--commit]   Causes the output datasets of jobs which were manually failed, to be marked as failed
-
-Local: (These can be configured in /home/hxr/.config/gxadmin-local.sh)
-
-    local cats   Cute kitties
-
-Other:
-
-    migrate-tool-install-to-sqlite   Converts normal potsgres toolshed repository tables into the SQLite version
-
-Meta:
-
-    meta update   Update the script
-
-help / -h / --help : this message. Invoke '--help' on any subcommand for help specific to that subcommand
-0
 
 ### mutate fail-terminal-datasets
 
