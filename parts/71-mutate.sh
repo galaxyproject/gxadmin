@@ -7,7 +7,7 @@ obtain_mutate() {
 	if (( $? == 0 )); then
 		$fn "$@";
 	else
-		usage mutate
+		export QUERY="ERROR"
 	fi
 }
 
@@ -20,7 +20,7 @@ mutate() {
 
 	# TODO(hxr)
 	if [[ "$QUERY" == "ERROR" ]]; then
-		usage
+		usage mutate
 	fi
 
 	query_tbl "$QUERY";

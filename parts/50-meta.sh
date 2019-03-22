@@ -1,4 +1,4 @@
-update() { ## update: Update the script
+meta_update() { ## meta update: Update the script
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -15,7 +15,7 @@ version() {
 	echo 12
 }
 
-cmdlist() {
+meta_cmdlist() {
 	IFS=$'\n'
 	# TOC
 	echo "## Commands"

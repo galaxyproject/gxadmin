@@ -1,4 +1,4 @@
-completion() {
+meta_completion() {
 	IFS=$'\n'
 	commands="$(grep -o '{ ## .*' $0 | grep -v grep | grep -v '| sed' | sort | sed 's/^{ ## //g' | \
 		sed 's/:.*//g;s/\s*<.*//g;s/\s*\[.*//')"

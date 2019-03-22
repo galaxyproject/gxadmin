@@ -1,50 +1,102 @@
 usage(){
-	if (( $# > 0 )); then
-		if [[ $1 != "safe" ]] && [[ $1 != "query" ]]; then
-			error $@
-		fi
-	fi
 	cmds="$(grep -s -h -o '{ ## .*' $0 $GXADMIN_SITE_SPECIFIC | grep -v grep | grep -v '| sed' | sort | sed 's/^{ ## //g')"
 
-	if [[ $1 == "query" ]]; then
+	cat <<-EOF
+		gxadmin usage:
+
+	EOF
+
+	if (( $# == 0  )) || [[ $1 == "config" ]]; then
 		cat <<-EOF
-			gxadmin usage:
+			Configuration:
 
-			DB Queries:
-			'query' can be exchanged with 'tsvquery' or 'csvquery' for tab- and comma-separated variants
+			$(echo "$cmds" | grep 'config ' | sort -k2 | column -s: -t | sed 's/^/    /')
 
-			$(echo "$cmds" | grep 'query ' | sort -k2 | column -s: -t | sed 's/^/    /')
-
-			help / -h / --help : this message. Invoke '--help' on any subcommand for help specific to that subcommand
 		EOF
-	else
-		cat <<-EOF
-			gxadmin usage:
+	fi
 
+	if (( $# == 0  )) || [[ $1 == "filter" ]]; then
+		cat <<-EOF
+			Filters:
+
+			$(echo "$cmds" | grep 'filter ' | sort -k2 | column -s: -t | sed 's/^/    /')
+
+		EOF
+	fi
+
+	if (( $# == 0  )) || [[ $1 == "galaxy" ]]; then
+		cat <<-EOF
+			Galaxy Administration:
+
+			$(echo "$cmds" | grep 'galaxy ' | sort -k2 | column -s: -t | sed 's/^/    /')
+
+		EOF
+	fi
+
+	if (( $# == 0  )) || [[ $1 == "galaxy" ]]; then
+		cat <<-EOF
+			uwsgi:
+
+			$(echo "$cmds" | grep 'uwsgi ' | sort -k2 | column -s: -t | sed 's/^/    /')
+
+		EOF
+	fi
+
+
+	if (( $# == 0  )) || [[ $1 == "query" ]]; then
+		cat <<-EOF
 			DB Queries:
 			'query' can be exchanged with 'tsvquery' or 'csvquery' for tab- and comma-separated variants
 
 			$(echo "$cmds" | grep 'query ' | sort -k2 | column -s: -t | sed 's/^/    /')
 
-			DB Queries (Mutations): (csv/tsv queries are not available)
+		EOF
+	fi
+
+	if (( $# == 0  )) || [[ $1 == "mutate" ]]; then
+		cat <<-EOF
+			DB Mutations: (csv/tsv queries are NOT available)
 
 			$(echo "$cmds" | grep 'mutate ' | sort -k2 | column -s: -t | sed 's/^/    /')
 
-			Other:
+		EOF
+	fi
 
-			$(echo "$cmds" | grep -v 'query ' | grep -v '^zerg' | grep -v '^mutate ' | grep -v '^handler' | grep -v '^local' | column -s: -t | sed 's/^/    /')
-
+	if (( $# == 0  )) || [[ $1 == "local" ]]; then
+		cat <<-EOF
 			Local: (These can be configured in $GXADMIN_SITE_SPECIFIC)
 
 			$(echo "$cmds" | grep '^local' | column -s: -t | sed 's/^/    /')
 
-			help / -h / --help : this message. Invoke '--help' on any subcommand for help specific to that subcommand
 		EOF
 	fi
-	if [[ $1 == "safe" ]] || [[ $1 == "query" ]]; then
-		exit 0;
+
+	if (( $# == 0  )) || [[ $1 == "other" ]]; then
+		cat <<-EOF
+			Other:
+
+			$(echo "$cmds" | egrep -v '^(tsvquery|csvquery|iquery|query|config|filter|galaxy|local|mutate|uwsgi|meta) ' | column -s: -t | sed 's/^/    /')
+
+		EOF
 	fi
-	exit 1
+
+	if (( $# == 0  )) || [[ $1 == "meta" ]]; then
+		cat <<-EOF
+			Meta:
+
+			$(echo "$cmds" | grep '^meta ' | column -s: -t | sed 's/^/    /')
+
+		EOF
+	fi
+
+
+	cat <<-EOF
+		help / -h / --help : this message. Invoke '--help' on any subcommand for help specific to that subcommand
+	EOF
+
+	echo $# $1 $2
+
+	exit 0;
 }
 
 handle_help() {

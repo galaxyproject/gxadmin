@@ -1,7 +1,6 @@
 obtain_query() {
 	query_name="$1"; shift
 
-	# Check that FN exists
 	fn="query_${query_name}"
 	LC_ALL=C type $fn | grep -q 'function'
 

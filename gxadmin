@@ -27,52 +27,104 @@ for line in sys.stdin:
 EOF
 )
 usage(){
-	if (( $# > 0 )); then
-		if [[ $1 != "safe" ]] && [[ $1 != "query" ]]; then
-			error $@
-		fi
-	fi
 	cmds="$(grep -s -h -o '{ ## .*' $0 $GXADMIN_SITE_SPECIFIC | grep -v grep | grep -v '| sed' | sort | sed 's/^{ ## //g')"
 
-	if [[ $1 == "query" ]]; then
+	cat <<-EOF
+		gxadmin usage:
+
+	EOF
+
+	if (( $# == 0  )) || [[ $1 == "config" ]]; then
 		cat <<-EOF
-			gxadmin usage:
+			Configuration:
 
-			DB Queries:
-			'query' can be exchanged with 'tsvquery' or 'csvquery' for tab- and comma-separated variants
+			$(echo "$cmds" | grep 'config ' | sort -k2 | column -s: -t | sed 's/^/    /')
 
-			$(echo "$cmds" | grep 'query ' | sort -k2 | column -s: -t | sed 's/^/    /')
-
-			help / -h / --help : this message. Invoke '--help' on any subcommand for help specific to that subcommand
 		EOF
-	else
-		cat <<-EOF
-			gxadmin usage:
+	fi
 
+	if (( $# == 0  )) || [[ $1 == "filter" ]]; then
+		cat <<-EOF
+			Filters:
+
+			$(echo "$cmds" | grep 'filter ' | sort -k2 | column -s: -t | sed 's/^/    /')
+
+		EOF
+	fi
+
+	if (( $# == 0  )) || [[ $1 == "galaxy" ]]; then
+		cat <<-EOF
+			Galaxy Administration:
+
+			$(echo "$cmds" | grep 'galaxy ' | sort -k2 | column -s: -t | sed 's/^/    /')
+
+		EOF
+	fi
+
+	if (( $# == 0  )) || [[ $1 == "galaxy" ]]; then
+		cat <<-EOF
+			uwsgi:
+
+			$(echo "$cmds" | grep 'uwsgi ' | sort -k2 | column -s: -t | sed 's/^/    /')
+
+		EOF
+	fi
+
+
+	if (( $# == 0  )) || [[ $1 == "query" ]]; then
+		cat <<-EOF
 			DB Queries:
 			'query' can be exchanged with 'tsvquery' or 'csvquery' for tab- and comma-separated variants
 
 			$(echo "$cmds" | grep 'query ' | sort -k2 | column -s: -t | sed 's/^/    /')
 
-			DB Queries (Mutations): (csv/tsv queries are not available)
+		EOF
+	fi
+
+	if (( $# == 0  )) || [[ $1 == "mutate" ]]; then
+		cat <<-EOF
+			DB Mutations: (csv/tsv queries are NOT available)
 
 			$(echo "$cmds" | grep 'mutate ' | sort -k2 | column -s: -t | sed 's/^/    /')
 
-			Other:
+		EOF
+	fi
 
-			$(echo "$cmds" | grep -v 'query ' | grep -v '^zerg' | grep -v '^mutate ' | grep -v '^handler' | grep -v '^local' | column -s: -t | sed 's/^/    /')
-
+	if (( $# == 0  )) || [[ $1 == "local" ]]; then
+		cat <<-EOF
 			Local: (These can be configured in $GXADMIN_SITE_SPECIFIC)
 
 			$(echo "$cmds" | grep '^local' | column -s: -t | sed 's/^/    /')
 
-			help / -h / --help : this message. Invoke '--help' on any subcommand for help specific to that subcommand
 		EOF
 	fi
-	if [[ $1 == "safe" ]] || [[ $1 == "query" ]]; then
-		exit 0;
+
+	if (( $# == 0  )) || [[ $1 == "other" ]]; then
+		cat <<-EOF
+			Other:
+
+			$(echo "$cmds" | egrep -v '^(tsvquery|csvquery|iquery|query|config|filter|galaxy|local|mutate|uwsgi|meta) ' | column -s: -t | sed 's/^/    /')
+
+		EOF
 	fi
-	exit 1
+
+	if (( $# == 0  )) || [[ $1 == "meta" ]]; then
+		cat <<-EOF
+			Meta:
+
+			$(echo "$cmds" | grep '^meta ' | column -s: -t | sed 's/^/    /')
+
+		EOF
+	fi
+
+
+	cat <<-EOF
+		help / -h / --help : this message. Invoke '--help' on any subcommand for help specific to that subcommand
+	EOF
+
+	echo $# $1 $2
+
+	exit 0;
 }
 
 handle_help() {
@@ -147,7 +199,6 @@ assert_count_ge() {
 		exit 1
 	fi
 }
-
 query_tbl() {
 	psql <<-EOF
 	$1
@@ -211,7 +262,7 @@ warning() {
 success() {
 	echo -e "\e[38;5;40m$@\e[m"
 }
-config_validate() { ## validate: validate config files
+config_validate() { ## config validate: validate config files
 	handle_help "$@" <<-EOF
 		Validate the configuration files
 		**Warning**:
@@ -260,7 +311,7 @@ config_validate() { ## validate: validate config files
 	fi
 }
 
-dump_config() { ## dump-config: Dump Galaxy configuration as JSON
+config_dump() { ## config dump: Dump Galaxy configuration as JSON
 	handle_help "$@" <<-EOF
 		This function was added with the intention to use it internally, but it may be useful in your workflows. It uses the python code from the Galaxy codebase in order to properly load the configuration which is then dumped as JSON.
 
@@ -304,204 +355,6 @@ EOF
 )
 	echo "$dump_config_python" | python
 }
-
-cleanup() { ## cleanup [days]: Cleanup histories/hdas/etc for past N days (default=30)
-	handle_help "$@" <<-EOF
-		Cleanup histories/hdas/etc for past N days using the python objects-based method
-	EOF
-
-	days=30
-	if (( $# > 0 )); then
-		days=$1
-	fi
-
-	assert_set_env GALAXY_ROOT
-	assert_set_env GALAXY_CONFIG_FILE
-	assert_set_env GALAXY_LOG_DIR
-
-	run_date=$(date --rfc-3339=seconds)
-
-	for action in {delete_userless_histories,delete_exported_histories,purge_deleted_histories,purge_deleted_hdas,delete_datasets,purge_datasets}; do
-		python $GALAXY_ROOT/scripts/cleanup_datasets/pgcleanup.py \
-			-c $GALAXY_CONFIG_FILE \
-			-o $days \
-			-l $GALAXY_LOG_DIR \
-			-s $action \
-			-w 128MB \
-			 >> "$GALAXY_LOG_DIR/cleanup-${run_date}-${action}.log" \
-			2>> "$GALAXY_LOG_DIR/cleanup-${run_date}-${action}.err";
-
-		# Something that telegraf can consume
-		ec=$?
-		if (( ec == 0 )); then
-			echo "cleanup_datasets,group=$action success=1"
-		else
-			echo "cleanup_datasets,group=$action success=0"
-		fi
-	done
-}
-
-migrate_to_sqlite() { ## migrate-tool-install-to-sqlite: Converts normal potsgres toolshed repository tables into the SQLite version
-	handle_help "$@" <<-EOF
-		    $ gxadmin migrate-tool-install-to-sqlite
-		    Creating new sqlite database: galaxy_install.sqlite
-		    Migrating tables
-		      export: tool_shed_repository
-		      import: tool_shed_repository
-		      ...
-		      export: repository_repository_dependency_association
-		      import: repository_repository_dependency_association
-		    Complete
-	EOF
-
-	# Export tables
-	if [[ -f  galaxy_install.sqlite ]]; then
-		error "galaxy_install.sqlite exists, not overwriting"
-		exit 1
-	fi
-
-	success "Creating new sqlite database: galaxy_install.sqlite"
-	empty_schema=$(mktemp)
-	echo "
-	PRAGMA foreign_keys=OFF;
-	BEGIN TRANSACTION;
-	CREATE TABLE migrate_version (
-		repository_id VARCHAR(250) NOT NULL,
-		repository_path TEXT,
-		version INTEGER,
-		PRIMARY KEY (repository_id)
-	);
-	CREATE TABLE tool_shed_repository (
-		id INTEGER NOT NULL,
-		create_time DATETIME,
-		update_time DATETIME,
-		tool_shed VARCHAR(255),
-		name VARCHAR(255),
-		description TEXT,
-		owner VARCHAR(255),
-		changeset_revision VARCHAR(255),
-		deleted BOOLEAN,
-		metadata BLOB,
-		includes_datatypes BOOLEAN,
-		installed_changeset_revision VARCHAR(255),
-		uninstalled BOOLEAN,
-		dist_to_shed BOOLEAN,
-		ctx_rev VARCHAR(10),
-		status VARCHAR(255),
-		error_message TEXT,
-		tool_shed_status BLOB,
-		PRIMARY KEY (id),
-		CHECK (deleted IN (0, 1))
-	);
-	CREATE TABLE tool_version (
-		id INTEGER NOT NULL,
-		create_time DATETIME,
-		update_time DATETIME,
-		tool_id VARCHAR(255),
-		tool_shed_repository_id INTEGER,
-		PRIMARY KEY (id),
-		FOREIGN KEY(tool_shed_repository_id) REFERENCES tool_shed_repository (id)
-	);
-	CREATE TABLE tool_version_association (
-		id INTEGER NOT NULL,
-		tool_id INTEGER NOT NULL,
-		parent_id INTEGER NOT NULL,
-		PRIMARY KEY (id),
-		FOREIGN KEY(tool_id) REFERENCES tool_version (id),
-		FOREIGN KEY(parent_id) REFERENCES tool_version (id)
-	);
-	CREATE TABLE migrate_tools (
-		repository_id VARCHAR(255),
-		repository_path TEXT,
-		version INTEGER
-	);
-	CREATE TABLE tool_dependency (
-		id INTEGER NOT NULL,
-		create_time DATETIME,
-		update_time DATETIME,
-		tool_shed_repository_id INTEGER NOT NULL,
-		name VARCHAR(255),
-		version VARCHAR(40),
-		type VARCHAR(40),
-		status VARCHAR(255),
-		error_message TEXT,
-		PRIMARY KEY (id),
-		FOREIGN KEY(tool_shed_repository_id) REFERENCES tool_shed_repository (id)
-	);
-	CREATE TABLE repository_dependency (
-		id INTEGER NOT NULL,
-		create_time DATETIME,
-		update_time DATETIME,
-		tool_shed_repository_id INTEGER NOT NULL,
-		PRIMARY KEY (id),
-		FOREIGN KEY(tool_shed_repository_id) REFERENCES tool_shed_repository (id)
-	);
-	CREATE TABLE repository_repository_dependency_association (
-		id INTEGER NOT NULL,
-		create_time DATETIME,
-		update_time DATETIME,
-		tool_shed_repository_id INTEGER,
-		repository_dependency_id INTEGER,
-		PRIMARY KEY (id),
-		FOREIGN KEY(tool_shed_repository_id) REFERENCES tool_shed_repository (id),
-		FOREIGN KEY(repository_dependency_id) REFERENCES repository_dependency (id)
-	);
-	CREATE INDEX ix_tool_shed_repository_name ON tool_shed_repository (name);
-	CREATE INDEX ix_tool_shed_repository_deleted ON tool_shed_repository (deleted);
-	CREATE INDEX ix_tool_shed_repository_tool_shed ON tool_shed_repository (tool_shed);
-	CREATE INDEX ix_tool_shed_repository_changeset_revision ON tool_shed_repository (changeset_revision);
-	CREATE INDEX ix_tool_shed_repository_owner ON tool_shed_repository (owner);
-	CREATE INDEX ix_tool_shed_repository_includes_datatypes ON tool_shed_repository (includes_datatypes);
-	CREATE INDEX ix_tool_version_tool_shed_repository_id ON tool_version (tool_shed_repository_id);
-	CREATE INDEX ix_tool_version_association_tool_id ON tool_version_association (tool_id);
-	CREATE INDEX ix_tool_version_association_parent_id ON tool_version_association (parent_id);
-	CREATE INDEX ix_tool_dependency_tool_shed_repository_id ON tool_dependency (tool_shed_repository_id);
-	CREATE INDEX ix_repository_dependency_tool_shed_repository_id ON repository_dependency (tool_shed_repository_id);
-	CREATE INDEX ix_repository_repository_dependency_association_tool_shed_repository_id ON repository_repository_dependency_association (tool_shed_repository_id);
-	CREATE INDEX ix_repository_repository_dependency_association_repository_dependency_id ON repository_repository_dependency_association (repository_dependency_id);
-	COMMIT;
-	" > ${empty_schema}
-	sqlite3 galaxy_install.sqlite < ${empty_schema}
-	rm ${empty_schema}
-
-	success "Migrating tables"
-
-	# tool_shed_repository is special :(
-	table=tool_shed_repository
-	success "  export: ${table}"
-	export_csv=$(mktemp /tmp/tmp.gxadmin.${table}.XXXXXXXXXXX)
-	psql -c "COPY (select
-		id, create_time, update_time, tool_shed, name, description, owner, changeset_revision, case when deleted then 1 else 0 end, metadata, includes_datatypes, installed_changeset_revision, uninstalled, dist_to_shed, ctx_rev, status, error_message, tool_shed_status from $table) to STDOUT with CSV" > $export_csv;
-
-	success "  import: ${table}"
-	echo ".mode csv
-.import ${export_csv} ${table}" | sqlite3 galaxy_install.sqlite
-	if (( $? == 0 )); then
-		rm ${export_csv}
-	else
-		error "  sql: ${export_csv}"
-	fi
-
-	sqlite3 galaxy_install.sqlite "insert into migrate_version values ('ToolShedInstall', 'lib/galaxy/model/tool_shed_install/migrate', 17)"
-	# the rest are sane!
-	for table in {tool_version,tool_version_association,migrate_tools,tool_dependency,repository_dependency,repository_repository_dependency_association}; do
-		success "  export: ${table}"
-		export_csv=$(mktemp /tmp/tmp.gxadmin.${table}.XXXXXXXXXXX)
-		psql -c "COPY (select * from $table) to STDOUT with CSV" > $export_csv;
-
-		success "  import: ${table}"
-		echo ".mode csv
-.import ${export_csv} ${table}" | sqlite3 galaxy_install.sqlite
-		if (( $? == 0 )); then
-			rm ${export_csv}
-		else
-			error "  sql: ${export_csv}"
-		fi
-	done
-
-	success "Complete"
-}
-
 
 #mutate_fail_job() { # mutate fail-job <job-id>: Cause a specific job and all of its outputs to be marked as failing
 	#handle_help "$@" <<-EOF
@@ -2206,7 +2059,203 @@ uwsgi_stats_influx(){ ## uwsgi stats_influx <addr>: InfluxDB formatted output fo
 		jq -r '.workers[] | "uwsgi.worker,addr='$address',id=\(.id) accepting=\(.accepting),requests=\(.requests),exceptions=\(.exceptions),harakiri_count=\(.harakiri_count),signals=\(.signals),signal_queue=\(.signal_queue),status=\"\(.status)\",rss=\(.rss),vsz=\(.vsz),running_time=\(.running_time),respawn_count=\(.respawn_count),tx=\(.tx),avg_rt=\(.avg_rt)"' | \
 		sed 's/"busy"/1/g;s/"idle"/0/g;'
 }
-update() { ## update: Update the script
+galaxy_cleanup() { ## galaxy cleanup [days]: Cleanup histories/hdas/etc for past N days (default=30)
+	handle_help "$@" <<-EOF
+		Cleanup histories/hdas/etc for past N days using the python objects-based method
+	EOF
+
+	days=30
+	if (( $# > 0 )); then
+		days=$1
+	fi
+
+	assert_set_env GALAXY_ROOT
+	assert_set_env GALAXY_CONFIG_FILE
+	assert_set_env GALAXY_LOG_DIR
+
+	run_date=$(date --rfc-3339=seconds)
+
+	for action in {delete_userless_histories,delete_exported_histories,purge_deleted_histories,purge_deleted_hdas,delete_datasets,purge_datasets}; do
+		python $GALAXY_ROOT/scripts/cleanup_datasets/pgcleanup.py \
+			-c $GALAXY_CONFIG_FILE \
+			-o $days \
+			-l $GALAXY_LOG_DIR \
+			-s $action \
+			-w 128MB \
+			 >> "$GALAXY_LOG_DIR/cleanup-${run_date}-${action}.log" \
+			2>> "$GALAXY_LOG_DIR/cleanup-${run_date}-${action}.err";
+
+		# Something that telegraf can consume
+		ec=$?
+		if (( ec == 0 )); then
+			echo "cleanup_datasets,group=$action success=1"
+		else
+			echo "cleanup_datasets,group=$action success=0"
+		fi
+	done
+}
+
+galaxy_migrate-tool-install-to-sqlite() { ## migrate-tool-install-to-sqlite: Converts normal potsgres toolshed repository tables into the SQLite version
+	handle_help "$@" <<-EOF
+		    $ gxadmin migrate-tool-install-to-sqlite
+		    Creating new sqlite database: galaxy_install.sqlite
+		    Migrating tables
+		      export: tool_shed_repository
+		      import: tool_shed_repository
+		      ...
+		      export: repository_repository_dependency_association
+		      import: repository_repository_dependency_association
+		    Complete
+	EOF
+
+	# Export tables
+	if [[ -f  galaxy_install.sqlite ]]; then
+		error "galaxy_install.sqlite exists, not overwriting"
+		exit 1
+	fi
+
+	success "Creating new sqlite database: galaxy_install.sqlite"
+	empty_schema=$(mktemp)
+	echo "
+	PRAGMA foreign_keys=OFF;
+	BEGIN TRANSACTION;
+	CREATE TABLE migrate_version (
+		repository_id VARCHAR(250) NOT NULL,
+		repository_path TEXT,
+		version INTEGER,
+		PRIMARY KEY (repository_id)
+	);
+	CREATE TABLE tool_shed_repository (
+		id INTEGER NOT NULL,
+		create_time DATETIME,
+		update_time DATETIME,
+		tool_shed VARCHAR(255),
+		name VARCHAR(255),
+		description TEXT,
+		owner VARCHAR(255),
+		changeset_revision VARCHAR(255),
+		deleted BOOLEAN,
+		metadata BLOB,
+		includes_datatypes BOOLEAN,
+		installed_changeset_revision VARCHAR(255),
+		uninstalled BOOLEAN,
+		dist_to_shed BOOLEAN,
+		ctx_rev VARCHAR(10),
+		status VARCHAR(255),
+		error_message TEXT,
+		tool_shed_status BLOB,
+		PRIMARY KEY (id),
+		CHECK (deleted IN (0, 1))
+	);
+	CREATE TABLE tool_version (
+		id INTEGER NOT NULL,
+		create_time DATETIME,
+		update_time DATETIME,
+		tool_id VARCHAR(255),
+		tool_shed_repository_id INTEGER,
+		PRIMARY KEY (id),
+		FOREIGN KEY(tool_shed_repository_id) REFERENCES tool_shed_repository (id)
+	);
+	CREATE TABLE tool_version_association (
+		id INTEGER NOT NULL,
+		tool_id INTEGER NOT NULL,
+		parent_id INTEGER NOT NULL,
+		PRIMARY KEY (id),
+		FOREIGN KEY(tool_id) REFERENCES tool_version (id),
+		FOREIGN KEY(parent_id) REFERENCES tool_version (id)
+	);
+	CREATE TABLE migrate_tools (
+		repository_id VARCHAR(255),
+		repository_path TEXT,
+		version INTEGER
+	);
+	CREATE TABLE tool_dependency (
+		id INTEGER NOT NULL,
+		create_time DATETIME,
+		update_time DATETIME,
+		tool_shed_repository_id INTEGER NOT NULL,
+		name VARCHAR(255),
+		version VARCHAR(40),
+		type VARCHAR(40),
+		status VARCHAR(255),
+		error_message TEXT,
+		PRIMARY KEY (id),
+		FOREIGN KEY(tool_shed_repository_id) REFERENCES tool_shed_repository (id)
+	);
+	CREATE TABLE repository_dependency (
+		id INTEGER NOT NULL,
+		create_time DATETIME,
+		update_time DATETIME,
+		tool_shed_repository_id INTEGER NOT NULL,
+		PRIMARY KEY (id),
+		FOREIGN KEY(tool_shed_repository_id) REFERENCES tool_shed_repository (id)
+	);
+	CREATE TABLE repository_repository_dependency_association (
+		id INTEGER NOT NULL,
+		create_time DATETIME,
+		update_time DATETIME,
+		tool_shed_repository_id INTEGER,
+		repository_dependency_id INTEGER,
+		PRIMARY KEY (id),
+		FOREIGN KEY(tool_shed_repository_id) REFERENCES tool_shed_repository (id),
+		FOREIGN KEY(repository_dependency_id) REFERENCES repository_dependency (id)
+	);
+	CREATE INDEX ix_tool_shed_repository_name ON tool_shed_repository (name);
+	CREATE INDEX ix_tool_shed_repository_deleted ON tool_shed_repository (deleted);
+	CREATE INDEX ix_tool_shed_repository_tool_shed ON tool_shed_repository (tool_shed);
+	CREATE INDEX ix_tool_shed_repository_changeset_revision ON tool_shed_repository (changeset_revision);
+	CREATE INDEX ix_tool_shed_repository_owner ON tool_shed_repository (owner);
+	CREATE INDEX ix_tool_shed_repository_includes_datatypes ON tool_shed_repository (includes_datatypes);
+	CREATE INDEX ix_tool_version_tool_shed_repository_id ON tool_version (tool_shed_repository_id);
+	CREATE INDEX ix_tool_version_association_tool_id ON tool_version_association (tool_id);
+	CREATE INDEX ix_tool_version_association_parent_id ON tool_version_association (parent_id);
+	CREATE INDEX ix_tool_dependency_tool_shed_repository_id ON tool_dependency (tool_shed_repository_id);
+	CREATE INDEX ix_repository_dependency_tool_shed_repository_id ON repository_dependency (tool_shed_repository_id);
+	CREATE INDEX ix_repository_repository_dependency_association_tool_shed_repository_id ON repository_repository_dependency_association (tool_shed_repository_id);
+	CREATE INDEX ix_repository_repository_dependency_association_repository_dependency_id ON repository_repository_dependency_association (repository_dependency_id);
+	COMMIT;
+	" > ${empty_schema}
+	sqlite3 galaxy_install.sqlite < ${empty_schema}
+	rm ${empty_schema}
+
+	success "Migrating tables"
+
+	# tool_shed_repository is special :(
+	table=tool_shed_repository
+	success "  export: ${table}"
+	export_csv=$(mktemp /tmp/tmp.gxadmin.${table}.XXXXXXXXXXX)
+	psql -c "COPY (select
+		id, create_time, update_time, tool_shed, name, description, owner, changeset_revision, case when deleted then 1 else 0 end, metadata, includes_datatypes, installed_changeset_revision, uninstalled, dist_to_shed, ctx_rev, status, error_message, tool_shed_status from $table) to STDOUT with CSV" > $export_csv;
+
+	success "  import: ${table}"
+	echo ".mode csv
+.import ${export_csv} ${table}" | sqlite3 galaxy_install.sqlite
+	if (( $? == 0 )); then
+		rm ${export_csv}
+	else
+		error "  sql: ${export_csv}"
+	fi
+
+	sqlite3 galaxy_install.sqlite "insert into migrate_version values ('ToolShedInstall', 'lib/galaxy/model/tool_shed_install/migrate', 17)"
+	# the rest are sane!
+	for table in {tool_version,tool_version_association,migrate_tools,tool_dependency,repository_dependency,repository_repository_dependency_association}; do
+		success "  export: ${table}"
+		export_csv=$(mktemp /tmp/tmp.gxadmin.${table}.XXXXXXXXXXX)
+		psql -c "COPY (select * from $table) to STDOUT with CSV" > $export_csv;
+
+		success "  import: ${table}"
+		echo ".mode csv
+.import ${export_csv} ${table}" | sqlite3 galaxy_install.sqlite
+		if (( $? == 0 )); then
+			rm ${export_csv}
+		else
+			error "  sql: ${export_csv}"
+		fi
+	done
+
+	success "Complete"
+}
+meta_update() { ## meta update: Update the script
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -2223,7 +2272,7 @@ version() {
 	echo 12
 }
 
-cmdlist() {
+meta_cmdlist() {
 	IFS=$'\n'
 	# TOC
 	echo "## Commands"
@@ -2247,7 +2296,7 @@ cmdlist() {
 		bash -c "$0 $cmd_part --help"
 	done
 }
-completion() {
+meta_completion() {
 	IFS=$'\n'
 	commands="$(grep -o '{ ## .*' $0 | grep -v grep | grep -v '| sed' | sort | sed 's/^{ ## //g' | \
 		sed 's/:.*//g;s/\s*<.*//g;s/\s*\[.*//')"
@@ -2287,6 +2336,20 @@ EOF
 
 	printf "${BASH_COMPLETION_TEMPLATE}\n" "$leading" "$subcommands"
 }
+look_for() {
+	group_name="$1"; shift
+	query_name="$1"; shift
+
+	# Check that FN exists
+	fn="${group_name}_${query_name}"
+	LC_ALL=C type $fn | grep -q 'function'
+
+	if (( $? == 0 )); then
+		$fn "$@";
+	else
+		usage ${group_name}
+	fi
+}
 obtain_mutate() {
 	query_name="$1"; shift
 
@@ -2296,7 +2359,7 @@ obtain_mutate() {
 	if (( $? == 0 )); then
 		$fn "$@";
 	else
-		usage mutate
+		export QUERY="ERROR"
 	fi
 }
 
@@ -2309,7 +2372,7 @@ mutate() {
 
 	# TODO(hxr)
 	if [[ "$QUERY" == "ERROR" ]]; then
-		usage
+		usage mutate
 	fi
 
 	query_tbl "$QUERY";
@@ -2317,7 +2380,6 @@ mutate() {
 obtain_query() {
 	query_name="$1"; shift
 
-	# Check that FN exists
 	fn="query_${query_name}"
 	LC_ALL=C type $fn | grep -q 'function'
 
@@ -2359,19 +2421,6 @@ query() {
 }
 
 
-filter() {
-	subfunc="$1"; shift
-	case "$subfunc" in
-		hexdecode  ) hexdecode "$@" ;;
-		pg2md      ) pg2md     "$@" ;;
-	esac
-}
-uwsgi() {
-	subfunc="$1"; shift
-	case "$subfunc" in
-		stats_influx  ) uwsgi_stats_influx "$@";;
-	esac
-}
 local_funcs() {
 	if [[ ! -f ${GXADMIN_SITE_SPECIFIC} ]]; then
 		error "No local functions are defined in ${GXADMIN_SITE_SPECIFIC}"
@@ -2399,34 +2448,29 @@ local_funcs() {
 	fi
 }
 if (( $# == 0 )); then
-	usage safe
+	usage
 fi
 
 mode="$1"; shift
 
 case "$mode" in
-	validate                       ) validate          "$@" ;;
-	cleanup                        ) cleanup           "$@" ;;
-	migrate-tool-install-to-sqlite ) migrate_to_sqlite "$@" ;;
-	dump-config                    ) dump_config       "$@" ;;
-	update                         ) update            "$@" ;;
-	uwsgi                          ) uwsgi             "$@" ;;
-	filter                         ) filter            "$@" ;;
-	mutate                         ) mutate "$mode"    "$@" ;;
-	local                          ) local_funcs       "$@" ;;
-	*query                         ) query "$mode"     "$@" ;;
+	*query ) query "$mode"   "$@" ;;
+	config ) look_for config "$@" ;;
+	filter ) look_for filter "$@" ;;
+	galaxy ) look_for galaxy "$@" ;;
+	local  ) local_funcs     "$@" ;;
+	mutate ) mutate "$mode"  "$@" ;;
+	uwsgi  ) look_for uwsgi  "$@" ;;
+	meta   ) look_for meta   "$@" ;;
 
-	# Generate for readme:
-	cmdlist   ) cmdlist ;;
-	completion ) completion;;
 	# version commands
 	version   ) version ;;
 	-v        ) version ;;
 	--version ) version ;;
 	# help
-	help      ) usage safe ;;
-	-h        ) usage safe ;;
-	--help    ) usage safe ;;
+	help      ) usage;;
+	-h        ) usage;;
+	--help    ) usage;;
 	# anything else
-	*         ) usage safe;;
+	*         ) usage;;
 esac
