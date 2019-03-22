@@ -2207,15 +2207,15 @@ obtain_query() {
 
 	# Check that FN exists
 	fn="query_${query_name}"
-	echo "going to run $fn"
 	LC_ALL=C type $fn | grep -q 'function'
 
 	if (( $? == 0 )); then
-		query_${query_name} "$@";
+		$fn "$@";
 	else
 		export QUERY="ERROR"
 	fi
 }
+
 
 query() {
 	# do the thing zhu li
@@ -2249,11 +2249,14 @@ query() {
 obtain_mutate() {
 	query_name="$1"; shift
 
-	case "$query_name" in
-		fail-terminal-datasets ) mutate_fail_terminal_datasets "$@" ;;
-		# default
-		* ) export QUERY="ERROR" ;;
-	esac
+	fn="query_${query_name}"
+	LC_ALL=C type $fn | grep -q 'function'
+
+	if (( $? == 0 )); then
+		$fn "$@";
+	else
+		usage mutate
+	fi
 }
 
 mutate() {
