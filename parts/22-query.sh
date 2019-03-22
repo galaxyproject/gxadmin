@@ -657,7 +657,7 @@ query_training() { ## query training [--all]: List known trainings
 	EOF
 }
 
-query_training_members() { ## query training-members <tr_id>: List users in a specific training
+query_training-members() { ## query training-members <tr_id>: List users in a specific training
 	handle_help "$@" <<-EOF
 		    $ gxadmin query training-members hts2018
 		          username      |       joined

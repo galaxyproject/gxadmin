@@ -1,4 +1,4 @@
-pg2md() { ## filter pg2md: Convert postgres table format outputs to something that can be pasted as markdown
+filter_pg2md() { ## filter pg2md: Convert postgres table format outputs to something that can be pasted as markdown
 	handle_help "$@" <<-EOF
 		Imagine doing something like:
 
@@ -23,7 +23,7 @@ pg2md() { ## filter pg2md: Convert postgres table format outputs to something th
 	cat /dev/stdin | sed 's/--+--/- | -/g;s/^\(\s\+\)\([^|]\+\) |/\2 \1|/g' | head -n -2
 }
 
-hexdecode() { ## filter hexdecode: Decodes any hex blobs from postgres outputs
+filter_hexdecode() { ## filter hexdecode: Decodes any hex blobs from postgres outputs
 	handle_help "$@" <<-EOF
 		This automatically replaces any hex strings (\\x[a-f0-9]+) with their decoded versions. This can allow you to query galaxy metadata, decode it, and start processing it with JQ. Just pipe your query to it and it will replace it wherever it is found.
 

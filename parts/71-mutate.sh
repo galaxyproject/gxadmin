@@ -1,7 +1,7 @@
 obtain_mutate() {
 	query_name="$1"; shift
 
-	fn="query_${query_name}"
+	fn="mutate_${query_name}"
 	LC_ALL=C type $fn | grep -q 'function'
 
 	if (( $? == 0 )); then

@@ -90,13 +90,12 @@ $
 
 Command | Description
 ------- | -----------
-[`cleanup`](#cleanup) | Cleanup histories/hdas/etc for past N days (default=30)
-[`dump-config`](#dump-config) | Dump Galaxy configuration as JSON
+[`config dump`](#config-dump) | Dump Galaxy configuration as JSON
+[`config validate`](#config-validate) | validate config files
 [`filter hexdecode`](#filter-hexdecode) | Decodes any hex blobs from postgres outputs
 [`filter pg2md`](#filter-pg2md) | Convert postgres table format outputs to something that can be pasted as markdown
-[`handler restart`](#handler-restart) | restart handlers
-[`handler strace`](#handler-strace) | Run an strace on a specific handler (to watch it load files.)
-[`handler tail`](#handler-tail) | tail handler logs
+[`galaxy cleanup`](#galaxy-cleanup) | Cleanup histories/hdas/etc for past N days (default=30)
+[`meta update`](#meta-update) | Update the script
 [`migrate-tool-install-to-sqlite`](#migrate-tool-install-to-sqlite) | Converts normal potsgres toolshed repository tables into the SQLite version
 [`mutate fail-terminal-datasets`](#mutate-fail-terminal-datasets) | Causes the output datasets of jobs which were manually failed, to be marked as failed
 [`query active-users`](#query-active-users) | Count of users who ran jobs in past 1 week (default = 1)
@@ -104,7 +103,6 @@ Command | Description
 [`query datasets-created-daily`](#query-datasets-created-daily) | The min/max/average/p95/p99 of total size of datasets created in a single day.
 [`query disk-usage`](#query-disk-usage) | Disk usage per object store.
 [`query errored-jobs`](#query-errored-jobs) | Lists jobs that errored in the last N hours.
-[`query failed-terminal-datasets`](#query-failed-terminal-datasets) | Identify the list of datasets which had issues
 [`query groups-list`](#query-groups-list) | List all groups known to Galaxy
 [`query job-history`](#query-job-history) | Job state history for a specific job
 [`query job-info`](#query-job-info) | Information about a specific job
@@ -139,38 +137,18 @@ Command | Description
 [`query users-count`](#query-users-count) | Shows sums of active/external/deleted/purged accounts
 [`query users-total`](#query-users-total) | Total number of Galaxy users (incl deleted, purged, inactive)
 [`query workflow-connections`](#query-workflow-connections) | The connections of tools, from output to input, in the latest (or all) versions of user workflows
-[`update`](#update) | Update the script
 [`uwsgi stats_influx`](#uwsgi-stats_influx) | InfluxDB formatted output for the current stats
-[`validate`](#validate) | validate config files
-[`zerg strace`](#zerg-strace) | swap zerglings
-[`zerg swap`](#zerg-swap) | swap zerglings
-[`zerg tail`](#zerg-tail) | tail zergling logs
 
 
-### cleanup
+### config dump
 
 **NAME**
 
-cleanup -  Cleanup histories/hdas/etc for past N days (default=30)
+config -  Dump Galaxy configuration as JSON
 
 **SYNOPSIS**
 
-gxadmin cleanup [days]
-
-**NOTES**
-
-Cleanup histories/hdas/etc for past N days using the python objects-based method
-
-
-### dump-config
-
-**NAME**
-
-dump-config -  Dump Galaxy configuration as JSON
-
-**SYNOPSIS**
-
-gxadmin dump-config
+gxadmin config validate
 
 **NOTES**
 
@@ -189,15 +167,40 @@ This function was added with the intention to use it internally, but it may be u
       "allow_user_dataset_purge": true,
 
 
+### config validate
+
+**NAME**
+
+config -  Dump Galaxy configuration as JSON
+
+**SYNOPSIS**
+
+gxadmin config validate
+
+**NOTES**
+
+Validate the configuration files
+**Warning**:
+- This requires you to have `$GALAXY_DIST` set and to have config under `$GALAXY_DIST/config`.
+- This only validates that it is well formed XML, and does **not** validate against any schemas.
+
+    $ gxadmin validate
+      OK: galaxy-dist/data_manager_conf.xml
+      ...
+      OK: galaxy-dist/config/tool_data_table_conf.xml
+      OK: galaxy-dist/config/tool_sheds_conf.xml
+    All XML files validated
+
+
 ### filter hexdecode
 
 **NAME**
 
-filter hexdecode -  Decodes any hex blobs from postgres outputs
+filter -  Decodes any hex blobs from postgres outputs
 
 **SYNOPSIS**
 
-gxadmin filter hexdecode
+gxadmin filter pg2md
 
 **NOTES**
 
@@ -253,7 +256,7 @@ Or to query for the dbkeys uesd by datasets:
 
 **NAME**
 
-filter pg2md -  Convert postgres table format outputs to something that can be pasted as markdown
+filter -  Decodes any hex blobs from postgres outputs
 
 **SYNOPSIS**
 
@@ -282,61 +285,115 @@ Imagine doing something like:
 and it should produce a nicely formatted table
 
 
-### handler restart
+### galaxy cleanup
 
 **NAME**
 
-handler restart -  restart handlers
+galaxy -  Cleanup histories/hdas/etc for past N days (default=30)
 
 **SYNOPSIS**
 
-gxadmin handler restart <message>
+gxadmin galaxy cleanup [days]
+
+**NOTES**
+
+Cleanup histories/hdas/etc for past N days using the python objects-based method
 
 
-### handler strace
+### meta update
 
 **NAME**
 
-handler strace -  Run an strace on a specific handler (to watch it load files.)
+meta -  Update the script
 
 **SYNOPSIS**
 
-gxadmin handler strace <handler_id>
-
-
-### handler tail
-
-**NAME**
-
-handler tail -  tail handler logs
-
-**SYNOPSIS**
-
-gxadmin handler tail
+gxadmin meta update
 
 
 ### migrate-tool-install-to-sqlite
 
-**NAME**
+gxadmin usage:
 
-migrate-tool-install-to-sqlite -  Converts normal potsgres toolshed repository tables into the SQLite version
+Configuration:
 
-**SYNOPSIS**
+    config dump       Dump Galaxy configuration as JSON
+    config validate   validate config files
 
-gxadmin migrate-tool-install-to-sqlite
+Filters:
 
-**NOTES**
+    filter hexdecode   Decodes any hex blobs from postgres outputs
+    filter pg2md       Convert postgres table format outputs to something that can be pasted as markdown
 
-    $ gxadmin migrate-tool-install-to-sqlite
-    Creating new sqlite database: galaxy_install.sqlite
-    Migrating tables
-      export: tool_shed_repository
-      import: tool_shed_repository
-      ...
-      export: repository_repository_dependency_association
-      import: repository_repository_dependency_association
-    Complete
+Galaxy Administration:
 
+    galaxy cleanup [days]   Cleanup histories/hdas/etc for past N days (default=30)
+
+uwsgi:
+
+    uwsgi stats_influx <addr>   InfluxDB formatted output for the current stats
+
+DB Queries:
+'query' can be exchanged with 'tsvquery' or 'csvquery' for tab- and comma-separated variants
+
+    query active-users [weeks]                                     Count of users who ran jobs in past 1 week (default = 1)
+    query collection-usage                                         Information about how many collections of various types are used
+    query datasets-created-daily                                   The min/max/average/p95/p99 of total size of datasets created in a single day.
+    query disk-usage [--nice]                                      Disk usage per object store.
+    query errored-jobs <hours>                                     Lists jobs that errored in the last N hours.
+    query groups-list                                              List all groups known to Galaxy
+    query job-history <id>                                         Job state history for a specific job
+    query job-info <id>                                            Information about a specific job
+    query job-inputs <id>                                          Input datasets to a specific job
+    query job-outputs <id>                                         Output datasets from a specific job
+    query jobs-nonterminal [username|id|email]                     Job info of nonterminal jobs separated by user
+    query jobs-per-user <email>                                    Number of jobs run by a specific user
+    query largest-collection                                       Returns the size of the single largest collection
+    query latest-users                                             40 recently registered users
+    query monthly-data [year]                                      Number of active users per month, running jobs
+    query monthly-jobs [year]                                      Number of jobs run each month
+    query monthly-users [year]                                     Number of active users per month, running jobs
+    query old-histories <weeks>                                    Lists histories that haven't been updated (used) for <weeks>
+    query queue                                                    Brief overview of currently running jobs
+    query queue-detail [--all]                                     Detailed overview of running and queued jobs
+    query queue-overview [--short-tool-id]                         View used mostly for monitoring
+    query queue-time <tool_id>                                     The average/95%/99% a specific tool spends in queue state.
+    query recent-jobs <hours>                                      Jobs run in the past <hours> (in any state)
+    query runtime-per-user <email>                                 computation time of user (by email)
+    query tool-available-metrics <tool_id>                         list all available metrics for a given tool
+    query tool-last-used-date                                      When was the most recent invocation of every tool
+    query tool-metrics <tool_id> <metric_id> [--like]              See values of a specific metric
+    query tool-popularity [months|24]                              Most run tools by month
+    query tool-usage                                               Counts of tool runs
+    query training [--all]                                         List known trainings
+    query training-memberof <username>                             List trainings that a user is part of
+    query training-members <tr_id>                                 List users in a specific training
+    query training-queue <training_id>                             Jobs currently being run by people in a given training
+    query training-remove-member <training> <username> [YESDOIT]   Remove a user from a training
+    query ts-repos                                                 Counts of toolshed repositories by toolshed and owner.
+    query user-info <user_id|username|email>                       Quick overview of a Galaxy user in your system
+    query users-count                                              Shows sums of active/external/deleted/purged accounts
+    query users-total                                              Total number of Galaxy users (incl deleted, purged, inactive)
+    query workflow-connections [--all]                             The connections of tools, from output to input, in the latest (or all) versions of user workflows
+
+DB Mutations: (csv/tsv queries are NOT available)
+
+    mutate fail-terminal-datasets [--commit]   Causes the output datasets of jobs which were manually failed, to be marked as failed
+
+Local: (These can be configured in /home/hxr/.config/gxadmin-local.sh)
+
+    local cats   Cute kitties
+
+Other:
+
+    migrate-tool-install-to-sqlite   Converts normal potsgres toolshed repository tables into the SQLite version
+
+Meta:
+
+    meta update   Update the script
+
+help / -h / --help : this message. Invoke '--help' on any subcommand for help specific to that subcommand
+0
 
 ### mutate fail-terminal-datasets
 
@@ -507,24 +564,6 @@ Lists details of jobs that have status = 'error' for the specified number of hou
 
      query errored-jobs 24
     TO_DO: Add output of query here!
-
-
-### query failed-terminal-datasets
-
-**NAME**
-
-query failed-terminal-datasets -  Identify the list of datasets which had issues
-
-**SYNOPSIS**
-
-gxadmin query failed-terminal-datasets
-
-**NOTES**
-
-Whenever an admin marks a job as failed manually (e.g. by updating the
-state in the database), the output datasets are not accordingly updated
-by default. And this causes users to mistakenly think their jobs are
-still running when they have long since failed.
 
 
 ### query groups-list
@@ -1293,22 +1332,11 @@ This is used by the usegalaxy.eu tool prediction workflow, allowing for building
          4 | 2013-02-07 16:48:00 |    13 | cat1              | 1.0.0     |     20 | Count1            | 1.0.0
 
 
-### update
-
-**NAME**
-
-update -  Update the script
-
-**SYNOPSIS**
-
-gxadmin update
-
-
 ### uwsgi stats_influx
 
 **NAME**
 
-uwsgi stats_influx -  InfluxDB formatted output for the current stats
+uwsgi -  InfluxDB formatted output for the current stats
 
 **SYNOPSIS**
 
@@ -1349,62 +1377,4 @@ For multiple zerglings you can run this for each and just 2>/dev/null
     exit 0
 
 And it will fetch only data for responding uwsgis.
-
-
-### validate
-
-**NAME**
-
-validate -  validate config files
-
-**SYNOPSIS**
-
-gxadmin validate
-
-**NOTES**
-
-Validate the configuration files
-**Warning**:
-- This requires you to have `$GALAXY_DIST` set and to have config under `$GALAXY_DIST/config`.
-- This only validates that it is well formed XML, and does **not** validate against any schemas.
-
-    $ gxadmin validate
-      OK: galaxy-dist/data_manager_conf.xml
-      ...
-      OK: galaxy-dist/config/tool_data_table_conf.xml
-      OK: galaxy-dist/config/tool_sheds_conf.xml
-    All XML files validated
-
-
-### zerg strace
-
-**NAME**
-
-zerg strace -  swap zerglings
-
-**SYNOPSIS**
-
-gxadmin zerg strace [0|1|pool]
-
-
-### zerg swap
-
-**NAME**
-
-zerg swap -  swap zerglings
-
-**SYNOPSIS**
-
-gxadmin zerg swap <message>
-
-
-### zerg tail
-
-**NAME**
-
-zerg tail -  tail zergling logs
-
-**SYNOPSIS**
-
-gxadmin zerg tail
 

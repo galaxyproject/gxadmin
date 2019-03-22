@@ -6,6 +6,9 @@
 #
 # Thanks to everyone for their contributions
 # https://github.com/usegalaxy-eu/gxadmin/graphs/contributors
+version() {
+	echo 12
+}
 GXADMIN_SITE_SPECIFIC=${GXADMIN_SITE_SPECIFIC:-~/.config/gxadmin-local.sh}
 
 hexdecodelines=$(cat <<EOF
@@ -383,7 +386,7 @@ EOF
 	#EOF
 #}
 
-mutate_fail_terminal_datasets() { ## mutate fail-terminal-datasets [--commit]: Causes the output datasets of jobs which were manually failed, to be marked as failed
+mutate_fail-terminal-datasets() { ## mutate fail-terminal-datasets [--commit]: Causes the output datasets of jobs which were manually failed, to be marked as failed
 	handle_help "$@" <<-EOF
 		Whenever an admin marks a job as failed manually (e.g. by updating the
 		state in the database), the output datasets are not accordingly updated
@@ -1138,7 +1141,7 @@ query_training() { ## query training [--all]: List known trainings
 	EOF
 }
 
-query_training_members() { ## query training-members <tr_id>: List users in a specific training
+query_training-members() { ## query training-members <tr_id>: List users in a specific training
 	handle_help "$@" <<-EOF
 		    $ gxadmin query training-members hts2018
 		          username      |       joined
@@ -1926,7 +1929,7 @@ query_errored-jobs(){ ## query errored-jobs <hours>: Lists jobs that errored in 
 			job.id
 	EOF
 }
-pg2md() { ## filter pg2md: Convert postgres table format outputs to something that can be pasted as markdown
+filter_pg2md() { ## filter pg2md: Convert postgres table format outputs to something that can be pasted as markdown
 	handle_help "$@" <<-EOF
 		Imagine doing something like:
 
@@ -1951,7 +1954,7 @@ pg2md() { ## filter pg2md: Convert postgres table format outputs to something th
 	cat /dev/stdin | sed 's/--+--/- | -/g;s/^\(\s\+\)\([^|]\+\) |/\2 \1|/g' | head -n -2
 }
 
-hexdecode() { ## filter hexdecode: Decodes any hex blobs from postgres outputs
+filter_hexdecode() { ## filter hexdecode: Decodes any hex blobs from postgres outputs
 	handle_help "$@" <<-EOF
 		This automatically replaces any hex strings (\\x[a-f0-9]+) with their decoded versions. This can allow you to query galaxy metadata, decode it, and start processing it with JQ. Just pipe your query to it and it will replace it wherever it is found.
 
@@ -2267,11 +2270,6 @@ meta_update() { ## meta update: Update the script
 	exit 0
 }
 
-
-version() {
-	echo 12
-}
-
 meta_cmdlist() {
 	IFS=$'\n'
 	# TOC
@@ -2353,7 +2351,7 @@ look_for() {
 obtain_mutate() {
 	query_name="$1"; shift
 
-	fn="query_${query_name}"
+	fn="mutate_${query_name}"
 	LC_ALL=C type $fn | grep -q 'function'
 
 	if (( $? == 0 )); then

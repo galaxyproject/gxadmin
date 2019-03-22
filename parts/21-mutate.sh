@@ -25,7 +25,7 @@
 	#EOF
 #}
 
-mutate_fail_terminal_datasets() { ## mutate fail-terminal-datasets [--commit]: Causes the output datasets of jobs which were manually failed, to be marked as failed
+mutate_fail-terminal-datasets() { ## mutate fail-terminal-datasets [--commit]: Causes the output datasets of jobs which were manually failed, to be marked as failed
 	handle_help "$@" <<-EOF
 		Whenever an admin marks a job as failed manually (e.g. by updating the
 		state in the database), the output datasets are not accordingly updated
