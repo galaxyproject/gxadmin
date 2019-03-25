@@ -111,6 +111,7 @@ Command | Description
 [`query jobs-nonterminal`](#query-jobs-nonterminal) | Job info of nonterminal jobs separated by user
 [`query jobs-per-user`](#query-jobs-per-user) | Number of jobs run by a specific user
 [`query largest-collection`](#query-largest-collection) | Returns the size of the single largest collection
+[`query largest-histories`](#query-largest-histories) | Largest histories in Galaxy
 [`query latest-users`](#query-latest-users) | 40 recently registered users
 [`query monthly-data`](#query-monthly-data) | Number of active users per month, running jobs
 [`query monthly-jobs`](#query-monthly-jobs) | Number of jobs run each month
@@ -655,6 +656,32 @@ query largest-collection -  Returns the size of the single largest collection
 **SYNOPSIS**
 
 gxadmin query largest-collection
+
+
+### query largest-histories
+
+**NAME**
+
+query largest-histories -  Largest histories in Galaxy
+
+**SYNOPSIS**
+
+gxadmin query largest-histories
+
+**NOTES**
+
+Finds all jobs by people in that queue (including things they are executing that are not part of a training)
+
+    $ gxadmin query largest-histories
+     total_size | id | substring  | username
+    ------------+----+------------+----------
+     50 MB      |  6 | Unnamed hi | helena
+     41 MB      |  8 | Unnamed hi | helena
+     35 MB      |  9 | Unnamed hi | helena
+     27 MB      | 10 | Circos     | helena
+     3298 kB    |  2 | Tag Testin | helena
+     9936 bytes | 44 | test       | helena
+     413 bytes  | 45 | Unnamed hi | alice
 
 
 ### query latest-users

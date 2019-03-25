@@ -732,6 +732,40 @@ query_training-remove-member() { ## query training-remove-member <training> <use
 	fi
 }
 
+query_largest-histories() { ## query largest-histories: Largest histories in Galaxy
+	handle_help "$@" <<-EOF
+		Finds all jobs by people in that queue (including things they are executing that are not part of a training)
+
+		    $ gxadmin query largest-histories
+		     total_size | id | substring  | username
+		    ------------+----+------------+----------
+		     50 MB      |  6 | Unnamed hi | helena
+		     41 MB      |  8 | Unnamed hi | helena
+		     35 MB      |  9 | Unnamed hi | helena
+		     27 MB      | 10 | Circos     | helena
+		     3298 kB    |  2 | Tag Testin | helena
+		     9936 bytes | 44 | test       | helena
+		     413 bytes  | 45 | Unnamed hi | alice
+	EOF
+
+	username=$(gdpr_safe galaxy_user.username username)
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			pg_size_pretty(sum(coalesce(dataset.total_size, 0))) as total_size,
+			history.id,
+			substring(history.name, 1, 10),
+			$username
+		FROM
+			dataset
+			JOIN history_dataset_association on dataset.id = history_dataset_association.dataset_id
+			JOIN history on history_dataset_association.history_id = history.id
+			JOIN galaxy_user on history.user_id = galaxy_user.id
+		GROUP BY history.id, history.name, history.user_id, galaxy_user.username
+		ORDER BY sum(coalesce(dataset.total_size, 0)) DESC
+	EOF
+}
+
 query_training-queue() { ## query training-queue <training_id>: Jobs currently being run by people in a given training
 	handle_help "$@" <<-EOF
 		Finds all jobs by people in that queue (including things they are executing that are not part of a training)
@@ -907,7 +941,7 @@ query_user-info() { ## query user-info <user_id|username|email>: Quick overview 
 	# Largest Histories
 	read -r -d '' qstr <<-EOF
 		SELECT
-			history.id, history.name, pg_size_pretty(sum(COALESCE(dataset.total_size, 0))) AS size
+			history.id, history.name, pg_size_pretty(sum(COALESCE(dataset.total_size, 0))) AS size, history.deleted, history.purged
 		FROM
 			history
 			LEFT JOIN history_dataset_association ON history.id = history_dataset_association.history_id
@@ -922,7 +956,7 @@ query_user-info() { ## query user-info <user_id|username|email>: Quick overview 
 			10
 	EOF
 	largest_histories=$(query_tsv "$qstr")
-	largest_histories=$(printf "History ID\tName\tSize\n----\t----\t----\n%s" "$largest_histories" | sed 's/\t/\t | \t/g' | column -t -s'	')
+	largest_histories=$(printf "History ID\tName\tSize\tDeleted\tPurged\n----\t----\t----\t----\t----\n%s" "$largest_histories" | sed 's/\t/\t | \t/g' | column -t -s'	')
 
 	read -r -d '' template <<EOF
 # Galaxy User $user_id
