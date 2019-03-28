@@ -1,14 +1,18 @@
 # Galaxy Admin Utility
 
-A small shell script for us galaxy administrators:
+A command line tool for [Galaxy](https://github.com/galaxyproject/galaxy)
+administrators to run common queries against our Postgres databases. It additionally
+includes some code for managing zerglings under systemd, and other utilities.
 
-- validate your XML files (e.g. before restarting handlers.)
-- swaps zerglings (if you use them + supervisord)
-- runs common queries against the DB
+Mostly gxadmin acts as a repository for the common queries we all run regularly
+but fail to share with each other.
 
-Mostly it's a good dumping ground for the common queries we all run quite
-often. Some useful ones are included. This script strictly expects a postgres
-database and we will not support mysql or sqlite3.
+It comes with around 40 commonly useful queries included, but you can easily
+add more to your installation with local functions. gxadmin attempts to be a
+very readable bash script and avoids using fancy new bash features.
+
+This script strictly expects a postgres database and has no plans to support
+mysql or sqlite3.
 
 ## Installation
 
