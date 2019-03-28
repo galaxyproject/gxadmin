@@ -128,11 +128,10 @@ Command | Description
 [`query tool-metrics`](#query-tool-metrics) | See values of a specific metric
 [`query tool-popularity`](#query-tool-popularity) | Most run tools by month
 [`query tool-usage`](#query-tool-usage) | Counts of tool runs
-[`query training`](#query-training) | List known trainings
-[`query training-memberof`](#query-training-memberof) | List trainings that a user is part of
+[`query training-list`](#query-training-list) | List known trainings
+[`query training-members-remove`](#query-training-members-remove) | Remove a user from a training
 [`query training-members`](#query-training-members) | List users in a specific training
 [`query training-queue`](#query-training-queue) | Jobs currently being run by people in a given training
-[`query training-remove-member`](#query-training-remove-member) | Remove a user from a training
 [`query ts-repos`](#query-ts-repos) | Counts of toolshed repositories by toolshed and owner.
 [`query user-info`](#query-user-info) | Quick overview of a Galaxy user in your system
 [`query users-count`](#query-users-count) | Shows sums of active/external/deleted/purged accounts
@@ -929,7 +928,7 @@ gxadmin query recent-jobs <hours>
 **NOTES**
 
     $ gxadmin query recent-jobs 2.1
-       id    |     date_trunc      |      tool_id          | state |    username
+       id    |     create_time     |      tool_id          | state |    username
     ---------+---------------------+-----------------------+-------+-----------------
      4383997 | 2018-10-05 16:07:00 | Filter1               | ok    |
      4383994 | 2018-10-05 16:04:00 | echo_main_condor      | ok    |
@@ -1096,15 +1095,15 @@ gxadmin query tool-usage
      Filter1                                                                |  43253
 
 
-### query training
+### query training-list
 
 **NAME**
 
-query training -  List known trainings
+query training-list -  List known trainings
 
 **SYNOPSIS**
 
-gxadmin query training [--all]
+gxadmin query training-list [--all]
 
 **NOTES**
 
@@ -1116,15 +1115,15 @@ This module is specific to EU's implementation of Training Infrastructure as a S
      hts2018          | 2018-09-19
 
 
-### query training-memberof
+### query training-members-remove
 
 **NAME**
 
-query training-memberof -  List trainings that a user is part of
+query training-members-remove -  Remove a user from a training
 
 **SYNOPSIS**
 
-gxadmin query training-memberof <username>
+gxadmin query training-members-remove <training> <username> [YESDOIT]
 
 
 ### query training-members
@@ -1163,17 +1162,6 @@ Finds all jobs by people in that queue (including things they are executing that
      state  |   id    | extid  | tool_id |   username    |       created
     --------+---------+--------+---------+---------------+---------------------
      queued | 4350274 | 225743 | upload1 |               | 2018-09-26 10:00:00
-
-
-### query training-remove-member
-
-**NAME**
-
-query training-remove-member -  Remove a user from a training
-
-**SYNOPSIS**
-
-gxadmin query training-remove-member <training> <username> [YESDOIT]
 
 
 ### query ts-repos

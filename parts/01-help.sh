@@ -125,7 +125,7 @@ handle_help() {
 				echo
 			fi
 			# exit after printing the documentation!
-			exit 42
+			exit 0;
 		fi
 	done
 }

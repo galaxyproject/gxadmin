@@ -1,11 +1,10 @@
 PARTS=$(sort $(wildcard parts/*.sh))
 
-gxadmin: $(PARTS)
-	cat $(PARTS) > gxadmin
-
-
-update_readme: gxadmin
+README.md: gxadmin
 	sed -n -i '/^## Commands$$/q;p' README.md
 	./gxadmin meta cmdlist >> README.md
+
+gxadmin: $(PARTS)
+	cat $(PARTS) > gxadmin
 
 .PHONY = update_readme
