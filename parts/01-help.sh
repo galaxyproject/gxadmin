@@ -71,15 +71,6 @@ usage(){
 		EOF
 	fi
 
-	if (( $# == 0  )) || [[ $1 == "other" ]]; then
-		cat <<-EOF
-			Other:
-
-			$(echo "$cmds" | egrep -v '^(tsvquery|csvquery|iquery|query|config|filter|galaxy|local|mutate|uwsgi|meta) ' | column -s: -t | sed 's/^/    /')
-
-		EOF
-	fi
-
 	if (( $# == 0  )) || [[ $1 == "meta" ]]; then
 		cat <<-EOF
 			Meta:
