@@ -13,10 +13,10 @@ obtain_mutate() {
 
 mutate() {
 	query_type="$1"; shift
-	subfunc="$1"; shift
+	query_name="$1"; shift
 
 	# We do not run this in a subshell because we need to "return" multiple things.
-	obtain_mutate $subfunc "$@"
+	obtain_mutate $query_name "$@"
 
 	# TODO(hxr)
 	if [[ "$QUERY" == "ERROR" ]]; then

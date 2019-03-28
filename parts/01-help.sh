@@ -92,8 +92,8 @@ usage(){
 
 handle_help() {
 	if [[ ! -z "${GXADMIN_POPCON_ENABLE}" ]]; then
-		if [[ "${subfunc}" != "user-info" ]]; then
-			echo "${mode:-mode} ${subfunc:-sf}" >> ~/.gxadmin-popcon.log
+		if [[ "${query_name}" != "user-info" ]]; then
+			echo "${mode:-mode} ${query_name:-sf}" >> ~/.gxadmin-popcon.log
 		fi
 	fi
 
@@ -101,8 +101,8 @@ handle_help() {
 		if [[ $i = --help || $i = -h ]]; then
 
 			key="${mode}"
-			if [[ ! -z "${subfunc}" ]]; then
-				key="${key} ${subfunc}"
+			if [[ ! -z "${query_name}" ]]; then
+				key="${key} ${query_name}"
 			fi
 
 			echo "**NAME**"

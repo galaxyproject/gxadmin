@@ -123,8 +123,8 @@ usage(){
 
 handle_help() {
 	if [[ ! -z "${GXADMIN_POPCON_ENABLE}" ]]; then
-		if [[ "${subfunc}" != "user-info" ]]; then
-			echo "${mode:-mode} ${subfunc:-sf}" >> ~/.gxadmin-popcon.log
+		if [[ "${query_name}" != "user-info" ]]; then
+			echo "${mode:-mode} ${query_name:-sf}" >> ~/.gxadmin-popcon.log
 		fi
 	fi
 
@@ -132,8 +132,8 @@ handle_help() {
 		if [[ $i = --help || $i = -h ]]; then
 
 			key="${mode}"
-			if [[ ! -z "${subfunc}" ]]; then
-				key="${key} ${subfunc}"
+			if [[ ! -z "${query_name}" ]]; then
+				key="${key} ${query_name}"
 			fi
 
 			echo "**NAME**"
@@ -2504,10 +2504,10 @@ obtain_mutate() {
 
 mutate() {
 	query_type="$1"; shift
-	subfunc="$1"; shift
+	query_name="$1"; shift
 
 	# We do not run this in a subshell because we need to "return" multiple things.
-	obtain_mutate $subfunc "$@"
+	obtain_mutate $query_name "$@"
 
 	# TODO(hxr)
 	if [[ "$QUERY" == "ERROR" ]]; then
@@ -2533,10 +2533,10 @@ obtain_query() {
 query() {
 	# do the thing zhu li
 	query_type="$1"; shift
-	subfunc="$1"; shift
+	query_name="$1"; shift
 
 	# We do not run this in a subshell because we need to "return" multiple things.
-	obtain_query $subfunc "$@"
+	obtain_query $query_name "$@"
 
 	# TODO(hxr)
 	#ec=$?
@@ -2553,7 +2553,7 @@ query() {
 		tsvquery )  query_tsv "$QUERY";;
 		csvquery )  query_csv "$QUERY";;
 		query    )  query_tbl "$QUERY";;
-		iquery   )  query_influx "$QUERY" "$subfunc" "$fields" "$tags";;
+		iquery   )  query_influx "$QUERY" "$query_name" "$fields" "$tags";;
 		# default
 		*        )  usage "Error";;
 	esac
@@ -2565,25 +2565,24 @@ local_funcs() {
 		error "No local functions are defined in ${GXADMIN_SITE_SPECIFIC}"
 		exit 1
 	else
+		# Load functions
 		. ${GXADMIN_SITE_SPECIFIC}
 	fi
 
-	subfunc="$1"; shift
-	if [[ ! -n "$subfunc" || $subfunc == "-h" || $subfunc == "--help" || $subfunc == "help" ]]; then
-		cmds="$(grep -o '{ ## .*' ${GXADMIN_SITE_SPECIFIC} | grep -v grep | grep -v '| sed' | sort | sed 's/^{ ## //g')"
-		cat <<-EOF
-			gxadmin local functions usage:
+	group_name="$1"; shift
+	query_name="$1"; shift
 
-			$(echo "$cmds" | sort -k2 | column -s: -t | sed 's/^/    /')
+	# Check that FN exists
+	fn="${group_name}_${query_name}"
+	LC_ALL=C type $fn | grep -q 'function'
 
-			help / -h / --help : this message. Invoke '--help' on any subcommand for help specific to that subcommand
-		EOF
-	else
+	if (( $? == 0 )); then
 		if [[ -z "${GXADMIN_BUGGER_OFF}" ]] && (( ($RANDOM % 25) == 0 )); then
 			warning "Hey! It's great that you're using gxadmin! You should contribute these functions back :) Other people might find these useful, or could learn something from the code you've written, even if you think it is too specific to your site."
 		fi
-
-		local_${subfunc} "$@";
+		$fn "$@";
+	else
+		usage ${group_name}
 	fi
 }
 if (( $# == 0 )); then

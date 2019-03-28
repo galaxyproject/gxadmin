@@ -152,11 +152,11 @@ Command | Description
 
 **NAME**
 
-config -  Dump Galaxy configuration as JSON
+config dump -  Dump Galaxy configuration as JSON
 
 **SYNOPSIS**
 
-gxadmin config validate
+gxadmin config dump
 
 **NOTES**
 
@@ -179,7 +179,7 @@ This function was added with the intention to use it internally, but it may be u
 
 **NAME**
 
-config -  Dump Galaxy configuration as JSON
+config validate -  validate config files
 
 **SYNOPSIS**
 
@@ -204,11 +204,11 @@ Validate the configuration files
 
 **NAME**
 
-filter -  Decodes any hex blobs from postgres outputs
+filter hexdecode -  Decodes any hex blobs from postgres outputs
 
 **SYNOPSIS**
 
-gxadmin filter pg2md
+gxadmin filter hexdecode
 
 **NOTES**
 
@@ -264,7 +264,7 @@ Or to query for the dbkeys uesd by datasets:
 
 **NAME**
 
-filter -  Decodes any hex blobs from postgres outputs
+filter pg2md -  Convert postgres table format outputs to something that can be pasted as markdown
 
 **SYNOPSIS**
 
@@ -297,7 +297,7 @@ and it should produce a nicely formatted table
 
 **NAME**
 
-galaxy -  Converts normal potsgres toolshed repository tables into the SQLite version
+galaxy cleanup -  Cleanup histories/hdas/etc for past N days (default=30)
 
 **SYNOPSIS**
 
@@ -312,11 +312,11 @@ Cleanup histories/hdas/etc for past N days using the python objects-based method
 
 **NAME**
 
-galaxy -  Converts normal potsgres toolshed repository tables into the SQLite version
+galaxy migrate-tool-install-to-sqlite -  Converts normal potsgres toolshed repository tables into the SQLite version
 
 **SYNOPSIS**
 
-gxadmin galaxy cleanup [days]
+gxadmin galaxy migrate-tool-install-to-sqlite
 
 **NOTES**
 
@@ -335,7 +335,7 @@ gxadmin galaxy cleanup [days]
 
 **NAME**
 
-meta -  Update the script
+meta update -  Update the script
 
 **SYNOPSIS**
 
@@ -1298,11 +1298,11 @@ This is used by the usegalaxy.eu tool prediction workflow, allowing for building
 
 **NAME**
 
-uwsgi -  Strace a zergling
+uwsgi memory -  Current system memory usage
 
 **SYNOPSIS**
 
-gxadmin uwsgi stats_influx <addr>
+gxadmin uwsgi memory
 
 **NOTES**
 
@@ -1313,11 +1313,11 @@ Obtain memory usage of the various Galaxy processes
 
 **NAME**
 
-uwsgi -  Strace a zergling
+uwsgi pids -  Galaxy process PIDs
 
 **SYNOPSIS**
 
-gxadmin uwsgi stats_influx <addr>
+gxadmin uwsgi pids
 
 **NOTES**
 
@@ -1328,7 +1328,7 @@ Obtain memory usage of the various Galaxy processes
 
 **NAME**
 
-uwsgi -  Strace a zergling
+uwsgi stats_influx -  InfluxDB formatted output for the current stats
 
 **SYNOPSIS**
 
@@ -1378,11 +1378,11 @@ And it will fetch only data for responding uwsgis.
 
 **NAME**
 
-uwsgi -  Strace a zergling
+uwsgi status -  Current system status
 
 **SYNOPSIS**
 
-gxadmin uwsgi stats_influx <addr>
+gxadmin uwsgi status
 
 **NOTES**
 
@@ -1393,44 +1393,44 @@ Current status of all uwsgi processes
 
 **NAME**
 
-uwsgi -  Strace a zergling
+uwsgi zerg-scale-down -  Remove an extraneous zergling
 
 **SYNOPSIS**
 
-gxadmin uwsgi stats_influx <addr>
+gxadmin uwsgi zerg-scale-down
 
 
 ### uwsgi zerg-scale-up
 
 **NAME**
 
-uwsgi -  Strace a zergling
+uwsgi zerg-scale-up -  Add another zergling to deal with high load
 
 **SYNOPSIS**
 
-gxadmin uwsgi stats_influx <addr>
+gxadmin uwsgi zerg-scale-up
 
 
 ### uwsgi zerg-strace
 
 **NAME**
 
-uwsgi -  Strace a zergling
+uwsgi zerg-strace -  Strace a zergling
 
 **SYNOPSIS**
 
-gxadmin uwsgi stats_influx <addr>
+gxadmin uwsgi zerg-strace [number]
 
 
 ### uwsgi zerg-swap
 
 **NAME**
 
-uwsgi -  Strace a zergling
+uwsgi zerg-swap -  Swap zerglings in order (unintelligent version)
 
 **SYNOPSIS**
 
-gxadmin uwsgi stats_influx <addr>
+gxadmin uwsgi zerg-swap
 
 **NOTES**
 
