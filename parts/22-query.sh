@@ -288,7 +288,7 @@ query_workflow-connections() { ## query workflow-connections [--all]: The connec
 	read -r -d '' QUERY <<-EOF
 		SELECT
 			ws_in.workflow_id as wf_id,
-			date_trunc('minute', workflow.update_time AT TIME ZONE 'UTC') as wf_updated,
+			workflow.update_time AT TIME ZONE 'UTC' as wf_updated,
 			wfc.input_step_id as in_id,
 			ws_in.tool_id as in_tool,
 			ws_in.tool_version as in_tool_v,
@@ -490,7 +490,7 @@ query_queue-detail() { ## query queue-detail [--all]: Detailed overview of runni
 			job.job_runner_external_id as extid,
 			job.tool_id,
 			$username,
-			date_trunc('hour', (now() AT TIME ZONE 'UTC' - job.create_time)) as time_since_creation,
+			(now() AT TIME ZONE 'UTC' - job.create_time) as time_since_creation,
 			job.handler,
 			job.job_runner_name,
 			job.destination_id
@@ -602,7 +602,7 @@ query_jobs-per-user() { ## query jobs-per-user <email>: Number of jobs run by a 
 query_recent-jobs() { ## query recent-jobs <hours>: Jobs run in the past <hours> (in any state)
 	handle_help "$@" <<-EOF
 		    $ gxadmin query recent-jobs 2.1
-		       id    |     date_trunc      |      tool_id          | state |    username
+		       id    |     create_time     |      tool_id          | state |    username
 		    ---------+---------------------+-----------------------+-------+-----------------
 		     4383997 | 2018-10-05 16:07:00 | Filter1               | ok    |
 		     4383994 | 2018-10-05 16:04:00 | echo_main_condor      | ok    |
@@ -620,7 +620,7 @@ query_recent-jobs() { ## query recent-jobs <hours>: Jobs run in the past <hours>
 	read -r -d '' QUERY <<-EOF
 		SELECT
 			job.id,
-			date_trunc('minute', job.create_time AT TIME ZONE 'UTC'),
+			job.create_time AT TIME ZONE 'UTC' as create_time,
 			job.tool_id,
 			job.state, $username
 		FROM job, galaxy_user
@@ -787,7 +787,7 @@ query_training-queue() { ## query training-queue <training_id>: Jobs currently b
 				job.job_runner_external_id AS extid,
 				job.tool_id,
 				galaxy_user.username,
-				date_trunc('hour', job.create_time AT TIME ZONE 'UTC') AS created
+				job.create_time AT TIME ZONE 'UTC' AS created
 			FROM
 				job, galaxy_user
 			WHERE
@@ -1364,7 +1364,7 @@ query_job-history() { ## query job-history <id>: Job state history for a specifi
 
 	read -r -d '' QUERY <<-EOF
 			SELECT
-				date_trunc('second', create_time AT TIME ZONE 'UTC') as time,
+				create_time AT TIME ZONE 'UTC' as time,
 				state
 			FROM job_state_history
 			WHERE job_id = $1
