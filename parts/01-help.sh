@@ -91,6 +91,12 @@ usage(){
 }
 
 handle_help() {
+	if [[ ! -z "${GXADMIN_POPCON_ENABLE}" ]]; then
+		if [[ "${subfunc}" != "user-info" ]]; then
+			echo "${mode:-mode} ${subfunc:-sf}" >> ~/.gxadmin-popcon.log
+		fi
+	fi
+
 	for i in "$@"; do
 		if [[ $i = --help || $i = -h ]]; then
 
