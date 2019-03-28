@@ -1422,6 +1422,29 @@ query_user-info() { ## query user-info <user_id|username|email>: Quick overview 
 	recent_jobs=$(query_tsv "$qstr")
 	recent_jobs2=$(printf "Tool ID\tStatus\tCreated\tExit Code\tRuntime\n----\t----\t----\t---\t----\n%s" "$recent_jobs" | sed 's/\t/\t | \t/g' | column -t -s'	')
 
+	# Recent workflows
+	read -r -d '' qstr <<-EOF
+		SELECT
+			workflow_invocation.create_time,
+			state,
+			scheduler,
+			handler,
+			substring(workflow.name, 0, 20) AS workflow,
+			substring(history.name, 0, 20) AS history
+		FROM
+			workflow_invocation
+			JOIN workflow ON workflow_invocation.workflow_id = workflow.id
+			JOIN history ON workflow_invocation.history_id = history.id
+		WHERE
+			history.user_id = $user_id
+		ORDER BY
+			create_time DESC
+		LIMIT
+			5
+	EOF
+	recent_wf=$(query_tsv "$qstr")
+	recent_wf=$(printf "Created\tState\tScheduler\tHandler\tWorkflow\tHistory\n----\t----\t----\t----\t----\t----\n%s" "$recent_wf" | sed 's/\t/\t | \t/g' | column -t -s'	')
+
 	# Largest Histories
 	read -r -d '' qstr <<-EOF
 		SELECT
@@ -1461,12 +1484,16 @@ Roles: %s
 
 %s
 
+## Recent Workflow Invocations
+
+%s
+
 ## Largest Histories
 
 %s
 \n
 EOF
-	printf "$template" $results "$group_membership" "$role_membership" "$recent_jobs2" "$largest_histories"
+	printf "$template" $results "$group_membership" "$role_membership" "$recent_jobs2" "$recent_wf" "$largest_histories"
 }
 
 query_users-count() { ## query users-count: Shows sums of active/external/deleted/purged accounts
