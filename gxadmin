@@ -1104,7 +1104,7 @@ query_recent-jobs() { ## query recent-jobs <hours>: Jobs run in the past <hours>
 	EOF
 }
 
-query_training() { ## query training [--all]: List known trainings
+query_training-list() { ## query training-list [--all]: List known trainings
 	handle_help "$@" <<-EOF
 		This module is specific to EU's implementation of Training Infrastructure as a Service. But this specifically just checks for all groups with the name prefix 'training-'
 
@@ -1156,26 +1156,7 @@ query_training-members() { ## query training-members <tr_id>: List users in a sp
 	EOF
 }
 
-query_training-memberof() { ## query training-memberof <username>: List trainings that a user is part of
-	handle_help "$@" <<-EOF
-	EOF
-
-	assert_count $# 1 "Missing Training ID"
-	# Remove training- if they used it.
-	ww=$(echo "$1" | sed 's/^training-//g')
-
-	read -r -d '' QUERY <<-EOF
-			SELECT
-                galaxy_group.name
-			FROM
-                galaxy_user, user_group_association, galaxy_group
-			WHERE   galaxy_group.id = user_group_association.group_id
-				AND user_group_association.user_id = galaxy_user.id
-                AND galaxy_user.username='$ww'
-	EOF
-}
-
-query_training-remove-member() { ## query training-remove-member <training> <username> [YESDOIT]: Remove a user from a training
+query_training-members-remove() { ## query training-members-remove <training> <username> [YESDOIT]: Remove a user from a training
 	handle_help "$@" <<-EOF
 	EOF
 
