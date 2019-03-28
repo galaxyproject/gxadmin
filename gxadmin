@@ -2419,10 +2419,9 @@ meta_update() { ## meta update: Update the script
 
 	tmp=$(mktemp);
 	curl https://raw.githubusercontent.com/usegalaxy-eu/gxadmin/master/gxadmin > $tmp;
-	chmod ugo+x $tmp;
-	chmod ugo+r $tmp;
+	chmod ugo+rx $tmp;
 	mv $tmp $0;
-	exit 0
+	exit 0;
 }
 
 meta_cmdlist() {
