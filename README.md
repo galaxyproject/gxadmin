@@ -131,7 +131,7 @@ Command | Description
 [`query tool-last-used-date`](#query-tool-last-used-date) | When was the most recent invocation of every tool
 [`query tool-metrics`](#query-tool-metrics) | See values of a specific metric
 [`query tool-popularity`](#query-tool-popularity) | Most run tools by month
-[`query tool-usage`](#query-tool-usage) | Counts of tool runs
+[`query tool-usage`](#query-tool-usage) | Counts of tool runs in the past weeks (default = all)
 [`query training-list`](#query-training-list) | List known trainings
 [`query training-members-remove`](#query-training-members-remove) | Remove a user from a training
 [`query training-members`](#query-training-members) | List users in a specific training
@@ -1077,11 +1077,11 @@ See most popular tools by month
 
 **NAME**
 
-query tool-usage -  Counts of tool runs
+query tool-usage -  Counts of tool runs in the past weeks (default = all)
 
 **SYNOPSIS**
 
-gxadmin query tool-usage
+gxadmin query tool-usage [weeks]
 
 **NOTES**
 
