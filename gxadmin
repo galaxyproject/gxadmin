@@ -511,7 +511,7 @@ query_latest-users() { ## query latest-users: 40 recently registered users
 	EOF
 }
 
-query_tool-usage() { ## query tool-usage: Counts of tool runs
+query_tool-usage() { ## query tool-usage [weeks]: Counts of tool runs in the past weeks (default = all)
 	handle_help "$@" <<-EOF
 		    $ gxadmin tool-usage
 		                                    tool_id                                 | count
@@ -527,6 +527,11 @@ query_tool-usage() { ## query tool-usage: Counts of tool runs
 		     Filter1                                                                |  43253
 	EOF
 
+	where=
+	if (( $# > 0 )); then
+		where="WHERE j.create_time > (now() - '$1 weeks'::interval)"
+	fi
+
 	fields="count=1"
 	tags="tool_id=0"
 
@@ -534,6 +539,7 @@ query_tool-usage() { ## query tool-usage: Counts of tool runs
 		SELECT
 			j.tool_id, count(*) AS count
 		FROM job j
+		$where
 		GROUP BY j.tool_id
 		ORDER BY count DESC
 	EOF
