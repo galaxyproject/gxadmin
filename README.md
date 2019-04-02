@@ -90,6 +90,7 @@ Meow
 $
 ```
 
+meta_cmdlist
 ## Commands
 
 Command | Description

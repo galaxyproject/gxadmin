@@ -33,7 +33,7 @@ usage(){
 		EOF
 	fi
 
-	if (( $# == 0  )) || [[ $1 == "galaxy" ]]; then
+	if (( $# == 0  )) || [[ $1 == "uwsgi" ]]; then
 		cat <<-EOF
 			uwsgi:
 

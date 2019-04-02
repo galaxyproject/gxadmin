@@ -4,7 +4,7 @@ look_for() {
 
 	# Check that FN exists
 	fn="${group_name}_${query_name}"
-	LC_ALL=C type $fn | grep -q 'function'
+	LC_ALL=C type $fn 2> /dev/null | grep -q 'function'
 
 	if (( $? == 0 )); then
 		$fn "$@";
