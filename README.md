@@ -141,6 +141,7 @@ Command | Description
 [`query users-count`](#query-users-count) | Shows sums of active/external/deleted/purged accounts
 [`query users-total`](#query-users-total) | Total number of Galaxy users (incl deleted, purged, inactive)
 [`query workflow-connections`](#query-workflow-connections) | The connections of tools, from output to input, in the latest (or all) versions of user workflows
+[`uwsgi handler-restart`](#uwsgi-handler-restart) | Restart all handlers
 [`uwsgi memory`](#uwsgi-memory) | Current system memory usage
 [`uwsgi pids`](#uwsgi-pids) | Galaxy process PIDs
 [`uwsgi stats_influx`](#uwsgi-stats_influx) | InfluxDB formatted output for the current stats
@@ -1296,6 +1297,17 @@ This is used by the usegalaxy.eu tool prediction workflow, allowing for building
          3 | 2013-02-07 16:48:00 |    11 | Paste1            | 1.0.0     |      8 | addValue          | 1.0.0
          4 | 2013-02-07 16:48:00 |    13 | cat1              | 1.0.0     |     18 | addValue          | 1.0.0
          4 | 2013-02-07 16:48:00 |    13 | cat1              | 1.0.0     |     20 | Count1            | 1.0.0
+
+
+### uwsgi handler-restart
+
+**NAME**
+
+uwsgi handler-restart -  Restart all handlers
+
+**SYNOPSIS**
+
+gxadmin uwsgi handler-restart
 
 
 ### uwsgi memory

@@ -157,3 +157,13 @@ uwsgi_zerg-strace() { ## uwsgi zerg-strace [number]: Strace a zergling
 	procs=$(uwsgi_pids | grep zergling@${number} | cut -d':' -f2 | sed 's/\s*//g;' | tr '\n' ' ' | sed 's/^\s*//;s/\s*$//g;s/ / -p /g')
 	strace -e open,openat -p $procs
 }
+
+uwsgi_handler-restart() { ## uwsgi handler-restart: Restart all handlers
+	handle_help "$@" <<-EOF
+	EOF
+
+	for i in {0..11}; do
+		systemctl restart galaxy-handler@$i &
+	done
+}
+
