@@ -104,7 +104,11 @@ mutate_fail-terminal-datasets() { ## mutate fail-terminal-datasets [--commit]: C
 				AND job.state
 					IN ('deleted', 'deleted_new', 'error', 'error_manually_dropped', 'new_manually_dropped');
 
-		SELECT date_trunc('month', ds_create) as jobs_per_month_to_be_failed, count(*) from terminal_jobs_temp group by jobs_per_month_to_be_failed;
+		SELECT
+			date_trunc('month', ds_create) as jobs_per_month_to_be_failed, count(*)
+		FROM terminal_jobs_temp
+		GROUP BY jobs_per_month_to_be_failed
+		ORDER BY jobs_per_month_to_be_failed desc;
 
 		UPDATE dataset
 		SET
