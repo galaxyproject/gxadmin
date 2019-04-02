@@ -100,7 +100,7 @@ mutate_fail-terminal-datasets() { ## mutate fail-terminal-datasets [--commit]: C
 				dataset.id = history_dataset_association.dataset_id
 				AND history_dataset_association.id = job_to_output_dataset.dataset_id
 				AND job.id = job_to_output_dataset.job_id
-				AND dataset.state IN ('queued', 'running')
+				AND dataset.state IN ('queued', 'running', 'new')
 				AND job.state
 					IN ('deleted', 'deleted_new', 'error', 'error_manually_dropped', 'new_manually_dropped');
 
