@@ -108,7 +108,7 @@ mutate_fail-terminal-datasets() { ## mutate fail-terminal-datasets [--commit]: C
 			date_trunc('month', ds_create) as jobs_per_month_to_be_failed, count(*)
 		FROM terminal_jobs_temp
 		GROUP BY jobs_per_month_to_be_failed
-		ORDER BY jobs_per_month_to_be_failed desc;
+		ORDER BY ds_create desc;
 
 		UPDATE dataset
 		SET
