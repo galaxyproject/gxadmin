@@ -7,12 +7,12 @@ local_funcs() {
 		. ${GXADMIN_SITE_SPECIFIC}
 	fi
 
-	group_name="$1"; shift
+	group_name="local"
 	query_name="$1"; shift
 
 	# Check that FN exists
 	fn="${group_name}_${query_name}"
-	LC_ALL=C type $fn | grep -q 'function'
+	LC_ALL=C type $fn 2> /dev/null | grep -q 'function'
 
 	if (( $? == 0 )); then
 		if [[ -z "${GXADMIN_BUGGER_OFF}" ]] && (( ($RANDOM % 25) == 0 )); then

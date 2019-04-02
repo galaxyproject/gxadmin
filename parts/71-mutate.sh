@@ -2,7 +2,7 @@ obtain_mutate() {
 	query_name="$1"; shift
 
 	fn="mutate_${query_name}"
-	LC_ALL=C type $fn | grep -q 'function'
+	LC_ALL=C type $fn 2> /dev/null | grep -q 'function'
 
 	if (( $? == 0 )); then
 		$fn "$@";
