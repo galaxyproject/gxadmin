@@ -142,6 +142,7 @@ Command | Description
 [`query users-total`](#query-users-total) | Total number of Galaxy users (incl deleted, purged, inactive)
 [`query workflow-connections`](#query-workflow-connections) | The connections of tools, from output to input, in the latest (or all) versions of user workflows
 [`uwsgi handler-restart`](#uwsgi-handler-restart) | Restart all handlers
+[`uwsgi handler-strace`](#uwsgi-handler-strace) | Strace a handler
 [`uwsgi memory`](#uwsgi-memory) | Current system memory usage
 [`uwsgi pids`](#uwsgi-pids) | Galaxy process PIDs
 [`uwsgi stats_influx`](#uwsgi-stats_influx) | InfluxDB formatted output for the current stats
@@ -1308,6 +1309,17 @@ uwsgi handler-restart -  Restart all handlers
 **SYNOPSIS**
 
 gxadmin uwsgi handler-restart
+
+
+### uwsgi handler-strace
+
+**NAME**
+
+uwsgi handler-strace -  Strace a handler
+
+**SYNOPSIS**
+
+gxadmin uwsgi handler-strace [number]
 
 
 ### uwsgi memory

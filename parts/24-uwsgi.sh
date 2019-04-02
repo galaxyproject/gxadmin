@@ -158,6 +158,17 @@ uwsgi_zerg-strace() { ## uwsgi zerg-strace [number]: Strace a zergling
 	strace -e open,openat -p $procs
 }
 
+uwsgi_handler-strace() { ## uwsgi handler-strace [number]: Strace a handler
+	handle_help "$@" <<-EOF
+	EOF
+
+	if (( $# > 0 )); then
+		number=$1;
+	fi
+	procs=$(uwsgi_pids | grep handler@${number} | cut -d':' -f2 | sed 's/\s*//g;' | tr '\n' ' ' | sed 's/^\s*//;s/\s*$//g;s/ / -p /g')
+	strace -e open,openat -p $procs
+}
+
 uwsgi_handler-restart() { ## uwsgi handler-restart: Restart all handlers
 	handle_help "$@" <<-EOF
 	EOF
