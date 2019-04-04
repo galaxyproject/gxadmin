@@ -1685,7 +1685,7 @@ query_server-jobs() { ## query server-jobs [date]
 		WHERE
 			user_id IS NOT NULL ${date_filter}
 		GROUP BY
-			state, job_runner_name, destination_id;
+			state, job_runner_name, destination_id
 	EOF
 }
 
@@ -1725,7 +1725,7 @@ query_server-workflows() { ## query server-workflows [date]
 			stored_workflow
 		${date_filter}
 		GROUP BY
-			deleted, importable, published;
+			deleted, importable, published
 	EOF
 }
 
@@ -1745,6 +1745,6 @@ query_server-workflow-invocations() { ## query server-workflow-invocations [yyyy
 			workflow_invocation
 		${date_filter}
 		GROUP BY
-			scheduler, handler;
+			scheduler, handler
 	EOF
 }
