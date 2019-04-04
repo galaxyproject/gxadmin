@@ -450,10 +450,10 @@ query_queue-overview() { ## query queue-overview [--short-tool-id]: View used mo
 		SELECT
 			regexp_replace($tool_id, '/[0-9.a-z+-]+$', '') as tool_id,
 			tool_version,
-			destination_id,
-			handler,
+			COALESCE(destination_id, 'unknown'),
+			COALESCE(handler, 'unknown'),
 			state,
-			job_runner_name,
+			COALESCE(job_runner_name, 'unknown'),
 			count(*) as count,
 			$user_id as user_id
 		FROM job
