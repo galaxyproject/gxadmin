@@ -458,7 +458,7 @@ query_queue-overview() { ## query queue-overview [--short-tool-id]: View used mo
 			$user_id as user_id
 		FROM job
 		WHERE
-			state = 'running' or state = 'queued'
+			state = 'running' or state = 'queued' or state = 'new'
 		GROUP BY
 			tool_id, tool_version, destination_id, handler, state, job_runner_name, user_id
 	EOF
