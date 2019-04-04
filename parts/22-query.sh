@@ -1493,3 +1493,258 @@ query_errored-jobs(){ ## query errored-jobs <hours>: Lists jobs that errored in 
 			job.id
 	EOF
 }
+
+query_server-users() { ## query server-users [date]
+	handle_help "$@" <<-EOF
+	EOF
+
+	date_filter=""
+	if (( $# > 1 )); then
+		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '{date}'::date"
+	fi
+
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			active, external, deleted, purged, count(*) as count
+		FROM
+			galaxy_user
+		$date_filter
+		GROUP BY
+			active, external, deleted, purged
+	EOF
+}
+
+query_server-users-cumulative() { ## query server-users-cumulative [date]
+	handle_help "$@" <<-EOF
+	EOF
+
+	date_filter=""
+	if (( $# > 1 )); then
+		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '{date}'::date"
+	fi
+
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			count(*)
+		FROM
+			galaxy_user
+		WHERE
+			$date_filter
+	EOF
+}
+
+query_server-groups() { ## query server-groups
+	handle_help "$@" <<-EOF
+	EOF
+
+	date_filter=""
+	if (( $# > 1 )); then
+		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '{date}'::date"
+	fi
+
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			galaxy_group.name, count(*)
+		FROM
+			galaxy_group, user_group_association
+		WHERE
+			user_group_association.group_id = galaxy_group.id
+		GROUP BY name
+	EOF
+}
+
+query_server-datasets() { ## query server-datasets
+	handle_help "$@" <<-EOF
+	EOF
+
+	date_filter=""
+	if (( $# > 1 )); then
+		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '{date}'::date"
+	fi
+
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			state, deleted, purged, object_store_id, count(*), coalesce(sum(total_size), 0)
+		FROM
+			dataset
+		GROUP BY
+			state, deleted, purged, object_store_id
+	EOF
+}
+
+query_server-hda() { ## query server-hda [date]
+	handle_help "$@" <<-EOF
+	EOF
+
+	date_filter=""
+	if (( $# > 1 )); then
+		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '{date}'::date"
+	fi
+
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			history_dataset_association.extension, history_dataset_association.deleted,
+			coalesce(sum(dataset.file_size), 0),
+			coalesce(avg(dataset.file_size), 0),
+			coalesce(min(dataset.file_size), 0),
+			coalesce(max(dataset.file_size), 0),
+			count(*)
+		FROM
+			history_dataset_association, dataset
+		WHERE
+			history_dataset_association.dataset_id = dataset.id
+			${date_filter}
+		GROUP BY
+			history_dataset_association.extension, history_dataset_association.deleted
+	EOF
+}
+
+query_server-ts-repos() { ## query server-ts-repos
+	handle_help "$@" <<-EOF
+	EOF
+
+	date_filter=""
+	if (( $# > 1 )); then
+		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '{date}'::date"
+	fi
+
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			tool_shed, owner, count(*)
+		FROM
+			tool_shed_repository
+		GROUP BY
+			tool_shed, owner
+		ORDER BY count desc
+	EOF
+}
+
+query_server-histories() { ## query server-histories [date]
+	handle_help "$@" <<-EOF
+	EOF
+
+	date_filter=""
+	if (( $# > 1 )); then
+		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '{date}'::date"
+	fi
+
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			deleted, purged, published, importable, importing, genome_build, count(*)
+		FROM history
+		WHERE
+			user_id IS NOT NULL ${date_filter}
+		GROUP BY
+			deleted, purged, published, importable, importing, genome_build
+	EOF
+}
+
+# TODO: GDPR
+query_server-disk-usage() { ## query server-disk-usage
+	handle_help "$@" <<-EOF
+	EOF
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			history.user_id,
+			coalesce(sum(dataset.file_size), 0),
+			coalesce(count(dataset.id), 0),
+			coalesce(count(history.id), 0)
+		FROM
+			history, history_dataset_association, dataset
+		WHERE
+			history.id = history_dataset_association.history_id AND
+			history_dataset_association.dataset_id = dataset.id
+		GROUP BY
+			history.user_id
+	EOF
+}
+
+query_server-jobs() { ## query server-jobs [date]
+	handle_help "$@" <<-EOF
+	EOF
+
+	date_filter=""
+	if (( $# > 1 )); then
+		date_filter="AND create_time AT TIME ZONE 'UTC' <= '{date}'::date"
+	fi
+
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			state, job_runner_name, destination_id, count(*)
+		FROM
+			job
+		WHERE
+			user_id IS NOT NULL ${date_filter}
+		GROUP BY
+			state, job_runner_name, destination_id;
+	EOF
+}
+
+query_server-jobs-cumulative() { ## query server-jobs-cumulative [date]
+	handle_help "$@" <<-EOF
+	EOF
+
+	date_filter=""
+	if (( $# > 1 )); then
+		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '{date}'::date"
+	fi
+
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			count(*)
+		FROM
+			job
+		${date_filter}
+	EOF
+}
+
+query_server-workflows() { ## query server-workflows [date]
+	handle_help "$@" <<-EOF
+	EOF
+
+	date_filter=""
+	if (( $# > 1 )); then
+		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '{date}'::date"
+	fi
+
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			deleted, importable, published, count(*)
+		FROM
+			stored_workflow
+		${date_filter}
+		GROUP BY
+			deleted, importable, published;
+	EOF
+}
+
+query_server-workflow-invocations() { ## query server-workflow-invocations [yyyy-mm-dd]
+	handle_help "$@" <<-EOF
+	EOF
+
+	date_filter=""
+	if (( $# > 1 )); then
+		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '{date}'::date"
+	fi
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			scheduler, handler, count(*)
+		FROM
+			workflow_invocation
+		${date_filter}
+		GROUP BY
+			scheduler, handler;
+	EOF
+}

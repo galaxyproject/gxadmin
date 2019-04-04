@@ -10,6 +10,9 @@ meta_update() { ## meta update: Update the script
 }
 
 meta_cmdlist() {
+	handle_help "$@" <<-EOF
+	EOF
+
 	IFS=$'\n'
 	# TOC
 	echo "## Commands"
@@ -32,4 +35,11 @@ meta_cmdlist() {
 		echo
 		bash -c "$0 $cmd_part --help"
 	done
+}
+
+meta_slurp() { ## meta slurp: Executes what used to be "Galaxy Slurp"
+	handle_help "$@" <<-EOF
+	EOF
+
+	$0 iquery server-workflow-invocations
 }

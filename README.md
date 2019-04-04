@@ -101,6 +101,7 @@ Command | Description
 [`filter pg2md`](#filter-pg2md) | Convert postgres table format outputs to something that can be pasted as markdown
 [`galaxy cleanup`](#galaxy-cleanup) | Cleanup histories/hdas/etc for past N days (default=30)
 [`galaxy migrate-tool-install-to-sqlite`](#galaxy-migrate-tool-install-to-sqlite) | Converts normal potsgres toolshed repository tables into the SQLite version
+[`meta slurp`](#meta-slurp) | Executes what used to be "Galaxy Slurp"
 [`meta update`](#meta-update) | Update the script
 [`mutate fail-terminal-datasets`](#mutate-fail-terminal-datasets) | Causes the output datasets of jobs which were manually failed, to be marked as failed
 [`query active-users`](#query-active-users) | Count of users who ran jobs in past 1 week (default = 1)
@@ -128,6 +129,18 @@ Command | Description
 [`query queue-time`](#query-queue-time) | The average/95%/99% a specific tool spends in queue state.
 [`query recent-jobs`](#query-recent-jobs) | Jobs run in the past <hours> (in any state)
 [`query runtime-per-user`](#query-runtime-per-user) | computation time of user (by email)
+[`query server-datasets`](#query-server-datasets) | query server-datasets
+[`query server-disk-usage`](#query-server-disk-usage) | query server-disk-usage
+[`query server-groups`](#query-server-groups) | query server-groups
+[`query server-hda`](#query-server-hda) | query server-hda [date]
+[`query server-histories`](#query-server-histories) | query server-histories [date]
+[`query server-jobs-cumulative`](#query-server-jobs-cumulative) | query server-jobs-cumulative [date]
+[`query server-jobs`](#query-server-jobs) | query server-jobs [date]
+[`query server-ts-repos`](#query-server-ts-repos) | query server-ts-repos
+[`query server-users-cumulative`](#query-server-users-cumulative) | query server-users-cumulative [date]
+[`query server-users`](#query-server-users) | query server-users [date]
+[`query server-workflow-invocations`](#query-server-workflow-invocations) | query server-workflow-invocations [yyyy-mm-dd]
+[`query server-workflows`](#query-server-workflows) | query server-workflows [date]
 [`query tool-available-metrics`](#query-tool-available-metrics) | list all available metrics for a given tool
 [`query tool-last-used-date`](#query-tool-last-used-date) | When was the most recent invocation of every tool
 [`query tool-metrics`](#query-tool-metrics) | See values of a specific metric
@@ -336,6 +349,17 @@ gxadmin galaxy migrate-tool-install-to-sqlite
       export: repository_repository_dependency_association
       import: repository_repository_dependency_association
     Complete
+
+
+### meta slurp
+
+**NAME**
+
+meta slurp -  Executes what used to be "Galaxy Slurp"
+
+**SYNOPSIS**
+
+gxadmin meta slurp
 
 
 ### meta update
@@ -962,6 +986,138 @@ gxadmin query runtime-per-user <email>
        sum
     ----------
      14:07:39
+
+
+### query server-datasets
+
+**NAME**
+
+query server-datasets - 
+
+**SYNOPSIS**
+
+
+
+
+### query server-disk-usage
+
+**NAME**
+
+query server-disk-usage - 
+
+**SYNOPSIS**
+
+
+
+
+### query server-groups
+
+**NAME**
+
+query server-groups - 
+
+**SYNOPSIS**
+
+
+
+
+### query server-hda
+
+**NAME**
+
+query server-hda - gxadmin query server-hda [date]
+
+**SYNOPSIS**
+
+gxadmin query server-hda [date]
+
+
+### query server-histories
+
+**NAME**
+
+query server-histories - gxadmin query server-histories [date]
+
+**SYNOPSIS**
+
+gxadmin query server-histories [date]
+
+
+### query server-jobs-cumulative
+
+**NAME**
+
+query server-jobs-cumulative - gxadmin query server-jobs-cumulative [date]
+
+**SYNOPSIS**
+
+gxadmin query server-jobs-cumulative [date]
+
+
+### query server-jobs
+
+**NAME**
+
+query server-jobs - gxadmin query server-jobs [date]
+
+**SYNOPSIS**
+
+gxadmin query server-jobs [date]
+
+
+### query server-ts-repos
+
+**NAME**
+
+query server-ts-repos - 
+
+**SYNOPSIS**
+
+
+
+
+### query server-users-cumulative
+
+**NAME**
+
+query server-users-cumulative - gxadmin query server-users-cumulative [date]
+
+**SYNOPSIS**
+
+gxadmin query server-users-cumulative [date]
+
+
+### query server-users
+
+**NAME**
+
+query server-users - gxadmin query server-users [date]
+
+**SYNOPSIS**
+
+gxadmin query server-users [date]
+
+
+### query server-workflow-invocations
+
+**NAME**
+
+query server-workflow-invocations - gxadmin query server-workflow-invocations [yyyy-mm-dd]
+
+**SYNOPSIS**
+
+gxadmin query server-workflow-invocations [yyyy-mm-dd]
+
+
+### query server-workflows
+
+**NAME**
+
+query server-workflows - gxadmin query server-workflows [date]
+
+**SYNOPSIS**
+
+gxadmin query server-workflows [date]
 
 
 ### query tool-available-metrics
