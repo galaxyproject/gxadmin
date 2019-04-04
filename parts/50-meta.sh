@@ -37,7 +37,7 @@ meta_cmdlist() {
 	done
 }
 
-meta_slurp() { ## meta slurp: Executes what used to be "Galaxy Slurp"
+meta_slurp-current() { ## meta slurp-current: Executes what used to be "Galaxy Slurp"
 	handle_help "$@" <<-EOF
 	EOF
 

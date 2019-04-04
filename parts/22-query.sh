@@ -1503,6 +1503,8 @@ query_server-users() { ## query server-users [date]
 		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '{date}'::date"
 	fi
 
+	fields="count=4"
+	tags="active=0;external=1;deleted=2;purged=3"
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
@@ -1524,6 +1526,7 @@ query_server-users-cumulative() { ## query server-users-cumulative [date]
 		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '{date}'::date"
 	fi
 
+	fields="count=0"
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
@@ -1545,6 +1548,9 @@ query_server-groups() { ## query server-groups
 	fi
 
 
+	fields="count=1"
+	tags="name=0"
+
 	read -r -d '' QUERY <<-EOF
 		SELECT
 			galaxy_group.name, count(*)
@@ -1565,6 +1571,8 @@ query_server-datasets() { ## query server-datasets
 		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '{date}'::date"
 	fi
 
+	fields="count=5;size=6"
+	tags="state=1;deleted=2;purged=3;object_store_id=4"
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
@@ -1585,10 +1593,13 @@ query_server-hda() { ## query server-hda [date]
 		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '{date}'::date"
 	fi
 
+	fields="sum=2;avg=3;min=4;max=5"
+	tags="extension=0;deleted=1"
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			history_dataset_association.extension, history_dataset_association.deleted,
+			history_dataset_association.extension,
+			history_dataset_association.deleted,
 			coalesce(sum(dataset.file_size), 0),
 			coalesce(avg(dataset.file_size), 0),
 			coalesce(min(dataset.file_size), 0),
@@ -1613,6 +1624,8 @@ query_server-ts-repos() { ## query server-ts-repos
 		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '{date}'::date"
 	fi
 
+	fields="count=2"
+	tags="tool_shed=0;owner=1"
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
@@ -1634,6 +1647,8 @@ query_server-histories() { ## query server-histories [date]
 		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '{date}'::date"
 	fi
 
+	fields="count=6"
+	tags="deleted=0;purged=1;published=2;importable=3;importing=4;genome_build=5"
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
@@ -1676,6 +1691,8 @@ query_server-jobs() { ## query server-jobs [date]
 		date_filter="AND create_time AT TIME ZONE 'UTC' <= '{date}'::date"
 	fi
 
+	fields="count=3"
+	tags="state=0;job_runner_name=1;destination_id=2"
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
@@ -1698,6 +1715,8 @@ query_server-jobs-cumulative() { ## query server-jobs-cumulative [date]
 		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '{date}'::date"
 	fi
 
+	fields="count=0"
+	tags=""
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
@@ -1717,6 +1736,8 @@ query_server-workflows() { ## query server-workflows [date]
 		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '{date}'::date"
 	fi
 
+	fields="count=3"
+	tags="deleted=0;importable=1;published=2"
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
@@ -1737,6 +1758,9 @@ query_server-workflow-invocations() { ## query server-workflow-invocations [yyyy
 	if (( $# > 1 )); then
 		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '{date}'::date"
 	fi
+
+	fields="count=2"
+	tags="scheduler=0;handler=1"
 
 	read -r -d '' QUERY <<-EOF
 		SELECT

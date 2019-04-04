@@ -101,7 +101,7 @@ Command | Description
 [`filter pg2md`](#filter-pg2md) | Convert postgres table format outputs to something that can be pasted as markdown
 [`galaxy cleanup`](#galaxy-cleanup) | Cleanup histories/hdas/etc for past N days (default=30)
 [`galaxy migrate-tool-install-to-sqlite`](#galaxy-migrate-tool-install-to-sqlite) | Converts normal potsgres toolshed repository tables into the SQLite version
-[`meta slurp`](#meta-slurp) | Executes what used to be "Galaxy Slurp"
+[`meta slurp-current`](#meta-slurp-current) | Executes what used to be "Galaxy Slurp"
 [`meta update`](#meta-update) | Update the script
 [`mutate fail-terminal-datasets`](#mutate-fail-terminal-datasets) | Causes the output datasets of jobs which were manually failed, to be marked as failed
 [`query active-users`](#query-active-users) | Count of users who ran jobs in past 1 week (default = 1)
@@ -351,15 +351,15 @@ gxadmin galaxy migrate-tool-install-to-sqlite
     Complete
 
 
-### meta slurp
+### meta slurp-current
 
 **NAME**
 
-meta slurp -  Executes what used to be "Galaxy Slurp"
+meta slurp-current -  Executes what used to be "Galaxy Slurp"
 
 **SYNOPSIS**
 
-gxadmin meta slurp
+gxadmin meta slurp-current
 
 
 ### meta update
