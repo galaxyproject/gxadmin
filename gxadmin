@@ -665,7 +665,19 @@ EOF
 	results=$(query_tsv "$qstr")
 	printf "\n## Dependencies\n\n"
 	tbl=$(echo "$results" | python -c "$hexdecodelines" | jq -S '.[] | [.name, .version, .dependency_type, .cacheable, .exact, .environment_path, .model_class] | @tsv' -r)
-	printf "Name\tVersion\tDependency Type\tCacheable\tExact\tEnvironment Path\tModel Class\n----\t-------\t---------------\t---------\t-----\t----------------\t-----------\n$tbl\n" | sed 's/\t/\t | \t/g' | column -t -s'	'
+	printf "Name\tVersion\tDependency Type\tCacheable\tExact\tEnvironment Path\tModel Class\n----\t-------\t---------------\t---------\t-----\t----------------\t-----------\n$tbl\n" | sed 's/\t/\t | \t/g'       #| column -t -s'	'
+
+    ###        ###
+    # JOB PARAMS #
+    ###        ###
+    read -r -d '' qstr <<-EOF
+        SELECT j.name, j.value
+        FROM job_parameter j
+        WHERE j.job_id = $job_id
+    EOF
+    results=$(query_tsv "$qstr")
+    printf "\n## Tool Parameters\n\n"
+    printf "Name\tSettings\n---------\t------------------------------------\n$results\n\n" | sed 's/\t/\t | \t/g' | sed 's/[\"\`]//g'
 
 	###      ###
 	#  INPUTS  #
@@ -696,7 +708,7 @@ EOF
 		AND jtod.dataset_id = ds.id
 	EOF
 	input_ds=$(query_tsv "$qstr")
-	input_ds_tbl=$(printf "Job ID\tName\tExtension\thda-id\thda-state\thda-deleted\thda-purged\tds-id\tds-state\tds-deleted\tds-purged\tSize\n----\t----\t----\t----\t----\t----\t----\t----\t----\t----\t----\t----\n%s" "$input_ds" | sed 's/\t/\t | \t/g' | column -t -s'	')
+	input_ds_tbl=$(printf "Job ID\tName\tExtension\thda-id\thda-state\thda-deleted\thda-purged\tds-id\tds-state\tds-deleted\tds-purged\tSize\n----\t----\t----\t----\t----\t----\t----\t----\t----\t----\t----\t----\n%s" "$input_ds" | sed 's/\t/\t | \t/g' )      #| column -t -s'	')
 
 	###       ###
 	#  OUTPUTS  #
@@ -724,7 +736,7 @@ EOF
 		AND hda.dataset_id = ds.id
 	EOF
 	output_ds=$(query_tsv "$qstr")
-	output_ds_tbl=$(printf "Name\tExtension\thda-id\thda-state\thda-deleted\thda-purged\tds-id\tds-state\tds-deleted\tds-purged\tSize\n----\t----\t----\t----\t----\t----\t----\t----\t----\t----\t----\n%s" "$output_ds" | sed 's/\t/\t | \t/g' | column -t -s'	')
+	output_ds_tbl=$(printf "Name\tExtension\thda-id\thda-state\thda-deleted\thda-purged\tds-id\tds-state\tds-deleted\tds-purged\tSize\n----\t----\t----\t----\t----\t----\t----\t----\t----\t----\t----\n%s" "$output_ds" | sed 's/\t/\t | \t/g' )          #| column -t -s'	')
 
 
 	read -r -d '' template3 <<EOF
