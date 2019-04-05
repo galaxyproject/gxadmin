@@ -1,3 +1,24 @@
+ifmore() {
+	q="$(cat)"
+	lines=$(echo "$q" | wc -l)
+	# 2 more than the head command since we'll 'spend' two for the ... anyway.
+	if (( lines > 8 )); then
+		echo "$q" | head -n 6
+		echo "    ..."
+		echo "    run '$0 $1 help' for more"
+	else
+		echo "$q"
+	fi
+}
+
+filter_commands() {
+	if [[ $2 == $1 ]]; then
+		cat | grep "^$1 " | sort -k2 | column -s: -t | sed 's/^/    /'
+	else
+		cat | grep "^$1 " | sort -k2 | column -s: -t | sed 's/^/    /' | ifmore "$1"
+	fi
+}
+
 usage(){
 	cmds="$(grep -s -h -o '{ ## .*' $0 $GXADMIN_SITE_SPECIFIC | grep -v grep | grep -v '| sed' | sort | sed 's/^{ ## //g')"
 
@@ -10,7 +31,7 @@ usage(){
 		cat <<-EOF
 			Configuration:
 
-			$(echo "$cmds" | grep 'config ' | sort -k2 | column -s: -t | sed 's/^/    /')
+			$(echo "$cmds" | filter_commands config $1)
 
 		EOF
 	fi
@@ -19,7 +40,7 @@ usage(){
 		cat <<-EOF
 			Filters:
 
-			$(echo "$cmds" | grep 'filter ' | sort -k2 | column -s: -t | sed 's/^/    /')
+			$(echo "$cmds" | filter_commands filter $1)
 
 		EOF
 	fi
@@ -28,7 +49,7 @@ usage(){
 		cat <<-EOF
 			Galaxy Administration:
 
-			$(echo "$cmds" | grep 'galaxy ' | sort -k2 | column -s: -t | sed 's/^/    /')
+			$(echo "$cmds" | filter_commands galaxy $1)
 
 		EOF
 	fi
@@ -37,7 +58,7 @@ usage(){
 		cat <<-EOF
 			uwsgi:
 
-			$(echo "$cmds" | grep 'uwsgi ' | sort -k2 | column -s: -t | sed 's/^/    /')
+			$(echo "$cmds" | filter_commands uwsgi $1)
 
 		EOF
 	fi
@@ -48,7 +69,7 @@ usage(){
 			DB Queries:
 			  'query' can be exchanged with 'tsvquery' or 'csvquery' for tab- and comma-separated variants
 
-			$(echo "$cmds" | grep 'query ' | sort -k2 | column -s: -t | sed 's/^/    /')
+			$(echo "$cmds" | filter_commands query $1)
 
 		EOF
 	fi
@@ -58,7 +79,7 @@ usage(){
 			Report:
 			  Consider https://github.com/ttscoff/mdless for easier reading in the terminal
 
-			$(echo "$cmds" | grep 'report ' | sort -k2 | column -s: -t | sed 's/^/    /')
+			$(echo "$cmds" | filter_commands report $1)
 
 		EOF
 	fi
@@ -67,16 +88,7 @@ usage(){
 		cat <<-EOF
 			DB Mutations: (csv/tsv queries are NOT available)
 
-			$(echo "$cmds" | grep 'mutate ' | sort -k2 | column -s: -t | sed 's/^/    /')
-
-		EOF
-	fi
-
-	if (( $# == 0  )) || [[ $1 == "local" ]]; then
-		cat <<-EOF
-			Local: (These can be configured in $GXADMIN_SITE_SPECIFIC)
-
-			$(echo "$cmds" | grep '^local' | column -s: -t | sed 's/^/    /')
+			$(echo "$cmds" | filter_commands mutate $1)
 
 		EOF
 	fi
@@ -85,7 +97,23 @@ usage(){
 		cat <<-EOF
 			Meta:
 
-			$(echo "$cmds" | grep '^meta ' | column -s: -t | sed 's/^/    /')
+			$(echo "$cmds" | filter_commands meta $1)
+
+		EOF
+	fi
+
+	if [[ -f $GXADMIN_SITE_SPECIFIC ]]; then
+		if (( $# == 0  )) || [[ $1 == "local" ]]; then
+			cat <<-EOF
+				Local: (These can be configured in $GXADMIN_SITE_SPECIFIC)
+
+				$(echo "$cmds" | filter_commands local $1)
+
+			EOF
+		fi
+	else
+		cat <<-EOF
+			Local-only commands can be configured in $GXADMIN_SITE_SPECIFIC
 
 		EOF
 	fi
@@ -94,8 +122,6 @@ usage(){
 	cat <<-EOF
 		help / -h / --help : this message. Invoke '--help' on any subcommand for help specific to that subcommand
 	EOF
-
-	echo $# $1 $2
 
 	exit 0;
 }
