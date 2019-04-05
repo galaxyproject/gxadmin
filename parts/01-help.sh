@@ -53,6 +53,15 @@ usage(){
 		EOF
 	fi
 
+	if (( $# == 0  )) || [[ $1 == "report" ]]; then
+		cat <<-EOF
+			Reports:
+
+			$(echo "$cmds" | grep 'report ' | sort -k2 | column -s: -t | sed 's/^/    /')
+
+		EOF
+	fi
+
 	if (( $# == 0  )) || [[ $1 == "mutate" ]]; then
 		cat <<-EOF
 			DB Mutations: (csv/tsv queries are NOT available)

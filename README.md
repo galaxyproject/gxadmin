@@ -111,7 +111,6 @@ Command | Description
 [`query errored-jobs`](#query-errored-jobs) | Lists jobs that errored in the last N hours.
 [`query groups-list`](#query-groups-list) | List all groups known to Galaxy
 [`query job-history`](#query-job-history) | Job state history for a specific job
-[`query job-info`](#query-job-info) | Information about a specific job
 [`query job-inputs`](#query-job-inputs) | Input datasets to a specific job
 [`query job-outputs`](#query-job-outputs) | Output datasets from a specific job
 [`query jobs-nonterminal`](#query-jobs-nonterminal) | Job info of nonterminal jobs separated by user
@@ -151,10 +150,11 @@ Command | Description
 [`query training-members`](#query-training-members) | List users in a specific training
 [`query training-queue`](#query-training-queue) | Jobs currently being run by people in a given training
 [`query ts-repos`](#query-ts-repos) | Counts of toolshed repositories by toolshed and owner.
-[`query user-info`](#query-user-info) | Quick overview of a Galaxy user in your system
 [`query users-count`](#query-users-count) | Shows sums of active/external/deleted/purged accounts
 [`query users-total`](#query-users-total) | Total number of Galaxy users (incl deleted, purged, inactive)
 [`query workflow-connections`](#query-workflow-connections) | The connections of tools, from output to input, in the latest (or all) versions of user workflows
+[`report job-info`](#report-job-info) | Information about a specific job
+[`report user-info`](#report-user-info) | Quick overview of a Galaxy user in your system
 [`uwsgi handler-restart`](#uwsgi-handler-restart) | Restart all handlers
 [`uwsgi handler-strace`](#uwsgi-handler-strace) | Strace a handler
 [`uwsgi memory`](#uwsgi-memory) | Current system memory usage
@@ -575,24 +575,6 @@ gxadmin query job-history <id>
      2018-10-05 16:19:55 | queued
      2018-10-05 16:19:54 | new
     (4 rows)
-
-
-### query job-info
-
-**NAME**
-
-query job-info -  Information about a specific job
-
-**SYNOPSIS**
-
-gxadmin query job-info <id>
-
-**NOTES**
-
-    $ gxadmin query job-info 1
-     tool_id | state | username |        create_time         | job_runner_name | job_runner_external_id
-    ---------+-------+----------+----------------------------+-----------------+------------------------
-     upload1 | ok    | admin    | 2012-12-06 16:34:27.492711 | local:///       | 9347
 
 
 ### query job-inputs
@@ -1338,64 +1320,6 @@ query ts-repos -  Counts of toolshed repositories by toolshed and owner.
 gxadmin query ts-repos
 
 
-### query user-info
-
-**NAME**
-
-query user-info -  Quick overview of a Galaxy user in your system
-
-**SYNOPSIS**
-
-gxadmin query user-info <user_id|username|email>
-
-**NOTES**
-
-This command lets you quickly find out information about a user. The output is formatted as markdown by default.
-
-    $ gxadmin query user-info helena-rasche
-    # Galaxy User 580
-
-      Property | Value
-    ---------- | -----
-            ID | helena-rasche (id=580) hxr@informatik.uni-freiburg.de
-       Created | 2017-07-26 14:47:37.575484
-    Properties | ext=f deleted=f purged=f active=t
-    Disk Usage | 137 GB
-
-    ## Groups/Roles
-
-    Groups: training-freiburg-rnaseq-2018, training-emc2018
-    Roles: admin, Backofen
-
-    ## Recent Jobs
-
-    Tool ID                      | Status | Created                    | Exit Code | Runtime
-    ----                         | ----   | ----                       | ---       | ----
-    Grep1                        | ok     | 2019-01-21 07:27:24.472706 | 0         | 00:01:19
-    CONVERTER_fasta_to_tabular   | ok     | 2019-01-21 07:27:24.339862 | 0         | 00:03:34
-    secure_hash_message_digest   | ok     | 2019-01-18 16:43:44.262265 | 0         | 00:00:08
-    CONVERTER_gz_to_uncompressed | ok     | 2019-01-18 10:18:23.99171  | 0         | 00:10:02
-    upload1                      | ok     | 2019-01-18 08:44:24.955622 | 0         | 01:11:07
-    echo_main_env                | ok     | 2019-01-17 16:45:04.019233 | 0         | 00:00:29
-    secure_hash_message_digest   | ok     | 2019-01-17 16:03:21.33665  | 0         | 00:00:07
-    secure_hash_message_digest   | ok     | 2019-01-17 16:03:20.937433 | 0         | 00:00:09
-
-    ## Largest Histories
-
-    History ID | Name                         | Size
-    ----       | ----                         | ----
-    20467      | imported: RNASEQ             | 52 GB
-    94748      | imported: ChIP-seq           | 49 GB
-    94761      | reduced history-export problem |   49 GB
-    102448     | Wheat Genome                 | 42 GB
-    38923      | imported: Zooplankton        | 29 GB
-    64974      | imported: 65991-A            | 17 GB
-    20488      | Unnamed history              | 15 GB
-    19414      | Unnamed history              | 12 GB
-    92407      | Testing                      | 11 GB
-    60522      | example1/wf3-shed-tools.ga   | 5923 MB
-
-
 ### query users-count
 
 **NAME**
@@ -1455,6 +1379,82 @@ This is used by the usegalaxy.eu tool prediction workflow, allowing for building
          3 | 2013-02-07 16:48:00 |    11 | Paste1            | 1.0.0     |      8 | addValue          | 1.0.0
          4 | 2013-02-07 16:48:00 |    13 | cat1              | 1.0.0     |     18 | addValue          | 1.0.0
          4 | 2013-02-07 16:48:00 |    13 | cat1              | 1.0.0     |     20 | Count1            | 1.0.0
+
+
+### report job-info
+
+**NAME**
+
+report job-info -  Information about a specific job
+
+**SYNOPSIS**
+
+gxadmin report job-info <id>
+
+**NOTES**
+
+    $ gxadmin report job-info 1
+     tool_id | state | username |        create_time         | job_runner_name | job_runner_external_id
+    ---------+-------+----------+----------------------------+-----------------+------------------------
+     upload1 | ok    | admin    | 2012-12-06 16:34:27.492711 | local:///       | 9347
+
+
+### report user-info
+
+**NAME**
+
+report user-info -  Quick overview of a Galaxy user in your system
+
+**SYNOPSIS**
+
+gxadmin report user-info <user_id|username|email>
+
+**NOTES**
+
+This command lets you quickly find out information about a user. The output is formatted as markdown by default.
+
+    $ gxadmin report user-info helena-rasche
+    # Galaxy User 580
+
+      Property | Value
+    ---------- | -----
+            ID | helena-rasche (id=580) hxr@informatik.uni-freiburg.de
+       Created | 2017-07-26 14:47:37.575484
+    Properties | ext=f deleted=f purged=f active=t
+    Disk Usage | 137 GB
+
+    ## Groups/Roles
+
+    Groups: training-freiburg-rnaseq-2018, training-emc2018
+    Roles: admin, Backofen
+
+    ## Recent Jobs
+
+    Tool ID                      | Status | Created                    | Exit Code | Runtime
+    ----                         | ----   | ----                       | ---       | ----
+    Grep1                        | ok     | 2019-01-21 07:27:24.472706 | 0         | 00:01:19
+    CONVERTER_fasta_to_tabular   | ok     | 2019-01-21 07:27:24.339862 | 0         | 00:03:34
+    secure_hash_message_digest   | ok     | 2019-01-18 16:43:44.262265 | 0         | 00:00:08
+    CONVERTER_gz_to_uncompressed | ok     | 2019-01-18 10:18:23.99171  | 0         | 00:10:02
+    upload1                      | ok     | 2019-01-18 08:44:24.955622 | 0         | 01:11:07
+    echo_main_env                | ok     | 2019-01-17 16:45:04.019233 | 0         | 00:00:29
+    secure_hash_message_digest   | ok     | 2019-01-17 16:03:21.33665  | 0         | 00:00:07
+    secure_hash_message_digest   | ok     | 2019-01-17 16:03:20.937433 | 0         | 00:00:09
+
+    ## Largest Histories
+
+    History ID | Name                         | Size
+    ----       | ----                         | ----
+    20467      | imported: RNASEQ             | 52 GB
+    94748      | imported: ChIP-seq           | 49 GB
+    94761      | reduced history-export problem |   49 GB
+    102448     | Wheat Genome                 | 42 GB
+    38923      | imported: Zooplankton        | 29 GB
+    64974      | imported: 65991-A            | 17 GB
+    20488      | Unnamed history              | 15 GB
+    19414      | Unnamed history              | 12 GB
+    92407      | Testing                      | 11 GB
+    60522      | example1/wf3-shed-tools.ga   | 5923 MB
 
 
 ### uwsgi handler-restart

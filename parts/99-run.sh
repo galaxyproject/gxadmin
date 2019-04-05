@@ -9,6 +9,7 @@ case "$mode" in
 	config ) look_for config "$@" ;;
 	filter ) look_for filter "$@" ;;
 	galaxy ) look_for galaxy "$@" ;;
+	report ) look_for report "$@" ;;
 	local  ) local_funcs     "$@" ;;
 	mutate ) mutate "$mode"  "$@" ;;
 	uwsgi  ) look_for uwsgi  "$@" ;;
