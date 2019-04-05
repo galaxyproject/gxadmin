@@ -46,7 +46,7 @@ usage(){
 	if (( $# == 0  )) || [[ $1 == "query" ]]; then
 		cat <<-EOF
 			DB Queries:
-			'query' can be exchanged with 'tsvquery' or 'csvquery' for tab- and comma-separated variants
+			  'query' can be exchanged with 'tsvquery' or 'csvquery' for tab- and comma-separated variants
 
 			$(echo "$cmds" | grep 'query ' | sort -k2 | column -s: -t | sed 's/^/    /')
 
@@ -55,7 +55,8 @@ usage(){
 
 	if (( $# == 0  )) || [[ $1 == "report" ]]; then
 		cat <<-EOF
-			Reports:
+			Report:
+			  Consider https://github.com/ttscoff/mdless for easier reading in the terminal
 
 			$(echo "$cmds" | grep 'report ' | sort -k2 | column -s: -t | sed 's/^/    /')
 
