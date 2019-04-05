@@ -10,6 +10,7 @@
 - Changed:
 	- Major internal reorganisation and split into parts for easier editing. A bash script that needs a build system, truly horrifying.
 	- User info query now shows recent WF invocations and whether their largest histories are deleted or purged or not.
+	- Separated out 'report' types that are markdown-only outputs and don't support tsv/csv queries
 
 # 11
 
