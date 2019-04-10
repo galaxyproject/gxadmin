@@ -3000,7 +3000,21 @@ meta_cmdlist() {
 	echo "## Commands"
 	echo
 	for section in $(grep -o '{ ## .*' $0 | grep -v grep | grep -v '| sed' | awk '{print $3}' | sort -u); do
-		echo "# $section" > docs/README.${section}.md
+		echo "# $section"            > docs/README.${section}.md
+		echo                         >> docs/README.${section}.md
+		echo "Command | Description" >> docs/README.${section}.md
+		echo "------- | -----------" >> docs/README.${section}.md
+		for command in $(grep -o '{ ## .*' $0 | grep -v grep | grep -v '| sed' | sort | sed 's/^{ ## //g' | grep "^$section"); do
+			cmd_part="$(echo $command | sed 's/:.*//g;s/\s*<.*//g;s/\s*\[.*//')"
+			desc_part="$(echo $command | sed 's/^[^:]*:\s*//g')"
+
+			if [[ "$command" != *"Deprecated"* ]]; then
+				# Main ToC
+				echo "[\`${cmd_part}\`](#${key_part}) | $desc_part" >> docs/README.${section}.md
+			else
+				echo "\`${cmd_part}\` | $desc_part" >> docs/README.${section}.md
+			fi
+		done
 
 		echo "### $section"
 		echo
@@ -3024,6 +3038,7 @@ meta_cmdlist() {
 				echo "\`${cmd_part}\` | $desc_part"
 			fi
 		done
+
 		echo
 	done
 }

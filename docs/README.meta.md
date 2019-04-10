@@ -1,5 +1,10 @@
 # meta
 
+Command | Description
+------- | -----------
+[`meta slurp-current`](#galaxy-migrate-tool-install-to-sqlite) | Executes what used to be "Galaxy Slurp"
+[`meta update`](#galaxy-migrate-tool-install-to-sqlite) | Update the script
+
 ### meta slurp-current
 
 **NAME**

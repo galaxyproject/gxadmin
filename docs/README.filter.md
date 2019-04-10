@@ -1,5 +1,12 @@
 # filter
 
+Command | Description
+------- | -----------
+[`filter digest-color`](#config-validate) | Color an input stream based on the contents (e.g. hostname)
+[`filter hexdecode`](#config-validate) | Decodes any hex blobs from postgres outputs
+[`filter identicon`](#config-validate) | Convert an input data stream into an identicon (e.g. with hostname)
+[`filter pg2md`](#config-validate) | Convert postgres table format outputs to something that can be pasted as markdown
+
 ### filter digest-color
 
 **NAME**

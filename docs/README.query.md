@@ -1,5 +1,61 @@
 # query
 
+Command | Description
+------- | -----------
+`query active-users` | Deprecated, use monthly-users-active
+[`query collection-usage`](#mutate-fail-terminal-datasets) | Information about how many collections of various types are used
+[`query datasets-created-daily`](#mutate-fail-terminal-datasets) | The min/max/average/p95/p99 of total size of datasets created in a single day.
+[`query disk-usage`](#mutate-fail-terminal-datasets) | Disk usage per object store.
+[`query errored-jobs`](#mutate-fail-terminal-datasets) | Lists jobs that errored in the last N hours.
+[`query groups-list`](#mutate-fail-terminal-datasets) | List all groups known to Galaxy
+[`query job-history`](#mutate-fail-terminal-datasets) | Job state history for a specific job
+[`query job-inputs`](#mutate-fail-terminal-datasets) | Input datasets to a specific job
+[`query job-outputs`](#mutate-fail-terminal-datasets) | Output datasets from a specific job
+[`query jobs-max-by-cpu-hours`](#mutate-fail-terminal-datasets) | Top 10 jobs by CPU hours consumed (requires CGroups metrics)
+[`query jobs-nonterminal`](#mutate-fail-terminal-datasets) | Job info of nonterminal jobs separated by user
+[`query jobs-per-user`](#mutate-fail-terminal-datasets) | Number of jobs run by a specific user
+[`query largest-collection`](#mutate-fail-terminal-datasets) | Returns the size of the single largest collection
+[`query largest-histories`](#mutate-fail-terminal-datasets) | Largest histories in Galaxy
+[`query latest-users`](#mutate-fail-terminal-datasets) | 40 recently registered users
+[`query monthly-cpu-years`](#mutate-fail-terminal-datasets) | CPU years allocated to tools by month
+[`query monthly-data`](#mutate-fail-terminal-datasets) | Number of active users per month, running jobs
+[`query monthly-jobs`](#mutate-fail-terminal-datasets) | Number of jobs run each month
+[`query monthly-users-active`](#mutate-fail-terminal-datasets) | Number of active users per month, running jobs
+`query monthly-users` | Deprecated, use monthly-users-active
+[`query monthly-users-registered`](#mutate-fail-terminal-datasets) | Number of users registered each month
+[`query old-histories`](#mutate-fail-terminal-datasets) | Lists histories that haven't been updated (used) for <weeks>
+[`query queue`](#mutate-fail-terminal-datasets) | Brief overview of currently running jobs
+[`query queue-detail`](#mutate-fail-terminal-datasets) | Detailed overview of running and queued jobs
+[`query queue-overview`](#mutate-fail-terminal-datasets) | View used mostly for monitoring
+[`query queue-time`](#mutate-fail-terminal-datasets) | The average/95%/99% a specific tool spends in queue state.
+[`query recent-jobs`](#mutate-fail-terminal-datasets) | Jobs run in the past <hours> (in any state)
+[`query runtime-per-user`](#mutate-fail-terminal-datasets) | computation time of user (by email)
+[`query server-datasets`](#mutate-fail-terminal-datasets) | query server-datasets
+[`query server-disk-usage`](#mutate-fail-terminal-datasets) | query server-disk-usage
+[`query server-groups`](#mutate-fail-terminal-datasets) | query server-groups
+[`query server-hda`](#mutate-fail-terminal-datasets) | query server-hda [date]
+[`query server-histories`](#mutate-fail-terminal-datasets) | query server-histories [date]
+[`query server-jobs-cumulative`](#mutate-fail-terminal-datasets) | query server-jobs-cumulative [date]
+[`query server-jobs`](#mutate-fail-terminal-datasets) | query server-jobs [date]
+[`query server-ts-repos`](#mutate-fail-terminal-datasets) | query server-ts-repos
+[`query server-users-cumulative`](#mutate-fail-terminal-datasets) | query server-users-cumulative [date]
+[`query server-users`](#mutate-fail-terminal-datasets) | query server-users [date]
+[`query server-workflow-invocations`](#mutate-fail-terminal-datasets) | query server-workflow-invocations [yyyy-mm-dd]
+[`query server-workflows`](#mutate-fail-terminal-datasets) | query server-workflows [date]
+[`query tool-available-metrics`](#mutate-fail-terminal-datasets) | list all available metrics for a given tool
+[`query tool-last-used-date`](#mutate-fail-terminal-datasets) | When was the most recent invocation of every tool
+[`query tool-metrics`](#mutate-fail-terminal-datasets) | See values of a specific metric
+[`query tool-popularity`](#mutate-fail-terminal-datasets) | Most run tools by month
+[`query tool-usage`](#mutate-fail-terminal-datasets) | Counts of tool runs in the past weeks (default = all)
+[`query training-list`](#mutate-fail-terminal-datasets) | List known trainings
+[`query training-members-remove`](#mutate-fail-terminal-datasets) | Remove a user from a training
+[`query training-members`](#mutate-fail-terminal-datasets) | List users in a specific training
+[`query training-queue`](#mutate-fail-terminal-datasets) | Jobs currently being run by people in a given training
+[`query ts-repos`](#mutate-fail-terminal-datasets) | Counts of toolshed repositories by toolshed and owner.
+[`query users-count`](#mutate-fail-terminal-datasets) | Shows sums of active/external/deleted/purged accounts
+[`query users-total`](#mutate-fail-terminal-datasets) | Total number of Galaxy users (incl deleted, purged, inactive)
+[`query workflow-connections`](#mutate-fail-terminal-datasets) | The connections of tools, from output to input, in the latest (or all) versions of user workflows
+
 ### query collection-usage
 
 **NAME**

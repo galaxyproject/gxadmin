@@ -1,5 +1,19 @@
 # uwsgi
 
+Command | Description
+------- | -----------
+[`uwsgi handler-restart`](#report-user-info) | Restart all handlers
+[`uwsgi handler-strace`](#report-user-info) | Strace a handler
+[`uwsgi memory`](#report-user-info) | Current system memory usage
+[`uwsgi pids`](#report-user-info) | Galaxy process PIDs
+[`uwsgi stats_influx`](#report-user-info) | InfluxDB formatted output for the current stats
+[`uwsgi stats`](#report-user-info) | uwsgi stats
+[`uwsgi status`](#report-user-info) | Current system status
+[`uwsgi zerg-scale-down`](#report-user-info) | Remove an extraneous zergling
+[`uwsgi zerg-scale-up`](#report-user-info) | Add another zergling to deal with high load
+[`uwsgi zerg-strace`](#report-user-info) | Strace a zergling
+[`uwsgi zerg-swap`](#report-user-info) | Swap zerglings in order (unintelligent version)
+
 ### uwsgi handler-restart
 
 **NAME**

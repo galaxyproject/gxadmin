@@ -1,5 +1,9 @@
 # mutate
 
+Command | Description
+------- | -----------
+[`mutate fail-terminal-datasets`](#meta-update) | Causes the output datasets of jobs which were manually failed, to be marked as failed
+
 ### mutate fail-terminal-datasets
 
 **NAME**

@@ -1,5 +1,10 @@
 # report
 
+Command | Description
+------- | -----------
+[`report job-info`](#query-workflow-connections) | Information about a specific job
+[`report user-info`](#query-workflow-connections) | Quick overview of a Galaxy user in your system
+
 ### report job-info
 
 **NAME**

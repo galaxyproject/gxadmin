@@ -1,5 +1,10 @@
 # config
 
+Command | Description
+------- | -----------
+[`config dump`](#) | Dump Galaxy configuration as JSON
+[`config validate`](#) | validate config files
+
 ### config dump
 
 **NAME**
