@@ -5,7 +5,8 @@ administrators to run common queries against our Postgres databases. It addition
 includes some code for managing zerglings under systemd, and other utilities.
 
 Mostly gxadmin acts as a repository for the common queries we all run regularly
-but fail to share with each other.
+but fail to share with each other. We even include some [unlisted
+queries](./parts/27-unlisted.sh) which may be useful as examples, but are not generically useful.
 
 It comes with around 40 commonly useful queries included, but you can easily
 add more to your installation with local functions. gxadmin attempts to be a
