@@ -793,10 +793,7 @@ query_ts-repos() { ## query ts-repos: Counts of toolshed repositories by toolshe
 }
 
 query_active-users() { ## query active-users [weeks]: Deprecated, use monthly-users-active
-	handle_help "$@" <<-EOF
-	EOF
-
-	query_monthly-users-active $@
+	error "Deprecated, use monthly-users-active"
 }
 
 query_tool-metrics() { ## query tool-metrics <tool_id> <metric_id> [--like]: See values of a specific metric
@@ -979,7 +976,7 @@ query_monthly-users-registered(){ ## query monthly-users-registered [year]: Numb
 }
 
 query_monthly-users() { ## query monthly-users: Deprecated, use monthly-users-active
-	query_monthly-users-active $@
+	error "Deprecated, use monthly-users-active"
 }
 
 query_monthly-users-active(){ ## query monthly-users-active [year]: Number of active users per month, running jobs
