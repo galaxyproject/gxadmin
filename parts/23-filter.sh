@@ -20,7 +20,42 @@ filter_pg2md() { ## filter pg2md: Convert postgres table format outputs to somet
 
 		and it should produce a nicely formatted table
 	EOF
-	cat /dev/stdin | sed 's/--+--/- | -/g;s/^\(\s\+\)\([^|]\+\) |/\2 \1|/g' | head -n -2
+	cat | sed 's/--+--/- | -/g;s/^\(\s\+\)\([^|]\+\) |/\2 \1|/g' | head -n -2
+}
+
+filter_identicon(){ ## filter identicon: Convert an input data stream into an identicon (e.g. with hostname)
+	handle_help "$@" <<-EOF
+		Given an input data stream, digest it, and colour it using the same logic as digest-color
+
+		    $ echo test | ./gxadmin filter identicon
+		      ██████
+		    ██      ██
+		    ██  ██  ██
+		      ██████
+		    ██  ██  ██
+
+		(Imagine that it is a nice pink/blue colour scheme)
+	EOF
+
+	cat | python -c "$identicon_script"
+}
+
+filter_digest-color() { ## filter digest-color: Color an input stream based on the contents (e.g. hostname)
+	handle_help "$@" <<-EOF
+		Colors entire input stream based on digest of entire input's contents.
+		Mostly useful for colouring a hostname or some similar value.
+
+		    $ echo test | ./gxadmin filter digest-color
+		    test
+
+		(Imagine that it is light blue text on a pink background)
+	EOF
+
+	data="$(cat)"
+	fg_color=$((16#$(echo "$data" | perl -pe "chomp if eof" | sha256sum | cut -c1-2)))
+	bg_color=$(($fg_color + 15))
+
+	echo "$(tput setaf $fg_color)$(tput setab $bg_color)${data}$(tput sgr0)"
 }
 
 filter_hexdecode() { ## filter hexdecode: Decodes any hex blobs from postgres outputs
@@ -73,5 +108,5 @@ filter_hexdecode() { ## filter hexdecode: Decodes any hex blobs from postgres ou
 		          1 ce10
 	EOF
 
-	cat /dev/stdin | python -c "$hexdecodelines"
+	cat | python -c "$hexdecodelines"
 }

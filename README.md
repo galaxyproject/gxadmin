@@ -98,7 +98,9 @@ Command | Description
 ------- | -----------
 [`config dump`](#config-dump) | Dump Galaxy configuration as JSON
 [`config validate`](#config-validate) | validate config files
+[`filter digest-color`](#filter-digest-color) | Color an input stream based on the contents (e.g. hostname)
 [`filter hexdecode`](#filter-hexdecode) | Decodes any hex blobs from postgres outputs
+[`filter identicon`](#filter-identicon) | Convert an input data stream into an identicon (e.g. with hostname)
 [`filter pg2md`](#filter-pg2md) | Convert postgres table format outputs to something that can be pasted as markdown
 [`galaxy cleanup`](#galaxy-cleanup) | Cleanup histories/hdas/etc for past N days (default=30)
 [`galaxy migrate-tool-install-to-sqlite`](#galaxy-migrate-tool-install-to-sqlite) | Converts normal potsgres toolshed repository tables into the SQLite version
@@ -225,6 +227,27 @@ Validate the configuration files
     All XML files validated
 
 
+### filter digest-color
+
+**NAME**
+
+filter digest-color -  Color an input stream based on the contents (e.g. hostname)
+
+**SYNOPSIS**
+
+gxadmin filter digest-color
+
+**NOTES**
+
+Colors entire input stream based on digest of entire input's contents.
+Mostly useful for colouring a hostname or some similar value.
+
+    $ echo test | ./gxadmin filter digest-color
+    test
+
+(Imagine that it is light blue text on a pink background)
+
+
 ### filter hexdecode
 
 **NAME**
@@ -283,6 +306,30 @@ Or to query for the dbkeys uesd by datasets:
           1 TAIR10
           1 hg38
           1 ce10
+
+
+### filter identicon
+
+**NAME**
+
+filter identicon -  Convert an input data stream into an identicon (e.g. with hostname)
+
+**SYNOPSIS**
+
+gxadmin filter identicon
+
+**NOTES**
+
+Given an input data stream, digest it, and colour it using the same logic as digest-color
+
+    $ echo test | ./gxadmin filter identicon
+      ██████
+    ██      ██
+    ██  ██  ██
+      ██████
+    ██  ██  ██
+
+(Imagine that it is a nice pink/blue colour scheme)
 
 
 ### filter pg2md
