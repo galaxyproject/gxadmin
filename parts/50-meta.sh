@@ -19,28 +19,27 @@ meta_cmdlist() {
 	echo
 	echo "Command | Description"
 	echo "------- | -----------"
-	for command in $(grep -o '{ ## .*' $0 | grep -v grep | grep -v '| sed' | sort | sed 's/^{ ## //g'); do
-		cmd_part="$(echo $command | sed 's/:.*//g;s/\s*<.*//g;s/\s*\[.*//')"
-		desc_part="$(echo $command | sed 's/^[^:]*:\s*//g')"
-		key_part="$(echo $cmd_part | sed 's/ /-/g')"
+	for section in $(grep -o '{ ## .*' $0 | grep -v grep | grep -v '| sed' | awk '{print $3}' | sort -u); do
+		echo "# $section" > docs/README.${section}.md
 
-		if [[ "$command" != *"Deprecated"* ]]; then
-			echo "[\`${cmd_part}\`](#${key_part}) | $desc_part"
-		else
-			echo "\`${cmd_part}\` | $desc_part"
-		fi
-	done
-	echo
+		for command in $(grep -o '{ ## .*' $0 | grep -v grep | grep -v '| sed' | sort | sed 's/^{ ## //g' | grep "^$section"); do
+			cmd_part="$(echo $command | sed 's/:.*//g;s/\s*<.*//g;s/\s*\[.*//')"
+			desc_part="$(echo $command | sed 's/^[^:]*:\s*//g')"
+			key_part="$(echo $cmd_part | sed 's/ /-/g')"
 
-	# Now for sections
-	for command in $(grep -o '{ ## .*' $0 | grep -v grep | grep -v '| sed' | sort | sed 's/^{ ## //g'); do
-		cmd_part="$(echo $command | sed 's/:.*//g;s/\s*<.*//g;s/\s*\[.*//')"
-		if [[ "$command" != *"Deprecated"* ]]; then
-			echo
-			echo "### $cmd_part"
-			echo
-			bash -c "$0 $cmd_part --help"
-		fi
+			if [[ "$command" != *"Deprecated"* ]]; then
+				# Main ToC
+				echo "[\`${cmd_part}\`](docs/README.${section}.md#${key_part}) | $desc_part"
+
+				# Subsec documentation
+				echo                          >> docs/README.${section}.md
+				echo "### $cmd_part"          >> docs/README.${section}.md
+				echo                          >> docs/README.${section}.md
+				bash -c "$0 $cmd_part --help" >> docs/README.${section}.md
+			else
+				echo "\`${cmd_part}\` | $desc_part"
+			fi
+		done
 	done
 }
 
