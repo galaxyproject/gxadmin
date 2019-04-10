@@ -771,7 +771,7 @@ query_collection-usage() { ## query collection-usage: Information about how many
 			dataset_collection as dc
 			ON hdca.collection_id = dc.id
 		GROUP BY
-			dc.collection_type;
+			dc.collection_type
 	EOF
 }
 
@@ -901,6 +901,53 @@ query_tool-available-metrics() { ## query tool-available-metrics <tool_id>: list
 	EOF
 }
 
+query_monthly-cpu-years() { ## query monthly-cpu-years: CPU years allocated to tools by month
+	handle_help "$@" <<-EOF
+		This uses the galaxy_slots and runtime_seconds metrics in order to
+		calculate allocated CPU years. This will not be the value of what is
+		actually consumed by your jobs, you should use cgroups.
+
+		    $ gxadmin query monthly-cpu-years
+		         date_trunc      | cpu_years
+		    ---------------------+-----------
+		     2019-04-01 00:00:00 |      2.95
+		     2019-03-01 00:00:00 |     12.38
+		     2019-02-01 00:00:00 |     11.47
+		     2019-01-01 00:00:00 |      8.27
+		     2018-12-01 00:00:00 |     11.42
+		     2018-11-01 00:00:00 |     16.99
+		     2018-10-01 00:00:00 |     12.09
+		     2018-09-01 00:00:00 |      6.27
+		     2018-08-01 00:00:00 |      9.06
+		     2018-07-01 00:00:00 |      6.17
+		     2018-06-01 00:00:00 |      5.73
+		     2018-05-01 00:00:00 |      7.36
+		     2018-04-01 00:00:00 |     10.21
+		     2018-03-01 00:00:00 |      5.20
+		     2018-02-01 00:00:00 |      4.53
+		     2018-01-01 00:00:00 |      4.05
+		     2017-12-01 00:00:00 |      2.44
+	EOF
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			date_trunc('month', job.create_time),
+			round(sum((a.metric_value * b.metric_value) / 3600 / 24 / 365), 2) as cpu_years
+		FROM
+			job_metric_numeric a,
+			job_metric_numeric b,
+			job
+		WHERE
+			b.job_id = a.job_id
+			AND a.job_id = job.id
+			AND a.metric_name = 'runtime_seconds'
+			AND b.metric_name = 'galaxy_slots'
+		GROUP BY date_trunc('month', job.create_time)
+		ORDER BY date_trunc('month', job.create_time) DESC
+	EOF
+}
+
+
 query_monthly-data(){ ## query monthly-data [year]: Number of active users per month, running jobs
 	handle_help "$@" <<-EOF
 		Find out how much data was ingested or created by Galaxy during the past months.
@@ -928,14 +975,15 @@ query_monthly-data(){ ## query monthly-data [year]: Number of active users per m
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			pg_size_pretty(sum(total_size)), date_trunc('month', dataset.create_time AT TIME ZONE 'UTC') AS month
+			pg_size_pretty(sum(total_size)),
+			date_trunc('month', dataset.create_time AT TIME ZONE 'UTC') AS month
 		FROM
 			dataset
 		$where
 		GROUP BY
 			month
 		ORDER BY
-			month DESC;
+			month DESC
 	EOF
 }
 
@@ -1138,6 +1186,26 @@ query_old-histories(){ ## query old-histories <weeks>: Lists histories that have
 			history.published = FALSE
 		ORDER BY
 			history.update_time desc
+	EOF
+}
+
+# TODO(hxr): generic summation by metric? Leave math to consumer?
+query_jobs-max-by-cpu-hours() { ## query jobs-max-by-cpu-hours: Top 10 jobs by CPU hours consumed (requires CGroups metrics)
+	handle_help "$@" <<-EOF
+	EOF
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			job.id,
+			job.tool_id,
+			job.create_time,
+			metric_value/1000000000/3600/24 as cpu_days
+		FROM job, job_metric_numeric
+		WHERE
+			job.id = job_metric_numeric.job_id
+			AND metric_name = 'cpuacct.usage'
+		ORDER BY cpu_hours desc
+		LIMIT 30
 	EOF
 }
 
