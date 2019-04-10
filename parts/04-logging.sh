@@ -1,11 +1,11 @@
 error() {
-	(>&2 echo -e "\e[48;5;09m$@\e[m")
+	(>&2 echo "$(tput setab 1)$@$(tput sgr0)")
 }
 
 warning() {
-	(>&2 echo -e "\e[48;5;214m$@\e[m")
+	(>&2 echo "$(tput setab 2)$@$(tput sgr0)")
 }
 
 success() {
-	echo -e "\e[38;5;40m$@\e[m"
+	echo "$(tput setaf 40)$@$(tput sgr0)"
 }

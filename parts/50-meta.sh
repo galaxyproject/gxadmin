@@ -43,3 +43,15 @@ meta_slurp-current() { ## meta slurp-current: Executes what used to be "Galaxy S
 
 	$0 iquery server-workflow-invocations
 }
+
+meta_error() {
+	error "$@"
+}
+
+meta_warning() {
+	warning "$@"
+}
+
+meta_success() {
+	success "$@"
+}

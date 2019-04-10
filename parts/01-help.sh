@@ -11,9 +11,21 @@ ifmore() {
 	fi
 }
 
+colour_word() {
+	word=$1
+	color=$2
+	if [[ $color == "red" ]]; then
+		color_idx=1
+	elif [[ $color == "orange" ]]; then
+		color_idx=2
+	fi
+
+	cat | sed "s|${word}|$(tput setab $color_idx)${word}$(tput sgr0)|g"
+}
+
 filter_commands() {
 	if [[ $2 == $1 ]]; then
-		cat | grep "^$1 " | sort -k2 | column -s: -t | sed 's/^/    /'
+		cat | grep "^$1 " | sort -k2 | column -s: -t | sed 's/^/    /' | colour_word Deprecated orange
 	else
 		cat | grep "^$1 " | sort -k2 | column -s: -t | sed 's/^/    /' | ifmore "$1"
 	fi
