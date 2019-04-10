@@ -1009,7 +1009,7 @@ query_monthly-users-active(){ ## query monthly-users-active [year]: Number of ac
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			date_trunc('month', job.create_time AT TIME ZONE 'UTC') as month,
+			date_trunc('month', job.create_time AT TIME ZONE 'UTC')::date as month,
 			count(distinct user_id) as active_users
 		FROM job
 		$where
