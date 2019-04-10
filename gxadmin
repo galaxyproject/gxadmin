@@ -1494,12 +1494,12 @@ query_monthly-users-registered(){ ## query monthly-users-registered [year]: Numb
 	EOF
 
 	if (( $# > 0 )); then
-		where="WHERE date_trunc('year', user.create_time AT TIME ZONE 'UTC') = '$1-01-01'::date"
+		where="WHERE date_trunc('year', galaxy_user.create_time AT TIME ZONE 'UTC') = '$1-01-01'::date"
 	fi
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			date_trunc('month', create_time)::DATE AS month,
+			date_trunc('month', galaxy_user.create_time)::DATE AS month,
 			count(*)
 		FROM
 			galaxy_user
