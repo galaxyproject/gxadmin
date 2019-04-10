@@ -53,7 +53,7 @@ query_memory-and-cpu-on-same-node() {
 			AND jmn_a.job_id = job.id
 			AND jmn_b.job_id = job.id
 		ORDER BY
-			job.create_time DESC;
+			job.create_time DESC
 	EOF
 }
 

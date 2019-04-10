@@ -971,7 +971,7 @@ query_monthly-users-registered(){ ## query monthly-users-registered [year]: Numb
 		GROUP BY
 			month
 		ORDER BY
-			month DESC;
+			month DESC
 	EOF
 }
 

@@ -28,10 +28,10 @@ chmod +x /usr/bin/gxadmin
 
 ## Contributors
 
-- Helena Rasche (@erasche)
-- Nate Coraor (@natefoo)
-- Simon Gladman (@slugger70)
-- Anthony Bretaudeau (@abretaud)
+- Helena Rasche ([@erasche](https://github.com/erasche))
+- Nate Coraor ([@natefoo](https://github.com/natefoo))
+- Simon Gladman ([@slugger70](https://github.com/slugger70))
+- Anthony Bretaudeau ([@abretaud](https://github.com/abretaud))
 - Manuel Messner (mm@skellet.io)
 
 ## License

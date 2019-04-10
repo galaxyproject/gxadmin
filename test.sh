@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bats
 
 @test "Ensure no trailing semicolons in queries" {
 	result=$(grep -Pzl '(?s);\n\tEOF' parts/* | wc -l)
