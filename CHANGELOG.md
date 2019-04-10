@@ -3,10 +3,14 @@
 - Added:
 	- local functions, users can add functions to a separate file which are made available in gxadmin. @erasche resisted implementing these for a long time for fears that they won't be contributed back and everyone would keep their precious sql private. So they may nag you occasionally to contribute them back.
 	- (semi) EU specific systemd handler/zergling management commands
+	- filter digest-color: command to colour some text
+	- filter identicon: command to generate an identicon
 - Fixed:
 	- Correct time zones in all queries to be client-side time zones rather than UTC encoded timestamps as stored in db (Thanks @slugger70!)
+	- Renamed: `query monthly-users` → `query monthly-users-active`
 - Removed:
 	- Removed highly EU specific handler and zerg functions
+	- Deprecated: `query active-users`
 - Changed:
 	- Major internal reorganisation and split into parts for easier editing. A bash script that needs a build system, truly horrifying.
 	- User info query now shows recent WF invocations and whether their largest histories are deleted or purged or not.
