@@ -114,11 +114,13 @@ Command | Description
 [`query job-history`](#query-job-history) | Job state history for a specific job
 [`query job-inputs`](#query-job-inputs) | Input datasets to a specific job
 [`query job-outputs`](#query-job-outputs) | Output datasets from a specific job
+[`query jobs-max-by-cpu-hours`](#query-jobs-max-by-cpu-hours) | Top 10 jobs by CPU hours consumed (requires CGroups metrics)
 [`query jobs-nonterminal`](#query-jobs-nonterminal) | Job info of nonterminal jobs separated by user
 [`query jobs-per-user`](#query-jobs-per-user) | Number of jobs run by a specific user
 [`query largest-collection`](#query-largest-collection) | Returns the size of the single largest collection
 [`query largest-histories`](#query-largest-histories) | Largest histories in Galaxy
 [`query latest-users`](#query-latest-users) | 40 recently registered users
+[`query monthly-cpu-years`](#query-monthly-cpu-years) | CPU years allocated to tools by month
 [`query monthly-data`](#query-monthly-data) | Number of active users per month, running jobs
 [`query monthly-jobs`](#query-monthly-jobs) | Number of jobs run each month
 [`query monthly-users`](#query-monthly-users) | Number of active users per month, running jobs
@@ -600,6 +602,17 @@ query job-outputs -  Output datasets from a specific job
 gxadmin query job-outputs <id>
 
 
+### query jobs-max-by-cpu-hours
+
+**NAME**
+
+query jobs-max-by-cpu-hours -  Top 10 jobs by CPU hours consumed (requires CGroups metrics)
+
+**SYNOPSIS**
+
+gxadmin query jobs-max-by-cpu-hours
+
+
 ### query jobs-nonterminal
 
 **NAME**
@@ -715,6 +728,44 @@ Returns 40 most recently registered users
      id |        create_time        | pg_size_pretty |   username    |             email
     ----+---------------------------+----------------+---------------+--------------------------------
       1 | 2018-10-05 11:40:42.90119 |                | helena-rasche | hxr@informatik.uni-freiburg.de
+
+
+### query monthly-cpu-years
+
+**NAME**
+
+query monthly-cpu-years -  CPU years allocated to tools by month
+
+**SYNOPSIS**
+
+gxadmin query monthly-cpu-years
+
+**NOTES**
+
+This uses the galaxy_slots and runtime_seconds metrics in order to
+calculate allocated CPU years. This will not be the value of what is
+actually consumed by your jobs, you should use cgroups.
+
+    $ gxadmin query monthly-cpu-years
+         date_trunc      | cpu_years
+    ---------------------+-----------
+     2019-04-01 00:00:00 |      2.95
+     2019-03-01 00:00:00 |     12.38
+     2019-02-01 00:00:00 |     11.47
+     2019-01-01 00:00:00 |      8.27
+     2018-12-01 00:00:00 |     11.42
+     2018-11-01 00:00:00 |     16.99
+     2018-10-01 00:00:00 |     12.09
+     2018-09-01 00:00:00 |      6.27
+     2018-08-01 00:00:00 |      9.06
+     2018-07-01 00:00:00 |      6.17
+     2018-06-01 00:00:00 |      5.73
+     2018-05-01 00:00:00 |      7.36
+     2018-04-01 00:00:00 |     10.21
+     2018-03-01 00:00:00 |      5.20
+     2018-02-01 00:00:00 |      4.53
+     2018-01-01 00:00:00 |      4.05
+     2017-12-01 00:00:00 |      2.44
 
 
 ### query monthly-data
