@@ -987,20 +987,20 @@ query_monthly-users-active(){ ## query monthly-users-active [year]: Number of ac
 		Number of unique users each month who ran jobs. **NOTE**: does not include anonymous users.
 
 		    [galaxy@sn04 galaxy]$ gxadmin query monthly-users-active 2018
-		     unique_users |        month
-		    --------------+---------------------
-		              811 | 2018-12-01 00:00:00
-		              658 | 2018-11-01 00:00:00
-		              583 | 2018-10-01 00:00:00
-		              444 | 2018-09-01 00:00:00
-		              342 | 2018-08-01 00:00:00
-		              379 | 2018-07-01 00:00:00
-		              370 | 2018-06-01 00:00:00
-		              330 | 2018-05-01 00:00:00
-		              274 | 2018-04-01 00:00:00
-		              186 | 2018-03-01 00:00:00
-		              168 | 2018-02-01 00:00:00
-		              122 | 2018-01-01 00:00:00
+		       month    | active_users
+		    ------------+--------------
+		     2018-12-01 |          811
+		     2018-11-01 |          658
+		     2018-10-01 |          583
+		     2018-09-01 |          444
+		     2018-08-01 |          342
+		     2018-07-01 |          379
+		     2018-06-01 |          370
+		     2018-05-01 |          330
+		     2018-04-01 |          274
+		     2018-03-01 |          186
+		     2018-02-01 |          168
+		     2018-01-01 |          122
 	EOF
 
 	if (( $# > 0 )); then
@@ -1009,8 +1009,8 @@ query_monthly-users-active(){ ## query monthly-users-active [year]: Number of ac
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			count(distinct user_id) as unique_users,
-			date_trunc('month', job.create_time AT TIME ZONE 'UTC') as month
+			date_trunc('month', job.create_time AT TIME ZONE 'UTC') as month,
+			count(distinct user_id) as active_users
 		FROM job
 		$where
 		GROUP BY month
@@ -1023,20 +1023,20 @@ query_monthly-jobs(){ ## query monthly-jobs [year]: Number of jobs run each mont
 		Count jobs run each month
 
 		    [galaxy@sn04 galaxy]$ gxadmin query monthly-jobs 2018
-		            month        | count
-		    ---------------------+--------
-		     2018-12-01 00:00:00 |  96941
-		     2018-11-01 00:00:00 |  94625
-		     2018-10-01 00:00:00 | 156940
-		     2018-09-01 00:00:00 | 103331
-		     2018-08-01 00:00:00 | 128658
-		     2018-07-01 00:00:00 |  90852
-		     2018-06-01 00:00:00 | 230470
-		     2018-05-01 00:00:00 | 182331
-		     2018-04-01 00:00:00 | 109032
-		     2018-03-01 00:00:00 | 197125
-		     2018-02-01 00:00:00 | 260931
-		     2018-01-01 00:00:00 |  25378
+		        month   | count
+		    ------------+--------
+		     2018-12-01 |  96941
+		     2018-11-01 |  94625
+		     2018-10-01 | 156940
+		     2018-09-01 | 103331
+		     2018-08-01 | 128658
+		     2018-07-01 |  90852
+		     2018-06-01 | 230470
+		     2018-05-01 | 182331
+		     2018-04-01 | 109032
+		     2018-03-01 | 197125
+		     2018-02-01 | 260931
+		     2018-01-01 |  25378
 	EOF
 
 	if (( $# > 0 )); then
@@ -1045,7 +1045,7 @@ query_monthly-jobs(){ ## query monthly-jobs [year]: Number of jobs run each mont
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			date_trunc('month', job.create_time AT TIME ZONE 'UTC') AS month,
+			date_trunc('month', job.create_time AT TIME ZONE 'UTC')::DATE AS month,
 			count(*)
 		FROM
 			job
