@@ -105,7 +105,7 @@ Command | Description
 [`meta slurp-current`](#meta-slurp-current) | Executes what used to be "Galaxy Slurp"
 [`meta update`](#meta-update) | Update the script
 [`mutate fail-terminal-datasets`](#mutate-fail-terminal-datasets) | Causes the output datasets of jobs which were manually failed, to be marked as failed
-[`query active-users`](#query-active-users) | Count of users who ran jobs in past 1 week (default = 1)
+`query active-users` | Deprecated, use monthly-users-active
 [`query collection-usage`](#query-collection-usage) | Information about how many collections of various types are used
 [`query datasets-created-daily`](#query-datasets-created-daily) | The min/max/average/p95/p99 of total size of datasets created in a single day.
 [`query disk-usage`](#query-disk-usage) | Disk usage per object store.
@@ -123,7 +123,9 @@ Command | Description
 [`query monthly-cpu-years`](#query-monthly-cpu-years) | CPU years allocated to tools by month
 [`query monthly-data`](#query-monthly-data) | Number of active users per month, running jobs
 [`query monthly-jobs`](#query-monthly-jobs) | Number of jobs run each month
-[`query monthly-users`](#query-monthly-users) | Number of active users per month, running jobs
+[`query monthly-users-active`](#query-monthly-users-active) | Number of active users per month, running jobs
+`query monthly-users` | Deprecated, use monthly-users-active
+[`query monthly-users-registered`](#query-monthly-users-registered) | Number of users registered each month
 [`query old-histories`](#query-old-histories) | Lists histories that haven't been updated (used) for <weeks>
 [`query queue`](#query-queue) | Brief overview of currently running jobs
 [`query queue-detail`](#query-queue-detail) | Detailed overview of running and queued jobs
@@ -436,35 +438,6 @@ Then to run with the --commit flag to commit the changes
     UPDATE 1
     UPDATE 1
     COMMIT
-
-
-### query active-users
-
-**NAME**
-
-query active-users -  Count of users who ran jobs in past 1 week (default = 1)
-
-**SYNOPSIS**
-
-gxadmin query active-users [weeks]
-
-**NOTES**
-
-Unique users who ran jobs in past week:
-
-    $ gxadmin query active-users
-     count
-    -------
-       220
-    (1 row)
-
-Or the monthly-active-users:
-
-    $ gxadmin query active-users 4
-     count
-    -------
-       555
-    (1 row)
 
 
 ### query collection-usage
@@ -830,21 +803,21 @@ Count jobs run each month
      2018-01-01 00:00:00 |  25378
 
 
-### query monthly-users
+### query monthly-users-active
 
 **NAME**
 
-query monthly-users -  Number of active users per month, running jobs
+query monthly-users-active -  Number of active users per month, running jobs
 
 **SYNOPSIS**
 
-gxadmin query monthly-users [year]
+gxadmin query monthly-users-active [year]
 
 **NOTES**
 
-Number of unique users each month who ran jobs. NOTE: does not include anonymous users.
+Number of unique users each month who ran jobs. **NOTE**: does not include anonymous users.
 
-    [galaxy@sn04 galaxy]$ gxadmin query monthly-users 2018
+    [galaxy@sn04 galaxy]$ gxadmin query monthly-users-active 2018
      unique_users |        month
     --------------+---------------------
               811 | 2018-12-01 00:00:00
@@ -859,6 +832,17 @@ Number of unique users each month who ran jobs. NOTE: does not include anonymous
               186 | 2018-03-01 00:00:00
               168 | 2018-02-01 00:00:00
               122 | 2018-01-01 00:00:00
+
+
+### query monthly-users-registered
+
+**NAME**
+
+query monthly-users-registered -  Number of users registered each month
+
+**SYNOPSIS**
+
+gxadmin query monthly-users-registered [year]
 
 
 ### query old-histories

@@ -23,17 +23,24 @@ meta_cmdlist() {
 		cmd_part="$(echo $command | sed 's/:.*//g;s/\s*<.*//g;s/\s*\[.*//')"
 		desc_part="$(echo $command | sed 's/^[^:]*:\s*//g')"
 		key_part="$(echo $cmd_part | sed 's/ /-/g')"
-		echo "[\`${cmd_part}\`](#${key_part}) | $desc_part"
+
+		if [[ "$command" != *"Deprecated"* ]]; then
+			echo "[\`${cmd_part}\`](#${key_part}) | $desc_part"
+		else
+			echo "\`${cmd_part}\` | $desc_part"
+		fi
 	done
 	echo
 
 	# Now for sections
 	for command in $(grep -o '{ ## .*' $0 | grep -v grep | grep -v '| sed' | sort | sed 's/^{ ## //g'); do
 		cmd_part="$(echo $command | sed 's/:.*//g;s/\s*<.*//g;s/\s*\[.*//')"
-		echo
-		echo "### $cmd_part"
-		echo
-		bash -c "$0 $cmd_part --help"
+		if [[ "$command" != *"Deprecated"* ]]; then
+			echo
+			echo "### $cmd_part"
+			echo
+			bash -c "$0 $cmd_part --help"
+		fi
 	done
 }
 
