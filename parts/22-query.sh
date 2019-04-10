@@ -792,42 +792,11 @@ query_ts-repos() { ## query ts-repos: Counts of toolshed repositories by toolshe
 	EOF
 }
 
-query_active-users() { ## query active-users [weeks]: Count of users who ran jobs in past 1 week (default = 1)
+query_active-users() { ## query active-users [weeks]: Deprecated, use monthly-users-active
 	handle_help "$@" <<-EOF
-		Unique users who ran jobs in past week:
-
-		    $ gxadmin query active-users
-		     count
-		    -------
-		       220
-		    (1 row)
-
-		Or the monthly-active-users:
-
-		    $ gxadmin query active-users 4
-		     count
-		    -------
-		       555
-		    (1 row)
 	EOF
 
-	weeks=1
-	if (( $# > 0 )); then
-		weeks=$1
-	fi
-
-	fields="count=1"
-	tags="weeks=0"
-
-	read -r -d '' QUERY <<-EOF
-		SELECT
-			$weeks as weeks,
-			count(distinct user_id)
-		FROM
-			job
-		WHERE
-			job.create_time > (now() AT TIME ZONE 'UTC' - '$weeks weeks'::interval)
-	EOF
+	query_monthly-users-active $@
 }
 
 query_tool-metrics() { ## query tool-metrics <tool_id> <metric_id> [--like]: See values of a specific metric
@@ -987,11 +956,37 @@ query_monthly-data(){ ## query monthly-data [year]: Number of active users per m
 	EOF
 }
 
-query_monthly-users(){ ## query monthly-users [year]: Number of active users per month, running jobs
+query_monthly-users-registered(){ ## query monthly-users-registered [year]: Number of users registered each month
 	handle_help "$@" <<-EOF
-		Number of unique users each month who ran jobs. NOTE: does not include anonymous users.
+	EOF
 
-		    [galaxy@sn04 galaxy]$ gxadmin query monthly-users 2018
+	if (( $# > 0 )); then
+		where="WHERE date_trunc('year', user.create_time AT TIME ZONE 'UTC') = '$1-01-01'::date"
+	fi
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			date_trunc('month', create_time)::DATE AS month,
+			count(*)
+		FROM
+			galaxy_user
+		$where
+		GROUP BY
+			month
+		ORDER BY
+			month DESC;
+	EOF
+}
+
+query_monthly-users() { ## query monthly-users: Deprecated, use monthly-users-active
+	query_monthly-users-active $@
+}
+
+query_monthly-users-active(){ ## query monthly-users-active [year]: Number of active users per month, running jobs
+	handle_help "$@" <<-EOF
+		Number of unique users each month who ran jobs. **NOTE**: does not include anonymous users.
+
+		    [galaxy@sn04 galaxy]$ gxadmin query monthly-users-active 2018
 		     unique_users |        month
 		    --------------+---------------------
 		              811 | 2018-12-01 00:00:00
