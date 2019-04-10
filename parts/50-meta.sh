@@ -17,11 +17,13 @@ meta_cmdlist() {
 	# TOC
 	echo "## Commands"
 	echo
-	echo "Command | Description"
-	echo "------- | -----------"
 	for section in $(grep -o '{ ## .*' $0 | grep -v grep | grep -v '| sed' | awk '{print $3}' | sort -u); do
 		echo "# $section" > docs/README.${section}.md
 
+		echo "### $section"
+		echo
+		echo "Command | Description"
+		echo "------- | -----------"
 		for command in $(grep -o '{ ## .*' $0 | grep -v grep | grep -v '| sed' | sort | sed 's/^{ ## //g' | grep "^$section"); do
 			cmd_part="$(echo $command | sed 's/:.*//g;s/\s*<.*//g;s/\s*\[.*//')"
 			desc_part="$(echo $command | sed 's/^[^:]*:\s*//g')"
@@ -40,6 +42,7 @@ meta_cmdlist() {
 				echo "\`${cmd_part}\` | $desc_part"
 			fi
 		done
+		echo
 	done
 }
 

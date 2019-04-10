@@ -94,19 +94,46 @@ $
 meta_cmdlist
 ## Commands
 
+### config
+
 Command | Description
 ------- | -----------
 [`config dump`](docs/README.config.md#config-dump) | Dump Galaxy configuration as JSON
 [`config validate`](docs/README.config.md#config-validate) | validate config files
+
+### filter
+
+Command | Description
+------- | -----------
 [`filter digest-color`](docs/README.filter.md#filter-digest-color) | Color an input stream based on the contents (e.g. hostname)
 [`filter hexdecode`](docs/README.filter.md#filter-hexdecode) | Decodes any hex blobs from postgres outputs
 [`filter identicon`](docs/README.filter.md#filter-identicon) | Convert an input data stream into an identicon (e.g. with hostname)
 [`filter pg2md`](docs/README.filter.md#filter-pg2md) | Convert postgres table format outputs to something that can be pasted as markdown
+
+### galaxy
+
+Command | Description
+------- | -----------
 [`galaxy cleanup`](docs/README.galaxy.md#galaxy-cleanup) | Cleanup histories/hdas/etc for past N days (default=30)
 [`galaxy migrate-tool-install-to-sqlite`](docs/README.galaxy.md#galaxy-migrate-tool-install-to-sqlite) | Converts normal potsgres toolshed repository tables into the SQLite version
+
+### meta
+
+Command | Description
+------- | -----------
 [`meta slurp-current`](docs/README.meta.md#meta-slurp-current) | Executes what used to be "Galaxy Slurp"
 [`meta update`](docs/README.meta.md#meta-update) | Update the script
+
+### mutate
+
+Command | Description
+------- | -----------
 [`mutate fail-terminal-datasets`](docs/README.mutate.md#mutate-fail-terminal-datasets) | Causes the output datasets of jobs which were manually failed, to be marked as failed
+
+### query
+
+Command | Description
+------- | -----------
 `query active-users` | Deprecated, use monthly-users-active
 [`query collection-usage`](docs/README.query.md#query-collection-usage) | Information about how many collections of various types are used
 [`query datasets-created-daily`](docs/README.query.md#query-datasets-created-daily) | The min/max/average/p95/p99 of total size of datasets created in a single day.
@@ -160,8 +187,18 @@ Command | Description
 [`query users-count`](docs/README.query.md#query-users-count) | Shows sums of active/external/deleted/purged accounts
 [`query users-total`](docs/README.query.md#query-users-total) | Total number of Galaxy users (incl deleted, purged, inactive)
 [`query workflow-connections`](docs/README.query.md#query-workflow-connections) | The connections of tools, from output to input, in the latest (or all) versions of user workflows
+
+### report
+
+Command | Description
+------- | -----------
 [`report job-info`](docs/README.report.md#report-job-info) | Information about a specific job
 [`report user-info`](docs/README.report.md#report-user-info) | Quick overview of a Galaxy user in your system
+
+### uwsgi
+
+Command | Description
+------- | -----------
 [`uwsgi handler-restart`](docs/README.uwsgi.md#uwsgi-handler-restart) | Restart all handlers
 [`uwsgi handler-strace`](docs/README.uwsgi.md#uwsgi-handler-strace) | Strace a handler
 [`uwsgi memory`](docs/README.uwsgi.md#uwsgi-memory) | Current system memory usage
@@ -173,3 +210,4 @@ Command | Description
 [`uwsgi zerg-scale-up`](docs/README.uwsgi.md#uwsgi-zerg-scale-up) | Add another zergling to deal with high load
 [`uwsgi zerg-strace`](docs/README.uwsgi.md#uwsgi-zerg-strace) | Strace a zergling
 [`uwsgi zerg-swap`](docs/README.uwsgi.md#uwsgi-zerg-swap) | Swap zerglings in order (unintelligent version)
+
