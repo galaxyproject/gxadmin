@@ -247,6 +247,10 @@ Mostly useful for colouring a hostname or some similar value.
 
 (Imagine that it is light blue text on a pink background)
 
+**NOTE** If the output isn't coloured properly, try:
+
+    export TERM=screen-256color
+
 
 ### filter hexdecode
 

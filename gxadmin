@@ -2132,6 +2132,10 @@ filter_digest-color() { ## filter digest-color: Color an input stream based on t
 		    test
 
 		(Imagine that it is light blue text on a pink background)
+
+		**NOTE** If the output isn't coloured properly, try:
+
+		    export TERM=screen-256color
 	EOF
 
 	data="$(cat)"
