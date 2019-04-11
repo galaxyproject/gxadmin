@@ -1803,13 +1803,13 @@ query_errored-jobs(){ ## query errored-jobs <hours>: Lists jobs that errored in 
 	EOF
 }
 
-query_server-users() { ## query server-users [date]
+query_server-users() {
 	handle_help "$@" <<-EOF
 	EOF
 
 	date_filter=""
-	if (( $# > 1 )); then
-		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '{date}'::date"
+	if (( $# > 0 )); then
+		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '$1'::date"
 	fi
 
 	fields="count=4"
@@ -1826,34 +1826,13 @@ query_server-users() { ## query server-users [date]
 	EOF
 }
 
-query_server-users-cumulative() { ## query server-users-cumulative [date]
+query_server-groups() {
 	handle_help "$@" <<-EOF
 	EOF
 
 	date_filter=""
-	if (( $# > 1 )); then
-		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '{date}'::date"
-	fi
-
-	fields="count=0"
-
-	read -r -d '' QUERY <<-EOF
-		SELECT
-			count(*)
-		FROM
-			galaxy_user
-		WHERE
-			$date_filter
-	EOF
-}
-
-query_server-groups() { ## query server-groups
-	handle_help "$@" <<-EOF
-	EOF
-
-	date_filter=""
-	if (( $# > 1 )); then
-		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '{date}'::date"
+	if (( $# > 0 )); then
+		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '$1'::date"
 	fi
 
 
@@ -1871,17 +1850,17 @@ query_server-groups() { ## query server-groups
 	EOF
 }
 
-query_server-datasets() { ## query server-datasets
+query_server-datasets() {
 	handle_help "$@" <<-EOF
 	EOF
 
 	date_filter=""
-	if (( $# > 1 )); then
-		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '{date}'::date"
+	if (( $# > 0 )); then
+		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '$1'::date"
 	fi
 
-	fields="count=5;size=6"
-	tags="state=1;deleted=2;purged=3;object_store_id=4"
+	fields="count=4;size=5"
+	tags="state=0;deleted=1;purged=2;object_store_id=3"
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
@@ -1893,13 +1872,13 @@ query_server-datasets() { ## query server-datasets
 	EOF
 }
 
-query_server-hda() { ## query server-hda [date]
+query_server-hda() {
 	handle_help "$@" <<-EOF
 	EOF
 
 	date_filter=""
-	if (( $# > 1 )); then
-		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '{date}'::date"
+	if (( $# > 0 )); then
+		date_filter="AND history_dataset_association.create_time AT TIME ZONE 'UTC' <= '$1'::date"
 	fi
 
 	fields="sum=2;avg=3;min=4;max=5"
@@ -1910,7 +1889,7 @@ query_server-hda() { ## query server-hda [date]
 			history_dataset_association.extension,
 			history_dataset_association.deleted,
 			coalesce(sum(dataset.file_size), 0),
-			coalesce(avg(dataset.file_size), 0),
+			coalesce(avg(dataset.file_size), 0)::bigint,
 			coalesce(min(dataset.file_size), 0),
 			coalesce(max(dataset.file_size), 0),
 			count(*)
@@ -1924,13 +1903,13 @@ query_server-hda() { ## query server-hda [date]
 	EOF
 }
 
-query_server-ts-repos() { ## query server-ts-repos
+query_server-ts-repos() {
 	handle_help "$@" <<-EOF
 	EOF
 
 	date_filter=""
-	if (( $# > 1 )); then
-		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '{date}'::date"
+	if (( $# > 0 )); then
+		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '$1'::date"
 	fi
 
 	fields="count=2"
@@ -1941,19 +1920,20 @@ query_server-ts-repos() { ## query server-ts-repos
 			tool_shed, owner, count(*)
 		FROM
 			tool_shed_repository
+		$date_filter
 		GROUP BY
 			tool_shed, owner
 		ORDER BY count desc
 	EOF
 }
 
-query_server-histories() { ## query server-histories [date]
+query_server-histories() {
 	handle_help "$@" <<-EOF
 	EOF
 
 	date_filter=""
-	if (( $# > 1 )); then
-		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '{date}'::date"
+	if (( $# > 0 )); then
+		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '$1'::date"
 	fi
 
 	fields="count=6"
@@ -1963,41 +1943,20 @@ query_server-histories() { ## query server-histories [date]
 		SELECT
 			deleted, purged, published, importable, importing, genome_build, count(*)
 		FROM history
-		WHERE
-			user_id IS NOT NULL ${date_filter}
+		${date_filter}
 		GROUP BY
 			deleted, purged, published, importable, importing, genome_build
 	EOF
 }
 
-# TODO: GDPR
-query_server-disk-usage() { ## query server-disk-usage
-	handle_help "$@" <<-EOF
-	EOF
 
-	read -r -d '' QUERY <<-EOF
-		SELECT
-			history.user_id,
-			coalesce(sum(dataset.file_size), 0),
-			coalesce(count(dataset.id), 0),
-			coalesce(count(history.id), 0)
-		FROM
-			history, history_dataset_association, dataset
-		WHERE
-			history.id = history_dataset_association.history_id AND
-			history_dataset_association.dataset_id = dataset.id
-		GROUP BY
-			history.user_id
-	EOF
-}
-
-query_server-jobs() { ## query server-jobs [date]
+query_server-jobs() {
 	handle_help "$@" <<-EOF
 	EOF
 
 	date_filter=""
-	if (( $# > 1 )); then
-		date_filter="AND create_time AT TIME ZONE 'UTC' <= '{date}'::date"
+	if (( $# > 0 )); then
+		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '$1'::date"
 	fi
 
 	fields="count=3"
@@ -2008,41 +1967,50 @@ query_server-jobs() { ## query server-jobs [date]
 			state, job_runner_name, destination_id, count(*)
 		FROM
 			job
-		WHERE
-			user_id IS NOT NULL ${date_filter}
+		${date_filter}
 		GROUP BY
 			state, job_runner_name, destination_id
 	EOF
 }
 
-query_server-jobs-cumulative() { ## query server-jobs-cumulative [date]
+query_server-allocated-cpu() {
 	handle_help "$@" <<-EOF
 	EOF
 
 	date_filter=""
-	if (( $# > 1 )); then
-		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '{date}'::date"
+	if (( $# > 0 )); then
+		date_filter="AND job.create_time AT TIME ZONE 'UTC' <= '$1'::date"
 	fi
 
-	fields="count=0"
-	tags=""
+	fields="cpu_years=1"
+	tags="job_runner_name=0"
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			count(*)
+			job.job_runner_name,
+			round(sum(a.metric_value * b.metric_value), 2) AS cpu_seconds
 		FROM
+			job_metric_numeric AS a,
+			job_metric_numeric AS b,
 			job
-		${date_filter}
+		WHERE
+			b.job_id = a.job_id
+			AND a.job_id = job.id
+			AND a.metric_name = 'runtime_seconds'
+			AND b.metric_name = 'galaxy_slots'
+			${date_filter}
+		GROUP BY
+			job.job_runner_name
 	EOF
 }
 
-query_server-workflows() { ## query server-workflows [date]
+query_server-workflows() {
 	handle_help "$@" <<-EOF
 	EOF
 
 	date_filter=""
-	if (( $# > 1 )); then
-		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '{date}'::date"
+	if (( $# > 0 )); then
+		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '$1'::date"
 	fi
 
 	fields="count=3"
@@ -2059,13 +2027,13 @@ query_server-workflows() { ## query server-workflows [date]
 	EOF
 }
 
-query_server-workflow-invocations() { ## query server-workflow-invocations [yyyy-mm-dd]
+query_server-workflow-invocations() {
 	handle_help "$@" <<-EOF
 	EOF
 
 	date_filter=""
-	if (( $# > 1 )); then
-		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '{date}'::date"
+	if (( $# > 0 )); then
+		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '$1'::date"
 	fi
 
 	fields="count=2"
@@ -3045,9 +3013,104 @@ meta_cmdlist() {
 
 meta_slurp-current() { ## meta slurp-current: Executes what used to be "Galaxy Slurp"
 	handle_help "$@" <<-EOF
+		Obtain influx compatible metrics regarding the current state of the
+		server. UseGalaxy.EU uses this to display things like "Current user
+		count" and "Current dataset size/distribution/etc."
+
+		It is expected that you are passing this straight to telegraf, there is
+		no non-influx output supported currently.
+
+		You can add your own functions which are included in this output, using
+		the \$GXADMIN_SITE_SPECIFIC file. They must start with the prefix
+		"query_server-", e.g. "query_server-mymetric".
+
+		    $ gxadmin meta slurp-current
+		    server-allocated-cpu,job_runner_name=condor cpu_years=102.00
+		    server-allocated-cpu,job_runner_name=local cpu_years=1346.00
+		    server-datasets,deleted=f,object_store_id=,state=error,purged=f count=37,size=29895528
+		    server-datasets,deleted=f,object_store_id=,state=ok,purged=f count=72,size=76739510
+		    server-datasets,deleted=f,object_store_id=,state=discarded,purged=f count=2,size=0
+		    server-hda,deleted=f,extension=gff3 max=2682565,sum=2682565,avg=2682565,min=2682565
+		    server-hda,deleted=t,extension=tabular max=468549,sum=597843,avg=22142,min=2
+		    server-hda,deleted=f,extension=fastqsanger max=3,sum=3,avg=3,min=3
+		    server-hda,deleted=f,extension=tabular max=2819293,sum=3270268,avg=155727,min=3
+		    server-hda,deleted=f,extension=png max=800459,sum=7047695,avg=503407,min=142863
+		    server-hda,deleted=t,extension=auto max=9571,sum=9571,avg=9571,min=9571
+		    server-hda,deleted=t,extension=data max=2,sum=2,avg=2,min=2
+		    server-hda,deleted=t,extension=txt max=5023,sum=5039,avg=2520,min=16
+		    server-hda,deleted=t,extension=bigwig max=2972569,sum=5857063,avg=1464266,min=0
+		    server-hda,deleted=t,extension=tar.gz max=209034,sum=1318690,avg=188384,min=91580
+		    server-hda,deleted=f,extension=vcf_bgzip max=3965889,sum=3965889,avg=3965889,min=3965889
+		    server-hda,deleted=t,extension=png max=2969711,sum=6584812,avg=1097469,min=183
+		    server-hda,deleted=f,extension=txt max=9584828,sum=132124407,avg=4556014,min=0
+		    server-hda,deleted=f,extension=bigwig max=14722,sum=17407,avg=8704,min=2685
+		    server-hda,deleted=f,extension=tar.gz max=209025,sum=390421,avg=195211,min=181396
+		    server-histories,importable=f,deleted=f,genome_build=?,published=f,importing=f,purged=f count=14
+		    server-jobs,state=ok,destination_id=slurm_singularity,job_runner_name=local count=26
+		    server-jobs,state=error,destination_id=condor_resub,job_runner_name=condor count=1
+		    server-jobs,state=deleted,destination_id=local,job_runner_name=local count=1
+		    server-jobs,state=error,destination_id=condor,job_runner_name=condor count=8
+		    server-jobs,state=ok,destination_id=local,job_runner_name=local count=13
+		    server-jobs,state=ok,destination_id=condor,job_runner_name=condor count=2
+		    server-jobs,state=error,destination_id=local,job_runner_name=local count=3
+		    server-users,active=t,deleted=f,external=f,purged=f count=3
+		    server-workflows,deleted=f,importable=f,published=f count=3
 	EOF
 
-	$0 iquery server-workflow-invocations
+	for func in $(grep -s -h -o '^query_server-[a-z-]*' $0 $GXADMIN_SITE_SPECIFIC | sort | sed 's/query_//g'); do
+		obtain_query $func
+		query_influx "$QUERY" "$query_name" "$fields" "$tags"
+	done
+}
+
+meta_slurp-upto() { ## meta slurp-upto [yyyy-mm-dd]: Slurps data "up to" a specific date.
+	handle_help "$@" <<-EOF
+		Obtain influx compatible metrics regarding the summed state of the
+		server up to a specific date. UseGalaxy.EU uses this to display things
+		like charts of "how many users were registered as of date X". You can
+		backfill data from your server by running a for loop like:
+
+		    #!/bin/bash
+		    for i in range {1..365}; do
+		        gxadmin meta slurp-upto \$(date -d "$i days ago" "+%Y-%m-%d") | <get into influx somehow>
+		    done
+
+		It is expected that you are passing this straight to telegraf, there is
+		no non-influx output supported currently.
+
+		This calls all of the same functions as 'gxadmin meta slurp-current',
+		but with date filters for the entries' creation times.
+
+		You can add your own functions which are included in this output, using
+		the \$GXADMIN_SITE_SPECIFIC file. They must start with the prefix
+		"query_server-", e.g. "query_server-mymetric". They should include a
+		date filter as well, or the metrics reported here will be less useful.
+
+		    $ gxadmin meta slurp-upto 2019-01-01
+		    server-allocated-cpu.daily,job_runner_name=condor cpu_years=102.00
+		    server-datasets.daily,deleted=f,object_store_id=,state=error,purged=f count=37,size=29895528
+		    server-datasets.daily,deleted=f,object_store_id=,state=ok,purged=f count=72,size=76739510
+		    server-datasets.daily,deleted=f,object_store_id=,state=discarded,purged=f count=2,size=0
+		    server-hda.daily,deleted=t,extension=data max=2,sum=2,avg=2,min=2
+		    server-hda.daily,deleted=t,extension=txt max=5023,sum=5039,avg=2520,min=16
+		    server-hda.daily,deleted=f,extension=fastqsanger max=3,sum=3,avg=3,min=3
+		    server-hda.daily,deleted=f,extension=tabular max=3,sum=51,avg=3,min=3
+		    server-hda.daily,deleted=t,extension=tabular max=468549,sum=552788,avg=21261,min=2
+		    server-histories.daily,importable=f,deleted=f,genome_build=?,published=f,importing=f,purged=f count=5
+		    server-jobs.daily,state=error,destination_id=condor,job_runner_name=condor count=8
+		    server-jobs.daily,state=error,destination_id=condor_resub,job_runner_name=condor count=1
+		    server-jobs.daily,state=error,destination_id=condor_a,job_runner_name=condor count=11
+		    server-jobs.daily,state=ok,destination_id=condor,job_runner_name=condor count=2
+		    server-jobs.daily,state=ok,destination_id=condor_a,job_runner_name=condor count=23
+		    server-users.daily,active=t,deleted=f,external=f,purged=f count=1
+		    server-workflows.daily,deleted=f,importable=f,published=f count=1
+
+	EOF
+
+	for func in $(grep -s -h -o '^query_server-[a-z-]*' $0 $GXADMIN_SITE_SPECIFIC | sort | sed 's/query_//g'); do
+		obtain_query $func $1
+		query_influx "$QUERY" "$query_name.daily" "$fields" "$tags"
+	done
 }
 
 meta_error() {

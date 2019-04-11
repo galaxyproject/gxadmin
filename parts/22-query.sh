@@ -1234,13 +1234,13 @@ query_errored-jobs(){ ## query errored-jobs <hours>: Lists jobs that errored in 
 	EOF
 }
 
-query_server-users() { ## query server-users [date]
+query_server-users() {
 	handle_help "$@" <<-EOF
 	EOF
 
 	date_filter=""
-	if (( $# > 1 )); then
-		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '{date}'::date"
+	if (( $# > 0 )); then
+		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '$1'::date"
 	fi
 
 	fields="count=4"
@@ -1257,34 +1257,13 @@ query_server-users() { ## query server-users [date]
 	EOF
 }
 
-query_server-users-cumulative() { ## query server-users-cumulative [date]
+query_server-groups() {
 	handle_help "$@" <<-EOF
 	EOF
 
 	date_filter=""
-	if (( $# > 1 )); then
-		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '{date}'::date"
-	fi
-
-	fields="count=0"
-
-	read -r -d '' QUERY <<-EOF
-		SELECT
-			count(*)
-		FROM
-			galaxy_user
-		WHERE
-			$date_filter
-	EOF
-}
-
-query_server-groups() { ## query server-groups
-	handle_help "$@" <<-EOF
-	EOF
-
-	date_filter=""
-	if (( $# > 1 )); then
-		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '{date}'::date"
+	if (( $# > 0 )); then
+		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '$1'::date"
 	fi
 
 
@@ -1302,17 +1281,17 @@ query_server-groups() { ## query server-groups
 	EOF
 }
 
-query_server-datasets() { ## query server-datasets
+query_server-datasets() {
 	handle_help "$@" <<-EOF
 	EOF
 
 	date_filter=""
-	if (( $# > 1 )); then
-		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '{date}'::date"
+	if (( $# > 0 )); then
+		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '$1'::date"
 	fi
 
-	fields="count=5;size=6"
-	tags="state=1;deleted=2;purged=3;object_store_id=4"
+	fields="count=4;size=5"
+	tags="state=0;deleted=1;purged=2;object_store_id=3"
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
@@ -1324,13 +1303,13 @@ query_server-datasets() { ## query server-datasets
 	EOF
 }
 
-query_server-hda() { ## query server-hda [date]
+query_server-hda() {
 	handle_help "$@" <<-EOF
 	EOF
 
 	date_filter=""
-	if (( $# > 1 )); then
-		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '{date}'::date"
+	if (( $# > 0 )); then
+		date_filter="AND history_dataset_association.create_time AT TIME ZONE 'UTC' <= '$1'::date"
 	fi
 
 	fields="sum=2;avg=3;min=4;max=5"
@@ -1341,7 +1320,7 @@ query_server-hda() { ## query server-hda [date]
 			history_dataset_association.extension,
 			history_dataset_association.deleted,
 			coalesce(sum(dataset.file_size), 0),
-			coalesce(avg(dataset.file_size), 0),
+			coalesce(avg(dataset.file_size), 0)::bigint,
 			coalesce(min(dataset.file_size), 0),
 			coalesce(max(dataset.file_size), 0),
 			count(*)
@@ -1355,13 +1334,13 @@ query_server-hda() { ## query server-hda [date]
 	EOF
 }
 
-query_server-ts-repos() { ## query server-ts-repos
+query_server-ts-repos() {
 	handle_help "$@" <<-EOF
 	EOF
 
 	date_filter=""
-	if (( $# > 1 )); then
-		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '{date}'::date"
+	if (( $# > 0 )); then
+		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '$1'::date"
 	fi
 
 	fields="count=2"
@@ -1372,19 +1351,20 @@ query_server-ts-repos() { ## query server-ts-repos
 			tool_shed, owner, count(*)
 		FROM
 			tool_shed_repository
+		$date_filter
 		GROUP BY
 			tool_shed, owner
 		ORDER BY count desc
 	EOF
 }
 
-query_server-histories() { ## query server-histories [date]
+query_server-histories() {
 	handle_help "$@" <<-EOF
 	EOF
 
 	date_filter=""
-	if (( $# > 1 )); then
-		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '{date}'::date"
+	if (( $# > 0 )); then
+		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '$1'::date"
 	fi
 
 	fields="count=6"
@@ -1394,41 +1374,20 @@ query_server-histories() { ## query server-histories [date]
 		SELECT
 			deleted, purged, published, importable, importing, genome_build, count(*)
 		FROM history
-		WHERE
-			user_id IS NOT NULL ${date_filter}
+		${date_filter}
 		GROUP BY
 			deleted, purged, published, importable, importing, genome_build
 	EOF
 }
 
-# TODO: GDPR
-query_server-disk-usage() { ## query server-disk-usage
-	handle_help "$@" <<-EOF
-	EOF
 
-	read -r -d '' QUERY <<-EOF
-		SELECT
-			history.user_id,
-			coalesce(sum(dataset.file_size), 0),
-			coalesce(count(dataset.id), 0),
-			coalesce(count(history.id), 0)
-		FROM
-			history, history_dataset_association, dataset
-		WHERE
-			history.id = history_dataset_association.history_id AND
-			history_dataset_association.dataset_id = dataset.id
-		GROUP BY
-			history.user_id
-	EOF
-}
-
-query_server-jobs() { ## query server-jobs [date]
+query_server-jobs() {
 	handle_help "$@" <<-EOF
 	EOF
 
 	date_filter=""
-	if (( $# > 1 )); then
-		date_filter="AND create_time AT TIME ZONE 'UTC' <= '{date}'::date"
+	if (( $# > 0 )); then
+		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '$1'::date"
 	fi
 
 	fields="count=3"
@@ -1439,41 +1398,50 @@ query_server-jobs() { ## query server-jobs [date]
 			state, job_runner_name, destination_id, count(*)
 		FROM
 			job
-		WHERE
-			user_id IS NOT NULL ${date_filter}
+		${date_filter}
 		GROUP BY
 			state, job_runner_name, destination_id
 	EOF
 }
 
-query_server-jobs-cumulative() { ## query server-jobs-cumulative [date]
+query_server-allocated-cpu() {
 	handle_help "$@" <<-EOF
 	EOF
 
 	date_filter=""
-	if (( $# > 1 )); then
-		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '{date}'::date"
+	if (( $# > 0 )); then
+		date_filter="AND job.create_time AT TIME ZONE 'UTC' <= '$1'::date"
 	fi
 
-	fields="count=0"
-	tags=""
+	fields="cpu_years=1"
+	tags="job_runner_name=0"
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			count(*)
+			job.job_runner_name,
+			round(sum(a.metric_value * b.metric_value), 2) AS cpu_seconds
 		FROM
+			job_metric_numeric AS a,
+			job_metric_numeric AS b,
 			job
-		${date_filter}
+		WHERE
+			b.job_id = a.job_id
+			AND a.job_id = job.id
+			AND a.metric_name = 'runtime_seconds'
+			AND b.metric_name = 'galaxy_slots'
+			${date_filter}
+		GROUP BY
+			job.job_runner_name
 	EOF
 }
 
-query_server-workflows() { ## query server-workflows [date]
+query_server-workflows() {
 	handle_help "$@" <<-EOF
 	EOF
 
 	date_filter=""
-	if (( $# > 1 )); then
-		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '{date}'::date"
+	if (( $# > 0 )); then
+		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '$1'::date"
 	fi
 
 	fields="count=3"
@@ -1490,13 +1458,13 @@ query_server-workflows() { ## query server-workflows [date]
 	EOF
 }
 
-query_server-workflow-invocations() { ## query server-workflow-invocations [yyyy-mm-dd]
+query_server-workflow-invocations() {
 	handle_help "$@" <<-EOF
 	EOF
 
 	date_filter=""
-	if (( $# > 1 )); then
-		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '{date}'::date"
+	if (( $# > 0 )); then
+		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '$1'::date"
 	fi
 
 	fields="count=2"

@@ -122,6 +122,7 @@ Command | Description
 Command | Description
 ------- | -----------
 [`meta slurp-current`](docs/README.meta.md#meta-slurp-current) | Executes what used to be "Galaxy Slurp"
+[`meta slurp-upto`](docs/README.meta.md#meta-slurp-upto) | Slurps data "up to" a specific date.
 [`meta update`](docs/README.meta.md#meta-update) | Update the script
 
 ### mutate
@@ -162,18 +163,6 @@ Command | Description
 [`query queue-time`](docs/README.query.md#query-queue-time) | The average/95%/99% a specific tool spends in queue state.
 [`query recent-jobs`](docs/README.query.md#query-recent-jobs) | Jobs run in the past <hours> (in any state)
 [`query runtime-per-user`](docs/README.query.md#query-runtime-per-user) | computation time of user (by email)
-[`query server-datasets`](docs/README.query.md#query-server-datasets) | query server-datasets
-[`query server-disk-usage`](docs/README.query.md#query-server-disk-usage) | query server-disk-usage
-[`query server-groups`](docs/README.query.md#query-server-groups) | query server-groups
-[`query server-hda`](docs/README.query.md#query-server-hda) | query server-hda [date]
-[`query server-histories`](docs/README.query.md#query-server-histories) | query server-histories [date]
-[`query server-jobs-cumulative`](docs/README.query.md#query-server-jobs-cumulative) | query server-jobs-cumulative [date]
-[`query server-jobs`](docs/README.query.md#query-server-jobs) | query server-jobs [date]
-[`query server-ts-repos`](docs/README.query.md#query-server-ts-repos) | query server-ts-repos
-[`query server-users-cumulative`](docs/README.query.md#query-server-users-cumulative) | query server-users-cumulative [date]
-[`query server-users`](docs/README.query.md#query-server-users) | query server-users [date]
-[`query server-workflow-invocations`](docs/README.query.md#query-server-workflow-invocations) | query server-workflow-invocations [yyyy-mm-dd]
-[`query server-workflows`](docs/README.query.md#query-server-workflows) | query server-workflows [date]
 [`query tool-available-metrics`](docs/README.query.md#query-tool-available-metrics) | list all available metrics for a given tool
 [`query tool-last-used-date`](docs/README.query.md#query-tool-last-used-date) | When was the most recent invocation of every tool
 [`query tool-metrics`](docs/README.query.md#query-tool-metrics) | See values of a specific metric

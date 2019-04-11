@@ -7,4 +7,7 @@ README.md: gxadmin
 gxadmin: $(PARTS)
 	cat $(PARTS) > gxadmin
 
+test:
+	./test.sh
+
 .PHONY = update_readme
