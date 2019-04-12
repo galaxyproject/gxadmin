@@ -1496,7 +1496,7 @@ query_workflow-invocation-status() { ## query workflow-invocation-status: Report
 			count(*)
 		FROM
 			workflow_invocation
-		GROUP BY handler, scheduler
 		WHERE state = 'new'
+		GROUP BY handler, scheduler
 	EOF
 }
