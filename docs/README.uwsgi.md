@@ -50,6 +50,8 @@ gxadmin uwsgi memory
 
 Obtain memory usage of the various Galaxy processes
 
+Also consider using systemd-cgtop
+
 
 ### uwsgi pids
 

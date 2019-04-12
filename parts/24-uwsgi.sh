@@ -72,14 +72,19 @@ uwsgi_status() { ## uwsgi status: Current system status
 uwsgi_memory() { ## uwsgi memory: Current system memory usage
 	handle_help "$@" <<-EOF
 		Obtain memory usage of the various Galaxy processes
+
+		Also consider using systemd-cgtop
 	EOF
 
-	echo "galaxy-zergpool:   $(systemctl status galaxy-zergpool | grep Memory:)"
-	for i in {0..3}; do
-		echo "galaxy-zergling@$i: $(systemctl status galaxy-zergling@$i | grep Memory:)"
+	echo "galaxy-zergpool.service $(cat /sys/fs/cgroup/memory/system.slice/galaxy-zergpool.service/memory.memsw.usage_in_bytes)"
+	for folder in $(find /sys/fs/cgroup/memory/system.slice/system-galaxy\\x2dzergling.slice/ -mindepth 1 -type d -name 'galaxy-zergling*service'); do
+		service=$(basename $folder)
+		echo "$service $(cat $folder/memory.memsw.usage_in_bytes)"
 	done
-	for i in {0..11}; do
-		echo "galaxy-handler@$i:  $(systemctl status galaxy-handler@$i | grep Memory:)"
+
+	for folder in $(find /sys/fs/cgroup/memory/system.slice/system-galaxy\\x2dhandler.slice/ -mindepth 1 -type d -name 'galaxy-handler*service'); do
+		service=$(basename $folder)
+		echo "$service $(cat $folder/memory.memsw.usage_in_bytes)"
 	done
 }
 
