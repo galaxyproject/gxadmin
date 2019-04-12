@@ -192,7 +192,8 @@ Command | Description
 [`uwsgi handler-strace`](docs/README.uwsgi.md#uwsgi-handler-strace) | Strace a handler
 [`uwsgi memory`](docs/README.uwsgi.md#uwsgi-memory) | Current system memory usage
 [`uwsgi pids`](docs/README.uwsgi.md#uwsgi-pids) | Galaxy process PIDs
-[`uwsgi stats_influx`](docs/README.uwsgi.md#uwsgi-stats_influx) | InfluxDB formatted output for the current stats
+[`uwsgi stats-influx`](docs/README.uwsgi.md#uwsgi-stats-influx) | InfluxDB formatted output for the current stats
+`uwsgi stats_influx` | Deprecated, use uwsgi stats-influx
 [`uwsgi stats`](docs/README.uwsgi.md#uwsgi-stats) | uwsgi stats
 [`uwsgi status`](docs/README.uwsgi.md#uwsgi-status) | Current system status
 [`uwsgi zerg-scale-down`](docs/README.uwsgi.md#uwsgi-zerg-scale-down) | Remove an extraneous zergling

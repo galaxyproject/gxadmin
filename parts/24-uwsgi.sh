@@ -1,11 +1,15 @@
-uwsgi_stats_influx(){ ## uwsgi stats_influx <addr>: InfluxDB formatted output for the current stats
+uwsgi_stats_influx() { ## uwsgi stats_influx: Deprecated, use uwsgi stats-influx
+	uwsgi_stats-influx
+}
+
+uwsgi_stats-influx(){ ## uwsgi stats-influx <addr>: InfluxDB formatted output for the current stats
 	handle_help "$@" <<-EOF
 		Contact a specific uWSGI stats address (requires uwsgi binary on path)
 		and requests the current stats + formats them for InfluxDB. For some
 		reason it has trouble with localhost vs IP address, so recommend that
 		you use IP.
 
-		    $ gxadmin uwsgi stats_influx 127.0.0.1:9191
+		    $ gxadmin uwsgi stats-influx 127.0.0.1:9191
 		    uwsgi.locks,addr=127.0.0.1:9191,group=user_0 count=0
 		    uwsgi.locks,addr=127.0.0.1:9191,group=signal count=0
 		    uwsgi.locks,addr=127.0.0.1:9191,group=filemon count=0
@@ -28,8 +32,8 @@ uwsgi_stats_influx(){ ## uwsgi stats_influx <addr>: InfluxDB formatted output fo
 
 		For multiple zerglings you can run this for each and just 2>/dev/null
 
-		    PATH=/opt/galaxy/venv/bin:/sbin:/bin:/usr/sbin:/usr/bin gxadmin uwsgi stats_influx 127.0.0.1:9190 2>/dev/null
-		    PATH=/opt/galaxy/venv/bin:/sbin:/bin:/usr/sbin:/usr/bin gxadmin uwsgi stats_influx 127.0.0.1:9191 2>/dev/null
+		    PATH=/opt/galaxy/venv/bin:/sbin:/bin:/usr/sbin:/usr/bin gxadmin uwsgi stats-influx 127.0.0.1:9190 2>/dev/null
+		    PATH=/opt/galaxy/venv/bin:/sbin:/bin:/usr/sbin:/usr/bin gxadmin uwsgi stats-influx 127.0.0.1:9191 2>/dev/null
 		    exit 0
 
 		And it will fetch only data for responding uwsgis.

@@ -6,7 +6,8 @@ Command | Description
 [`uwsgi handler-strace`](#report-user-info) | Strace a handler
 [`uwsgi memory`](#report-user-info) | Current system memory usage
 [`uwsgi pids`](#report-user-info) | Galaxy process PIDs
-[`uwsgi stats_influx`](#report-user-info) | InfluxDB formatted output for the current stats
+[`uwsgi stats-influx`](#report-user-info) | InfluxDB formatted output for the current stats
+`uwsgi stats_influx` | Deprecated, use uwsgi stats-influx
 [`uwsgi stats`](#report-user-info) | uwsgi stats
 [`uwsgi status`](#report-user-info) | Current system status
 [`uwsgi zerg-scale-down`](#report-user-info) | Remove an extraneous zergling
@@ -68,15 +69,15 @@ gxadmin uwsgi pids
 Obtain memory usage of the various Galaxy processes
 
 
-### uwsgi stats_influx
+### uwsgi stats-influx
 
 **NAME**
 
-uwsgi stats_influx -  InfluxDB formatted output for the current stats
+uwsgi stats-influx -  InfluxDB formatted output for the current stats
 
 **SYNOPSIS**
 
-gxadmin uwsgi stats_influx <addr>
+gxadmin uwsgi stats-influx <addr>
 
 **NOTES**
 
@@ -85,7 +86,7 @@ and requests the current stats + formats them for InfluxDB. For some
 reason it has trouble with localhost vs IP address, so recommend that
 you use IP.
 
-    $ gxadmin uwsgi stats_influx 127.0.0.1:9191
+    $ gxadmin uwsgi stats-influx 127.0.0.1:9191
     uwsgi.locks,addr=127.0.0.1:9191,group=user_0 count=0
     uwsgi.locks,addr=127.0.0.1:9191,group=signal count=0
     uwsgi.locks,addr=127.0.0.1:9191,group=filemon count=0
@@ -108,8 +109,8 @@ you use IP.
 
 For multiple zerglings you can run this for each and just 2>/dev/null
 
-    PATH=/opt/galaxy/venv/bin:/sbin:/bin:/usr/sbin:/usr/bin gxadmin uwsgi stats_influx 127.0.0.1:9190 2>/dev/null
-    PATH=/opt/galaxy/venv/bin:/sbin:/bin:/usr/sbin:/usr/bin gxadmin uwsgi stats_influx 127.0.0.1:9191 2>/dev/null
+    PATH=/opt/galaxy/venv/bin:/sbin:/bin:/usr/sbin:/usr/bin gxadmin uwsgi stats-influx 127.0.0.1:9190 2>/dev/null
+    PATH=/opt/galaxy/venv/bin:/sbin:/bin:/usr/sbin:/usr/bin gxadmin uwsgi stats-influx 127.0.0.1:9191 2>/dev/null
     exit 0
 
 And it will fetch only data for responding uwsgis.
