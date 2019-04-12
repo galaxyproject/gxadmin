@@ -107,6 +107,18 @@ uwsgi_stats() { ## uwsgi stats: uwsgi stats
 	uwsgi_stats-influx 127.0.0.1:4011 2>/dev/null || true
 	uwsgi_stats-influx 127.0.0.1:4012 2>/dev/null || true
 	uwsgi_stats-influx 127.0.0.1:4013 2>/dev/null || true
+
+
+	echo "systemd service=galaxy-zergpool memory=$(cat /sys/fs/cgroup/memory/system.slice/galaxy-zergpool.service/memory.memsw.usage_in_bytes)"
+	for folder in $(find /sys/fs/cgroup/memory/system.slice/system-galaxy\\x2dzergling.slice/ -mindepth 1 -type d -name 'galaxy-zergling*service'); do
+		service=$(basename $folder)
+		echo "systemd service=$service memory=$(cat $folder/memory.memsw.usage_in_bytes)"
+	done
+
+	for folder in $(find /sys/fs/cgroup/memory/system.slice/system-galaxy\\x2dhandler.slice/ -mindepth 1 -type d -name 'galaxy-handler*service'); do
+		service=$(basename $folder)
+		echo "systemd service=$service memory=$(cat $folder/memory.memsw.usage_in_bytes)"
+	done
 }
 
 uwsgi_zerg-swap() { ## uwsgi zerg-swap: Swap zerglings in order (unintelligent version)

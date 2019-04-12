@@ -117,6 +117,7 @@ And it will fetch only data for responding uwsgis.
 
 ### uwsgi stats
 
+systemd service=galaxy-zergpool memory=
 
 ### uwsgi status
 
