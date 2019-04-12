@@ -8,5 +8,4 @@ before_script:
   - rm -rf bats
 
 script:
-    - ./gxadmin
     - ./test.sh
