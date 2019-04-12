@@ -199,3 +199,49 @@ uwsgi_handler-restart() { ## uwsgi handler-restart: Restart all handlers
 	done
 }
 
+
+uwsgi_lastlog(){ ## uwsgi lastlog: Fetch the number of seconds since the last log message was written
+	handle_help "$@" <<-EOF
+		Lets you know if any of your workers or handlers have maybe stopped processing jobs.
+
+		    $ gxadmin uwsgi lastlog
+		    journalctl.lastlog,service=galaxy-handler@0 seconds=8
+		    journalctl.lastlog,service=galaxy-handler@1 seconds=2
+		    journalctl.lastlog,service=galaxy-handler@2 seconds=186
+		    journalctl.lastlog,service=galaxy-handler@3 seconds=19
+		    journalctl.lastlog,service=galaxy-handler@4 seconds=6
+		    journalctl.lastlog,service=galaxy-handler@5 seconds=80
+		    journalctl.lastlog,service=galaxy-handler@6 seconds=52
+		    journalctl.lastlog,service=galaxy-handler@7 seconds=1
+		    journalctl.lastlog,service=galaxy-handler@8 seconds=79
+		    journalctl.lastlog,service=galaxy-handler@9 seconds=40
+		    journalctl.lastlog,service=galaxy-handler@10 seconds=123
+		    journalctl.lastlog,service=galaxy-handler@11 seconds=13
+		    journalctl.lastlog,service=galaxy-zergling@0 seconds=0
+		    journalctl.lastlog,service=galaxy-zergling@1 seconds=0
+		    journalctl.lastlog,service=galaxy-zergling@2 seconds=2866
+
+	EOF
+
+	NOW=$(date +%s)
+
+	for i in {0..11}; do
+		lines=$(journalctl -u galaxy-handler@$i -n 1 --no-pager)
+		if (( $(echo "$lines" | wc -l) > 1 )); then
+			timestamp=$(journalctl -u galaxy-handler@$i -n 1 --no-pager | grep -v 'Logs begin' | awk '{print $1" "$2" "$3}');
+			unix=$(date -d "$timestamp" +%s)
+			date_diff=$(($NOW - $unix));
+			echo "journalctl.lastlog,service=galaxy-handler@$i seconds=$date_diff";
+		fi
+	done
+
+	for i in {0..4}; do
+		lines=$(journalctl -u galaxy-zergling@$i -n 1 --no-pager)
+		if (( $(echo "$lines" | wc -l) > 1 )); then
+			timestamp=$(journalctl -u galaxy-zergling@$i -n 1 --no-pager | grep -v 'Logs begin' | awk '{print $1" "$2" "$3}');
+			unix=$(date -d "$timestamp" +%s)
+			date_diff=$(($NOW - $unix));
+			echo "journalctl.lastlog,service=galaxy-zergling@$i seconds=$date_diff";
+		fi
+	done
+}

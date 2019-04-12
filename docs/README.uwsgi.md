@@ -4,6 +4,7 @@ Command | Description
 ------- | -----------
 [`uwsgi handler-restart`](#report-user-info) | Restart all handlers
 [`uwsgi handler-strace`](#report-user-info) | Strace a handler
+[`uwsgi lastlog`](#report-user-info) | Fetch the number of seconds since the last log message was written
 [`uwsgi memory`](#report-user-info) | Current system memory usage
 [`uwsgi pids`](#report-user-info) | Galaxy process PIDs
 [`uwsgi stats-influx`](#report-user-info) | InfluxDB formatted output for the current stats
@@ -35,6 +36,38 @@ uwsgi handler-strace -  Strace a handler
 **SYNOPSIS**
 
 gxadmin uwsgi handler-strace [number]
+
+
+### uwsgi lastlog
+
+**NAME**
+
+uwsgi lastlog -  Fetch the number of seconds since the last log message was written
+
+**SYNOPSIS**
+
+gxadmin uwsgi lastlog
+
+**NOTES**
+
+Lets you know if any of your workers or handlers have maybe stopped processing jobs.
+
+    $ gxadmin uwsgi lastlog
+    journalctl.lastlog,service=galaxy-handler@0 seconds=8
+    journalctl.lastlog,service=galaxy-handler@1 seconds=2
+    journalctl.lastlog,service=galaxy-handler@2 seconds=186
+    journalctl.lastlog,service=galaxy-handler@3 seconds=19
+    journalctl.lastlog,service=galaxy-handler@4 seconds=6
+    journalctl.lastlog,service=galaxy-handler@5 seconds=80
+    journalctl.lastlog,service=galaxy-handler@6 seconds=52
+    journalctl.lastlog,service=galaxy-handler@7 seconds=1
+    journalctl.lastlog,service=galaxy-handler@8 seconds=79
+    journalctl.lastlog,service=galaxy-handler@9 seconds=40
+    journalctl.lastlog,service=galaxy-handler@10 seconds=123
+    journalctl.lastlog,service=galaxy-handler@11 seconds=13
+    journalctl.lastlog,service=galaxy-zergling@0 seconds=0
+    journalctl.lastlog,service=galaxy-zergling@1 seconds=0
+    journalctl.lastlog,service=galaxy-zergling@2 seconds=2866
 
 
 ### uwsgi memory

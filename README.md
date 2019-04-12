@@ -190,6 +190,7 @@ Command | Description
 ------- | -----------
 [`uwsgi handler-restart`](docs/README.uwsgi.md#uwsgi-handler-restart) | Restart all handlers
 [`uwsgi handler-strace`](docs/README.uwsgi.md#uwsgi-handler-strace) | Strace a handler
+[`uwsgi lastlog`](docs/README.uwsgi.md#uwsgi-lastlog) | Fetch the number of seconds since the last log message was written
 [`uwsgi memory`](docs/README.uwsgi.md#uwsgi-memory) | Current system memory usage
 [`uwsgi pids`](docs/README.uwsgi.md#uwsgi-pids) | Galaxy process PIDs
 [`uwsgi stats-influx`](docs/README.uwsgi.md#uwsgi-stats-influx) | InfluxDB formatted output for the current stats
