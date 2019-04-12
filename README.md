@@ -176,6 +176,7 @@ Command | Description
 [`query users-count`](docs/README.query.md#query-users-count) | Shows sums of active/external/deleted/purged accounts
 [`query users-total`](docs/README.query.md#query-users-total) | Total number of Galaxy users (incl deleted, purged, inactive)
 [`query workflow-connections`](docs/README.query.md#query-workflow-connections) | The connections of tools, from output to input, in the latest (or all) versions of user workflows
+[`query workflow-invocation-status`](docs/README.query.md#query-workflow-invocation-status) | Report on how many workflows are in new state by handler
 
 ### report
 

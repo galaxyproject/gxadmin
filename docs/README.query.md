@@ -43,6 +43,7 @@ Command | Description
 [`query users-count`](#mutate-fail-terminal-datasets) | Shows sums of active/external/deleted/purged accounts
 [`query users-total`](#mutate-fail-terminal-datasets) | Total number of Galaxy users (incl deleted, purged, inactive)
 [`query workflow-connections`](#mutate-fail-terminal-datasets) | The connections of tools, from output to input, in the latest (or all) versions of user workflows
+[`query workflow-invocation-status`](#mutate-fail-terminal-datasets) | Report on how many workflows are in new state by handler
 
 ### query collection-usage
 
@@ -887,4 +888,19 @@ This is used by the usegalaxy.eu tool prediction workflow, allowing for building
          3 | 2013-02-07 16:48:00 |    11 | Paste1            | 1.0.0     |      8 | addValue          | 1.0.0
          4 | 2013-02-07 16:48:00 |    13 | cat1              | 1.0.0     |     18 | addValue          | 1.0.0
          4 | 2013-02-07 16:48:00 |    13 | cat1              | 1.0.0     |     20 | Count1            | 1.0.0
+
+
+### query workflow-invocation-status
+
+**NAME**
+
+query workflow-invocation-status -  Report on how many workflows are in new state by handler
+
+**SYNOPSIS**
+
+gxadmin query workflow-invocation-status
+
+**NOTES**
+
+Really only intended to be used in influx queries.
 

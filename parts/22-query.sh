@@ -1480,3 +1480,23 @@ query_server-workflow-invocations() {
 			scheduler, handler
 	EOF
 }
+
+query_workflow-invocation-status() { ## query workflow-invocation-status: Report on how many workflows are in new state by handler
+	handle_help "$@" <<-EOF
+		Really only intended to be used in influx queries.
+	EOF
+
+	fields="count=2"
+	tags="scheduler=0;handler=1"
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			scheduler,
+			handler,
+			count(*)
+		FROM
+			workflow_invocation
+		GROUP BY handler, scheduler
+		WHERE state = 'new'
+	EOF
+}
