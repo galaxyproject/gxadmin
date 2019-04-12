@@ -181,6 +181,7 @@ Command | Description
 
 Command | Description
 ------- | -----------
+[`report assigned-to-handler`](docs/README.report.md#report-assigned-to-handler) | Report what items are assigned to a handler currently.
 [`report job-info`](docs/README.report.md#report-job-info) | Information about a specific job
 [`report user-info`](docs/README.report.md#report-user-info) | Quick overview of a Galaxy user in your system
 

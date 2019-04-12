@@ -346,3 +346,35 @@ EOF
 	printf "$template3" "$input_ds_tbl" "$output_ds_tbl"
 }
 
+
+report_assigned-to-handler() { ## report assigned-to-handler <handler>: Report what items are assigned to a handler currently.
+	handle_help "$@" <<-EOF
+	EOF
+
+	assert_count $# 1 "Missing Handler ID"
+	printf "# Handler $1\n\n"
+
+	# Jerbs
+	printf "## Jobs\n\n"
+	read -r -d '' qstr <<-EOF
+		SELECT
+			id, create_time, tool_id, state, object_store_id, user_id
+		FROM job
+		WHERE handler = '$1' and state in ('new', 'queued', 'running')
+		ORDER BY create_time DESC
+	EOF
+	output_ds=$(query_tsv "$qstr")
+	printf "ID\tCreate Time\tTool ID\tState\tObject Store\tUser ID\n----\t----\t----\t----\t----\t----\n%s" "$output_ds" | sed 's/\t/\t | \t/g' | column -t -s'	'
+
+
+	# Workflows
+	printf "## Workflows\n\n"
+	read -r -d '' qstr <<-EOF
+		SELECT
+			id, create_time, workflow_id, history_id, state, scheduler, uuid
+		FROM workflow_invocation
+		WHERE handler = '$1' and state = 'new'
+	EOF
+	output_ds=$(query_tsv "$qstr")
+	printf "ID\tCreate Time\tWorkflow ID\tHistory ID\tState\tScheduler\tUUID\n----\t----\t----\t----\t----\t----\t----\n%s" "$output_ds" | sed 's/\t/\t | \t/g' | column -t -s'	'
+}

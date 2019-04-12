@@ -2,8 +2,20 @@
 
 Command | Description
 ------- | -----------
+[`report assigned-to-handler`](#query-workflow-connections) | Report what items are assigned to a handler currently.
 [`report job-info`](#query-workflow-connections) | Information about a specific job
 [`report user-info`](#query-workflow-connections) | Quick overview of a Galaxy user in your system
+
+### report assigned-to-handler
+
+**NAME**
+
+report assigned-to-handler -  Report what items are assigned to a handler currently.
+
+**SYNOPSIS**
+
+gxadmin report assigned-to-handler <handler>
+
 
 ### report job-info
 
