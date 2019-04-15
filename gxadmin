@@ -633,6 +633,60 @@ query_tool-usage() { ## query tool-usage [weeks]: Counts of tool runs in the pas
 	EOF
 }
 
+query_tool-new-errors() { ## query tool-new-errors [weeks|4]: Summarize percent of tool runs in error over the past weeks for "new tools"
+	handle_help "$@" <<-EOF
+		See jobs-in-error summary for recent tools (tools whose first execution is in recent weeks).
+
+		    $ gxadmin tool-new-errors 4
+	EOF
+
+	weeks=${1:-4}
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			j.tool_id, count(*) AS count_all, sum(case when j.state in ('error', 'failed') then 1 else 0 end) * 100.0 / count(*) as percent_failed_errored, sum(case when j.state = 'failed' then 1 else 0 end) / count(*) as percent_failed
+		FROM job j
+		WHERE j.tool_id in (SELECT tool_id FROM job j WHERE j.create_time > (now() - '$weeks weeks'::interval) GROUP BY j.tool_id)
+		GROUP BY j.tool_id
+		ORDER BY percent_failed_errored DESC
+	EOF
+}
+
+query_tool-errors() { ## query tool-errors [weeks|4]: Summarize percent of tool runs in error over the past weeks for all tools that have failed (most popular tools first)
+	handle_help "$@" <<-EOF
+		See jobs-in-error summary for recently executed tools that have failed at least 10% of the time.
+
+		    $ gxadmin tool-new-errors 4
+	EOF
+
+	weeks=${1:-4}
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			j.tool_id, count(*) AS count_all, sum(case when j.state in ('error', 'failed') then 1 else 0 end) * 100.0 / count(*) as percent_failed_errored, sum(case when j.state = 'failed' then 1 else 0 end) / count(*) as percent_failed
+		FROM job j
+		WHERE j.create_time > (now() - '$weeks weeks'::interval)
+		GROUP BY j.tool_id
+		HAVING percent_failed_errored > 10.0
+		ORDER BY count_all DESC
+	EOF
+}
+
+query_tool-likely-broken() { ## query tool-likely-broken [weeks|4]: Find tools that have been executed in recent weeks that are (or were due to job running) likely substantially broken
+	handle_help "$@" <<-EOF
+		    $ gxadmin tool-likely-broken 4
+	EOF
+
+	weeks=${1:-4}
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			j.tool_id, count(*) AS count_all, sum(case when j.state in ('error', 'failed') then 1 else 0 end) * 100.0 / count(*) as percent_failed_errored, sum(case when j.state = 'failed' then 1 else 0 end) / count(*) as percent_failed
+		FROM job j
+		WHERE j.create_time > (now() - '$weeks weeks'::interval)
+		GROUP BY j.tool_id
+		HAVING percent_failed_errored > 95.0 AND count_all > 4
+		ORDER BY count_all DESC
+	EOF
+}
+
 query_tool-popularity() { ## query tool-popularity [months|24]: Most run tools by month
 	handle_help "$@" <<-EOF
 		See most popular tools by month
