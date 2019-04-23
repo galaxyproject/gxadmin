@@ -259,17 +259,17 @@ EOF
 	tbl=$(echo "$results" | python -c "$hexdecodelines" | jq -S '.[] | [.name, .version, .dependency_type, .cacheable, .exact, .environment_path, .model_class] | @tsv' -r)
 	printf "Name\tVersion\tDependency Type\tCacheable\tExact\tEnvironment Path\tModel Class\n----\t-------\t---------------\t---------\t-----\t----------------\t-----------\n$tbl\n" | sed 's/\t/\t | \t/g'       #| column -t -s'	'
 
-    ###        ###
-    # JOB PARAMS #
-    ###        ###
-    read -r -d '' qstr <<-EOF
-        SELECT j.name, j.value
-        FROM job_parameter j
-        WHERE j.job_id = $job_id
-    EOF
-    results=$(query_tsv "$qstr")
-    printf "\n## Tool Parameters\n\n"
-    printf "Name\tSettings\n---------\t------------------------------------\n$results\n\n" | sed 's/\t/\t | \t/g' | sed 's/[\"\`]//g'
+	###        ###
+	# JOB PARAMS #
+	###        ###
+	read -r -d '' qstr <<-EOF
+		SELECT j.name, j.value
+		FROM job_parameter j
+		WHERE j.job_id = $job_id
+	EOF
+	results=$(query_tsv "$qstr")
+	printf "\n## Tool Parameters\n\n"
+	printf "Name\tSettings\n---------\t------------------------------------\n$results\n\n" | sed 's/\t/\t | \t/g' | sed 's/[\"\`]//g'
 
 	###      ###
 	#  INPUTS  #
