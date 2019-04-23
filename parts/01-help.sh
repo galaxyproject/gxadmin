@@ -79,7 +79,8 @@ usage(){
 	if (( $# == 0  )) || [[ $1 == "query" ]]; then
 		cat <<-EOF
 			DB Queries:
-			  'query' can be exchanged with 'tsvquery' or 'csvquery' for tab- and comma-separated variants
+			  'query' can be exchanged with 'tsvquery' or 'csvquery' for tab- and comma-separated variants.
+			  In some cases 'iquery' is supported for InfluxDB compatible output.
 
 			$(echo "$cmds" | filter_commands query $1)
 
