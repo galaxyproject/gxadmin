@@ -1527,6 +1527,9 @@ query_tool-new-errors() { ## query tool-new-errors [weeks|4]: Summarize percent 
 
 	weeks=${1:-4}
 
+	fields="tool_runs=1;percent_failed_errored=2;percent_failed=3"
+	tags="tool_id=0"
+
 	read -r -d '' QUERY <<-EOF
 		SELECT
 			j.tool_id,
@@ -1543,7 +1546,7 @@ query_tool-new-errors() { ## query tool-new-errors [weeks|4]: Summarize percent 
 					GROUP BY j.tool_id
 				)
 		GROUP BY j.tool_id
-		ORDER BY percent_failed_errored DESC;
+		ORDER BY percent_failed_errored DESC
 	EOF
 }
 
@@ -1569,6 +1572,8 @@ query_tool-errors() { ## query tool-errors [weeks|4]: Summarize percent of tool 
 	EOF
 
 	weeks=${1:-4}
+	fields="tool_runs=1;percent_failed_errored=2;percent_failed=3"
+	tags="tool_id=0"
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
@@ -1585,7 +1590,7 @@ query_tool-errors() { ## query tool-errors [weeks|4]: Summarize percent of tool 
 		HAVING
 			sum(CASE WHEN j.state IN ('error', 'failed') THEN 1 ELSE 0 END) * 100.0 / count(*) > 10.0
 		ORDER BY
-			tool_runs DESC;
+			tool_runs DESC
 	EOF
 }
 
@@ -1610,6 +1615,8 @@ query_tool-likely-broken() { ## query tool-likely-broken [weeks|4]: Find tools t
 	EOF
 
 	weeks=${1:-4}
+	fields="tool_runs=1;percent_failed_errored=2;percent_failed=3"
+	tags="tool_id=0"
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
@@ -1627,7 +1634,7 @@ query_tool-likely-broken() { ## query tool-likely-broken [weeks|4]: Find tools t
 			sum(CASE WHEN j.state IN ('error', 'failed') THEN 1 ELSE 0 END) * 100.0 / count(*) > 95.0
 			AND count(*) > 4
 		ORDER BY
-			tool_runs DESC;
+			tool_runs DESC
 	EOF
 }
 
