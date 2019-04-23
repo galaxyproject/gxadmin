@@ -91,7 +91,6 @@ Meow
 $
 ```
 
-meta_cmdlist
 ## Commands
 
 ### config
