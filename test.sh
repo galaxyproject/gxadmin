@@ -28,3 +28,8 @@
 	run diff <(cat gxadmin) <(cat parts/*.sh)
 	[ "$status" -eq 0 ]
 }
+
+@test "Ensure only using tabs" {
+	out_lines=$(egrep '^ +[^\t]' gxadmin | grep -v '%s' | wc -l)
+	[ "$out_lines" -lt 5 ]
+}
