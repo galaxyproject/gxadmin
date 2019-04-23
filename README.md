@@ -91,6 +91,8 @@ Meow
 $
 ```
 
+If you prefix the function name with `query-`, e.g. `local_query-cats`, then it will be run as a database query. CSV/TSV/Influx queries are not currently supported.
+
 ## Commands
 
 ### config
