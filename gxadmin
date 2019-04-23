@@ -3390,7 +3390,12 @@ local_funcs() {
 		if [[ -z "${GXADMIN_BUGGER_OFF}" ]] && (( ($RANDOM % 25) == 0 )); then
 			warning "Hey! It's great that you're using gxadmin! You should contribute these functions back :) Other people might find these useful, or could learn something from the code you've written, even if you think it is too specific to your site."
 		fi
+
 		$fn "$@";
+
+		if [[ "${query_name}" == "query"* ]]; then
+			query_tbl "$QUERY"
+		fi
 	else
 		usage ${group_name}
 	fi
