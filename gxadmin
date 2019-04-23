@@ -1013,6 +1013,7 @@ query_jobs-per-user() { ## query jobs-per-user <email>: Number of jobs run by a 
 				SELECT id
 				FROM galaxy_user
 				WHERE email = '$1'
+			)
 	EOF
 }
 
