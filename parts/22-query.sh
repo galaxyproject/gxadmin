@@ -1500,3 +1500,134 @@ query_workflow-invocation-status() { ## query workflow-invocation-status: Report
 		GROUP BY handler, scheduler
 	EOF
 }
+
+query_tool-new-errors() { ## query tool-new-errors [weeks|4]: Summarize percent of tool runs in error over the past weeks for "new tools"
+	handle_help "$@" <<-EOF
+		See jobs-in-error summary for recent tools (tools whose first execution is in recent weeks).
+
+		    $ gxadmin tool-new-errors 4
+		                            tool_id                                                  | tool_runs | percent_failed_errored | percent_failed
+		    ---------------------------------------------------------------------------------+-----------+------------------------+----------------
+		     toolshed.g2.bx.psu.edu/repos/bgruening/bismark/bismark_bowtie2/0.7.12           |        16 |   100.0000000000000000 |              0
+		     toolshed.g2.bx.psu.edu/repos/devteam/samtools_phase/samtools_phase/2.0.1        |        20 |   100.0000000000000000 |              0
+		     toolshed.g2.bx.psu.edu/repos/iuc/snpsift/snpSift_rmInfo/4.3+t.galaxy0           |         1 |   100.0000000000000000 |              0
+		     toolshed.g2.bx.psu.edu/repos/devteam/principal_component_analysis/pca1/1.0.2    |       177 |    98.8700564971751412 |              0
+		     toolshed.g2.bx.psu.edu/repos/bgruening/bismark/bismark_bowtie/0.7.12            |       225 |    96.0000000000000000 |              0
+		     toolshed.g2.bx.psu.edu/repos/devteam/picard/PicardHsMetrics/1.56.0              |        41 |    95.1219512195121951 |              0
+		     toolshed.g2.bx.psu.edu/repos/iuc/stacks_procrad/stacks_procrad/1.46.0           |      3288 |    94.0389294403892944 |              0
+		     toolshed.g2.bx.psu.edu/repos/iuc/jcvi_gff_stats/jcvi_gff_stats/0.8.4            |        16 |    93.7500000000000000 |              0
+		     genomespace_exporter                                                            |        72 |    93.0555555555555556 |              0
+		     toolshed.g2.bx.psu.edu/repos/devteam/ncbi_blast_plus/ncbi_tblastn_wrapper/0.3.1 |      1638 |    86.7521367521367521 |              0
+		     toolshed.g2.bx.psu.edu/repos/iuc/samtools_sort/samtools_rmdup/1.0.1             |       355 |    86.4788732394366197 |              0
+		     toolshed.g2.bx.psu.edu/repos/iuc/bcftools_call/bcftools_call/1.9                |         7 |    85.7142857142857143 |              0
+		     toolshed.g2.bx.psu.edu/repos/iuc/stacks_denovomap/stacks_denovomap/1.46.0       |       214 |    83.6448598130841121 |              0
+		     toolshed.g2.bx.psu.edu/repos/iuc/intervene/intervene_upset/0.6.4                |        11 |    81.8181818181818182 |              0
+		     toolshed.g2.bx.psu.edu/repos/rnateam/rnalien/RNAlien/1.3.6                      |         5 |    80.0000000000000000 |              0
+	EOF
+
+	weeks=${1:-4}
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			j.tool_id,
+			count(*) AS tool_runs,
+			sum(CASE WHEN j.state IN ('error', 'failed') THEN 1 ELSE 0 END) * 100.0 / count(*) AS percent_failed_errored,
+			sum(CASE WHEN j.state = 'failed' THEN 1 ELSE 0 END) / count(*) AS percent_failed
+		FROM job AS j
+		WHERE
+			j.tool_id
+			IN (
+					SELECT tool_id
+					FROM job AS j
+					WHERE j.create_time > (now() - '$weeks weeks'::INTERVAL)
+					GROUP BY j.tool_id
+				)
+		GROUP BY j.tool_id
+		ORDER BY percent_failed_errored DESC;
+	EOF
+}
+
+query_tool-errors() { ## query tool-errors [weeks|4]: Summarize percent of tool runs in error over the past weeks for all tools that have failed (most popular tools first)
+	handle_help "$@" <<-EOF
+		See jobs-in-error summary for recently executed tools that have failed at least 10% of the time.
+
+		    $ gxadmin tool-new-errors 4
+		                                    tool_id                                        | tool_runs | percent_failed_errored | percent_failed
+		    -------------------------------------------------------------------------------+-----------+------------------------+----------------
+		     toolshed.g2.bx.psu.edu/repos/iuc/featurecounts/featurecounts/1.6.3+galaxy2    |      1332 |    10.5105105105105105 |              0
+		     toolshed.g2.bx.psu.edu/repos/iuc/multiqc/multiqc/1.7                          |       937 |    10.1387406616862327 |              0
+		     toolshed.g2.bx.psu.edu/repos/iuc/deseq2/deseq2/2.11.40.6                      |       595 |    32.7731092436974790 |              0
+		     toolshed.g2.bx.psu.edu/repos/iuc/bedtools/bedtools_bedtobam/2.27.0.0          |       573 |    21.6404886561954625 |              0
+		     toolshed.g2.bx.psu.edu/repos/iuc/sra_tools/fastq_dump/2.9.1.3                 |       510 |    15.4901960784313725 |              0
+		     toolshed.g2.bx.psu.edu/repos/iuc/rgrnastar/rna_star/2.6.0b-2                  |       469 |    13.4328358208955224 |              0
+		     toolshed.g2.bx.psu.edu/repos/lparsons/htseq_count/htseq_count/0.9.1           |       429 |    10.4895104895104895 |              0
+		     toolshed.g2.bx.psu.edu/repos/devteam/xy_plot/XY_Plot_1/1.0.2                  |       378 |    12.1693121693121693 |              0
+		     toolshed.g2.bx.psu.edu/repos/iuc/macs2/macs2_callpeak/2.1.1.20160309.5        |       355 |    13.8028169014084507 |              0
+		     toolshed.g2.bx.psu.edu/repos/iuc/datamash_ops/datamash_ops/1.1.0              |       296 |    18.5810810810810811 |              0
+		     toolshed.g2.bx.psu.edu/repos/devteam/vcffilter/vcffilter2/1.0.0_rc1+galaxy2   |       266 |    13.9097744360902256 |              0
+		     toolshed.g2.bx.psu.edu/repos/devteam/fastqtofasta/fastq_to_fasta_python/1.1.1 |       253 |    11.0671936758893281 |              0
+	EOF
+
+	weeks=${1:-4}
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			j.tool_id,
+			count(*) AS tool_runs,
+			sum(CASE WHEN j.state IN ('error', 'failed') THEN 1 ELSE 0 END) * 100.0 / count(*) AS percent_failed_errored,
+			sum(CASE WHEN j.state = 'failed' THEN 1 ELSE 0 END) / count(*) AS percent_failed
+		FROM
+			job AS j
+		WHERE
+			j.create_time > (now() - '$weeks weeks'::INTERVAL)
+		GROUP BY
+			j.tool_id
+		HAVING
+			sum(CASE WHEN j.state IN ('error', 'failed') THEN 1 ELSE 0 END) * 100.0 / count(*) > 10.0
+		ORDER BY
+			tool_runs DESC;
+	EOF
+}
+
+query_tool-likely-broken() { ## query tool-likely-broken [weeks|4]: Find tools that have been executed in recent weeks that are (or were due to job running) likely substantially broken
+	handle_help "$@" <<-EOF
+		This runs an identical query to tool-errors, except filtering for tools
+		which were run more than 4 times, and have a failure rate over 95%.
+
+		    $ gxadmin tool-likely-broken 4
+		                                              tool_id                              | tool_runs | percent_failed_errored | percent_failed
+		    -------------------------------------------------------------------------------+-----------+------------------------+----------------
+		     toolshed.g2.bx.psu.edu/repos/iuc/stacks_denovomap/stacks_denovomap/1.46.0     |       133 |    96.2406015037593985 |              0
+		     toolshed.g2.bx.psu.edu/repos/iuc/stacks_populations/stacks_populations/1.46.0 |        49 |    97.9591836734693878 |              0
+		     toolshed.g2.bx.psu.edu/repos/rnateam/dorina/dorina_search/1.0.0               |        44 |   100.0000000000000000 |              0
+		     toolshed.g2.bx.psu.edu/repos/bgruening/diamond/bg_diamond/0.8.24.1            |        43 |   100.0000000000000000 |              0
+		     toolshed.g2.bx.psu.edu/repos/devteam/dna_filtering/histogram_rpy/1.0.3        |        31 |    96.7741935483870968 |              0
+		     toolshed.g2.bx.psu.edu/repos/iuc/bcftools_cnv/bcftools_cnv/1.9                |        30 |   100.0000000000000000 |              0
+		     intermine                                                                     |        26 |   100.0000000000000000 |              0
+		     toolshed.g2.bx.psu.edu/repos/galaxyp/proteomics_moff/proteomics_moff/2.0.2.0  |        23 |   100.0000000000000000 |              0
+		     toolshed.g2.bx.psu.edu/repos/devteam/picard/PicardHsMetrics/1.56.0            |        23 |   100.0000000000000000 |              0
+		     toolshed.g2.bx.psu.edu/repos/iuc/stacks_refmap/stacks_refmap/1.46.0           |        21 |   100.0000000000000000 |              0
+	EOF
+
+	weeks=${1:-4}
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			j.tool_id,
+			count(*) AS tool_runs,
+			sum(CASE WHEN j.state IN ('error', 'failed') THEN 1 ELSE 0 END) * 100.0 / count(*) AS percent_failed_errored,
+			sum(CASE WHEN j.state = 'failed' THEN 1 ELSE 0 END) / count(*) AS percent_failed
+		FROM
+			job AS j
+		WHERE
+			j.create_time > (now() - '$weeks weeks'::INTERVAL)
+		GROUP BY
+			j.tool_id
+		HAVING
+			sum(CASE WHEN j.state IN ('error', 'failed') THEN 1 ELSE 0 END) * 100.0 / count(*) > 95.0
+			AND count(*) > 4
+		ORDER BY
+			tool_runs DESC;
+	EOF
+}
+
