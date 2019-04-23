@@ -22,3 +22,8 @@
 	fi
 	[ "$result" -eq 0 ]
 }
+
+@test "Ensure that changes were made to BOTH parts/* and gxadmin" {
+	run diff <(cat gxadmin) <(cat parts/*.sh)
+	[ "$status" -eq 0 ]
+}
