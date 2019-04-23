@@ -3,6 +3,7 @@
 @test "Ensure gxadmin exits with zero" {
 	run ./gxadmin
 	[ "$status" -eq 0 ]
+	[ "${lines[0]}" = "gxadmin usage:" ]
 }
 
 @test "Ensure help is not too long" {
