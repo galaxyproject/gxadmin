@@ -1414,7 +1414,7 @@ query_server-allocated-cpu() {
 		date_filter="AND job.create_time AT TIME ZONE 'UTC' <= '$1'::date"
 	fi
 
-	fields="cpu_years=1"
+	fields="cpu_seconds=1"
 	tags="job_runner_name=0"
 
 	read -r -d '' QUERY <<-EOF
