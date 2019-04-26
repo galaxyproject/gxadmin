@@ -12,7 +12,7 @@ mutate fail-terminal-datasets -  Causes the output datasets of jobs which were m
 
 **SYNOPSIS**
 
-gxadmin mutate fail-terminal-datasets [--commit]
+`gxadmin mutate fail-terminal-datasets [--commit]`
 
 **NOTES**
 

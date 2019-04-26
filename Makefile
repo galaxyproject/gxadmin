@@ -6,6 +6,7 @@ README.md: gxadmin
 
 gxadmin: $(PARTS)
 	cat $(PARTS) > gxadmin
+	chmod +x gxadmin
 
 test:
 	./test.sh

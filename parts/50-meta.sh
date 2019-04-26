@@ -61,7 +61,7 @@ meta_cmdlist() {
 	done
 }
 
-meta_slurp-current() { ## meta slurp-current: Executes what used to be "Galaxy Slurp"
+meta_slurp-current() { ## meta slurp-current [--date]: Executes what used to be "Galaxy Slurp"
 	handle_help "$@" <<-EOF
 		Obtain influx compatible metrics regarding the current state of the
 		server. UseGalaxy.EU uses this to display things like "Current user
@@ -69,6 +69,9 @@ meta_slurp-current() { ## meta slurp-current: Executes what used to be "Galaxy S
 
 		It is expected that you are passing this straight to telegraf, there is
 		no non-influx output supported currently.
+
+		Supplying --date will include the current timestamp at the end of the
+		line, making it compatible for "gxadmin meta influx-post" usage
 
 		You can add your own functions which are included in this output, using
 		the \$GXADMIN_SITE_SPECIFIC file. They must start with the prefix
@@ -107,13 +110,18 @@ meta_slurp-current() { ## meta slurp-current: Executes what used to be "Galaxy S
 		    server-workflows,deleted=f,importable=f,published=f count=3
 	EOF
 
+	append=""
+	if [[ $1 == "--date" ]]; then
+		append=" "$(date +%s%N)
+	fi
+
 	for func in $(grep -s -h -o '^query_server-[a-z-]*' $0 $GXADMIN_SITE_SPECIFIC | sort | sed 's/query_//g'); do
 		obtain_query $func
-		query_influx "$QUERY" "$query_name" "$fields" "$tags"
+		query_influx "$QUERY" "$query_name" "$fields" "$tags" | sed "s/$/$append/"
 	done
 }
 
-meta_slurp-upto() { ## meta slurp-upto [yyyy-mm-dd]: Slurps data "up to" a specific date.
+meta_slurp-upto() { ## meta slurp-upto <yyyy-mm-dd> [--date]: Slurps data "up to" a specific date.
 	handle_help "$@" <<-EOF
 		Obtain influx compatible metrics regarding the summed state of the
 		server up to a specific date. UseGalaxy.EU uses this to display things
@@ -130,6 +138,9 @@ meta_slurp-upto() { ## meta slurp-upto [yyyy-mm-dd]: Slurps data "up to" a speci
 
 		This calls all of the same functions as 'gxadmin meta slurp-current',
 		but with date filters for the entries' creation times.
+
+		Supplying --date will include the supplied yyyy-mm-dd timestamp at the
+	end of the line, making it compatible for "gxadmin meta influx-post" usage
 
 		You can add your own functions which are included in this output, using
 		the \$GXADMIN_SITE_SPECIFIC file. They must start with the prefix
@@ -157,9 +168,14 @@ meta_slurp-upto() { ## meta slurp-upto [yyyy-mm-dd]: Slurps data "up to" a speci
 
 	EOF
 
+	append=""
+	if [[ $2 == "--date" ]]; then
+		append=" "$(date -d "$1" +%s%N)
+	fi
+
 	for func in $(grep -s -h -o '^query_server-[a-z-]*' $0 $GXADMIN_SITE_SPECIFIC | sort | sed 's/query_//g'); do
 		obtain_query $func $1
-		query_influx "$QUERY" "$query_name.daily" "$fields" "$tags"
+		query_influx "$QUERY" "$query_name.daily" "$fields" "$tags" | sed "s/$/$append/"
 	done
 }
 
@@ -173,4 +189,102 @@ meta_warning() {
 
 meta_success() {
 	success "$@"
+}
+
+
+meta_influx-post() { ## meta influx-post <db> <file>: Post contents of file (in influx line protocol) to influx
+	handle_help "$@" <<-EOF
+		Post data to InfluxDB. Must be [influx line protocol formatted](https://docs.influxdata.com/influxdb/v1.7/write_protocols/line_protocol_tutorial/)
+
+		Posting data from a file:
+
+		    $ gxadmin meta influx-post galaxy file.inflx
+
+		Posting data from the output of a command
+
+		    $ gxadmin meta influx-post galaxy <(echo "weather,location=us-midwest temperature=\$RANDOM \$(date +%s%N)")
+
+		Posting data from the output of a gxadmin command
+
+		    $ gxadmin meta influx-post galaxy <(gxadmin meta slurp-current --date)
+
+		**WARNING** If you are sending a LOT of data points, consider splitting
+		them. Influx recommends 5-10k lines:
+
+		    $ split --lines=5000 data.iflx PREFIX
+		    $ for file in PREFIX*; do gxadmin meta influx-post galaxy $file; done
+	EOF
+
+	assert_set_env INFLUX_URL
+	assert_set_env INFLUX_PASS
+	assert_set_env INFLUX_USER
+
+	assert_count_ge $# 2 "Must supply DB and then data file path"
+	DB="$1"
+	FILE="$2"
+
+	# If the user is reading the output of a command then it'll be a transient
+	# FD and might fail this check? Or it has for me. So if proc is in there,
+	# don't bother asserting that it exists.
+	if [[ "$FILE" != "/proc/"* ]]; then
+		assert_file "$FILE"
+	fi
+
+	curl -XPOST "${INFLUX_URL}/write?db=${DB}&u=${INFLUX_USER}&p=${INFLUX_PASS}" --data-binary @${FILE}
+}
+
+meta_influx-query() { ## meta influx-query <db> "<query>": Query an influx DB
+	handle_help "$@" <<-EOF
+		Query an InfluxDB
+
+		Query percentage of memory used over last hour.
+
+		    $ gxadmin meta influx-query galaxy "select mean(used_percent) from mem where host='X' AND time > now() - 1h group by time(10m)" | \\
+		        jq '.results[0].series[0].values[] | @tsv' -r
+		    2019-04-26T09:30:00Z    64.83119975586277
+		    2019-04-26T09:40:00Z    64.58284600472675
+		    2019-04-26T09:50:00Z    64.62714491344244
+		    2019-04-26T10:00:00Z    64.62339148181154
+		    2019-04-26T10:10:00Z    63.95268353798708
+		    2019-04-26T10:20:00Z    64.66849537282599
+		    2019-04-26T10:30:00Z    65.06069941790024
+	EOF
+
+	assert_set_env INFLUX_URL
+	assert_set_env INFLUX_PASS
+	assert_set_env INFLUX_USER
+
+	assert_count_ge $# 2 "Must supply DB and then query"
+	DB="$1"
+	QUERY="$2"
+
+	curl --silent "${INFLUX_URL}/query?db=${DB}&u=${INFLUX_USER}&p=${INFLUX_PASS}" --data-urlencode "q=${QUERY}"
+}
+
+meta_iquery-grt-export() { ## meta iquery-grt-export: Export data from a GRT database for sending to influx
+	handle_help "$@" <<-EOF
+		**WARNING**: GRT database specific query, will not work with a galaxy database!
+	EOF
+
+	fields="count=4"
+	timestamp="3"
+	tags="tool_id=0;tool_version=1;instance=2"
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			api_job.tool_id,
+			api_job.tool_version,
+			api_galaxyinstance.title,
+			extract(epoch from date_trunc('week', api_job.create_time)) || '000000000' as date,
+			count(*)
+		FROM
+			api_job, api_galaxyinstance
+		WHERE
+			api_job.instance_id = api_galaxyinstance.id
+		GROUP BY
+			api_job.tool_id,
+			api_job.tool_version,
+			api_galaxyinstance.title,
+			date
+	EOF
 }

@@ -13,7 +13,7 @@ config dump -  Dump Galaxy configuration as JSON
 
 **SYNOPSIS**
 
-gxadmin config dump
+`gxadmin config dump`
 
 **NOTES**
 
@@ -40,7 +40,7 @@ config validate -  validate config files
 
 **SYNOPSIS**
 
-gxadmin config validate
+`gxadmin config validate`
 
 **NOTES**
 

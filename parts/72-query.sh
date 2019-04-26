@@ -20,14 +20,10 @@ query() {
 	# We do not run this in a subshell because we need to "return" multiple things.
 	obtain_query $query_name "$@"
 
-	# TODO(hxr)
-	#ec=$?
-	#if (( ec > 0 )); then
-		#echo "$db_query"
-		#exit 0
-	#fi
+	# If query in error, exit.
 	if [[ "$QUERY" == "ERROR" ]]; then
 		usage query
+		exit 1
 	fi
 
 	# Run the queries
@@ -35,7 +31,7 @@ query() {
 		tsvquery )  query_tsv "$QUERY";;
 		csvquery )  query_csv "$QUERY";;
 		query    )  query_tbl "$QUERY";;
-		iquery   )  query_influx "$QUERY" "$query_name" "$fields" "$tags";;
+		iquery   )  query_influx "$QUERY" "$query_name" "$fields" "$tags" "$timestamp";;
 		# default
 		*        )  usage "Error";;
 	esac

@@ -1,3 +1,9 @@
+# 13 - pre
+
+- Added:
+	- local functions support querying when prefixed with `query-`
+	- `meta influx-post` and `meta influx-query` were added to get data into and out of Influx
+
 # 12
 
 - Added:
@@ -5,6 +11,7 @@
 	- (semi) EU specific systemd handler/zergling management commands
 	- filter digest-color: command to colour some text
 	- filter identicon: command to generate an identicon
+	- Some basic testing of the overall script
 - Fixed:
 	- Correct time zones in all queries to be client-side time zones rather than UTC encoded timestamps as stored in db (Thanks @slugger70!)
 	- Renamed: `query monthly-users` → `query monthly-users-active`

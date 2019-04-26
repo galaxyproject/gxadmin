@@ -2,9 +2,87 @@
 
 Command | Description
 ------- | -----------
+[`meta influx-post`](#galaxy-migrate-tool-install-to-sqlite) | Post contents of file (in influx line protocol) to influx
+[`meta influx-query`](#galaxy-migrate-tool-install-to-sqlite) | Query an influx DB
+[`meta iquery-grt-export`](#galaxy-migrate-tool-install-to-sqlite) | Export data from a GRT database for sending to influx
 [`meta slurp-current`](#galaxy-migrate-tool-install-to-sqlite) | Executes what used to be "Galaxy Slurp"
 [`meta slurp-upto`](#galaxy-migrate-tool-install-to-sqlite) | Slurps data "up to" a specific date.
 [`meta update`](#galaxy-migrate-tool-install-to-sqlite) | Update the script
+
+### meta influx-post
+
+**NAME**
+
+meta influx-post -  Post contents of file (in influx line protocol) to influx
+
+**SYNOPSIS**
+
+`gxadmin meta influx-post <db> <file>`
+
+**NOTES**
+
+Post data to InfluxDB. Must be [influx line protocol formatted](https://docs.influxdata.com/influxdb/v1.7/write_protocols/line_protocol_tutorial/)
+
+Posting data from a file:
+
+    $ gxadmin meta influx-post galaxy file.inflx
+
+Posting data from the output of a command
+
+    $ gxadmin meta influx-post galaxy <(echo "weather,location=us-midwest temperature=$RANDOM $(date +%s%N)")
+
+Posting data from the output of a gxadmin command
+
+    $ gxadmin meta influx-post galaxy <(gxadmin meta slurp-current --date)
+
+**WARNING** If you are sending a LOT of data points, consider splitting
+them. Influx recommends 5-10k lines:
+
+    $ split --lines=5000 data.iflx PREFIX
+    $ for file in PREFIX*; do gxadmin meta influx-post galaxy ; done
+
+
+### meta influx-query
+
+**NAME**
+
+meta influx-query -  Query an influx DB
+
+**SYNOPSIS**
+
+`gxadmin meta influx-query <db> "<query>"`
+
+**NOTES**
+
+Query an InfluxDB
+
+Query percentage of memory used over last hour.
+
+    $ gxadmin meta influx-query galaxy "select mean(used_percent) from mem where host='X' AND time > now() - 1h group by time(10m)" | \
+        jq '.results[0].series[0].values[] | @tsv' -r
+    2019-04-26T09:30:00Z    64.83119975586277
+    2019-04-26T09:40:00Z    64.58284600472675
+    2019-04-26T09:50:00Z    64.62714491344244
+    2019-04-26T10:00:00Z    64.62339148181154
+    2019-04-26T10:10:00Z    63.95268353798708
+    2019-04-26T10:20:00Z    64.66849537282599
+    2019-04-26T10:30:00Z    65.06069941790024
+
+
+### meta iquery-grt-export
+
+**NAME**
+
+meta iquery-grt-export -  Export data from a GRT database for sending to influx
+
+**SYNOPSIS**
+
+`gxadmin meta iquery-grt-export`
+
+**NOTES**
+
+**WARNING**: GRT database specific query, will not work with a galaxy database!
+
 
 ### meta slurp-current
 
@@ -14,7 +92,7 @@ meta slurp-current -  Executes what used to be "Galaxy Slurp"
 
 **SYNOPSIS**
 
-gxadmin meta slurp-current
+`gxadmin meta slurp-current [--date]`
 
 **NOTES**
 
@@ -24,6 +102,9 @@ count" and "Current dataset size/distribution/etc."
 
 It is expected that you are passing this straight to telegraf, there is
 no non-influx output supported currently.
+
+Supplying --date will include the current timestamp at the end of the
+line, making it compatible for "gxadmin meta influx-post" usage
 
 You can add your own functions which are included in this output, using
 the $GXADMIN_SITE_SPECIFIC file. They must start with the prefix
@@ -70,7 +151,7 @@ meta slurp-upto -  Slurps data "up to" a specific date.
 
 **SYNOPSIS**
 
-gxadmin meta slurp-upto [yyyy-mm-dd]
+`gxadmin meta slurp-upto <yyyy-mm-dd> [--date]`
 
 **NOTES**
 
@@ -89,6 +170,9 @@ no non-influx output supported currently.
 
 This calls all of the same functions as 'gxadmin meta slurp-current',
 but with date filters for the entries' creation times.
+
+Supplying --date will include the supplied yyyy-mm-dd timestamp at the
+end of the line, making it compatible for "gxadmin meta influx-post" usage
 
 You can add your own functions which are included in this output, using
 the $GXADMIN_SITE_SPECIFIC file. They must start with the prefix
@@ -123,5 +207,5 @@ meta update -  Update the script
 
 **SYNOPSIS**
 
-gxadmin meta update
+`gxadmin meta update`
 

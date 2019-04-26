@@ -444,6 +444,7 @@ query_jobs-per-user() { ## query jobs-per-user <email>: Number of jobs run by a 
 				SELECT id
 				FROM galaxy_user
 				WHERE email = '$1'
+			)
 	EOF
 }
 
@@ -1295,7 +1296,7 @@ query_server-datasets() {
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			state, deleted, purged, object_store_id, count(*), coalesce(sum(total_size), 0)
+			state, deleted, purged, coalesce(object_store_id, 'none'), count(*), coalesce(sum(total_size), 0)
 		FROM
 			dataset
 		GROUP BY

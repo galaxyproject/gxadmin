@@ -35,26 +35,26 @@ import sys
 import hashlib
 
 def colored(fg, bg, value):
-    return '\x1b[38;5;{0}m\x1b[48;5;{1}m{2}\x1b[0m'.format(fg, bg, value)
+	return '\x1b[38;5;{0}m\x1b[48;5;{1}m{2}\x1b[0m'.format(fg, bg, value)
 
 class Iden:
-    def build(self, h):
-        pixels = [[0 for _ in range(5)] for _ in range(5)]
-        for i in range(0, 5):
-            for x in range(0, 5):
-                pixels[x][i] = self.showPixel(i, x, h)
-        return pixels
+	def build(self, h):
+		pixels = [[0 for _ in range(5)] for _ in range(5)]
+		for i in range(0, 5):
+			for x in range(0, 5):
+				pixels[x][i] = self.showPixel(i, x, h)
+		return pixels
 
-    def showPixel(self, x, y, h):
-        m = 6 + abs(2-x) * 5 + y
-        return int(h[m:m+1], 16) % 2 == 0
+	def showPixel(self, x, y, h):
+		m = 6 + abs(2-x) * 5 + y
+		return int(h[m:m+1], 16) % 2 == 0
 
-    def getIcon(self, num, hash_string):
-        for x in self.build(hash_string):
-            yield ''.join([
-                colored(num, num + 15 % 255, '██' if q else '  ')
-                for q in x
-            ])
+	def getIcon(self, num, hash_string):
+		for x in self.build(hash_string):
+			yield ''.join([
+				colored(num, num + 15 % 255, '██' if q else '  ')
+				for q in x
+			])
 
 data = sys.stdin.read().strip()
 m = hashlib.sha256()
@@ -62,7 +62,7 @@ m.update(data.encode('UTF-8'))
 hash_string = m.hexdigest()
 num = int(hash_string[0:2], 16)
 for line in Iden().getIcon(num, hash_string):
-    print(line)
+	print(line)
 EOF
 )
 ifmore() {
@@ -146,7 +146,8 @@ usage(){
 	if (( $# == 0  )) || [[ $1 == "query" ]]; then
 		cat <<-EOF
 			DB Queries:
-			  'query' can be exchanged with 'tsvquery' or 'csvquery' for tab- and comma-separated variants
+			  'query' can be exchanged with 'tsvquery' or 'csvquery' for tab- and comma-separated variants.
+			  In some cases 'iquery' is supported for InfluxDB compatible output.
 
 			$(echo "$cmds" | filter_commands query $1)
 
@@ -229,7 +230,7 @@ handle_help() {
 			echo
 			echo "**SYNOPSIS**"
 			echo
-			echo $short_parm
+			echo '`'$short_parm'`'
 			echo
 			manual="$(cat -)"
 			manual_wc="$(echo $manual | wc -c)"
@@ -271,7 +272,6 @@ wait_for_url() {
 assert_count() {
 	if (( $1 != $2 )); then
 		error "$3"
-		usage
 		exit 1
 	fi
 }
@@ -279,8 +279,20 @@ assert_count() {
 assert_count_ge() {
 	if (( $1 < $2 )); then
 		error "$3"
-		usage
 		exit 1
+	fi
+}
+
+assert_file() {
+	if [[ ! -f "$1" ]]; then
+		error File $1 does not exist
+		exit 1
+	fi
+}
+
+assert_file_warn() {
+	if [[ ! -f "$1" ]]; then
+		warning File $1 does not exist
 	fi
 }
 query_tbl() {
@@ -309,6 +321,11 @@ fields = {x.split('=')[0]: int(x.split('=')[1]) for x in sys.argv[2].split(';')}
 tags = []
 if len(sys.argv) > 3 and len(sys.argv[3]) > 0:
 	tags = {x.split('=')[0]: int(x.split('=')[1]) for x in sys.argv[3].split(';')}
+
+timestamp = None
+if len(sys.argv) > 4 and sys.argv[4] != '':
+	timestamp = int(sys.argv[4])
+
 for line in sys.stdin.read().split('\n'):
 	if len(line) == 0:
 		continue
@@ -319,11 +336,14 @@ for line in sys.stdin.read().split('\n'):
 		metric += ',' + ','.join(tag_data)
 	field_data = ['%s=%s' % (k, parsed[v])  for (k, v) in fields.items()]
 	metric += ' ' + ','.join(field_data)
+
+	if timestamp is not None:
+		metric += ' ' + str(parsed[timestamp])
 	print(metric)
 EOF
 )
 
-	psql -c "COPY ($1) to STDOUT with CSV DELIMITER E','"| python -c "$arr2py" "$2" "$3" "$4"
+	psql -c "COPY ($1) to STDOUT with CSV DELIMITER E','"| python -c "$arr2py" "$2" "$3" "$4" "$5"
 }
 
 gdpr_safe() {
@@ -1013,6 +1033,7 @@ query_jobs-per-user() { ## query jobs-per-user <email>: Number of jobs run by a 
 				SELECT id
 				FROM galaxy_user
 				WHERE email = '$1'
+			)
 	EOF
 }
 
@@ -1864,7 +1885,7 @@ query_server-datasets() {
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			state, deleted, purged, object_store_id, count(*), coalesce(sum(total_size), 0)
+			state, deleted, purged, coalesce(object_store_id, 'none'), count(*), coalesce(sum(total_size), 0)
 		FROM
 			dataset
 		GROUP BY
@@ -3026,17 +3047,17 @@ EOF
 	tbl=$(echo "$results" | python -c "$hexdecodelines" | jq -S '.[] | [.name, .version, .dependency_type, .cacheable, .exact, .environment_path, .model_class] | @tsv' -r)
 	printf "Name\tVersion\tDependency Type\tCacheable\tExact\tEnvironment Path\tModel Class\n----\t-------\t---------------\t---------\t-----\t----------------\t-----------\n$tbl\n" | sed 's/\t/\t | \t/g'       #| column -t -s'	'
 
-    ###        ###
-    # JOB PARAMS #
-    ###        ###
-    read -r -d '' qstr <<-EOF
-        SELECT j.name, j.value
-        FROM job_parameter j
-        WHERE j.job_id = $job_id
-    EOF
-    results=$(query_tsv "$qstr")
-    printf "\n## Tool Parameters\n\n"
-    printf "Name\tSettings\n---------\t------------------------------------\n$results\n\n" | sed 's/\t/\t | \t/g' | sed 's/[\"\`]//g'
+	###        ###
+	# JOB PARAMS #
+	###        ###
+	read -r -d '' qstr <<-EOF
+		SELECT j.name, j.value
+		FROM job_parameter j
+		WHERE j.job_id = $job_id
+	EOF
+	results=$(query_tsv "$qstr")
+	printf "\n## Tool Parameters\n\n"
+	printf "Name\tSettings\n---------\t------------------------------------\n$results\n\n" | sed 's/\t/\t | \t/g' | sed 's/[\"\`]//g'
 
 	###      ###
 	#  INPUTS  #
@@ -3267,7 +3288,7 @@ meta_cmdlist() {
 	done
 }
 
-meta_slurp-current() { ## meta slurp-current: Executes what used to be "Galaxy Slurp"
+meta_slurp-current() { ## meta slurp-current [--date]: Executes what used to be "Galaxy Slurp"
 	handle_help "$@" <<-EOF
 		Obtain influx compatible metrics regarding the current state of the
 		server. UseGalaxy.EU uses this to display things like "Current user
@@ -3275,6 +3296,9 @@ meta_slurp-current() { ## meta slurp-current: Executes what used to be "Galaxy S
 
 		It is expected that you are passing this straight to telegraf, there is
 		no non-influx output supported currently.
+
+		Supplying --date will include the current timestamp at the end of the
+		line, making it compatible for "gxadmin meta influx-post" usage
 
 		You can add your own functions which are included in this output, using
 		the \$GXADMIN_SITE_SPECIFIC file. They must start with the prefix
@@ -3313,13 +3337,18 @@ meta_slurp-current() { ## meta slurp-current: Executes what used to be "Galaxy S
 		    server-workflows,deleted=f,importable=f,published=f count=3
 	EOF
 
+	append=""
+	if [[ $1 == "--date" ]]; then
+		append=" "$(date +%s%N)
+	fi
+
 	for func in $(grep -s -h -o '^query_server-[a-z-]*' $0 $GXADMIN_SITE_SPECIFIC | sort | sed 's/query_//g'); do
 		obtain_query $func
-		query_influx "$QUERY" "$query_name" "$fields" "$tags"
+		query_influx "$QUERY" "$query_name" "$fields" "$tags" | sed "s/$/$append/"
 	done
 }
 
-meta_slurp-upto() { ## meta slurp-upto [yyyy-mm-dd]: Slurps data "up to" a specific date.
+meta_slurp-upto() { ## meta slurp-upto <yyyy-mm-dd> [--date]: Slurps data "up to" a specific date.
 	handle_help "$@" <<-EOF
 		Obtain influx compatible metrics regarding the summed state of the
 		server up to a specific date. UseGalaxy.EU uses this to display things
@@ -3336,6 +3365,9 @@ meta_slurp-upto() { ## meta slurp-upto [yyyy-mm-dd]: Slurps data "up to" a speci
 
 		This calls all of the same functions as 'gxadmin meta slurp-current',
 		but with date filters for the entries' creation times.
+
+		Supplying --date will include the supplied yyyy-mm-dd timestamp at the
+	end of the line, making it compatible for "gxadmin meta influx-post" usage
 
 		You can add your own functions which are included in this output, using
 		the \$GXADMIN_SITE_SPECIFIC file. They must start with the prefix
@@ -3363,9 +3395,14 @@ meta_slurp-upto() { ## meta slurp-upto [yyyy-mm-dd]: Slurps data "up to" a speci
 
 	EOF
 
+	append=""
+	if [[ $2 == "--date" ]]; then
+		append=" "$(date -d "$1" +%s%N)
+	fi
+
 	for func in $(grep -s -h -o '^query_server-[a-z-]*' $0 $GXADMIN_SITE_SPECIFIC | sort | sed 's/query_//g'); do
 		obtain_query $func $1
-		query_influx "$QUERY" "$query_name.daily" "$fields" "$tags"
+		query_influx "$QUERY" "$query_name.daily" "$fields" "$tags" | sed "s/$/$append/"
 	done
 }
 
@@ -3379,6 +3416,104 @@ meta_warning() {
 
 meta_success() {
 	success "$@"
+}
+
+
+meta_influx-post() { ## meta influx-post <db> <file>: Post contents of file (in influx line protocol) to influx
+	handle_help "$@" <<-EOF
+		Post data to InfluxDB. Must be [influx line protocol formatted](https://docs.influxdata.com/influxdb/v1.7/write_protocols/line_protocol_tutorial/)
+
+		Posting data from a file:
+
+		    $ gxadmin meta influx-post galaxy file.inflx
+
+		Posting data from the output of a command
+
+		    $ gxadmin meta influx-post galaxy <(echo "weather,location=us-midwest temperature=\$RANDOM \$(date +%s%N)")
+
+		Posting data from the output of a gxadmin command
+
+		    $ gxadmin meta influx-post galaxy <(gxadmin meta slurp-current --date)
+
+		**WARNING** If you are sending a LOT of data points, consider splitting
+		them. Influx recommends 5-10k lines:
+
+		    $ split --lines=5000 data.iflx PREFIX
+		    $ for file in PREFIX*; do gxadmin meta influx-post galaxy $file; done
+	EOF
+
+	assert_set_env INFLUX_URL
+	assert_set_env INFLUX_PASS
+	assert_set_env INFLUX_USER
+
+	assert_count_ge $# 2 "Must supply DB and then data file path"
+	DB="$1"
+	FILE="$2"
+
+	# If the user is reading the output of a command then it'll be a transient
+	# FD and might fail this check? Or it has for me. So if proc is in there,
+	# don't bother asserting that it exists.
+	if [[ "$FILE" != "/proc/"* ]]; then
+		assert_file "$FILE"
+	fi
+
+	curl -XPOST "${INFLUX_URL}/write?db=${DB}&u=${INFLUX_USER}&p=${INFLUX_PASS}" --data-binary @${FILE}
+}
+
+meta_influx-query() { ## meta influx-query <db> "<query>": Query an influx DB
+	handle_help "$@" <<-EOF
+		Query an InfluxDB
+
+		Query percentage of memory used over last hour.
+
+		    $ gxadmin meta influx-query galaxy "select mean(used_percent) from mem where host='X' AND time > now() - 1h group by time(10m)" | \\
+		        jq '.results[0].series[0].values[] | @tsv' -r
+		    2019-04-26T09:30:00Z    64.83119975586277
+		    2019-04-26T09:40:00Z    64.58284600472675
+		    2019-04-26T09:50:00Z    64.62714491344244
+		    2019-04-26T10:00:00Z    64.62339148181154
+		    2019-04-26T10:10:00Z    63.95268353798708
+		    2019-04-26T10:20:00Z    64.66849537282599
+		    2019-04-26T10:30:00Z    65.06069941790024
+	EOF
+
+	assert_set_env INFLUX_URL
+	assert_set_env INFLUX_PASS
+	assert_set_env INFLUX_USER
+
+	assert_count_ge $# 2 "Must supply DB and then query"
+	DB="$1"
+	QUERY="$2"
+
+	curl --silent "${INFLUX_URL}/query?db=${DB}&u=${INFLUX_USER}&p=${INFLUX_PASS}" --data-urlencode "q=${QUERY}"
+}
+
+meta_iquery-grt-export() { ## meta iquery-grt-export: Export data from a GRT database for sending to influx
+	handle_help "$@" <<-EOF
+		**WARNING**: GRT database specific query, will not work with a galaxy database!
+	EOF
+
+	fields="count=4"
+	timestamp="3"
+	tags="tool_id=0;tool_version=1;instance=2"
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			api_job.tool_id,
+			api_job.tool_version,
+			api_galaxyinstance.title,
+			extract(epoch from date_trunc('week', api_job.create_time)) || '000000000' as date,
+			count(*)
+		FROM
+			api_job, api_galaxyinstance
+		WHERE
+			api_job.instance_id = api_galaxyinstance.id
+		GROUP BY
+			api_job.tool_id,
+			api_job.tool_version,
+			api_galaxyinstance.title,
+			date
+	EOF
 }
 meta_completion() {
 	IFS=$'\n'
@@ -3430,6 +3565,12 @@ look_for() {
 
 	if (( $? == 0 )); then
 		$fn "$@";
+
+		if [[ "${query_name}" == "query"* ]]; then
+			query_tbl "$QUERY"
+		elif [[ "${query_name}" == "iquery"* ]]; then
+			query_influx "$QUERY" "$query_name" "$fields" "$tags" "$timestamp"
+		fi
 	else
 		usage ${group_name}
 	fi
@@ -3483,14 +3624,10 @@ query() {
 	# We do not run this in a subshell because we need to "return" multiple things.
 	obtain_query $query_name "$@"
 
-	# TODO(hxr)
-	#ec=$?
-	#if (( ec > 0 )); then
-		#echo "$db_query"
-		#exit 0
-	#fi
+	# If query in error, exit.
 	if [[ "$QUERY" == "ERROR" ]]; then
 		usage query
+		exit 1
 	fi
 
 	# Run the queries
@@ -3498,7 +3635,7 @@ query() {
 		tsvquery )  query_tsv "$QUERY";;
 		csvquery )  query_csv "$QUERY";;
 		query    )  query_tbl "$QUERY";;
-		iquery   )  query_influx "$QUERY" "$query_name" "$fields" "$tags";;
+		iquery   )  query_influx "$QUERY" "$query_name" "$fields" "$tags" "$timestamp";;
 		# default
 		*        )  usage "Error";;
 	esac
@@ -3525,7 +3662,12 @@ local_funcs() {
 		if [[ -z "${GXADMIN_BUGGER_OFF}" ]] && (( ($RANDOM % 25) == 0 )); then
 			warning "Hey! It's great that you're using gxadmin! You should contribute these functions back :) Other people might find these useful, or could learn something from the code you've written, even if you think it is too specific to your site."
 		fi
+
 		$fn "$@";
+
+		if [[ "${query_name}" == "query"* ]]; then
+			query_tbl "$QUERY"
+		fi
 	else
 		usage ${group_name}
 	fi

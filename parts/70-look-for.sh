@@ -8,6 +8,12 @@ look_for() {
 
 	if (( $? == 0 )); then
 		$fn "$@";
+
+		if [[ "${query_name}" == "query"* ]]; then
+			query_tbl "$QUERY"
+		elif [[ "${query_name}" == "iquery"* ]]; then
+			query_influx "$QUERY" "$query_name" "$fields" "$tags" "$timestamp"
+		fi
 	else
 		usage ${group_name}
 	fi
