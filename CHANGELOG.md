@@ -1,8 +1,13 @@
+# 13 - pre
+
+- Added:
+	- local functions support querying when prefixed with `query-`
+	- `meta influx-post` and `meta influx-query` were added to get data into and out of Influx
+
 # 12
 
 - Added:
 	- local functions, users can add functions to a separate file which are made available in gxadmin. @erasche resisted implementing these for a long time for fears that they won't be contributed back and everyone would keep their precious sql private. So they may nag you occasionally to contribute them back.
-		- local functions can be queries, if prefixed with `query-`
 	- (semi) EU specific systemd handler/zergling management commands
 	- filter digest-color: command to colour some text
 	- filter identicon: command to generate an identicon

@@ -25,7 +25,6 @@ wait_for_url() {
 assert_count() {
 	if (( $1 != $2 )); then
 		error "$3"
-		usage
 		exit 1
 	fi
 }
@@ -33,7 +32,19 @@ assert_count() {
 assert_count_ge() {
 	if (( $1 < $2 )); then
 		error "$3"
-		usage
 		exit 1
+	fi
+}
+
+assert_file() {
+	if [[ ! -f "$1" ]]; then
+		error File $1 does not exist
+		exit 1
+	fi
+}
+
+assert_file_warn() {
+	if [[ ! -f "$1" ]]; then
+		warning File $1 does not exist
 	fi
 }
