@@ -3365,7 +3365,7 @@ meta_iquery-grt-export() { ## meta iquery-grt-export: Export data from a GRT dat
 			api_job.tool_id,
 			api_job.tool_version,
 			api_galaxyinstance.title,
-			extract(epoch from date_trunc('week', j.create_time)) || '000000000' as date,
+			extract(epoch from date_trunc('week', api_job.create_time)) || '000000000' as date,
 			count(*)
 		FROM
 			api_job, api_galaxyinstance
