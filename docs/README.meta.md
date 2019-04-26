@@ -16,7 +16,7 @@ meta influx-post -  Post contents of file (in influx line protocol) to influx
 
 **SYNOPSIS**
 
-gxadmin meta influx-post <db> <file>
+`gxadmin meta influx-post <db> <file>`
 
 **NOTES**
 
@@ -49,7 +49,7 @@ meta influx-query -  Query an influx DB
 
 **SYNOPSIS**
 
-gxadmin meta influx-query <db> "<query>"
+`gxadmin meta influx-query <db> "<query>"`
 
 **NOTES**
 
@@ -75,7 +75,7 @@ meta slurp-current -  Executes what used to be "Galaxy Slurp"
 
 **SYNOPSIS**
 
-gxadmin meta slurp-current [--date]
+`gxadmin meta slurp-current [--date]`
 
 **NOTES**
 
@@ -134,7 +134,7 @@ meta slurp-upto -  Slurps data "up to" a specific date.
 
 **SYNOPSIS**
 
-gxadmin meta slurp-upto <yyyy-mm-dd> [--date]
+`gxadmin meta slurp-upto <yyyy-mm-dd> [--date]`
 
 **NOTES**
 
@@ -190,5 +190,5 @@ meta update -  Update the script
 
 **SYNOPSIS**
 
-gxadmin meta update
+`gxadmin meta update`
 

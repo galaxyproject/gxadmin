@@ -53,7 +53,7 @@ query collection-usage -  Information about how many collections of various type
 
 **SYNOPSIS**
 
-gxadmin query collection-usage
+`gxadmin query collection-usage`
 
 
 ### query datasets-created-daily
@@ -64,7 +64,7 @@ query datasets-created-daily -  The min/max/average/p95/p99 of total size of dat
 
 **SYNOPSIS**
 
-gxadmin query datasets-created-daily
+`gxadmin query datasets-created-daily`
 
 **NOTES**
 
@@ -82,7 +82,7 @@ query disk-usage -  Disk usage per object store.
 
 **SYNOPSIS**
 
-gxadmin query disk-usage [--nice]
+`gxadmin query disk-usage [--nice]`
 
 **NOTES**
 
@@ -115,7 +115,7 @@ query errored-jobs -  Lists jobs that errored in the last N hours.
 
 **SYNOPSIS**
 
-gxadmin query errored-jobs <hours>
+`gxadmin query errored-jobs <hours>`
 
 **NOTES**
 
@@ -133,7 +133,7 @@ query groups-list -  List all groups known to Galaxy
 
 **SYNOPSIS**
 
-gxadmin query groups-list
+`gxadmin query groups-list`
 
 
 ### query job-history
@@ -144,7 +144,7 @@ query job-history -  Job state history for a specific job
 
 **SYNOPSIS**
 
-gxadmin query job-history <id>
+`gxadmin query job-history <id>`
 
 **NOTES**
 
@@ -166,7 +166,7 @@ query job-inputs -  Input datasets to a specific job
 
 **SYNOPSIS**
 
-gxadmin query job-inputs <id>
+`gxadmin query job-inputs <id>`
 
 
 ### query job-outputs
@@ -177,7 +177,7 @@ query job-outputs -  Output datasets from a specific job
 
 **SYNOPSIS**
 
-gxadmin query job-outputs <id>
+`gxadmin query job-outputs <id>`
 
 
 ### query jobs-max-by-cpu-hours
@@ -188,7 +188,7 @@ query jobs-max-by-cpu-hours -  Top 10 jobs by CPU hours consumed (requires CGrou
 
 **SYNOPSIS**
 
-gxadmin query jobs-max-by-cpu-hours
+`gxadmin query jobs-max-by-cpu-hours`
 
 
 ### query jobs-nonterminal
@@ -199,7 +199,7 @@ query jobs-nonterminal -  Job info of nonterminal jobs separated by user
 
 **SYNOPSIS**
 
-gxadmin query jobs-nonterminal [username|id|email]
+`gxadmin query jobs-nonterminal [username|id|email]`
 
 **NOTES**
 
@@ -241,7 +241,7 @@ query jobs-per-user -  Number of jobs run by a specific user
 
 **SYNOPSIS**
 
-gxadmin query jobs-per-user <email>
+`gxadmin query jobs-per-user <email>`
 
 **NOTES**
 
@@ -259,7 +259,7 @@ query largest-collection -  Returns the size of the single largest collection
 
 **SYNOPSIS**
 
-gxadmin query largest-collection
+`gxadmin query largest-collection`
 
 
 ### query largest-histories
@@ -270,7 +270,7 @@ query largest-histories -  Largest histories in Galaxy
 
 **SYNOPSIS**
 
-gxadmin query largest-histories
+`gxadmin query largest-histories`
 
 **NOTES**
 
@@ -296,7 +296,7 @@ query latest-users -  40 recently registered users
 
 **SYNOPSIS**
 
-gxadmin query latest-users
+`gxadmin query latest-users`
 
 **NOTES**
 
@@ -316,7 +316,7 @@ query monthly-cpu-years -  CPU years allocated to tools by month
 
 **SYNOPSIS**
 
-gxadmin query monthly-cpu-years
+`gxadmin query monthly-cpu-years`
 
 **NOTES**
 
@@ -354,7 +354,7 @@ query monthly-data -  Number of active users per month, running jobs
 
 **SYNOPSIS**
 
-gxadmin query monthly-data [year]
+`gxadmin query monthly-data [year]`
 
 **NOTES**
 
@@ -385,7 +385,7 @@ query monthly-jobs -  Number of jobs run each month
 
 **SYNOPSIS**
 
-gxadmin query monthly-jobs [year]
+`gxadmin query monthly-jobs [year]`
 
 **NOTES**
 
@@ -416,7 +416,7 @@ query monthly-users-active -  Number of active users per month, running jobs
 
 **SYNOPSIS**
 
-gxadmin query monthly-users-active [year]
+`gxadmin query monthly-users-active [year]`
 
 **NOTES**
 
@@ -447,7 +447,7 @@ query monthly-users-registered -  Number of users registered each month
 
 **SYNOPSIS**
 
-gxadmin query monthly-users-registered [year]
+`gxadmin query monthly-users-registered [year]`
 
 
 ### query old-histories
@@ -458,7 +458,7 @@ query old-histories -  Lists histories that haven't been updated (used) for <wee
 
 **SYNOPSIS**
 
-gxadmin query old-histories <weeks>
+`gxadmin query old-histories <weeks>`
 
 **NOTES**
 
@@ -486,7 +486,7 @@ query queue -  Brief overview of currently running jobs
 
 **SYNOPSIS**
 
-gxadmin query queue
+`gxadmin query queue`
 
 **NOTES**
 
@@ -513,7 +513,7 @@ query queue-detail -  Detailed overview of running and queued jobs
 
 **SYNOPSIS**
 
-gxadmin query queue-detail [--all]
+`gxadmin query queue-detail [--all]`
 
 **NOTES**
 
@@ -541,7 +541,7 @@ query queue-overview -  View used mostly for monitoring
 
 **SYNOPSIS**
 
-gxadmin query queue-overview [--short-tool-id]
+`gxadmin query queue-overview [--short-tool-id]`
 
 **NOTES**
 
@@ -559,7 +559,7 @@ query queue-time -  The average/95%/99% a specific tool spends in queue state.
 
 **SYNOPSIS**
 
-gxadmin query queue-time <tool_id>
+`gxadmin query queue-time <tool_id>`
 
 **NOTES**
 
@@ -577,7 +577,7 @@ query recent-jobs -  Jobs run in the past <hours> (in any state)
 
 **SYNOPSIS**
 
-gxadmin query recent-jobs <hours>
+`gxadmin query recent-jobs <hours>`
 
 **NOTES**
 
@@ -601,7 +601,7 @@ query runtime-per-user -  computation time of user (by email)
 
 **SYNOPSIS**
 
-gxadmin query runtime-per-user <email>
+`gxadmin query runtime-per-user <email>`
 
 **NOTES**
 
@@ -619,7 +619,7 @@ query tool-available-metrics -  list all available metrics for a given tool
 
 **SYNOPSIS**
 
-gxadmin query tool-available-metrics <tool_id>
+`gxadmin query tool-available-metrics <tool_id>`
 
 **NOTES**
 
@@ -643,7 +643,7 @@ query tool-last-used-date -  When was the most recent invocation of every tool
 
 **SYNOPSIS**
 
-gxadmin query tool-last-used-date
+`gxadmin query tool-last-used-date`
 
 **NOTES**
 
@@ -670,7 +670,7 @@ query tool-metrics -  See values of a specific metric
 
 **SYNOPSIS**
 
-gxadmin query tool-metrics <tool_id> <metric_id> [--like]
+`gxadmin query tool-metrics <tool_id> <metric_id> [--like]`
 
 **NOTES**
 
@@ -703,7 +703,7 @@ query tool-popularity -  Most run tools by month
 
 **SYNOPSIS**
 
-gxadmin query tool-popularity [months|24]
+`gxadmin query tool-popularity [months|24]`
 
 **NOTES**
 
@@ -731,7 +731,7 @@ query tool-usage -  Counts of tool runs in the past weeks (default = all)
 
 **SYNOPSIS**
 
-gxadmin query tool-usage [weeks]
+`gxadmin query tool-usage [weeks]`
 
 **NOTES**
 
@@ -757,7 +757,7 @@ query training-list -  List known trainings
 
 **SYNOPSIS**
 
-gxadmin query training-list [--all]
+`gxadmin query training-list [--all]`
 
 **NOTES**
 
@@ -777,7 +777,7 @@ query training-members-remove -  Remove a user from a training
 
 **SYNOPSIS**
 
-gxadmin query training-members-remove <training> <username> [YESDOIT]
+`gxadmin query training-members-remove <training> <username> [YESDOIT]`
 
 
 ### query training-members
@@ -788,7 +788,7 @@ query training-members -  List users in a specific training
 
 **SYNOPSIS**
 
-gxadmin query training-members <tr_id>
+`gxadmin query training-members <tr_id>`
 
 **NOTES**
 
@@ -806,7 +806,7 @@ query training-queue -  Jobs currently being run by people in a given training
 
 **SYNOPSIS**
 
-gxadmin query training-queue <training_id>
+`gxadmin query training-queue <training_id>`
 
 **NOTES**
 
@@ -826,7 +826,7 @@ query ts-repos -  Counts of toolshed repositories by toolshed and owner.
 
 **SYNOPSIS**
 
-gxadmin query ts-repos
+`gxadmin query ts-repos`
 
 
 ### query users-count
@@ -837,7 +837,7 @@ query users-count -  Shows sums of active/external/deleted/purged accounts
 
 **SYNOPSIS**
 
-gxadmin query users-count
+`gxadmin query users-count`
 
 **NOTES**
 
@@ -858,7 +858,7 @@ query users-total -  Total number of Galaxy users (incl deleted, purged, inactiv
 
 **SYNOPSIS**
 
-gxadmin query users-total
+`gxadmin query users-total`
 
 
 ### query workflow-connections
@@ -869,7 +869,7 @@ query workflow-connections -  The connections of tools, from output to input, in
 
 **SYNOPSIS**
 
-gxadmin query workflow-connections [--all]
+`gxadmin query workflow-connections [--all]`
 
 **NOTES**
 
@@ -898,7 +898,7 @@ query workflow-invocation-status -  Report on how many workflows are in new stat
 
 **SYNOPSIS**
 
-gxadmin query workflow-invocation-status
+`gxadmin query workflow-invocation-status`
 
 **NOTES**
 

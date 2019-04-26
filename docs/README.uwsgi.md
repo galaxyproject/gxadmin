@@ -24,7 +24,7 @@ uwsgi handler-restart -  Restart all handlers
 
 **SYNOPSIS**
 
-gxadmin uwsgi handler-restart
+`gxadmin uwsgi handler-restart`
 
 
 ### uwsgi handler-strace
@@ -35,7 +35,7 @@ uwsgi handler-strace -  Strace a handler
 
 **SYNOPSIS**
 
-gxadmin uwsgi handler-strace [number]
+`gxadmin uwsgi handler-strace [number]`
 
 
 ### uwsgi lastlog
@@ -46,7 +46,7 @@ uwsgi lastlog -  Fetch the number of seconds since the last log message was writ
 
 **SYNOPSIS**
 
-gxadmin uwsgi lastlog
+`gxadmin uwsgi lastlog`
 
 **NOTES**
 
@@ -78,7 +78,7 @@ uwsgi memory -  Current system memory usage
 
 **SYNOPSIS**
 
-gxadmin uwsgi memory
+`gxadmin uwsgi memory`
 
 **NOTES**
 
@@ -95,7 +95,7 @@ uwsgi pids -  Galaxy process PIDs
 
 **SYNOPSIS**
 
-gxadmin uwsgi pids
+`gxadmin uwsgi pids`
 
 **NOTES**
 
@@ -110,7 +110,7 @@ uwsgi stats-influx -  InfluxDB formatted output for the current stats
 
 **SYNOPSIS**
 
-gxadmin uwsgi stats-influx <addr>
+`gxadmin uwsgi stats-influx <addr>`
 
 **NOTES**
 
@@ -161,7 +161,7 @@ uwsgi status -  Current system status
 
 **SYNOPSIS**
 
-gxadmin uwsgi status
+`gxadmin uwsgi status`
 
 **NOTES**
 
@@ -176,7 +176,7 @@ uwsgi zerg-scale-down -  Remove an extraneous zergling
 
 **SYNOPSIS**
 
-gxadmin uwsgi zerg-scale-down
+`gxadmin uwsgi zerg-scale-down`
 
 
 ### uwsgi zerg-scale-up
@@ -187,7 +187,7 @@ uwsgi zerg-scale-up -  Add another zergling to deal with high load
 
 **SYNOPSIS**
 
-gxadmin uwsgi zerg-scale-up
+`gxadmin uwsgi zerg-scale-up`
 
 
 ### uwsgi zerg-strace
@@ -198,7 +198,7 @@ uwsgi zerg-strace -  Strace a zergling
 
 **SYNOPSIS**
 
-gxadmin uwsgi zerg-strace [number]
+`gxadmin uwsgi zerg-strace [number]`
 
 
 ### uwsgi zerg-swap
@@ -209,7 +209,7 @@ uwsgi zerg-swap -  Swap zerglings in order (unintelligent version)
 
 **SYNOPSIS**
 
-gxadmin uwsgi zerg-swap
+`gxadmin uwsgi zerg-swap`
 
 **NOTES**
 

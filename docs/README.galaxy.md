@@ -13,7 +13,7 @@ galaxy cleanup -  Cleanup histories/hdas/etc for past N days (default=30)
 
 **SYNOPSIS**
 
-gxadmin galaxy cleanup [days]
+`gxadmin galaxy cleanup [days]`
 
 **NOTES**
 
@@ -28,7 +28,7 @@ galaxy migrate-tool-install-to-sqlite -  Converts normal potsgres toolshed repos
 
 **SYNOPSIS**
 
-gxadmin galaxy migrate-tool-install-to-sqlite
+`gxadmin galaxy migrate-tool-install-to-sqlite`
 
 **NOTES**
 

@@ -15,7 +15,7 @@ filter digest-color -  Color an input stream based on the contents (e.g. hostnam
 
 **SYNOPSIS**
 
-gxadmin filter digest-color
+`gxadmin filter digest-color`
 
 **NOTES**
 
@@ -40,7 +40,7 @@ filter hexdecode -  Decodes any hex blobs from postgres outputs
 
 **SYNOPSIS**
 
-gxadmin filter hexdecode
+`gxadmin filter hexdecode`
 
 **NOTES**
 
@@ -100,7 +100,7 @@ filter identicon -  Convert an input data stream into an identicon (e.g. with ho
 
 **SYNOPSIS**
 
-gxadmin filter identicon
+`gxadmin filter identicon`
 
 **NOTES**
 
@@ -124,7 +124,7 @@ filter pg2md -  Convert postgres table format outputs to something that can be p
 
 **SYNOPSIS**
 
-gxadmin filter pg2md
+`gxadmin filter pg2md`
 
 **NOTES**
 

@@ -230,7 +230,7 @@ handle_help() {
 			echo
 			echo "**SYNOPSIS**"
 			echo
-			echo $short_parm
+			echo '`'$short_parm'`'
 			echo
 			manual="$(cat -)"
 			manual_wc="$(echo $manual | wc -c)"
