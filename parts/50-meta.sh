@@ -260,3 +260,31 @@ meta_influx-query() { ## meta influx-query <db> "<query>": Query an influx DB
 
 	curl --silent "${INFLUX_URL}/query?db=${DB}&u=${INFLUX_USER}&p=${INFLUX_PASS}" --data-urlencode "q=${QUERY}"
 }
+
+meta_iquery-grt-export() { ## meta iquery-grt-export: Export data from a GRT database for sending to influx
+	handle_help "$@" <<-EOF
+		**WARNING**: GRT database specific query, will not work with a galaxy database!
+	EOF
+
+	fields="count=4"
+	timestamp="3"
+	tags="tool_id=0;tool_version=1;instance=2"
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			api_job.tool_id,
+			api_job.tool_version,
+			api_galaxyinstance.title,
+			extract(epoch from date_trunc('week', j.create_time)) || '000000000' as date,
+			count(*)
+		FROM
+			api_job, api_galaxyinstance
+		WHERE
+			api_job.instance_id = api_galaxyinstance.id
+		GROUP BY
+			api_job.tool_id,
+			api_job.tool_version,
+			api_galaxyinstance.title,
+			date
+	EOF
+}

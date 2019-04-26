@@ -321,6 +321,11 @@ fields = {x.split('=')[0]: int(x.split('=')[1]) for x in sys.argv[2].split(';')}
 tags = []
 if len(sys.argv) > 3 and len(sys.argv[3]) > 0:
 	tags = {x.split('=')[0]: int(x.split('=')[1]) for x in sys.argv[3].split(';')}
+
+timestamp = None
+if len(sys.argv) > 4 and sys.argv[4] != '':
+	timestamp = int(sys.argv[4])
+
 for line in sys.stdin.read().split('\n'):
 	if len(line) == 0:
 		continue
@@ -331,11 +336,14 @@ for line in sys.stdin.read().split('\n'):
 		metric += ',' + ','.join(tag_data)
 	field_data = ['%s=%s' % (k, parsed[v])  for (k, v) in fields.items()]
 	metric += ' ' + ','.join(field_data)
+
+	if timestamp is not None:
+		metric += ' ' + str(parsed[timestamp])
 	print(metric)
 EOF
 )
 
-	psql -c "COPY ($1) to STDOUT with CSV DELIMITER E','"| python -c "$arr2py" "$2" "$3" "$4"
+	psql -c "COPY ($1) to STDOUT with CSV DELIMITER E','"| python -c "$arr2py" "$2" "$3" "$4" "$5"
 }
 
 gdpr_safe() {
@@ -3342,6 +3350,34 @@ meta_influx-query() { ## meta influx-query <db> "<query>": Query an influx DB
 
 	curl --silent "${INFLUX_URL}/query?db=${DB}&u=${INFLUX_USER}&p=${INFLUX_PASS}" --data-urlencode "q=${QUERY}"
 }
+
+meta_iquery-grt-export() { ## meta iquery-grt-export: Export data from a GRT database for sending to influx
+	handle_help "$@" <<-EOF
+		**WARNING**: GRT database specific query, will not work with a galaxy database!
+	EOF
+
+	fields="count=4"
+	timestamp="3"
+	tags="tool_id=0;tool_version=1;instance=2"
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			api_job.tool_id,
+			api_job.tool_version,
+			api_galaxyinstance.title,
+			extract(epoch from date_trunc('week', j.create_time)) || '000000000' as date,
+			count(*)
+		FROM
+			api_job, api_galaxyinstance
+		WHERE
+			api_job.instance_id = api_galaxyinstance.id
+		GROUP BY
+			api_job.tool_id,
+			api_job.tool_version,
+			api_galaxyinstance.title,
+			date
+	EOF
+}
 meta_completion() {
 	IFS=$'\n'
 	commands="$(grep -o '{ ## .*' $0 | grep -v grep | grep -v '| sed' | sort | sed 's/^{ ## //g' | \
@@ -3392,6 +3428,12 @@ look_for() {
 
 	if (( $? == 0 )); then
 		$fn "$@";
+
+		if [[ "${query_name}" == "query"* ]]; then
+			query_tbl "$QUERY"
+		elif [[ "${query_name}" == "iquery"* ]]; then
+			query_influx "$QUERY" "$query_name" "$fields" "$tags" "$timestamp"
+		fi
 	else
 		usage ${group_name}
 	fi
@@ -3445,14 +3487,10 @@ query() {
 	# We do not run this in a subshell because we need to "return" multiple things.
 	obtain_query $query_name "$@"
 
-	# TODO(hxr)
-	#ec=$?
-	#if (( ec > 0 )); then
-		#echo "$db_query"
-		#exit 0
-	#fi
+	# If query in error, exit.
 	if [[ "$QUERY" == "ERROR" ]]; then
 		usage query
+		exit 1
 	fi
 
 	# Run the queries
@@ -3460,7 +3498,7 @@ query() {
 		tsvquery )  query_tsv "$QUERY";;
 		csvquery )  query_csv "$QUERY";;
 		query    )  query_tbl "$QUERY";;
-		iquery   )  query_influx "$QUERY" "$query_name" "$fields" "$tags";;
+		iquery   )  query_influx "$QUERY" "$query_name" "$fields" "$tags" "$timestamp";;
 		# default
 		*        )  usage "Error";;
 	esac

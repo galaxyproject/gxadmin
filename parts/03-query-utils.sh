@@ -24,6 +24,11 @@ fields = {x.split('=')[0]: int(x.split('=')[1]) for x in sys.argv[2].split(';')}
 tags = []
 if len(sys.argv) > 3 and len(sys.argv[3]) > 0:
 	tags = {x.split('=')[0]: int(x.split('=')[1]) for x in sys.argv[3].split(';')}
+
+timestamp = None
+if len(sys.argv) > 4 and sys.argv[4] != '':
+	timestamp = int(sys.argv[4])
+
 for line in sys.stdin.read().split('\n'):
 	if len(line) == 0:
 		continue
@@ -34,11 +39,14 @@ for line in sys.stdin.read().split('\n'):
 		metric += ',' + ','.join(tag_data)
 	field_data = ['%s=%s' % (k, parsed[v])  for (k, v) in fields.items()]
 	metric += ' ' + ','.join(field_data)
+
+	if timestamp is not None:
+		metric += ' ' + str(parsed[timestamp])
 	print(metric)
 EOF
 )
 
-	psql -c "COPY ($1) to STDOUT with CSV DELIMITER E','"| python -c "$arr2py" "$2" "$3" "$4"
+	psql -c "COPY ($1) to STDOUT with CSV DELIMITER E','"| python -c "$arr2py" "$2" "$3" "$4" "$5"
 }
 
 gdpr_safe() {

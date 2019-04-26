@@ -4,6 +4,7 @@ Command | Description
 ------- | -----------
 [`meta influx-post`](#galaxy-migrate-tool-install-to-sqlite) | Post contents of file (in influx line protocol) to influx
 [`meta influx-query`](#galaxy-migrate-tool-install-to-sqlite) | Query an influx DB
+[`meta iquery-grt-export`](#galaxy-migrate-tool-install-to-sqlite) | Export data from a GRT database for sending to influx
 [`meta slurp-current`](#galaxy-migrate-tool-install-to-sqlite) | Executes what used to be "Galaxy Slurp"
 [`meta slurp-upto`](#galaxy-migrate-tool-install-to-sqlite) | Slurps data "up to" a specific date.
 [`meta update`](#galaxy-migrate-tool-install-to-sqlite) | Update the script
@@ -66,6 +67,21 @@ Query percentage of memory used over last hour.
     2019-04-26T10:10:00Z    63.95268353798708
     2019-04-26T10:20:00Z    64.66849537282599
     2019-04-26T10:30:00Z    65.06069941790024
+
+
+### meta iquery-grt-export
+
+**NAME**
+
+meta iquery-grt-export -  Export data from a GRT database for sending to influx
+
+**SYNOPSIS**
+
+`gxadmin meta iquery-grt-export`
+
+**NOTES**
+
+**WARNING**: GRT database specific query, will not work with a galaxy database!
 
 
 ### meta slurp-current

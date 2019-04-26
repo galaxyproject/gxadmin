@@ -124,6 +124,7 @@ Command | Description
 ------- | -----------
 [`meta influx-post`](docs/README.meta.md#meta-influx-post) | Post contents of file (in influx line protocol) to influx
 [`meta influx-query`](docs/README.meta.md#meta-influx-query) | Query an influx DB
+[`meta iquery-grt-export`](docs/README.meta.md#meta-iquery-grt-export) | Export data from a GRT database for sending to influx
 [`meta slurp-current`](docs/README.meta.md#meta-slurp-current) | Executes what used to be "Galaxy Slurp"
 [`meta slurp-upto`](docs/README.meta.md#meta-slurp-upto) | Slurps data "up to" a specific date.
 [`meta update`](docs/README.meta.md#meta-update) | Update the script
