@@ -3321,8 +3321,8 @@ meta_influx-query() { ## meta influx-query <db> "<query>": Query an influx DB
 
 		Query percentage of memory used over last hour.
 
-		    gxadmin meta influx-query galaxy "select mean(used_percent) from mem where host='X' AND time > now() - 1h group by time(10m)" | \
-		    jq '.results[0].series[0].values[] | @tsv' -r
+		    $ gxadmin meta influx-query galaxy "select mean(used_percent) from mem where host='X' AND time > now() - 1h group by time(10m)" | \\
+		        jq '.results[0].series[0].values[] | @tsv' -r
 		    2019-04-26T09:30:00Z    64.83119975586277
 		    2019-04-26T09:40:00Z    64.58284600472675
 		    2019-04-26T09:50:00Z    64.62714491344244
