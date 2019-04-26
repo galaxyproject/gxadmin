@@ -38,7 +38,7 @@ Posting data from the output of a gxadmin command
 them. Influx recommends 5-10k lines:
 
     $ split --lines=5000 data.iflx PREFIX
-$ for file in PREFIX*; do gxadmin meta influx-post galaxy ; done;
+    $ for file in PREFIX*; do gxadmin meta influx-post galaxy ; done;
 
 
 ### meta influx-query

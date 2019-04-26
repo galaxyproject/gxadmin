@@ -3294,7 +3294,7 @@ meta_influx-post() { ## meta influx-post <db> <file>: Post contents of file (in 
 		them. Influx recommends 5-10k lines:
 
 		    $ split --lines=5000 data.iflx PREFIX
-			$ for file in PREFIX*; do gxadmin meta influx-post galaxy $file; done;
+		    $ for file in PREFIX*; do gxadmin meta influx-post galaxy $file; done;
 	EOF
 
 	assert_set_env INFLUX_URL
