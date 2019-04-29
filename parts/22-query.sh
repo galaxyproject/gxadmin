@@ -1318,7 +1318,7 @@ query_server-hda() {
 		date_filter="AND history_dataset_association.create_time AT TIME ZONE 'UTC' <= '$1'::date"
 	fi
 
-	fields="sum=2;avg=3;min=4;max=5"
+	fields="sum=2;avg=3;min=4;max=5;count=6"
 	tags="extension=0;deleted=1"
 
 	read -r -d '' QUERY <<-EOF
