@@ -329,10 +329,10 @@ if len(sys.argv) > 4 and sys.argv[4] != '':
 for line in sys.stdin.read().split('\n'):
 	if len(line) == 0:
 		continue
-	parsed = line.split(',')
+	parsed = line.split('\t')
 	metric = query_name
 	if len(tags):
-		tag_data = ['%s=%s' % (k, parsed[v].replace(' ', '\\ '))  for (k, v) in tags.items()]
+		tag_data = ['%s=%s' % (k, parsed[v].replace(' ', '\\ ').replace(',', '\\,'))  for (k, v) in tags.items()]
 		metric += ',' + ','.join(tag_data)
 	field_data = ['%s=%s' % (k, parsed[v])  for (k, v) in fields.items()]
 	metric += ' ' + ','.join(field_data)
@@ -343,7 +343,7 @@ for line in sys.stdin.read().split('\n'):
 EOF
 )
 
-	psql -c "COPY ($1) to STDOUT with CSV DELIMITER E','"| python -c "$arr2py" "$2" "$3" "$4" "$5"
+	psql -c "COPY ($1) to STDOUT with CSV DELIMITER E'\t'"| python -c "$arr2py" "$2" "$3" "$4" "$5"
 }
 
 gdpr_safe() {
