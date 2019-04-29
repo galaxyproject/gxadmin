@@ -3,6 +3,8 @@
 - Added:
 	- local functions support querying when prefixed with `query-`
 	- `meta influx-post` and `meta influx-query` were added to get data into and out of Influx
+- Fixed:
+	- Escaped commas in influx outputs, switched to tabs to further prevent comma issues.
 
 # 12
 
