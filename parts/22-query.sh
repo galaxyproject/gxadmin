@@ -1296,7 +1296,12 @@ query_server-datasets() {
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			state, deleted, purged, coalesce(object_store_id, 'none'), count(*), coalesce(sum(total_size), 0)
+			COALESCE(state, '__unknown__'),
+			deleted,
+			purged,
+			COALESCE(object_store_id, 'none'),
+			count(*),
+			COALESCE(sum(total_size), 0)
 		FROM
 			dataset
 		GROUP BY
@@ -1318,12 +1323,12 @@ query_server-hda() {
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			history_dataset_association.extension,
+			COALESCE(history_dataset_association.extension, '__unknown__'),
 			history_dataset_association.deleted,
-			coalesce(sum(dataset.file_size), 0),
-			coalesce(avg(dataset.file_size), 0)::bigint,
-			coalesce(min(dataset.file_size), 0),
-			coalesce(max(dataset.file_size), 0),
+			COALESCE(sum(dataset.file_size), 0),
+			COALESCE(avg(dataset.file_size), 0)::bigint,
+			COALESCE(min(dataset.file_size), 0),
+			COALESCE(max(dataset.file_size), 0),
 			count(*)
 		FROM
 			history_dataset_association, dataset
@@ -1373,7 +1378,7 @@ query_server-histories() {
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			deleted, purged, published, importable, importing, genome_build, count(*)
+			deleted, purged, published, importable, importing, COALESCE(genome_build, '__unknown__'), count(*)
 		FROM history
 		${date_filter}
 		GROUP BY
@@ -1396,7 +1401,9 @@ query_server-jobs() {
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			state, job_runner_name, destination_id, count(*)
+			COALESCE(state, '__unknown__'),
+			COALESCE(job_runner_name, '__unknown__'),
+			COALESCE(destination_id, '__unknown__'), count(*)
 		FROM
 			job
 		${date_filter}
@@ -1473,7 +1480,9 @@ query_server-workflow-invocations() {
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			scheduler, handler, count(*)
+			COALESCE(scheduler, '__unknown__'),
+			COALESCE(handler, '__unknown__'),
+			count(*)
 		FROM
 			workflow_invocation
 		${date_filter}
