@@ -30,11 +30,6 @@ query_expj() {
 	EOF
 }
 
-query_time() {
-	local TIMEFORMAT="Time to execute query: %R seconds"
-	time query_tbl "$@"
-}
-
 query_influx() {
 	arr2py=$(cat <<EOF
 import sys

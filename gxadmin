@@ -149,7 +149,6 @@ usage(){
 			  'query' can be exchanged with 'tsvquery' or 'csvquery' for tab- and comma-separated variants.
 			  In some cases 'iquery' is supported for InfluxDB compatible output.
 			  In all cases 'explainquery' will show you the query plan, in case you need to optimise or index data. 'explainjsonquery' is useful with PEV: http://tatiyants.com/pev/
-			  In all cases 'timequery' will output the time to execute the query to stderr.
 
 			$(echo "$cmds" | filter_commands query $1)
 
@@ -178,7 +177,6 @@ usage(){
 	if (( $# == 0  )) || [[ $1 == "meta" ]]; then
 		cat <<-EOF
 			Meta:
-			  In all cases 'timemeta' will output the time to execute the meta function to stderr.
 
 			$(echo "$cmds" | filter_commands meta $1)
 
@@ -200,6 +198,11 @@ usage(){
 
 		EOF
 	fi
+
+	cat <<-EOF
+		All commands can be prefixed with "time" to print execution time to stderr
+
+	EOF
 
 
 	cat <<-EOF
@@ -331,11 +334,6 @@ query_expj() {
 	EOF
 }
 
-query_time() {
-	local TIMEFORMAT="Time to execute query: %R seconds"
-	time query_tbl "$@"
-}
-
 query_influx() {
 	arr2py=$(cat <<EOF
 import sys
@@ -399,8 +397,7 @@ CHANGELOG=$(cat <<EOF
 	- "explainquery" is added as an alternative to csv/tsv/etc queries, which
 	  does an "EXPLAIN ANALYZE" of the current SQL
 	- "explainjsonquery" added for use with http://tatiyants.com/pev/
-	- "timequery" and "timemeta" are added to output execution time of
-	  queries/functions to stderr
+	- "time" prefix for all functions added to print execution time to stderr
 - Fixed:
 	- Escaped commas in influx outputs, switched to tabs to further prevent
 	  comma issues.
@@ -3417,7 +3414,7 @@ meta_slurp-current() { ## meta slurp-current [--date]: Executes what used to be 
 
 	for func in $(grep -s -h -o '^query_server-[a-z-]*' $0 $GXADMIN_SITE_SPECIFIC | sort | sed 's/query_//g'); do
 		obtain_query $func
-		query_influx "$QUERY" "$query_name" "$fields" "$tags" | sed "s/$/$append/"
+		$wrapper query_influx "$QUERY" "$query_name" "$fields" "$tags" | sed "s/$/$append/"
 	done
 }
 
@@ -3475,7 +3472,7 @@ meta_slurp-upto() { ## meta slurp-upto <yyyy-mm-dd> [--date]: Slurps data "up to
 
 	for func in $(grep -s -h -o '^query_server-[a-z-]*' $0 $GXADMIN_SITE_SPECIFIC | sort | sed 's/query_//g'); do
 		obtain_query $func $1
-		query_influx "$QUERY" "$query_name.daily" "$fields" "$tags" | sed "s/$/$append/"
+		$wrapper query_influx "$QUERY" "$query_name.daily" "$fields" "$tags" | sed "s/$/$append/"
 	done
 }
 
@@ -3595,23 +3592,6 @@ meta_whatsnew() { ## meta whatsnew: What's new in this version of gxadmin
 	#sed -n '1,/^# 12/d;/^# 11/q;p'
 	echo "$CHANGELOG" | sed -n '/^# 11/q;p'
 }
-
-meta_time() {
-	local TIMEFORMAT="Time to execute meta function: %R seconds"
-	time look_for meta "$@"
-}
-
-meta() {
-	meta_type="$1"; shift
-
-	# Run the meta functions
-	case "$meta_type" in
-		meta     )  look_for meta "$@" ;;
-		timemeta )  meta_time     "$@" ;;
-		# default
-		*        )  usage meta ;;
-	esac
-}
 meta_completion() {
 	IFS=$'\n'
 	commands="$(grep -o '{ ## .*' $0 | grep -v grep | grep -v '| sed' | sort | sed 's/^{ ## //g' | \
@@ -3729,13 +3709,12 @@ query() {
 
 	# Run the queries
 	case "$query_type" in
-		tsvquery         ) query_tsv "$QUERY";;
-		csvquery         ) query_csv "$QUERY";;
-		query            ) query_tbl "$QUERY";;
-		iquery           ) query_influx "$QUERY" "$query_name" "$fields" "$tags" "$timestamp";;
-		explainquery     ) query_exp "$QUERY";;
-		explainjsonquery ) query_expj "$QUERY";;
-		timequery        ) query_time "$QUERY";;
+		tsvquery         ) $wrapper query_tsv "$QUERY";;
+		csvquery         ) $wrapper query_csv "$QUERY";;
+		query            ) $wrapper query_tbl "$QUERY";;
+		iquery           ) $wrapper query_influx "$QUERY" "$query_name" "$fields" "$tags" "$timestamp";;
+		explainquery     ) $wrapper query_exp "$QUERY";;
+		explainjsonquery ) $wrapper query_expj "$QUERY";;
 		# default
 		*            )  usage "Error";;
 	esac
@@ -3772,22 +3751,31 @@ local_funcs() {
 		usage ${group_name}
 	fi
 }
+wrap_time() {
+	local TIMEFORMAT="Time to execute $1: %R seconds"
+	time "$@"
+}
 if (( $# == 0 )); then
 	usage
 fi
 
 mode="$1"; shift
+wrapper=
+if [[ "$mode" == time* ]]; then
+	wrapper=wrap_time
+	mode=${mode:4}
+fi
 
 case "$mode" in
 	*query ) query "$mode"   "$@" ;;
-	config ) look_for config "$@" ;;
-	filter ) look_for filter "$@" ;;
-	galaxy ) look_for galaxy "$@" ;;
-	report ) look_for report "$@" ;;
-	local  ) local_funcs     "$@" ;;
-	mutate ) mutate "$mode"  "$@" ;;
-	uwsgi  ) look_for uwsgi  "$@" ;;
-	*meta  ) meta "$mode"    "$@" ;;
+	config ) $wrapper look_for config "$@" ;;
+	filter ) $wrapper look_for filter "$@" ;;
+	galaxy ) $wrapper look_for galaxy "$@" ;;
+	report ) $wrapper look_for report "$@" ;;
+	local  ) $wrapper local_funcs     "$@" ;;
+	mutate ) $wrapper mutate "$mode"  "$@" ;;
+	uwsgi  ) $wrapper look_for uwsgi  "$@" ;;
+	meta   ) $wrapper look_for meta   "$@" ;;
 
 	# version commands
 	version   ) version ;;
