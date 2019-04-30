@@ -201,6 +201,7 @@ usage(){
 
 	cat <<-EOF
 		help / -h / --help : this message. Invoke '--help' on any subcommand for help specific to that subcommand
+		Tip: Run "gxadmin meta whatsnew" to find out what's new in this release!
 	EOF
 
 	exit 0;
