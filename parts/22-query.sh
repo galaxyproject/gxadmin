@@ -1241,7 +1241,7 @@ query_server-users() {
 
 	date_filter=""
 	if (( $# > 0 )); then
-		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '$1'::date"
+		date_filter="WHERE create_time AT TIME ZONE 'UTC' = '$1'::date"
 	fi
 
 	fields="count=4"
@@ -1264,7 +1264,7 @@ query_server-groups() {
 
 	date_filter=""
 	if (( $# > 0 )); then
-		date_filter="AND galaxy_group.create_time AT TIME ZONE 'UTC' <= '$1'::date AND  user_group_association.create_time AT TIME ZONE 'UTC' <= '$1'::date"
+		date_filter="AND galaxy_group.create_time AT TIME ZONE 'UTC' <= '$1'::date AND  user_group_association.create_time AT TIME ZONE 'UTC' = '$1'::date"
 	fi
 
 
@@ -1289,7 +1289,7 @@ query_server-datasets() {
 
 	date_filter=""
 	if (( $# > 0 )); then
-		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '$1'::date"
+		date_filter="WHERE create_time AT TIME ZONE 'UTC' = '$1'::date"
 	fi
 
 	fields="count=4;size=5"
@@ -1317,7 +1317,7 @@ query_server-hda() {
 
 	date_filter=""
 	if (( $# > 0 )); then
-		date_filter="AND history_dataset_association.create_time AT TIME ZONE 'UTC' <= '$1'::date"
+		date_filter="AND history_dataset_association.create_time AT TIME ZONE 'UTC' = '$1'::date"
 	fi
 
 	fields="sum=2;avg=3;min=4;max=5;count=6"
@@ -1348,7 +1348,7 @@ query_server-ts-repos() {
 
 	date_filter=""
 	if (( $# > 0 )); then
-		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '$1'::date"
+		date_filter="WHERE create_time AT TIME ZONE 'UTC' = '$1'::date"
 	fi
 
 	fields="count=2"
@@ -1372,7 +1372,7 @@ query_server-histories() {
 
 	date_filter=""
 	if (( $# > 0 )); then
-		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '$1'::date"
+		date_filter="WHERE create_time AT TIME ZONE 'UTC' = '$1'::date"
 	fi
 
 	fields="count=6"
@@ -1395,7 +1395,7 @@ query_server-jobs() {
 
 	date_filter=""
 	if (( $# > 0 )); then
-		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '$1'::date"
+		date_filter="WHERE create_time AT TIME ZONE 'UTC' = '$1'::date"
 	fi
 
 	fields="count=3"
@@ -1420,7 +1420,7 @@ query_server-allocated-cpu() {
 
 	date_filter=""
 	if (( $# > 0 )); then
-		date_filter="AND job.create_time AT TIME ZONE 'UTC' <= '$1'::date"
+		date_filter="AND job.create_time AT TIME ZONE 'UTC' = '$1'::date"
 	fi
 
 	fields="cpu_seconds=1"
@@ -1451,7 +1451,7 @@ query_server-workflows() {
 
 	date_filter=""
 	if (( $# > 0 )); then
-		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '$1'::date"
+		date_filter="WHERE create_time AT TIME ZONE 'UTC' = '$1'::date"
 	fi
 
 	fields="count=3"
@@ -1474,7 +1474,7 @@ query_server-workflow-invocations() {
 
 	date_filter=""
 	if (( $# > 0 )); then
-		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '$1'::date"
+		date_filter="WHERE create_time AT TIME ZONE 'UTC' = '$1'::date"
 	fi
 
 	fields="count=2"
