@@ -1,11 +1,11 @@
 # 13 - pre
 
 - Added:
-	- local functions support querying when prefixed with `query-`
-	- `meta influx-post` and `meta influx-query` were added to get data into and out of Influx
+	- local functions support querying when prefixed with "query-"
+	- "meta influx-post" and "meta influx-query" were added to get data into and out of Influx
 - Fixed:
 	- Escaped commas in influx outputs, switched to tabs to further prevent comma issues.
-	- Correct date filter in `query {server-groups,server-datasets}`
+	- Correct date filter in "query {server-groups,server-datasets}"
 
 # 12
 
@@ -17,10 +17,10 @@
 	- Some basic testing of the overall script
 - Fixed:
 	- Correct time zones in all queries to be client-side time zones rather than UTC encoded timestamps as stored in db (Thanks @slugger70!)
-	- Renamed: `query monthly-users` → `query monthly-users-active`
+	- Renamed: "query monthly-users" → "query monthly-users-active"
 - Removed:
 	- Removed highly EU specific handler and zerg functions
-	- Deprecated: `query active-users`
+	- Deprecated: "query active-users"
 - Changed:
 	- Major internal reorganisation and split into parts for easier editing. A bash script that needs a build system, truly horrifying.
 	- User info query now shows recent WF invocations and whether their largest histories are deleted or purged or not.
@@ -32,7 +32,7 @@
 	- filter hexdecode: to help decode hex blobs in postgres queries
 	- uwsgi stats\_influx: which fetches stats from uWSGI zerglings
 	- filter pg2md: Convert postgres tables into markdown compatible tables
-	- `GDPR_MODE` env var which blanks out usernames and emails
+	- "GDPR_MODE" env var which blanks out usernames and emails
 	- errored-jobs: Lists jobs that errored in the last N hours
 	- workflow-connections: Exports worfklow connections, input to output tools
 	- dump-config: Dump Galaxy configuration as JSON
@@ -40,7 +40,7 @@
 - Changed:
 	- user-details: now reports in markdown compatible output and with more information about the user
 	- job-info: now reports in markdown compatible output, including job inputs + outputs
-	- queue-overview: now includes user ID by default (`GDPR_MODE=1` will set the value to `0`), and allows using shorter tool IDs
+	- queue-overview: now includes user ID by default ("GDPR_MODE=1" will set the value to "0"), and allows using shorter tool IDs
 	- user-details: renamed to user-info
 	- user-info: includes largest histories
 
@@ -71,7 +71,7 @@
 	- tool-available-metrics
 	- largest-collection
 - Fixed:
-	- Improved `latest-users` to include any groups they're part of and their registration status (ack'd email/not)
+	- Improved "latest-users" to include any groups they're part of and their registration status (ack'd email/not)
 	- Influx queries now functional (but not automatic)
 	- Collection usage
 
@@ -116,7 +116,7 @@
 # 4
 
 - Implemented update function
-- removed all support for legacy `_` calls
+- removed all support for legacy "_" calls
 - Fancy new automatically updated help function
 
 # 3
@@ -127,7 +127,7 @@
 # 2
 
 - Added training-queue and job-history functions
-- replaced `_` with `-`
+- replaced "_" with "-"
 
 # 1 - Initial Release
 
