@@ -13,7 +13,7 @@ case "$mode" in
 	local  ) local_funcs     "$@" ;;
 	mutate ) mutate "$mode"  "$@" ;;
 	uwsgi  ) look_for uwsgi  "$@" ;;
-	meta   ) look_for meta   "$@" ;;
+	*meta  ) meta "$mode"    "$@" ;;
 
 	# version commands
 	version   ) version ;;

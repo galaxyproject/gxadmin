@@ -82,6 +82,7 @@ usage(){
 			  'query' can be exchanged with 'tsvquery' or 'csvquery' for tab- and comma-separated variants.
 			  In some cases 'iquery' is supported for InfluxDB compatible output.
 			  In all cases 'explainquery' will show you the query plan, in case you need to optimise or index data. 'explainjsonquery' is useful with PEV: http://tatiyants.com/pev/
+			  In all cases 'timequery' will output the time to execute the query to stderr.
 
 			$(echo "$cmds" | filter_commands query $1)
 
@@ -110,6 +111,7 @@ usage(){
 	if (( $# == 0  )) || [[ $1 == "meta" ]]; then
 		cat <<-EOF
 			Meta:
+			  In all cases 'timemeta' will output the time to execute the meta function to stderr.
 
 			$(echo "$cmds" | filter_commands meta $1)
 

@@ -149,6 +149,7 @@ usage(){
 			  'query' can be exchanged with 'tsvquery' or 'csvquery' for tab- and comma-separated variants.
 			  In some cases 'iquery' is supported for InfluxDB compatible output.
 			  In all cases 'explainquery' will show you the query plan, in case you need to optimise or index data. 'explainjsonquery' is useful with PEV: http://tatiyants.com/pev/
+			  In all cases 'timequery' will output the time to execute the query to stderr.
 
 			$(echo "$cmds" | filter_commands query $1)
 
@@ -177,6 +178,7 @@ usage(){
 	if (( $# == 0  )) || [[ $1 == "meta" ]]; then
 		cat <<-EOF
 			Meta:
+			  In all cases 'timemeta' will output the time to execute the meta function to stderr.
 
 			$(echo "$cmds" | filter_commands meta $1)
 
@@ -329,6 +331,11 @@ query_expj() {
 	EOF
 }
 
+query_time() {
+	local TIMEFORMAT="Time to execute query: %R seconds"
+	time query_tbl "$@"
+}
+
 query_influx() {
 	arr2py=$(cat <<EOF
 import sys
@@ -392,6 +399,8 @@ CHANGELOG=$(cat <<EOF
 	- "explainquery" is added as an alternative to csv/tsv/etc queries, which
 	  does an "EXPLAIN ANALYZE" of the current SQL
 	- "explainjsonquery" added for use with http://tatiyants.com/pev/
+	- "timequery" and "timemeta" are added to output execution time of
+	  queries/functions to stderr
 - Fixed:
 	- Escaped commas in influx outputs, switched to tabs to further prevent
 	  comma issues.
@@ -3586,6 +3595,23 @@ meta_whatsnew() { ## meta whatsnew: What's new in this version of gxadmin
 	#sed -n '1,/^# 12/d;/^# 11/q;p'
 	echo "$CHANGELOG" | sed -n '/^# 11/q;p'
 }
+
+meta_time() {
+	local TIMEFORMAT="Time to execute meta function: %R seconds"
+	time look_for meta "$@"
+}
+
+meta() {
+	meta_type="$1"; shift
+
+	# Run the meta functions
+	case "$meta_type" in
+		meta     )  look_for meta "$@" ;;
+		timemeta )  meta_time     "$@" ;;
+		# default
+		*        )  usage meta ;;
+	esac
+}
 meta_completion() {
 	IFS=$'\n'
 	commands="$(grep -o '{ ## .*' $0 | grep -v grep | grep -v '| sed' | sort | sed 's/^{ ## //g' | \
@@ -3709,6 +3735,7 @@ query() {
 		iquery           ) query_influx "$QUERY" "$query_name" "$fields" "$tags" "$timestamp";;
 		explainquery     ) query_exp "$QUERY";;
 		explainjsonquery ) query_expj "$QUERY";;
+		timequery        ) query_time "$QUERY";;
 		# default
 		*            )  usage "Error";;
 	esac
@@ -3760,7 +3787,7 @@ case "$mode" in
 	local  ) local_funcs     "$@" ;;
 	mutate ) mutate "$mode"  "$@" ;;
 	uwsgi  ) look_for uwsgi  "$@" ;;
-	meta   ) look_for meta   "$@" ;;
+	*meta  ) meta "$mode"    "$@" ;;
 
 	# version commands
 	version   ) version ;;

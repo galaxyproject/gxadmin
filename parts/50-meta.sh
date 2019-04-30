@@ -295,3 +295,20 @@ meta_whatsnew() { ## meta whatsnew: What's new in this version of gxadmin
 	#sed -n '1,/^# 12/d;/^# 11/q;p'
 	echo "$CHANGELOG" | sed -n '/^# 11/q;p'
 }
+
+meta_time() {
+	local TIMEFORMAT="Time to execute meta function: %R seconds"
+	time look_for meta "$@"
+}
+
+meta() {
+	meta_type="$1"; shift
+
+	# Run the meta functions
+	case "$meta_type" in
+		meta     )  look_for meta "$@" ;;
+		timemeta )  meta_time     "$@" ;;
+		# default
+		*        )  usage meta ;;
+	esac
+}
