@@ -16,6 +16,12 @@ query_csv() {
 	EOF
 }
 
+query_exp() {
+	psql <<-EOF
+	EXPLAIN ANALYZE VERBOSE $1
+	EOF
+}
+
 query_influx() {
 	arr2py=$(cat <<EOF
 import sys

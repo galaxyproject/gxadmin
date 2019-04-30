@@ -28,12 +28,13 @@ query() {
 
 	# Run the queries
 	case "$query_type" in
-		tsvquery )  query_tsv "$QUERY";;
-		csvquery )  query_csv "$QUERY";;
-		query    )  query_tbl "$QUERY";;
-		iquery   )  query_influx "$QUERY" "$query_name" "$fields" "$tags" "$timestamp";;
+		tsvquery     )  query_tsv "$QUERY";;
+		csvquery     )  query_csv "$QUERY";;
+		query        )  query_tbl "$QUERY";;
+		iquery       )  query_influx "$QUERY" "$query_name" "$fields" "$tags" "$timestamp";;
+		explainquery )  query_exp "$QUERY";;
 		# default
-		*        )  usage "Error";;
+		*            )  usage "Error";;
 	esac
 }
 

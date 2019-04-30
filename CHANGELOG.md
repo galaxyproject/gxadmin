@@ -4,6 +4,8 @@
 	- local functions support querying when prefixed with "query-"
 	- "meta influx-post" and "meta influx-query" were added to get data into
 	  and out of Influx
+	- "explainquery" is added as an alternative to csv/tsv/etc queries, which
+	  does an "EXPLAIN ANALYZE" of the current SQL
 - Fixed:
 	- Escaped commas in influx outputs, switched to tabs to further prevent
 	  comma issues.

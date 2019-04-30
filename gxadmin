@@ -148,6 +148,7 @@ usage(){
 			DB Queries:
 			  'query' can be exchanged with 'tsvquery' or 'csvquery' for tab- and comma-separated variants.
 			  In some cases 'iquery' is supported for InfluxDB compatible output.
+			  In all cases 'explainquery' will show you the query plan, in case you need to optimise or index data.
 
 			$(echo "$cmds" | filter_commands query $1)
 
@@ -314,6 +315,12 @@ query_csv() {
 	EOF
 }
 
+query_exp() {
+	psql <<-EOF
+	EXPLAIN ANALYZE VERBOSE $1
+	EOF
+}
+
 query_influx() {
 	arr2py=$(cat <<EOF
 import sys
@@ -374,6 +381,8 @@ CHANGELOG=$(cat <<EOF
 	- local functions support querying when prefixed with "query-"
 	- "meta influx-post" and "meta influx-query" were added to get data into
 	  and out of Influx
+	- "explainquery" is added as an alternative to csv/tsv/etc queries, which
+	  does an "EXPLAIN ANALYZE" of the current SQL
 - Fixed:
 	- Escaped commas in influx outputs, switched to tabs to further prevent
 	  comma issues.
@@ -3685,12 +3694,13 @@ query() {
 
 	# Run the queries
 	case "$query_type" in
-		tsvquery )  query_tsv "$QUERY";;
-		csvquery )  query_csv "$QUERY";;
-		query    )  query_tbl "$QUERY";;
-		iquery   )  query_influx "$QUERY" "$query_name" "$fields" "$tags" "$timestamp";;
+		tsvquery     )  query_tsv "$QUERY";;
+		csvquery     )  query_csv "$QUERY";;
+		query        )  query_tbl "$QUERY";;
+		iquery       )  query_influx "$QUERY" "$query_name" "$fields" "$tags" "$timestamp";;
+		explainquery )  query_exp "$QUERY";;
 		# default
-		*        )  usage "Error";;
+		*            )  usage "Error";;
 	esac
 }
 
