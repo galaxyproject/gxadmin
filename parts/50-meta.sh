@@ -288,3 +288,10 @@ meta_iquery-grt-export() { ## meta iquery-grt-export: Export data from a GRT dat
 			date
 	EOF
 }
+
+meta_whatsnew() { ## meta whatsnew: What's new in this version of gxadmin
+	current_version=$(version)
+	prev_version=$(( current_version - 1 ))
+	#sed -n '1,/^# 12/d;/^# 11/q;p'
+	echo "$CHANGELOG" | sed -n '/^# 11/q;p'
+}

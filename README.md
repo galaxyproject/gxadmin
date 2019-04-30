@@ -128,6 +128,7 @@ Command | Description
 [`meta slurp-current`](docs/README.meta.md#meta-slurp-current) | Executes what used to be "Galaxy Slurp"
 [`meta slurp-upto`](docs/README.meta.md#meta-slurp-upto) | Slurps data "up to" a specific date.
 [`meta update`](docs/README.meta.md#meta-update) | Update the script
+[`meta whatsnew`](docs/README.meta.md#meta-whatsnew) | What's new in this version of gxadmin
 
 ### mutate
 

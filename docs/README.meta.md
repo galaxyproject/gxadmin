@@ -8,6 +8,7 @@ Command | Description
 [`meta slurp-current`](#galaxy-migrate-tool-install-to-sqlite) | Executes what used to be "Galaxy Slurp"
 [`meta slurp-upto`](#galaxy-migrate-tool-install-to-sqlite) | Slurps data "up to" a specific date.
 [`meta update`](#galaxy-migrate-tool-install-to-sqlite) | Update the script
+[`meta whatsnew`](#galaxy-migrate-tool-install-to-sqlite) | What's new in this version of gxadmin
 
 ### meta influx-post
 
@@ -208,4 +209,35 @@ meta update -  Update the script
 **SYNOPSIS**
 
 `gxadmin meta update`
+
+
+### meta whatsnew
+
+# 13 - pre
+
+- Added:
+	- local functions support querying when prefixed with "query-"
+	- "meta influx-post" and "meta influx-query" were added to get data into and out of Influx
+- Fixed:
+	- Escaped commas in influx outputs, switched to tabs to further prevent comma issues.
+	- Correct date filter in "query {server-groups,server-datasets}"
+
+# 12
+
+- Added:
+	- local functions, users can add functions to a separate file which are made available in gxadmin. @erasche resisted implementing these for a long time for fears that they won't be contributed back and everyone would keep their precious sql private. So they may nag you occasionally to contribute them back.
+	- (semi) EU specific systemd handler/zergling management commands
+	- filter digest-color: command to colour some text
+	- filter identicon: command to generate an identicon
+	- Some basic testing of the overall script
+- Fixed:
+	- Correct time zones in all queries to be client-side time zones rather than UTC encoded timestamps as stored in db (Thanks @slugger70!)
+	- Renamed: "query monthly-users" → "query monthly-users-active"
+- Removed:
+	- Removed highly EU specific handler and zerg functions
+	- Deprecated: "query active-users"
+- Changed:
+	- Major internal reorganisation and split into parts for easier editing. A bash script that needs a build system, truly horrifying.
+	- User info query now shows recent WF invocations and whether their largest histories are deleted or purged or not.
+	- Separated out 'report' types that are markdown-only outputs and don't support tsv/csv queries
 

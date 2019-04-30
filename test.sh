@@ -37,3 +37,10 @@
 	fi
 	[ "$out_lines" -lt 3 ]
 }
+
+@test "Ensure no shell expansions/vars in changelog" {
+	backticks=$(grep -c '`' CHANGELOG.md || true)
+	shell=$(grep -c '$' CHANGELOG.md || true)
+	both=$(( backticks + shell ))
+	[ "$both" -gt 0 ]
+}
