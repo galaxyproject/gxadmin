@@ -5,6 +5,7 @@
 	- `meta influx-post` and `meta influx-query` were added to get data into and out of Influx
 - Fixed:
 	- Escaped commas in influx outputs, switched to tabs to further prevent comma issues.
+	- Correct date filter in `query {server-groups,server-datasets}`
 
 # 12
 

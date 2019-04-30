@@ -1264,7 +1264,7 @@ query_server-groups() {
 
 	date_filter=""
 	if (( $# > 0 )); then
-		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '$1'::date"
+		date_filter="AND galaxy_group.create_time AT TIME ZONE 'UTC' <= '$1'::date AND  user_group_association.create_time AT TIME ZONE 'UTC' <= '$1'::date"
 	fi
 
 
@@ -1278,6 +1278,7 @@ query_server-groups() {
 			galaxy_group, user_group_association
 		WHERE
 			user_group_association.group_id = galaxy_group.id
+			$date_filter
 		GROUP BY name
 	EOF
 }
@@ -1304,6 +1305,7 @@ query_server-datasets() {
 			COALESCE(sum(total_size), 0)
 		FROM
 			dataset
+		$date_filter
 		GROUP BY
 			state, deleted, purged, object_store_id
 	EOF
