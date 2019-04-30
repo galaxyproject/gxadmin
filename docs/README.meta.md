@@ -221,6 +221,7 @@ meta update -  Update the script
 	  and out of Influx
 	- "explainquery" is added as an alternative to csv/tsv/etc queries, which
 	  does an "EXPLAIN ANALYZE" of the current SQL
+	- "explainjsonquery" added for use with http://tatiyants.com/pev/
 - Fixed:
 	- Escaped commas in influx outputs, switched to tabs to further prevent
 	  comma issues.

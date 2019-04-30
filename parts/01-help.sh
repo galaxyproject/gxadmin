@@ -81,7 +81,7 @@ usage(){
 			DB Queries:
 			  'query' can be exchanged with 'tsvquery' or 'csvquery' for tab- and comma-separated variants.
 			  In some cases 'iquery' is supported for InfluxDB compatible output.
-			  In all cases 'explainquery' will show you the query plan, in case you need to optimise or index data.
+			  In all cases 'explainquery' will show you the query plan, in case you need to optimise or index data. 'explainjsonquery' is useful with PEV: http://tatiyants.com/pev/
 
 			$(echo "$cmds" | filter_commands query $1)
 

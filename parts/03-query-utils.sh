@@ -22,6 +22,14 @@ query_exp() {
 	EOF
 }
 
+query_expj() {
+	echo "$1"
+	echo
+	psql -qAt <<-EOF
+	EXPLAIN (ANALYZE, COSTS, VERBOSE, BUFFERS, FORMAT JSON) $1
+	EOF
+}
+
 query_influx() {
 	arr2py=$(cat <<EOF
 import sys
