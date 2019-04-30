@@ -117,7 +117,7 @@ meta_slurp-current() { ## meta slurp-current [--date]: Executes what used to be 
 
 	for func in $(grep -s -h -o '^query_server-[a-z-]*' $0 $GXADMIN_SITE_SPECIFIC | sort | sed 's/query_//g'); do
 		obtain_query $func
-		query_influx "$QUERY" "$query_name" "$fields" "$tags" | sed "s/$/$append/"
+		$wrapper query_influx "$QUERY" "$query_name" "$fields" "$tags" | sed "s/$/$append/"
 	done
 }
 
@@ -175,7 +175,7 @@ meta_slurp-upto() { ## meta slurp-upto <yyyy-mm-dd> [--date]: Slurps data "up to
 
 	for func in $(grep -s -h -o '^query_server-[a-z-]*' $0 $GXADMIN_SITE_SPECIFIC | sort | sed 's/query_//g'); do
 		obtain_query $func $1
-		query_influx "$QUERY" "$query_name.daily" "$fields" "$tags" | sed "s/$/$append/"
+		$wrapper query_influx "$QUERY" "$query_name.daily" "$fields" "$tags" | sed "s/$/$append/"
 	done
 }
 
