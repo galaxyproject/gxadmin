@@ -223,6 +223,7 @@ meta update -  Update the script
 	  does an "EXPLAIN ANALYZE" of the current SQL
 	- "explainjsonquery" added for use with http://tatiyants.com/pev/
 	- Function to fail a specific job ID
+	- "time" prefix for all functions added to print execution time to stderr
 - Fixed:
 	- Escaped commas in influx outputs, switched to tabs to further prevent
 	  comma issues.

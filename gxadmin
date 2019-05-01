@@ -199,6 +199,11 @@ usage(){
 		EOF
 	fi
 
+	cat <<-EOF
+		All commands can be prefixed with "time" to print execution time to stderr
+
+	EOF
+
 
 	cat <<-EOF
 		help / -h / --help : this message. Invoke '--help' on any subcommand for help specific to that subcommand
@@ -392,7 +397,11 @@ CHANGELOG=$(cat <<EOF
 	- "explainquery" is added as an alternative to csv/tsv/etc queries, which
 	  does an "EXPLAIN ANALYZE" of the current SQL
 	- "explainjsonquery" added for use with http://tatiyants.com/pev/
+<<<<<<< HEAD
 	- Function to fail a specific job ID
+=======
+	- "time" prefix for all functions added to print execution time to stderr
+>>>>>>> 2f08e2e0d4de4871efff66d50a879656d8ee1ada
 - Fixed:
 	- Escaped commas in influx outputs, switched to tabs to further prevent
 	  comma issues.
@@ -3436,7 +3445,7 @@ meta_slurp-current() { ## meta slurp-current [--date]: Executes what used to be 
 
 	for func in $(grep -s -h -o '^query_server-[a-z-]*' $0 $GXADMIN_SITE_SPECIFIC | sort | sed 's/query_//g'); do
 		obtain_query $func
-		query_influx "$QUERY" "$query_name" "$fields" "$tags" | sed "s/$/$append/"
+		$wrapper query_influx "$QUERY" "$query_name" "$fields" "$tags" | sed "s/$/$append/"
 	done
 }
 
@@ -3494,7 +3503,7 @@ meta_slurp-upto() { ## meta slurp-upto <yyyy-mm-dd> [--date]: Slurps data "up to
 
 	for func in $(grep -s -h -o '^query_server-[a-z-]*' $0 $GXADMIN_SITE_SPECIFIC | sort | sed 's/query_//g'); do
 		obtain_query $func $1
-		query_influx "$QUERY" "$query_name.daily" "$fields" "$tags" | sed "s/$/$append/"
+		$wrapper query_influx "$QUERY" "$query_name.daily" "$fields" "$tags" | sed "s/$/$append/"
 	done
 }
 
@@ -3731,12 +3740,12 @@ query() {
 
 	# Run the queries
 	case "$query_type" in
-		tsvquery         ) query_tsv "$QUERY";;
-		csvquery         ) query_csv "$QUERY";;
-		query            ) query_tbl "$QUERY";;
-		iquery           ) query_influx "$QUERY" "$query_name" "$fields" "$tags" "$timestamp";;
-		explainquery     ) query_exp "$QUERY";;
-		explainjsonquery ) query_expj "$QUERY";;
+		tsvquery         ) $wrapper query_tsv "$QUERY";;
+		csvquery         ) $wrapper query_csv "$QUERY";;
+		query            ) $wrapper query_tbl "$QUERY";;
+		iquery           ) $wrapper query_influx "$QUERY" "$query_name" "$fields" "$tags" "$timestamp";;
+		explainquery     ) $wrapper query_exp "$QUERY";;
+		explainjsonquery ) $wrapper query_expj "$QUERY";;
 		# default
 		*            )  usage "Error";;
 	esac
@@ -3773,22 +3782,31 @@ local_funcs() {
 		usage ${group_name}
 	fi
 }
+wrap_time() {
+	local TIMEFORMAT="Time to execute $1: %R seconds"
+	time "$@"
+}
 if (( $# == 0 )); then
 	usage
 fi
 
 mode="$1"; shift
+wrapper=
+if [[ "$mode" == time* ]]; then
+	wrapper=wrap_time
+	mode=${mode:4}
+fi
 
 case "$mode" in
 	*query ) query "$mode"   "$@" ;;
-	config ) look_for config "$@" ;;
-	filter ) look_for filter "$@" ;;
-	galaxy ) look_for galaxy "$@" ;;
-	report ) look_for report "$@" ;;
-	local  ) local_funcs     "$@" ;;
-	mutate ) mutate "$mode"  "$@" ;;
-	uwsgi  ) look_for uwsgi  "$@" ;;
-	meta   ) look_for meta   "$@" ;;
+	config ) $wrapper look_for config "$@" ;;
+	filter ) $wrapper look_for filter "$@" ;;
+	galaxy ) $wrapper look_for galaxy "$@" ;;
+	report ) $wrapper look_for report "$@" ;;
+	local  ) $wrapper local_funcs     "$@" ;;
+	mutate ) $wrapper mutate "$mode"  "$@" ;;
+	uwsgi  ) $wrapper look_for uwsgi  "$@" ;;
+	meta   ) $wrapper look_for meta   "$@" ;;
 
 	# version commands
 	version   ) version ;;

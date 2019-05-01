@@ -132,6 +132,11 @@ usage(){
 		EOF
 	fi
 
+	cat <<-EOF
+		All commands can be prefixed with "time" to print execution time to stderr
+
+	EOF
+
 
 	cat <<-EOF
 		help / -h / --help : this message. Invoke '--help' on any subcommand for help specific to that subcommand
