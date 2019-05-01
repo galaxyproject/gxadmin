@@ -222,6 +222,7 @@ meta update -  Update the script
 	- "explainquery" is added as an alternative to csv/tsv/etc queries, which
 	  does an "EXPLAIN ANALYZE" of the current SQL
 	- "explainjsonquery" added for use with http://tatiyants.com/pev/
+	- Function to fail a specific job ID
 - Fixed:
 	- Escaped commas in influx outputs, switched to tabs to further prevent
 	  comma issues.

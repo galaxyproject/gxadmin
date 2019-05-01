@@ -134,6 +134,7 @@ Command | Description
 
 Command | Description
 ------- | -----------
+[`mutate fail-job`](docs/README.mutate.md#mutate-fail-job) | Sets a job state to error
 [`mutate fail-terminal-datasets`](docs/README.mutate.md#mutate-fail-terminal-datasets) | Causes the output datasets of jobs which were manually failed, to be marked as failed
 
 ### query

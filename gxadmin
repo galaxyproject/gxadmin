@@ -392,6 +392,7 @@ CHANGELOG=$(cat <<EOF
 	- "explainquery" is added as an alternative to csv/tsv/etc queries, which
 	  does an "EXPLAIN ANALYZE" of the current SQL
 	- "explainjsonquery" added for use with http://tatiyants.com/pev/
+	- Function to fail a specific job ID
 - Fixed:
 	- Escaped commas in influx outputs, switched to tabs to further prevent
 	  comma issues.
@@ -777,6 +778,33 @@ mutate_fail-terminal-datasets() { ## mutate fail-terminal-datasets [--commit]: C
 	EOF
 }
 
+mutate_fail-job() { ## mutate fail-job <job_id> [--commit]: Sets a job state to error
+	handle_help "$@" <<-EOF
+		Sets a job's state to "error"
+	EOF
+
+	assert_count_ge $# 1 "Must supply a job ID"
+	id=$1
+
+	commit="ROLLBACK;"
+	if [[ $2 == "--commit" ]]; then
+		commit="COMMIT;"
+	fi
+
+
+	read -r -d '' QUERY <<-EOF
+		BEGIN TRANSACTION;
+
+		UPDATE
+			job
+		SET
+			state = 'error'
+		WHERE
+			id = '$id'
+
+		$commit
+	EOF
+}
 query_latest-users() { ## query latest-users: 40 recently registered users
 	handle_help "$@" <<-EOF
 		Returns 40 most recently registered users

@@ -125,3 +125,30 @@ mutate_fail-terminal-datasets() { ## mutate fail-terminal-datasets [--commit]: C
 	EOF
 }
 
+mutate_fail-job() { ## mutate fail-job <job_id> [--commit]: Sets a job state to error
+	handle_help "$@" <<-EOF
+		Sets a job's state to "error"
+	EOF
+
+	assert_count_ge $# 1 "Must supply a job ID"
+	id=$1
+
+	commit="ROLLBACK;"
+	if [[ $2 == "--commit" ]]; then
+		commit="COMMIT;"
+	fi
+
+
+	read -r -d '' QUERY <<-EOF
+		BEGIN TRANSACTION;
+
+		UPDATE
+			job
+		SET
+			state = 'error'
+		WHERE
+			id = '$id'
+
+		$commit
+	EOF
+}

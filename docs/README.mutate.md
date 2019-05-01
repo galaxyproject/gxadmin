@@ -2,7 +2,23 @@
 
 Command | Description
 ------- | -----------
+[`mutate fail-job`](#meta-whatsnew) | Sets a job state to error
 [`mutate fail-terminal-datasets`](#meta-whatsnew) | Causes the output datasets of jobs which were manually failed, to be marked as failed
+
+### mutate fail-job
+
+**NAME**
+
+mutate fail-job -  Sets a job state to error
+
+**SYNOPSIS**
+
+`gxadmin mutate fail-job <job_id> [--commit]`
+
+**NOTES**
+
+Sets a job's state to "error"
+
 
 ### mutate fail-terminal-datasets
 
