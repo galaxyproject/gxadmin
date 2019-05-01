@@ -397,11 +397,8 @@ CHANGELOG=$(cat <<EOF
 	- "explainquery" is added as an alternative to csv/tsv/etc queries, which
 	  does an "EXPLAIN ANALYZE" of the current SQL
 	- "explainjsonquery" added for use with http://tatiyants.com/pev/
-<<<<<<< HEAD
-	- Function to fail a specific job ID
-=======
 	- "time" prefix for all functions added to print execution time to stderr
->>>>>>> 2f08e2e0d4de4871efff66d50a879656d8ee1ada
+	- Function to fail a specific job ID
 - Fixed:
 	- Escaped commas in influx outputs, switched to tabs to further prevent
 	  comma issues.
@@ -3618,6 +3615,10 @@ meta_iquery-grt-export() { ## meta iquery-grt-export: Export data from a GRT dat
 }
 
 meta_whatsnew() { ## meta whatsnew: What's new in this version of gxadmin
+	handle_help "$@" <<-EOF
+		Informs users of what's new in the changelog since their version
+	EOF
+
 	current_version=$(version)
 	prev_version=$(( current_version - 1 ))
 	#sed -n '1,/^# 12/d;/^# 11/q;p'

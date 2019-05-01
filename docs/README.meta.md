@@ -213,46 +213,15 @@ meta update -  Update the script
 
 ### meta whatsnew
 
-# 13 - pre
+**NAME**
 
-- Added:
-	- local functions support querying when prefixed with "query-"
-	- "meta influx-post" and "meta influx-query" were added to get data into
-	  and out of Influx
-	- "explainquery" is added as an alternative to csv/tsv/etc queries, which
-	  does an "EXPLAIN ANALYZE" of the current SQL
-	- "explainjsonquery" added for use with http://tatiyants.com/pev/
-	- Function to fail a specific job ID
-	- "time" prefix for all functions added to print execution time to stderr
-- Fixed:
-	- Escaped commas in influx outputs, switched to tabs to further prevent
-	  comma issues.
-	- Correct date filter in "query {server-groups,server-datasets}"
+meta whatsnew -  What's new in this version of gxadmin
 
-# 12
+**SYNOPSIS**
 
-- Added:
-	- local functions, users can add functions to a separate file which are
-	  made available in gxadmin. @erasche resisted implementing these for a
-	  long time for fears that they won't be contributed back and everyone
-	  would keep their precious sql private. So they may nag you occasionally
-	  to contribute them back.
-	- (semi) EU specific systemd handler/zergling management commands
-	- filter digest-color: command to colour some text
-	- filter identicon: command to generate an identicon
-	- Some basic testing of the overall script
-- Fixed:
-	- Correct time zones in all queries to be client-side time zones rather
-	  than UTC encoded timestamps as stored in db (Thanks @slugger70!)
-	- Renamed: "query monthly-users" → "query monthly-users-active"
-- Removed:
-	- Removed highly EU specific handler and zerg functions
-	- Deprecated: "query active-users"
-- Changed:
-	- Major internal reorganisation and split into parts for easier editing. A
-	  bash script that needs a build system, truly horrifying.
-	- User info query now shows recent WF invocations and whether their largest
-	  histories are deleted or purged or not.
-	- Separated out 'report' types that are markdown-only outputs and don't
-	  support tsv/csv queries
+`gxadmin meta whatsnew`
+
+**NOTES**
+
+Informs users of what's new in the changelog since their version
 

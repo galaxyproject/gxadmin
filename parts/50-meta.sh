@@ -290,6 +290,10 @@ meta_iquery-grt-export() { ## meta iquery-grt-export: Export data from a GRT dat
 }
 
 meta_whatsnew() { ## meta whatsnew: What's new in this version of gxadmin
+	handle_help "$@" <<-EOF
+		Informs users of what's new in the changelog since their version
+	EOF
+
 	current_version=$(version)
 	prev_version=$(( current_version - 1 ))
 	#sed -n '1,/^# 12/d;/^# 11/q;p'
