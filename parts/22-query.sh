@@ -1538,3 +1538,48 @@ query_user-recent-aggregate-jobs() { ## query user-recent-aggregate-jobs <userna
 			date_trunc DESC
 	EOF
 }
+
+query_history-contents() { ## query history-contents <history_id> [--dataset|--collection]: (NEW) List datasets and/or collections in a history
+	handle_help "$@" <<-EOF
+		Obtain an overview of tools that a user has run in the past N days
+	EOF
+	local dsq clq q
+
+	dsq="select dataset_id, name, hid, visible, deleted, copied_from_history_dataset_association_id as copied_from from history_dataset_association where history_id = $1"
+	clq="select collection_id, name, hid, visible, deleted, copied_from_history_dataset_collection_association_id as copied_from from history_dataset_collection_association where history_id = $1;"
+
+	if [[ $2 == "--dataset" ]] || [[ $2 == "--datasets" ]]; then
+			q="$dsq"
+	elif [[ $2 == "--collection" ]] || [[ $2 == "--collections" ]]; then
+			q="$clq"
+	else
+			q="$dsq;$clq"
+	fi
+
+	read -r -d '' QUERY <<-EOF
+			$q
+	EOF
+}
+
+query_hdca-info() { ## query hdca-info <hdca_id>: (NEW) Information on a dataset collection
+	handle_help "$@" <<-EOF
+	EOF
+
+	read -r -d '' QUERY <<-EOF
+		SELECT *
+		FROM dataset_collection
+		WHERE id = $1
+	EOF
+}
+
+query_hdca-datasets() { ## query hdca-datasets <hdca_id>: (NEW) List of files in a dataset collection
+	handle_help "$@" <<-EOF
+	EOF
+
+	read -r -d '' QUERY <<-EOF
+		SELECT element_index, hda_id, ldda_id, child_collection_id, element_identifier
+		FROM dataset_collection_element
+		WHERE dataset_collection_id = $1
+		ORDER by element_index asc
+	EOF
+}

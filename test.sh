@@ -44,3 +44,8 @@
 	both=$(( backticks + shell ))
 	[ "$both" -gt 0 ]
 }
+
+@test "Ensure no missing help commands" {
+	num=$(cat docs/README.* | grep 'gxadmin usage' -c || true)
+	[ "$num" -eq 0 ]
+}

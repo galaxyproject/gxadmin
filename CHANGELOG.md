@@ -10,6 +10,9 @@
 	- "time" prefix for all functions added to print execution time to stderr
 	- Function to fail a specific job ID
 	- "query user-recent-aggregate-jobs"
+	- "query history-contents"
+	- "query hdca-info"
+	- "query hdca-datasets"
 - Fixed:
 	- Escaped commas in influx outputs, switched to tabs to further prevent
 	  comma issues.

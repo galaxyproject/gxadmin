@@ -147,6 +147,9 @@ Command | Description
 [`query disk-usage`](docs/README.query.md#query-disk-usage) | Disk usage per object store.
 [`query errored-jobs`](docs/README.query.md#query-errored-jobs) | Lists jobs that errored in the last N hours.
 [`query groups-list`](docs/README.query.md#query-groups-list) | List all groups known to Galaxy
+[`query hdca-datasets`](docs/README.query.md#query-hdca-datasets) | (NEW) List of files in a dataset collection
+[`query hdca-info`](docs/README.query.md#query-hdca-info) | (NEW) Information on a dataset collection
+[`query history-contents`](docs/README.query.md#query-history-contents) | (NEW) List datasets and/or collections in a history
 [`query job-history`](docs/README.query.md#query-job-history) | Job state history for a specific job
 [`query job-inputs`](docs/README.query.md#query-job-inputs) | Input datasets to a specific job
 [`query job-outputs`](docs/README.query.md#query-job-outputs) | Output datasets from a specific job

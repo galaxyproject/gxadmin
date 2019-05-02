@@ -8,6 +8,9 @@ Command | Description
 [`query disk-usage`](#mutate-fail-terminal-datasets) | Disk usage per object store.
 [`query errored-jobs`](#mutate-fail-terminal-datasets) | Lists jobs that errored in the last N hours.
 [`query groups-list`](#mutate-fail-terminal-datasets) | List all groups known to Galaxy
+[`query hdca-datasets`](#mutate-fail-terminal-datasets) | (NEW) List of files in a dataset collection
+[`query hdca-info`](#mutate-fail-terminal-datasets) | (NEW) Information on a dataset collection
+[`query history-contents`](#mutate-fail-terminal-datasets) | (NEW) List datasets and/or collections in a history
 [`query job-history`](#mutate-fail-terminal-datasets) | Job state history for a specific job
 [`query job-inputs`](#mutate-fail-terminal-datasets) | Input datasets to a specific job
 [`query job-outputs`](#mutate-fail-terminal-datasets) | Output datasets from a specific job
@@ -135,6 +138,43 @@ query groups-list -  List all groups known to Galaxy
 **SYNOPSIS**
 
 `gxadmin query groups-list`
+
+
+### query hdca-datasets
+
+**NAME**
+
+query hdca-datasets -  (NEW) List of files in a dataset collection
+
+**SYNOPSIS**
+
+`gxadmin query hdca-datasets <hdca_id>`
+
+
+### query hdca-info
+
+**NAME**
+
+query hdca-info -  (NEW) Information on a dataset collection
+
+**SYNOPSIS**
+
+`gxadmin query hdca-info <hdca_id>`
+
+
+### query history-contents
+
+**NAME**
+
+query history-contents -  (NEW) List datasets and/or collections in a history
+
+**SYNOPSIS**
+
+`gxadmin query history-contents <history_id> [--dataset|--collection]`
+
+**NOTES**
+
+Obtain an overview of tools that a user has run in the past N days
 
 
 ### query job-history
