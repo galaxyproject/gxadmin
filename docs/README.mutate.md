@@ -2,8 +2,8 @@
 
 Command | Description
 ------- | -----------
-[`mutate fail-job`](#meta-whatsnew) | Sets a job state to error
-[`mutate fail-terminal-datasets`](#meta-whatsnew) | Causes the output datasets of jobs which were manually failed, to be marked as failed
+[`mutate fail-job`](#mutate-fail-job) | Sets a job state to error
+[`mutate fail-terminal-datasets`](#mutate-fail-terminal-datasets) | Causes the output datasets of jobs which were manually failed, to be marked as failed
 
 ### mutate fail-job
 

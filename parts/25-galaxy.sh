@@ -1,4 +1,4 @@
-galaxy_cleanup() { ## galaxy cleanup [days]: Cleanup histories/hdas/etc for past N days (default=30)
+galaxy_cleanup() { ## [days]: Cleanup histories/hdas/etc for past N days (default=30)
 	handle_help "$@" <<-EOF
 		Cleanup histories/hdas/etc for past N days using the python objects-based method
 	EOF
@@ -34,7 +34,7 @@ galaxy_cleanup() { ## galaxy cleanup [days]: Cleanup histories/hdas/etc for past
 	done
 }
 
-galaxy_migrate-tool-install-to-sqlite() { ## galaxy migrate-tool-install-to-sqlite: Converts normal potsgres toolshed repository tables into the SQLite version
+galaxy_migrate-tool-install-to-sqlite() { ## : Converts normal potsgres toolshed repository tables into the SQLite version
 	handle_help "$@" <<-EOF
 		    $ gxadmin migrate-tool-install-to-sqlite
 		    Creating new sqlite database: galaxy_install.sqlite

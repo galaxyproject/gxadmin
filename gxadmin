@@ -100,8 +100,20 @@ filter_commands() {
 	fi
 }
 
+locate_cmds() {
+	grep -s -h -o '.*{ ## .*' $0 $GXADMIN_SITE_SPECIFIC | grep -v grep | grep -v '| sed' | sort
+}
+
+locate_cmds_nolocal() {
+	grep -s -h -o '.*{ ## .*' $0 | grep -v grep | grep -v '| sed' | sort
+}
+
+correct_cmd() {
+	cat | sed 's/_/ /;s/()\s*{ ##//;s/ :/:/'
+}
+
 usage(){
-	cmds="$(grep -s -h -o '{ ## .*' $0 $GXADMIN_SITE_SPECIFIC | grep -v grep | grep -v '| sed' | sort | sed 's/^{ ## //g')"
+	cmds="$(locate_cmds | correct_cmd)"
 
 	cat <<-EOF
 		gxadmin usage:
@@ -227,15 +239,15 @@ handle_help() {
 
 			key="${mode}"
 			if [[ ! -z "${query_name}" ]]; then
-				key="${key} ${query_name}"
+				key="${key}_${query_name}"
 			fi
 
 			echo "**NAME**"
 			echo
-			invoke_desc=$(grep -s -h "{ ## ${key}[ :]" $0 $GXADMIN_SITE_SPECIFIC | sed "s/.*## /gxadmin /g")
+			invoke_desc=$(grep -s -h "${key}()\s*{" $0 $GXADMIN_SITE_SPECIFIC | correct_cmd | sed "s/^/gxadmin /g")
 			short_desc=$(echo $invoke_desc | sed 's/.*://g')
 			short_parm=$(echo $invoke_desc | sed 's/:.*//g')
-			echo "${key} - ${short_desc}"
+			echo "${mode} ${query_name} - ${short_desc}"
 			echo
 			echo "**SYNOPSIS**"
 			echo
@@ -569,7 +581,7 @@ Included functions for:
 	- datasets-created-daily
 EOF
 )
-config_validate() { ## config validate: validate config files
+config_validate() { ## : validate config files
 	handle_help "$@" <<-EOF
 		Validate the configuration files
 		**Warning**:
@@ -618,7 +630,7 @@ config_validate() { ## config validate: validate config files
 	fi
 }
 
-config_dump() { ## config dump: Dump Galaxy configuration as JSON
+config_dump() { ## : Dump Galaxy configuration as JSON
 	handle_help "$@" <<-EOF
 		This function was added with the intention to use it internally, but it may be useful in your workflows. It uses the python code from the Galaxy codebase in order to properly load the configuration which is then dumped as JSON.
 
@@ -690,7 +702,7 @@ EOF
 	#EOF
 #}
 
-mutate_fail-terminal-datasets() { ## mutate fail-terminal-datasets [--commit]: Causes the output datasets of jobs which were manually failed, to be marked as failed
+mutate_fail-terminal-datasets() { ## [--commit]: Causes the output datasets of jobs which were manually failed, to be marked as failed
 	handle_help "$@" <<-EOF
 		Whenever an admin marks a job as failed manually (e.g. by updating the
 		state in the database), the output datasets are not accordingly updated
@@ -790,7 +802,7 @@ mutate_fail-terminal-datasets() { ## mutate fail-terminal-datasets [--commit]: C
 	EOF
 }
 
-mutate_fail-job() { ## mutate fail-job <job_id> [--commit]: Sets a job state to error
+mutate_fail-job() { ## <job_id> [--commit]: Sets a job state to error
 	handle_help "$@" <<-EOF
 		Sets a job's state to "error"
 	EOF
@@ -817,7 +829,7 @@ mutate_fail-job() { ## mutate fail-job <job_id> [--commit]: Sets a job state to 
 		$commit
 	EOF
 }
-query_latest-users() { ## query latest-users: 40 recently registered users
+query_latest-users() { ## : 40 recently registered users
 	handle_help "$@" <<-EOF
 		Returns 40 most recently registered users
 
@@ -849,7 +861,7 @@ query_latest-users() { ## query latest-users: 40 recently registered users
 	EOF
 }
 
-query_tool-usage() { ## query tool-usage [weeks]: Counts of tool runs in the past weeks (default = all)
+query_tool-usage() { ## [weeks]: Counts of tool runs in the past weeks (default = all)
 	handle_help "$@" <<-EOF
 		    $ gxadmin tool-usage
 		                                    tool_id                                 | count
@@ -883,7 +895,7 @@ query_tool-usage() { ## query tool-usage [weeks]: Counts of tool runs in the pas
 	EOF
 }
 
-query_tool-popularity() { ## query tool-popularity [months|24]: Most run tools by month
+query_tool-popularity() { ## [months|24]: Most run tools by month
 	handle_help "$@" <<-EOF
 		See most popular tools by month
 
@@ -918,7 +930,7 @@ query_tool-popularity() { ## query tool-popularity [months|24]: Most run tools b
 	EOF
 }
 
-query_workflow-connections() { ## query workflow-connections [--all]: The connections of tools, from output to input, in the latest (or all) versions of user workflows
+query_workflow-connections() { ## [--all]: The connections of tools, from output to input, in the latest (or all) versions of user workflows
 	handle_help "$@" <<-EOF
 		This is used by the usegalaxy.eu tool prediction workflow, allowing for building models out of tool connections in workflows.
 
@@ -971,7 +983,7 @@ query_workflow-connections() { ## query workflow-connections [--all]: The connec
 	EOF
 }
 
-query_datasets-created-daily() { ## query datasets-created-daily: The min/max/average/p95/p99 of total size of datasets created in a single day.
+query_datasets-created-daily() { ## : The min/max/average/p95/p99 of total size of datasets created in a single day.
 	handle_help "$@" <<-EOF
 		    $ gxadmin query datasets-created-daily
 		       min   |  avg   | perc_95 | perc_99 |  max
@@ -997,7 +1009,7 @@ query_datasets-created-daily() { ## query datasets-created-daily: The min/max/av
 	EOF
 }
 
-query_largest-collection() { ## query largest-collection: Returns the size of the single largest collection
+query_largest-collection() { ## : Returns the size of the single largest collection
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -1015,7 +1027,7 @@ query_largest-collection() { ## query largest-collection: Returns the size of th
 	EOF
 }
 
-query_queue-time() { ## query queue-time <tool_id>: The average/95%/99% a specific tool spends in queue state.
+query_queue-time() { ## <tool_id>: The average/95%/99% a specific tool spends in queue state.
 	handle_help "$@" <<-EOF
 		    $ gxadmin query queue-time toolshed.g2.bx.psu.edu/repos/nilesh/rseqc/rseqc_geneBody_coverage/2.6.4.3
 		           min       |     perc_95     |     perc_99     |       max
@@ -1053,7 +1065,7 @@ query_queue-time() { ## query queue-time <tool_id>: The average/95%/99% a specif
 	EOF
 }
 
-query_queue() { ## query queue: Brief overview of currently running jobs
+query_queue() { ## : Brief overview of currently running jobs
 	handle_help "$@" <<-EOF
 		    $ gxadmin query queue
 		                                tool_id                                |  state  | count
@@ -1082,7 +1094,7 @@ query_queue() { ## query queue: Brief overview of currently running jobs
 	EOF
 }
 
-query_queue-overview() { ## query queue-overview [--short-tool-id]: View used mostly for monitoring
+query_queue-overview() { ## [--short-tool-id]: View used mostly for monitoring
 	handle_help "$@" <<-EOF
 		Primarily for monitoring of queue. Optimally used with 'iquery' and passed to Telegraf.
 
@@ -1125,7 +1137,7 @@ query_queue-overview() { ## query queue-overview [--short-tool-id]: View used mo
 	EOF
 }
 
-query_queue-detail() { ## query queue-detail [--all]: Detailed overview of running and queued jobs
+query_queue-detail() { ## [--all]: Detailed overview of running and queued jobs
 	handle_help "$@" <<-EOF
 		    $ gxadmin query queue-detail
 		      state  |   id    |  extid  |                                 tool_id                                   | username | time_since_creation
@@ -1171,7 +1183,7 @@ query_queue-detail() { ## query queue-detail [--all]: Detailed overview of runni
 	EOF
 }
 
-query_runtime-per-user() { ## query runtime-per-user <email>: computation time of user (by email)
+query_runtime-per-user() { ## <email>: computation time of user (by email)
 	handle_help "$@" <<-EOF
 		    $ gxadmin query runtime-per-user hxr@informatik.uni-freiburg.de
 		       sum
@@ -1196,7 +1208,7 @@ query_runtime-per-user() { ## query runtime-per-user <email>: computation time o
 	EOF
 }
 
-query_jobs-nonterminal() { ## query jobs-nonterminal [username|id|email]: Job info of nonterminal jobs separated by user
+query_jobs-nonterminal() { ## [username|id|email]: Job info of nonterminal jobs separated by user
 	handle_help "$@" <<-EOF
 		You can request the user information by username, id, and user email
 
@@ -1247,7 +1259,7 @@ query_jobs-nonterminal() { ## query jobs-nonterminal [username|id|email]: Job in
 	EOF
 }
 
-query_jobs-per-user() { ## query jobs-per-user <email>: Number of jobs run by a specific user
+query_jobs-per-user() { ## <email>: Number of jobs run by a specific user
 	handle_help "$@" <<-EOF
 		    $ gxadmin query jobs-per-user hxr@informatik.uni-freiburg.de
 		     count
@@ -1267,7 +1279,7 @@ query_jobs-per-user() { ## query jobs-per-user <email>: Number of jobs run by a 
 	EOF
 }
 
-query_recent-jobs() { ## query recent-jobs <hours>: Jobs run in the past <hours> (in any state)
+query_recent-jobs() { ## <hours>: Jobs run in the past <hours> (in any state)
 	handle_help "$@" <<-EOF
 		    $ gxadmin query recent-jobs 2.1
 		       id    |     create_time     |      tool_id          | state |    username
@@ -1297,7 +1309,7 @@ query_recent-jobs() { ## query recent-jobs <hours>: Jobs run in the past <hours>
 	EOF
 }
 
-query_training-list() { ## query training-list [--all]: List known trainings
+query_training-list() { ## [--all]: List known trainings
 	handle_help "$@" <<-EOF
 		This module is specific to EU's implementation of Training Infrastructure as a Service. But this specifically just checks for all groups with the name prefix 'training-'
 
@@ -1325,7 +1337,7 @@ query_training-list() { ## query training-list [--all]: List known trainings
 	EOF
 }
 
-query_training-members() { ## query training-members <tr_id>: List users in a specific training
+query_training-members() { ## <tr_id>: List users in a specific training
 	handle_help "$@" <<-EOF
 		    $ gxadmin query training-members hts2018
 		          username      |       joined
@@ -1349,7 +1361,7 @@ query_training-members() { ## query training-members <tr_id>: List users in a sp
 	EOF
 }
 
-query_training-members-remove() { ## query training-members-remove <training> <username> [YESDOIT]: Remove a user from a training
+query_training-members-remove() { ## <training> <username> [YESDOIT]: Remove a user from a training
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -1381,7 +1393,7 @@ query_training-members-remove() { ## query training-members-remove <training> <u
 	fi
 }
 
-query_largest-histories() { ## query largest-histories: Largest histories in Galaxy
+query_largest-histories() { ## : Largest histories in Galaxy
 	handle_help "$@" <<-EOF
 		Finds all jobs by people in that queue (including things they are executing that are not part of a training)
 
@@ -1415,7 +1427,7 @@ query_largest-histories() { ## query largest-histories: Largest histories in Gal
 	EOF
 }
 
-query_training-queue() { ## query training-queue <training_id>: Jobs currently being run by people in a given training
+query_training-queue() { ## <training_id>: Jobs currently being run by people in a given training
 	handle_help "$@" <<-EOF
 		Finds all jobs by people in that queue (including things they are executing that are not part of a training)
 
@@ -1458,7 +1470,7 @@ query_training-queue() { ## query training-queue <training_id>: Jobs currently b
 	EOF
 }
 
-query_disk-usage() { ## query disk-usage [--nice]: Disk usage per object store.
+query_disk-usage() { ## [--nice]: Disk usage per object store.
 	handle_help "$@" <<-EOF
 		Query the different object stores referenced in your Galaxy database
 
@@ -1499,7 +1511,7 @@ query_disk-usage() { ## query disk-usage [--nice]: Disk usage per object store.
 	EOF
 }
 
-query_users-count() { ## query users-count: Shows sums of active/external/deleted/purged accounts
+query_users-count() { ## : Shows sums of active/external/deleted/purged accounts
 	handle_help "$@" <<-EOF
 		     active | external | deleted | purged | count
 		    --------+----------+---------+--------+-------
@@ -1523,7 +1535,7 @@ query_users-count() { ## query users-count: Shows sums of active/external/delete
 	EOF
 }
 
-query_tool-last-used-date() { ## query tool-last-used-date: When was the most recent invocation of every tool
+query_tool-last-used-date() { ## : When was the most recent invocation of every tool
 	handle_help "$@" <<-EOF
 		Example invocation:
 
@@ -1545,7 +1557,7 @@ query_tool-last-used-date() { ## query tool-last-used-date: When was the most re
 	EOF
 }
 
-query_users-total() { ## query users-total: Total number of Galaxy users (incl deleted, purged, inactive)
+query_users-total() { ## : Total number of Galaxy users (incl deleted, purged, inactive)
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -1557,7 +1569,7 @@ query_users-total() { ## query users-total: Total number of Galaxy users (incl d
 	EOF
 }
 
-query_groups-list() { ## query groups-list: List all groups known to Galaxy
+query_groups-list() { ## : List all groups known to Galaxy
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -1575,7 +1587,7 @@ query_groups-list() { ## query groups-list: List all groups known to Galaxy
 	EOF
 }
 
-query_collection-usage() { ## query collection-usage: Information about how many collections of various types are used
+query_collection-usage() { ## : Information about how many collections of various types are used
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -1595,7 +1607,7 @@ query_collection-usage() { ## query collection-usage: Information about how many
 	EOF
 }
 
-query_ts-repos() { ## query ts-repos: Counts of toolshed repositories by toolshed and owner.
+query_ts-repos() { ## : Counts of toolshed repositories by toolshed and owner.
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -1612,11 +1624,11 @@ query_ts-repos() { ## query ts-repos: Counts of toolshed repositories by toolshe
 	EOF
 }
 
-query_active-users() { ## query active-users [weeks]: Deprecated, use monthly-users-active
+query_active-users() { ## [weeks]: Deprecated, use monthly-users-active
 	error "Deprecated, use monthly-users-active"
 }
 
-query_tool-metrics() { ## query tool-metrics <tool_id> <metric_id> [--like]: See values of a specific metric
+query_tool-metrics() { ## <tool_id> <metric_id> [--like]: See values of a specific metric
 	handle_help "$@" <<-EOF
 		A good way to use this is to fetch the memory usage of a tool and then
 		do some aggregations. The following requires [data_hacks](https://github.com/bitly/data_hacks)
@@ -1660,7 +1672,7 @@ query_tool-metrics() { ## query tool-metrics <tool_id> <metric_id> [--like]: See
 	EOF
 }
 
-query_tool-available-metrics() { ## query tool-available-metrics <tool_id>: list all available metrics for a given tool
+query_tool-available-metrics() { ## <tool_id>: list all available metrics for a given tool
 	handle_help "$@" <<-EOF
 		Gives a list of available metrics, which can then be used to query.
 
@@ -1687,7 +1699,7 @@ query_tool-available-metrics() { ## query tool-available-metrics <tool_id>: list
 	EOF
 }
 
-query_monthly-cpu-years() { ## query monthly-cpu-years: CPU years allocated to tools by month
+query_monthly-cpu-years() { ## : CPU years allocated to tools by month
 	handle_help "$@" <<-EOF
 		This uses the galaxy_slots and runtime_seconds metrics in order to
 		calculate allocated CPU years. This will not be the value of what is
@@ -1734,7 +1746,7 @@ query_monthly-cpu-years() { ## query monthly-cpu-years: CPU years allocated to t
 }
 
 
-query_monthly-data(){ ## query monthly-data [year]: Number of active users per month, running jobs
+query_monthly-data(){ ## [year]: Number of active users per month, running jobs
 	handle_help "$@" <<-EOF
 		Find out how much data was ingested or created by Galaxy during the past months.
 
@@ -1773,7 +1785,7 @@ query_monthly-data(){ ## query monthly-data [year]: Number of active users per m
 	EOF
 }
 
-query_monthly-users-registered(){ ## query monthly-users-registered [year]: Number of users registered each month
+query_monthly-users-registered(){ ## [year]: Number of users registered each month
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -1795,11 +1807,11 @@ query_monthly-users-registered(){ ## query monthly-users-registered [year]: Numb
 	EOF
 }
 
-query_monthly-users() { ## query monthly-users: Deprecated, use monthly-users-active
+query_monthly-users() { ## : Deprecated, use monthly-users-active
 	error "Deprecated, use monthly-users-active"
 }
 
-query_monthly-users-active(){ ## query monthly-users-active [year]: Number of active users per month, running jobs
+query_monthly-users-active(){ ## [year]: Number of active users per month, running jobs
 	handle_help "$@" <<-EOF
 		Number of unique users each month who ran jobs. **NOTE**: does not include anonymous users.
 
@@ -1835,7 +1847,7 @@ query_monthly-users-active(){ ## query monthly-users-active [year]: Number of ac
 	EOF
 }
 
-query_monthly-jobs(){ ## query monthly-jobs [year]: Number of jobs run each month
+query_monthly-jobs(){ ## [year]: Number of jobs run each month
 	handle_help "$@" <<-EOF
 		Count jobs run each month
 
@@ -1875,7 +1887,7 @@ query_monthly-jobs(){ ## query monthly-jobs [year]: Number of jobs run each mont
 
 }
 
-query_job-history() { ## query job-history <id>: Job state history for a specific job
+query_job-history() { ## <id>: Job state history for a specific job
 	handle_help "$@" <<-EOF
 		    $ gxadmin query job-history 4384025
 		            time         |  state
@@ -1898,7 +1910,7 @@ query_job-history() { ## query job-history <id>: Job state history for a specifi
 	EOF
 }
 
-query_job-inputs() { ## query job-inputs <id>: Input datasets to a specific job
+query_job-inputs() { ## <id>: Input datasets to a specific job
 	handle_help "$@" <<-EOF
 	EOF
 	assert_count $# 1 "Missing Job ID"
@@ -1925,7 +1937,7 @@ query_job-inputs() { ## query job-inputs <id>: Input datasets to a specific job
 	EOF
 }
 
-query_job-outputs() { ## query job-outputs <id>: Output datasets from a specific job
+query_job-outputs() { ## <id>: Output datasets from a specific job
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -1954,7 +1966,7 @@ query_job-outputs() { ## query job-outputs <id>: Output datasets from a specific
 	EOF
 }
 
-query_old-histories(){ ## query old-histories <weeks>: Lists histories that haven't been updated (used) for <weeks>
+query_old-histories(){ ## <weeks>: Lists histories that haven't been updated (used) for <weeks>
 	handle_help "$@" <<-EOF
 		Histories and their users who haven't been updated for a specified number of weeks. Default number of weeks is 15.
 
@@ -2002,7 +2014,7 @@ query_old-histories(){ ## query old-histories <weeks>: Lists histories that have
 }
 
 # TODO(hxr): generic summation by metric? Leave math to consumer?
-query_jobs-max-by-cpu-hours() { ## query jobs-max-by-cpu-hours: Top 10 jobs by CPU hours consumed (requires CGroups metrics)
+query_jobs-max-by-cpu-hours() { ## : Top 10 jobs by CPU hours consumed (requires CGroups metrics)
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -2021,7 +2033,7 @@ query_jobs-max-by-cpu-hours() { ## query jobs-max-by-cpu-hours: Top 10 jobs by C
 	EOF
 }
 
-query_errored-jobs(){ ## query errored-jobs <hours>: Lists jobs that errored in the last N hours.
+query_errored-jobs(){ ## <hours>: Lists jobs that errored in the last N hours.
 	handle_help "$@" <<-EOF
 		Lists details of jobs that have status = 'error' for the specified number of hours. Default = 24 hours
 
@@ -2312,7 +2324,7 @@ query_server-workflow-invocations() {
 	EOF
 }
 
-query_workflow-invocation-status() { ## query workflow-invocation-status: Report on how many workflows are in new state by handler
+query_workflow-invocation-status() { ## : Report on how many workflows are in new state by handler
 	handle_help "$@" <<-EOF
 		Really only intended to be used in influx queries.
 	EOF
@@ -2332,7 +2344,7 @@ query_workflow-invocation-status() { ## query workflow-invocation-status: Report
 	EOF
 }
 
-query_user-recent-aggregate-jobs() { ## query user-recent-aggregate-jobs <username|id|email> [days|7]: (NEW) Show aggregate information for jobs in past N days for user
+query_user-recent-aggregate-jobs() { ## <username|id|email> [days|7]: (NEW) Show aggregate information for jobs in past N days for user
 	handle_help "$@" <<-EOF
 		Obtain an overview of tools that a user has run in the past N days
 	EOF
@@ -2358,7 +2370,7 @@ query_user-recent-aggregate-jobs() { ## query user-recent-aggregate-jobs <userna
 	EOF
 }
 
-query_history-contents() { ## query history-contents <history_id> [--dataset|--collection]: (NEW) List datasets and/or collections in a history
+query_history-contents() { ## <history_id> [--dataset|--collection]: (NEW) List datasets and/or collections in a history
 	handle_help "$@" <<-EOF
 		Obtain an overview of tools that a user has run in the past N days
 	EOF
@@ -2380,7 +2392,7 @@ query_history-contents() { ## query history-contents <history_id> [--dataset|--c
 	EOF
 }
 
-query_hdca-info() { ## query hdca-info <hdca_id>: (NEW) Information on a dataset collection
+query_hdca-info() { ## <hdca_id>: (NEW) Information on a dataset collection
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -2391,7 +2403,7 @@ query_hdca-info() { ## query hdca-info <hdca_id>: (NEW) Information on a dataset
 	EOF
 }
 
-query_hdca-datasets() { ## query hdca-datasets <hdca_id>: (NEW) List of files in a dataset collection
+query_hdca-datasets() { ## <hdca_id>: (NEW) List of files in a dataset collection
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -2402,7 +2414,7 @@ query_hdca-datasets() { ## query hdca-datasets <hdca_id>: (NEW) List of files in
 		ORDER by element_index asc
 	EOF
 }
-filter_pg2md() { ## filter pg2md: Convert postgres table format outputs to something that can be pasted as markdown
+filter_pg2md() { ## : Convert postgres table format outputs to something that can be pasted as markdown
 	handle_help "$@" <<-EOF
 		Imagine doing something like:
 
@@ -2427,7 +2439,7 @@ filter_pg2md() { ## filter pg2md: Convert postgres table format outputs to somet
 	cat | sed 's/--+--/- | -/g;s/^\(\s\+\)\([^|]\+\) |/\2 \1|/g' | head -n -2
 }
 
-filter_identicon(){ ## filter identicon: Convert an input data stream into an identicon (e.g. with hostname)
+filter_identicon(){ ## : Convert an input data stream into an identicon (e.g. with hostname)
 	handle_help "$@" <<-EOF
 		Given an input data stream, digest it, and colour it using the same logic as digest-color
 
@@ -2444,7 +2456,7 @@ filter_identicon(){ ## filter identicon: Convert an input data stream into an id
 	cat | python -c "$identicon_script"
 }
 
-filter_digest-color() { ## filter digest-color: Color an input stream based on the contents (e.g. hostname)
+filter_digest-color() { ## : Color an input stream based on the contents (e.g. hostname)
 	handle_help "$@" <<-EOF
 		Colors entire input stream based on digest of entire input's contents.
 		Mostly useful for colouring a hostname or some similar value.
@@ -2466,7 +2478,7 @@ filter_digest-color() { ## filter digest-color: Color an input stream based on t
 	echo "$(tput setaf $fg_color)$(tput setab $bg_color)${data}$(tput sgr0)"
 }
 
-filter_hexdecode() { ## filter hexdecode: Decodes any hex blobs from postgres outputs
+filter_hexdecode() { ## : Decodes any hex blobs from postgres outputs
 	handle_help "$@" <<-EOF
 		This automatically replaces any hex strings (\\x[a-f0-9]+) with their decoded versions. This can allow you to query galaxy metadata, decode it, and start processing it with JQ. Just pipe your query to it and it will replace it wherever it is found.
 
@@ -2518,11 +2530,11 @@ filter_hexdecode() { ## filter hexdecode: Decodes any hex blobs from postgres ou
 
 	cat | python -c "$hexdecodelines"
 }
-uwsgi_stats_influx() { ## uwsgi stats_influx: Deprecated, use uwsgi stats-influx
+uwsgi_stats_influx() { ## : Deprecated, use uwsgi stats-influx
 	uwsgi_stats-influx
 }
 
-uwsgi_stats-influx(){ ## uwsgi stats-influx <addr>: InfluxDB formatted output for the current stats
+uwsgi_stats-influx(){ ## <addr>: InfluxDB formatted output for the current stats
 	handle_help "$@" <<-EOF
 		Contact a specific uWSGI stats address (requires uwsgi binary on path)
 		and requests the current stats + formats them for InfluxDB. For some
@@ -2579,7 +2591,7 @@ uwsgi_stats-influx(){ ## uwsgi stats-influx <addr>: InfluxDB formatted output fo
 		sed 's/"busy"/1/g;s/"idle"/0/g;'
 }
 
-uwsgi_status() { ## uwsgi status: Current system status
+uwsgi_status() { ## : Current system status
 	handle_help "$@" <<-EOF
 		Current status of all uwsgi processes
 	EOF
@@ -2593,7 +2605,7 @@ uwsgi_status() { ## uwsgi status: Current system status
 	done
 }
 
-uwsgi_memory() { ## uwsgi memory: Current system memory usage
+uwsgi_memory() { ## : Current system memory usage
 	handle_help "$@" <<-EOF
 		Obtain memory usage of the various Galaxy processes
 
@@ -2612,7 +2624,7 @@ uwsgi_memory() { ## uwsgi memory: Current system memory usage
 	done
 }
 
-uwsgi_pids() { ## uwsgi pids: Galaxy process PIDs
+uwsgi_pids() { ## : Galaxy process PIDs
 	handle_help "$@" <<-EOF
 		Obtain memory usage of the various Galaxy processes
 	EOF
@@ -2626,7 +2638,7 @@ uwsgi_pids() { ## uwsgi pids: Galaxy process PIDs
 	done
 }
 
-uwsgi_stats() { ## uwsgi stats: uwsgi stats
+uwsgi_stats() { ## : uwsgi stats
 	uwsgi_stats-influx 127.0.0.1:4010 2>/dev/null || true
 	uwsgi_stats-influx 127.0.0.1:4011 2>/dev/null || true
 	uwsgi_stats-influx 127.0.0.1:4012 2>/dev/null || true
@@ -2645,7 +2657,7 @@ uwsgi_stats() { ## uwsgi stats: uwsgi stats
 	done
 }
 
-uwsgi_zerg-swap() { ## uwsgi zerg-swap: Swap zerglings in order (unintelligent version)
+uwsgi_zerg-swap() { ## : Swap zerglings in order (unintelligent version)
 	handle_help "$@" <<-EOF
 		This is the "dumb" version which loops across the zerglings and restarts them in series
 	EOF
@@ -2660,7 +2672,7 @@ uwsgi_zerg-swap() { ## uwsgi zerg-swap: Swap zerglings in order (unintelligent v
 	done
 }
 
-uwsgi_zerg-scale-up() { ## uwsgi zerg-scale-up: Add another zergling to deal with high load
+uwsgi_zerg-scale-up() { ## : Add another zergling to deal with high load
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -2670,7 +2682,7 @@ uwsgi_zerg-scale-up() { ## uwsgi zerg-scale-up: Add another zergling to deal wit
 	systemctl start $an_inactive
 }
 
-uwsgi_zerg-scale-down() { ## uwsgi zerg-scale-down: Remove an extraneous zergling
+uwsgi_zerg-scale-down() { ## : Remove an extraneous zergling
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -2688,7 +2700,7 @@ uwsgi_zerg-scale-down() { ## uwsgi zerg-scale-down: Remove an extraneous zerglin
 	systemctl stop $to_kill
 }
 
-uwsgi_zerg-strace() { ## uwsgi zerg-strace [number]: Strace a zergling
+uwsgi_zerg-strace() { ## [number]: Strace a zergling
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -2699,7 +2711,7 @@ uwsgi_zerg-strace() { ## uwsgi zerg-strace [number]: Strace a zergling
 	strace -e open,openat -p $procs
 }
 
-uwsgi_handler-strace() { ## uwsgi handler-strace [number]: Strace a handler
+uwsgi_handler-strace() { ## [number]: Strace a handler
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -2710,7 +2722,7 @@ uwsgi_handler-strace() { ## uwsgi handler-strace [number]: Strace a handler
 	strace -e open,openat -p $procs
 }
 
-uwsgi_handler-restart() { ## uwsgi handler-restart: Restart all handlers
+uwsgi_handler-restart() { ## : Restart all handlers
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -2720,7 +2732,7 @@ uwsgi_handler-restart() { ## uwsgi handler-restart: Restart all handlers
 }
 
 
-uwsgi_lastlog(){ ## uwsgi lastlog: Fetch the number of seconds since the last log message was written
+uwsgi_lastlog(){ ## : Fetch the number of seconds since the last log message was written
 	handle_help "$@" <<-EOF
 		Lets you know if any of your workers or handlers have maybe stopped processing jobs.
 
@@ -2765,7 +2777,7 @@ uwsgi_lastlog(){ ## uwsgi lastlog: Fetch the number of seconds since the last lo
 		fi
 	done
 }
-galaxy_cleanup() { ## galaxy cleanup [days]: Cleanup histories/hdas/etc for past N days (default=30)
+galaxy_cleanup() { ## [days]: Cleanup histories/hdas/etc for past N days (default=30)
 	handle_help "$@" <<-EOF
 		Cleanup histories/hdas/etc for past N days using the python objects-based method
 	EOF
@@ -2801,7 +2813,7 @@ galaxy_cleanup() { ## galaxy cleanup [days]: Cleanup histories/hdas/etc for past
 	done
 }
 
-galaxy_migrate-tool-install-to-sqlite() { ## galaxy migrate-tool-install-to-sqlite: Converts normal potsgres toolshed repository tables into the SQLite version
+galaxy_migrate-tool-install-to-sqlite() { ## : Converts normal potsgres toolshed repository tables into the SQLite version
 	handle_help "$@" <<-EOF
 		    $ gxadmin migrate-tool-install-to-sqlite
 		    Creating new sqlite database: galaxy_install.sqlite
@@ -2961,7 +2973,7 @@ galaxy_migrate-tool-install-to-sqlite() { ## galaxy migrate-tool-install-to-sqli
 
 	success "Complete"
 }
-report_user-info() { ## report user-info <user_id|username|email>: Quick overview of a Galaxy user in your system
+report_user-info(){ ## <user_id|username|email>: Quick overview of a Galaxy user in your system
 	handle_help "$@" <<-EOF
 		This command lets you quickly find out information about a user. The output is formatted as markdown by default.
 
@@ -3139,7 +3151,7 @@ EOF
 	printf "$template" $results "$group_membership" "$role_membership" "$recent_jobs2" "$running_jobs2" "$recent_wf" "$largest_histories"
 }
 
-report_job-info() { ## report job-info <id>: Information about a specific job
+report_job-info(){ ## <id>: Information about a specific job
 	handle_help "$@" <<-EOF
 		    $ gxadmin report job-info 1
 		     tool_id | state | username |        create_time         | job_runner_name | job_runner_external_id
@@ -3310,7 +3322,7 @@ EOF
 }
 
 
-report_assigned-to-handler() { ## report assigned-to-handler <handler>: Report what items are assigned to a handler currently.
+report_assigned-to-handler(){ ## <handler>: Report what items are assigned to a handler currently.
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -3400,7 +3412,7 @@ query_memory-and-cpu-on-same-node() {
 	EOF
 }
 
-meta_update() { ## meta update: Update the script
+meta_update() { ## : Update the script
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -3419,14 +3431,15 @@ meta_cmdlist() {
 	# TOC
 	echo "## Commands"
 	echo
-	for section in $(grep -o '{ ## .*' $0 | grep -v grep | grep -v '| sed' | awk '{print $3}' | sort -u); do
+	for section in $(locate_cmds_nolocal | correct_cmd | awk '{print $1}' | sort -u); do
 		echo "# $section"            > docs/README.${section}.md
 		echo                         >> docs/README.${section}.md
 		echo "Command | Description" >> docs/README.${section}.md
 		echo "------- | -----------" >> docs/README.${section}.md
-		for command in $(grep -o '{ ## .*' $0 | grep -v grep | grep -v '| sed' | sort | sed 's/^{ ## //g' | grep "^$section"); do
+		for command in $(locate_cmds_nolocal | correct_cmd | grep "^$section"); do
 			cmd_part="$(echo $command | sed 's/:.*//g;s/\s*<.*//g;s/\s*\[.*//')"
 			desc_part="$(echo $command | sed 's/^[^:]*:\s*//g')"
+			key_part="$(echo $cmd_part | sed 's/ /-/g')"
 
 			if [[ "$command" != *"Deprecated"* ]]; then
 				# Main ToC
@@ -3440,9 +3453,9 @@ meta_cmdlist() {
 		echo
 		echo "Command | Description"
 		echo "------- | -----------"
-		for command in $(grep -o '{ ## .*' $0 | grep -v grep | grep -v '| sed' | sort | sed 's/^{ ## //g' | grep "^$section"); do
-			cmd_part="$(echo $command | sed 's/:.*//g;s/\s*<.*//g;s/\s*\[.*//')"
-			desc_part="$(echo $command | sed 's/^[^:]*:\s*//g')"
+		for command in $(locate_cmds_nolocal | correct_cmd | grep "^$section"); do
+			cmd_part="$(echo $command | sed 's/:.*//g;s/\s*<.*//g;s/\s*\[.*//;s/\s*$//')"
+			desc_part="$(echo $command | sed 's/^[^:]*:\s*//g;s/\s*$//')"
 			key_part="$(echo $cmd_part | sed 's/ /-/g')"
 
 			if [[ "$command" != *"Deprecated"* ]]; then
@@ -3463,7 +3476,7 @@ meta_cmdlist() {
 	done
 }
 
-meta_slurp-current() { ## meta slurp-current [--date]: Executes what used to be "Galaxy Slurp"
+meta_slurp-current() { ## [--date]: Executes what used to be "Galaxy Slurp"
 	handle_help "$@" <<-EOF
 		Obtain influx compatible metrics regarding the current state of the
 		server. UseGalaxy.EU uses this to display things like "Current user
@@ -3523,7 +3536,7 @@ meta_slurp-current() { ## meta slurp-current [--date]: Executes what used to be 
 	done
 }
 
-meta_slurp-upto() { ## meta slurp-upto <yyyy-mm-dd> [--date]: Slurps data "up to" a specific date.
+meta_slurp-upto() { ## <yyyy-mm-dd> [--date]: Slurps data "up to" a specific date.
 	handle_help "$@" <<-EOF
 		Obtain influx compatible metrics regarding the summed state of the
 		server up to a specific date. UseGalaxy.EU uses this to display things
@@ -3594,7 +3607,7 @@ meta_success() {
 }
 
 
-meta_influx-post() { ## meta influx-post <db> <file>: (NEW) Post contents of file (in influx line protocol) to influx
+meta_influx-post() { ## <db> <file>: (NEW) Post contents of file (in influx line protocol) to influx
 	handle_help "$@" <<-EOF
 		Post data to InfluxDB. Must be [influx line protocol formatted](https://docs.influxdata.com/influxdb/v1.7/write_protocols/line_protocol_tutorial/)
 
@@ -3635,7 +3648,7 @@ meta_influx-post() { ## meta influx-post <db> <file>: (NEW) Post contents of fil
 	curl --silent -XPOST "${INFLUX_URL}/write?db=${DB}&u=${INFLUX_USER}&p=${INFLUX_PASS}" --data-binary @${FILE}
 }
 
-meta_influx-query() { ## meta influx-query <db> "<query>": (NEW) Query an influx DB
+meta_influx-query() { ## <db> "<query>": (NEW) Query an influx DB
 	handle_help "$@" <<-EOF
 		Query an InfluxDB
 
@@ -3663,7 +3676,7 @@ meta_influx-query() { ## meta influx-query <db> "<query>": (NEW) Query an influx
 	curl --silent "${INFLUX_URL}/query?db=${DB}&u=${INFLUX_USER}&p=${INFLUX_PASS}" --data-urlencode "q=${QUERY}"
 }
 
-meta_iquery-grt-export() { ## meta iquery-grt-export: Export data from a GRT database for sending to influx
+meta_iquery-grt-export() { ## : Export data from a GRT database for sending to influx
 	handle_help "$@" <<-EOF
 		**WARNING**: GRT database specific query, will not work with a galaxy database!
 	EOF
@@ -3691,7 +3704,7 @@ meta_iquery-grt-export() { ## meta iquery-grt-export: Export data from a GRT dat
 	EOF
 }
 
-meta_whatsnew() { ## meta whatsnew: What's new in this version of gxadmin
+meta_whatsnew() { ## : What's new in this version of gxadmin
 	handle_help "$@" <<-EOF
 		Informs users of what's new in the changelog since their version
 	EOF

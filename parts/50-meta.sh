@@ -1,4 +1,4 @@
-meta_update() { ## meta update: Update the script
+meta_update() { ## : Update the script
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -17,14 +17,15 @@ meta_cmdlist() {
 	# TOC
 	echo "## Commands"
 	echo
-	for section in $(grep -o '{ ## .*' $0 | grep -v grep | grep -v '| sed' | awk '{print $3}' | sort -u); do
+	for section in $(locate_cmds_nolocal | correct_cmd | awk '{print $1}' | sort -u); do
 		echo "# $section"            > docs/README.${section}.md
 		echo                         >> docs/README.${section}.md
 		echo "Command | Description" >> docs/README.${section}.md
 		echo "------- | -----------" >> docs/README.${section}.md
-		for command in $(grep -o '{ ## .*' $0 | grep -v grep | grep -v '| sed' | sort | sed 's/^{ ## //g' | grep "^$section"); do
+		for command in $(locate_cmds_nolocal | correct_cmd | grep "^$section"); do
 			cmd_part="$(echo $command | sed 's/:.*//g;s/\s*<.*//g;s/\s*\[.*//')"
 			desc_part="$(echo $command | sed 's/^[^:]*:\s*//g')"
+			key_part="$(echo $cmd_part | sed 's/ /-/g')"
 
 			if [[ "$command" != *"Deprecated"* ]]; then
 				# Main ToC
@@ -38,9 +39,9 @@ meta_cmdlist() {
 		echo
 		echo "Command | Description"
 		echo "------- | -----------"
-		for command in $(grep -o '{ ## .*' $0 | grep -v grep | grep -v '| sed' | sort | sed 's/^{ ## //g' | grep "^$section"); do
-			cmd_part="$(echo $command | sed 's/:.*//g;s/\s*<.*//g;s/\s*\[.*//')"
-			desc_part="$(echo $command | sed 's/^[^:]*:\s*//g')"
+		for command in $(locate_cmds_nolocal | correct_cmd | grep "^$section"); do
+			cmd_part="$(echo $command | sed 's/:.*//g;s/\s*<.*//g;s/\s*\[.*//;s/\s*$//')"
+			desc_part="$(echo $command | sed 's/^[^:]*:\s*//g;s/\s*$//')"
 			key_part="$(echo $cmd_part | sed 's/ /-/g')"
 
 			if [[ "$command" != *"Deprecated"* ]]; then
@@ -61,7 +62,7 @@ meta_cmdlist() {
 	done
 }
 
-meta_slurp-current() { ## meta slurp-current [--date]: Executes what used to be "Galaxy Slurp"
+meta_slurp-current() { ## [--date]: Executes what used to be "Galaxy Slurp"
 	handle_help "$@" <<-EOF
 		Obtain influx compatible metrics regarding the current state of the
 		server. UseGalaxy.EU uses this to display things like "Current user
@@ -121,7 +122,7 @@ meta_slurp-current() { ## meta slurp-current [--date]: Executes what used to be 
 	done
 }
 
-meta_slurp-upto() { ## meta slurp-upto <yyyy-mm-dd> [--date]: Slurps data "up to" a specific date.
+meta_slurp-upto() { ## <yyyy-mm-dd> [--date]: Slurps data "up to" a specific date.
 	handle_help "$@" <<-EOF
 		Obtain influx compatible metrics regarding the summed state of the
 		server up to a specific date. UseGalaxy.EU uses this to display things
@@ -192,7 +193,7 @@ meta_success() {
 }
 
 
-meta_influx-post() { ## meta influx-post <db> <file>: (NEW) Post contents of file (in influx line protocol) to influx
+meta_influx-post() { ## <db> <file>: (NEW) Post contents of file (in influx line protocol) to influx
 	handle_help "$@" <<-EOF
 		Post data to InfluxDB. Must be [influx line protocol formatted](https://docs.influxdata.com/influxdb/v1.7/write_protocols/line_protocol_tutorial/)
 
@@ -233,7 +234,7 @@ meta_influx-post() { ## meta influx-post <db> <file>: (NEW) Post contents of fil
 	curl --silent -XPOST "${INFLUX_URL}/write?db=${DB}&u=${INFLUX_USER}&p=${INFLUX_PASS}" --data-binary @${FILE}
 }
 
-meta_influx-query() { ## meta influx-query <db> "<query>": (NEW) Query an influx DB
+meta_influx-query() { ## <db> "<query>": (NEW) Query an influx DB
 	handle_help "$@" <<-EOF
 		Query an InfluxDB
 
@@ -261,7 +262,7 @@ meta_influx-query() { ## meta influx-query <db> "<query>": (NEW) Query an influx
 	curl --silent "${INFLUX_URL}/query?db=${DB}&u=${INFLUX_USER}&p=${INFLUX_PASS}" --data-urlencode "q=${QUERY}"
 }
 
-meta_iquery-grt-export() { ## meta iquery-grt-export: Export data from a GRT database for sending to influx
+meta_iquery-grt-export() { ## : Export data from a GRT database for sending to influx
 	handle_help "$@" <<-EOF
 		**WARNING**: GRT database specific query, will not work with a galaxy database!
 	EOF
@@ -289,7 +290,7 @@ meta_iquery-grt-export() { ## meta iquery-grt-export: Export data from a GRT dat
 	EOF
 }
 
-meta_whatsnew() { ## meta whatsnew: What's new in this version of gxadmin
+meta_whatsnew() { ## : What's new in this version of gxadmin
 	handle_help "$@" <<-EOF
 		Informs users of what's new in the changelog since their version
 	EOF

@@ -1,8 +1,8 @@
-uwsgi_stats_influx() { ## uwsgi stats_influx: Deprecated, use uwsgi stats-influx
+uwsgi_stats_influx() { ## : Deprecated, use uwsgi stats-influx
 	uwsgi_stats-influx
 }
 
-uwsgi_stats-influx(){ ## uwsgi stats-influx <addr>: InfluxDB formatted output for the current stats
+uwsgi_stats-influx(){ ## <addr>: InfluxDB formatted output for the current stats
 	handle_help "$@" <<-EOF
 		Contact a specific uWSGI stats address (requires uwsgi binary on path)
 		and requests the current stats + formats them for InfluxDB. For some
@@ -59,7 +59,7 @@ uwsgi_stats-influx(){ ## uwsgi stats-influx <addr>: InfluxDB formatted output fo
 		sed 's/"busy"/1/g;s/"idle"/0/g;'
 }
 
-uwsgi_status() { ## uwsgi status: Current system status
+uwsgi_status() { ## : Current system status
 	handle_help "$@" <<-EOF
 		Current status of all uwsgi processes
 	EOF
@@ -73,7 +73,7 @@ uwsgi_status() { ## uwsgi status: Current system status
 	done
 }
 
-uwsgi_memory() { ## uwsgi memory: Current system memory usage
+uwsgi_memory() { ## : Current system memory usage
 	handle_help "$@" <<-EOF
 		Obtain memory usage of the various Galaxy processes
 
@@ -92,7 +92,7 @@ uwsgi_memory() { ## uwsgi memory: Current system memory usage
 	done
 }
 
-uwsgi_pids() { ## uwsgi pids: Galaxy process PIDs
+uwsgi_pids() { ## : Galaxy process PIDs
 	handle_help "$@" <<-EOF
 		Obtain memory usage of the various Galaxy processes
 	EOF
@@ -106,7 +106,7 @@ uwsgi_pids() { ## uwsgi pids: Galaxy process PIDs
 	done
 }
 
-uwsgi_stats() { ## uwsgi stats: uwsgi stats
+uwsgi_stats() { ## : uwsgi stats
 	uwsgi_stats-influx 127.0.0.1:4010 2>/dev/null || true
 	uwsgi_stats-influx 127.0.0.1:4011 2>/dev/null || true
 	uwsgi_stats-influx 127.0.0.1:4012 2>/dev/null || true
@@ -125,7 +125,7 @@ uwsgi_stats() { ## uwsgi stats: uwsgi stats
 	done
 }
 
-uwsgi_zerg-swap() { ## uwsgi zerg-swap: Swap zerglings in order (unintelligent version)
+uwsgi_zerg-swap() { ## : Swap zerglings in order (unintelligent version)
 	handle_help "$@" <<-EOF
 		This is the "dumb" version which loops across the zerglings and restarts them in series
 	EOF
@@ -140,7 +140,7 @@ uwsgi_zerg-swap() { ## uwsgi zerg-swap: Swap zerglings in order (unintelligent v
 	done
 }
 
-uwsgi_zerg-scale-up() { ## uwsgi zerg-scale-up: Add another zergling to deal with high load
+uwsgi_zerg-scale-up() { ## : Add another zergling to deal with high load
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -150,7 +150,7 @@ uwsgi_zerg-scale-up() { ## uwsgi zerg-scale-up: Add another zergling to deal wit
 	systemctl start $an_inactive
 }
 
-uwsgi_zerg-scale-down() { ## uwsgi zerg-scale-down: Remove an extraneous zergling
+uwsgi_zerg-scale-down() { ## : Remove an extraneous zergling
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -168,7 +168,7 @@ uwsgi_zerg-scale-down() { ## uwsgi zerg-scale-down: Remove an extraneous zerglin
 	systemctl stop $to_kill
 }
 
-uwsgi_zerg-strace() { ## uwsgi zerg-strace [number]: Strace a zergling
+uwsgi_zerg-strace() { ## [number]: Strace a zergling
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -179,7 +179,7 @@ uwsgi_zerg-strace() { ## uwsgi zerg-strace [number]: Strace a zergling
 	strace -e open,openat -p $procs
 }
 
-uwsgi_handler-strace() { ## uwsgi handler-strace [number]: Strace a handler
+uwsgi_handler-strace() { ## [number]: Strace a handler
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -190,7 +190,7 @@ uwsgi_handler-strace() { ## uwsgi handler-strace [number]: Strace a handler
 	strace -e open,openat -p $procs
 }
 
-uwsgi_handler-restart() { ## uwsgi handler-restart: Restart all handlers
+uwsgi_handler-restart() { ## : Restart all handlers
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -200,7 +200,7 @@ uwsgi_handler-restart() { ## uwsgi handler-restart: Restart all handlers
 }
 
 
-uwsgi_lastlog(){ ## uwsgi lastlog: Fetch the number of seconds since the last log message was written
+uwsgi_lastlog(){ ## : Fetch the number of seconds since the last log message was written
 	handle_help "$@" <<-EOF
 		Lets you know if any of your workers or handlers have maybe stopped processing jobs.
 

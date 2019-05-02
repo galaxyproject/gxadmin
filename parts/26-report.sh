@@ -1,4 +1,4 @@
-report_user-info() { ## report user-info <user_id|username|email>: Quick overview of a Galaxy user in your system
+report_user-info(){ ## <user_id|username|email>: Quick overview of a Galaxy user in your system
 	handle_help "$@" <<-EOF
 		This command lets you quickly find out information about a user. The output is formatted as markdown by default.
 
@@ -176,7 +176,7 @@ EOF
 	printf "$template" $results "$group_membership" "$role_membership" "$recent_jobs2" "$running_jobs2" "$recent_wf" "$largest_histories"
 }
 
-report_job-info() { ## report job-info <id>: Information about a specific job
+report_job-info(){ ## <id>: Information about a specific job
 	handle_help "$@" <<-EOF
 		    $ gxadmin report job-info 1
 		     tool_id | state | username |        create_time         | job_runner_name | job_runner_external_id
@@ -347,7 +347,7 @@ EOF
 }
 
 
-report_assigned-to-handler() { ## report assigned-to-handler <handler>: Report what items are assigned to a handler currently.
+report_assigned-to-handler(){ ## <handler>: Report what items are assigned to a handler currently.
 	handle_help "$@" <<-EOF
 	EOF
 

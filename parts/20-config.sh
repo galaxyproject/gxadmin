@@ -1,4 +1,4 @@
-config_validate() { ## config validate: validate config files
+config_validate() { ## : validate config files
 	handle_help "$@" <<-EOF
 		Validate the configuration files
 		**Warning**:
@@ -47,7 +47,7 @@ config_validate() { ## config validate: validate config files
 	fi
 }
 
-config_dump() { ## config dump: Dump Galaxy configuration as JSON
+config_dump() { ## : Dump Galaxy configuration as JSON
 	handle_help "$@" <<-EOF
 		This function was added with the intention to use it internally, but it may be useful in your workflows. It uses the python code from the Galaxy codebase in order to properly load the configuration which is then dumped as JSON.
 

@@ -2,19 +2,19 @@
 
 Command | Description
 ------- | -----------
-[`uwsgi handler-restart`](#report-user-info) | Restart all handlers
-[`uwsgi handler-strace`](#report-user-info) | Strace a handler
-[`uwsgi lastlog`](#report-user-info) | Fetch the number of seconds since the last log message was written
-[`uwsgi memory`](#report-user-info) | Current system memory usage
-[`uwsgi pids`](#report-user-info) | Galaxy process PIDs
-[`uwsgi stats-influx`](#report-user-info) | InfluxDB formatted output for the current stats
+[`uwsgi handler-restart`](#uwsgi-handler-restart) | Restart all handlers
+[`uwsgi handler-strace`](#uwsgi-handler-strace) | Strace a handler
+[`uwsgi lastlog`](#uwsgi-lastlog) | Fetch the number of seconds since the last log message was written
+[`uwsgi memory`](#uwsgi-memory) | Current system memory usage
+[`uwsgi pids`](#uwsgi-pids) | Galaxy process PIDs
+[`uwsgi stats-influx`](#uwsgi-stats-influx) | InfluxDB formatted output for the current stats
 `uwsgi stats_influx` | Deprecated, use uwsgi stats-influx
-[`uwsgi stats`](#report-user-info) | uwsgi stats
-[`uwsgi status`](#report-user-info) | Current system status
-[`uwsgi zerg-scale-down`](#report-user-info) | Remove an extraneous zergling
-[`uwsgi zerg-scale-up`](#report-user-info) | Add another zergling to deal with high load
-[`uwsgi zerg-strace`](#report-user-info) | Strace a zergling
-[`uwsgi zerg-swap`](#report-user-info) | Swap zerglings in order (unintelligent version)
+[`uwsgi stats`](#uwsgi-stats) | uwsgi stats
+[`uwsgi status`](#uwsgi-status) | Current system status
+[`uwsgi zerg-scale-down`](#uwsgi-zerg-scale-down) | Remove an extraneous zergling
+[`uwsgi zerg-scale-up`](#uwsgi-zerg-scale-up) | Add another zergling to deal with high load
+[`uwsgi zerg-strace`](#uwsgi-zerg-strace) | Strace a zergling
+[`uwsgi zerg-swap`](#uwsgi-zerg-swap) | Swap zerglings in order (unintelligent version)
 
 ### uwsgi handler-restart
 

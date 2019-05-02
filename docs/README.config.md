@@ -2,8 +2,8 @@
 
 Command | Description
 ------- | -----------
-[`config dump`](#) | Dump Galaxy configuration as JSON
-[`config validate`](#) | validate config files
+[`config dump`](#config-dump) | Dump Galaxy configuration as JSON
+[`config validate`](#config-validate) | validate config files
 
 ### config dump
 

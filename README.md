@@ -68,7 +68,7 @@ If you want to add some site-specific functions, you can do this in `~/.config/g
 You should write a bash script which looks like. **ALL functions must be prefixed with `local_`**
 
 ```bash
-local_cats() { ## cats: Makes cat noises
+local_cats() { ## : Makes cat noises
 	handle_help "$@" <<-EOF
 		Here is some documentation on this function
 	EOF

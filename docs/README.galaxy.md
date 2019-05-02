@@ -2,8 +2,8 @@
 
 Command | Description
 ------- | -----------
-[`galaxy cleanup`](#filter-pg2md) | Cleanup histories/hdas/etc for past N days (default=30)
-[`galaxy migrate-tool-install-to-sqlite`](#filter-pg2md) | Converts normal potsgres toolshed repository tables into the SQLite version
+[`galaxy cleanup`](#galaxy-cleanup) | Cleanup histories/hdas/etc for past N days (default=30)
+[`galaxy migrate-tool-install-to-sqlite`](#galaxy-migrate-tool-install-to-sqlite) | Converts normal potsgres toolshed repository tables into the SQLite version
 
 ### galaxy cleanup
 

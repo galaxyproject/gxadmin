@@ -33,8 +33,20 @@ filter_commands() {
 	fi
 }
 
+locate_cmds() {
+	grep -s -h -o '.*{ ## .*' $0 $GXADMIN_SITE_SPECIFIC | grep -v grep | grep -v '| sed' | sort
+}
+
+locate_cmds_nolocal() {
+	grep -s -h -o '.*{ ## .*' $0 | grep -v grep | grep -v '| sed' | sort
+}
+
+correct_cmd() {
+	cat | sed 's/_/ /;s/()\s*{ ##//;s/ :/:/'
+}
+
 usage(){
-	cmds="$(grep -s -h -o '{ ## .*' $0 $GXADMIN_SITE_SPECIFIC | grep -v grep | grep -v '| sed' | sort | sed 's/^{ ## //g')"
+	cmds="$(locate_cmds | correct_cmd)"
 
 	cat <<-EOF
 		gxadmin usage:
@@ -160,15 +172,15 @@ handle_help() {
 
 			key="${mode}"
 			if [[ ! -z "${query_name}" ]]; then
-				key="${key} ${query_name}"
+				key="${key}_${query_name}"
 			fi
 
 			echo "**NAME**"
 			echo
-			invoke_desc=$(grep -s -h "{ ## ${key}[ :]" $0 $GXADMIN_SITE_SPECIFIC | sed "s/.*## /gxadmin /g")
+			invoke_desc=$(grep -s -h "${key}()\s*{" $0 $GXADMIN_SITE_SPECIFIC | correct_cmd | sed "s/^/gxadmin /g")
 			short_desc=$(echo $invoke_desc | sed 's/.*://g')
 			short_parm=$(echo $invoke_desc | sed 's/:.*//g')
-			echo "${key} - ${short_desc}"
+			echo "${mode} ${query_name} - ${short_desc}"
 			echo
 			echo "**SYNOPSIS**"
 			echo
