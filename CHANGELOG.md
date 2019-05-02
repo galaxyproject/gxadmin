@@ -17,6 +17,10 @@
 	- Escaped commas in influx outputs, switched to tabs to further prevent
 	  comma issues.
 	- Correct date filter in "query {server-groups,server-datasets}"
+	- Removed unnecessary function name duplication, e.g.
+	    "query_filter() { ## query filter [id]: Does thing"
+	  can now be written as
+	    "query_filter() { ## [id]: Does thing"
 
 # 12
 

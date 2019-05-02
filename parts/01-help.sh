@@ -34,11 +34,11 @@ filter_commands() {
 }
 
 locate_cmds() {
-	grep -s -h -o '.*{ ## .*' $0 $GXADMIN_SITE_SPECIFIC | grep -v grep | grep -v '| sed' | sort
+	grep -s -h -o '^[a-z0-9_-]*()\s*{ ## .*' $0 $GXADMIN_SITE_SPECIFIC | grep -v grep | grep -v '| sed' | sort
 }
 
 locate_cmds_nolocal() {
-	grep -s -h -o '.*{ ## .*' $0 | grep -v grep | grep -v '| sed' | sort
+	grep -s -h -o '^[a-z0-9_-]*()\s*{ ## .*' $0 | grep -v grep | grep -v '| sed' | sort
 }
 
 correct_cmd() {
