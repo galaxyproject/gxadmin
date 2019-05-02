@@ -9,6 +9,7 @@
 	- "explainjsonquery" added for use with http://tatiyants.com/pev/
 	- "time" prefix for all functions added to print execution time to stderr
 	- Function to fail a specific job ID
+	- "query user-recent-aggregate-jobs"
 - Fixed:
 	- Escaped commas in influx outputs, switched to tabs to further prevent
 	  comma issues.

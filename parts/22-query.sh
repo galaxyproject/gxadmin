@@ -1512,3 +1512,29 @@ query_workflow-invocation-status() { ## query workflow-invocation-status: Report
 		GROUP BY handler, scheduler
 	EOF
 }
+
+query_user-recent-aggregate-jobs() { ## query user-recent-aggregate-jobs <username|id|email> [days|7]: (NEW) Show aggregate information for jobs in past N days for user
+	handle_help "$@" <<-EOF
+		Obtain an overview of tools that a user has run in the past N days
+	EOF
+
+	# args
+	assert_count_ge $# 1 "Must supply <username|id|email>"
+	user_filter="(galaxy_user.email = '$1' or galaxy_user.username = '$1' or galaxy_user.id = CAST(REGEXP_REPLACE(COALESCE('$1','0'), '[^0-9]+', '0', 'g') AS INTEGER))"
+	days_filter="${2:-7}"
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			date_trunc('day', create_time), tool_id, state, count(*)
+		FROM
+			job
+		JOIN
+			galaxy_user on galaxy_user.id = job.user_id
+		WHERE
+			$user_filter AND create_time > (now() - '$days_filter days'::INTERVAL)
+		GROUP BY
+			date_trunc, tool_id, state
+		ORDER BY
+			date_trunc DESC
+	EOF
+}

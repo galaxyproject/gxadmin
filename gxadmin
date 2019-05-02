@@ -85,6 +85,8 @@ colour_word() {
 		color_idx=1
 	elif [[ $color == "orange" ]]; then
 		color_idx=2
+	elif [[ $color == "green" ]]; then
+		color_idx=4
 	fi
 
 	cat | sed "s|${word}|$(tput setab $color_idx)${word}$(tput sgr0)|g"
@@ -92,7 +94,7 @@ colour_word() {
 
 filter_commands() {
 	if [[ $2 == $1 ]]; then
-		cat | grep "^$1 " | sort -k2 | column -s: -t | sed 's/^/    /' | colour_word Deprecated orange
+		cat | grep "^$1 " | sort -k2 | column -s: -t | sed 's/^/    /' | colour_word Deprecated orange | colour_word '(NEW)' green
 	else
 		cat | grep "^$1 " | sort -k2 | column -s: -t | sed 's/^/    /' | ifmore "$1"
 	fi
@@ -399,6 +401,7 @@ CHANGELOG=$(cat <<EOF
 	- "explainjsonquery" added for use with http://tatiyants.com/pev/
 	- "time" prefix for all functions added to print execution time to stderr
 	- Function to fail a specific job ID
+	- "query user-recent-aggregate-jobs"
 - Fixed:
 	- Escaped commas in influx outputs, switched to tabs to further prevent
 	  comma issues.
@@ -2325,6 +2328,32 @@ query_workflow-invocation-status() { ## query workflow-invocation-status: Report
 		GROUP BY handler, scheduler
 	EOF
 }
+
+query_user-recent-aggregate-jobs() { ## query user-recent-aggregate-jobs <username|id|email> [days|7]: (NEW) Show aggregate information for jobs in past N days for user
+	handle_help "$@" <<-EOF
+		Obtain an overview of tools that a user has run in the past N days
+	EOF
+
+	# args
+	assert_count_ge $# 1 "Must supply <username|id|email>"
+	user_filter="(galaxy_user.email = '$1' or galaxy_user.username = '$1' or galaxy_user.id = CAST(REGEXP_REPLACE(COALESCE('$1','0'), '[^0-9]+', '0', 'g') AS INTEGER))"
+	days_filter="${2:-7}"
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			date_trunc('day', create_time), tool_id, state, count(*)
+		FROM
+			job
+		JOIN
+			galaxy_user on galaxy_user.id = job.user_id
+		WHERE
+			$user_filter AND create_time > (now() - '$days_filter days'::INTERVAL)
+		GROUP BY
+			date_trunc, tool_id, state
+		ORDER BY
+			date_trunc DESC
+	EOF
+}
 filter_pg2md() { ## filter pg2md: Convert postgres table format outputs to something that can be pasted as markdown
 	handle_help "$@" <<-EOF
 		Imagine doing something like:
@@ -3517,7 +3546,7 @@ meta_success() {
 }
 
 
-meta_influx-post() { ## meta influx-post <db> <file>: Post contents of file (in influx line protocol) to influx
+meta_influx-post() { ## meta influx-post <db> <file>: (NEW) Post contents of file (in influx line protocol) to influx
 	handle_help "$@" <<-EOF
 		Post data to InfluxDB. Must be [influx line protocol formatted](https://docs.influxdata.com/influxdb/v1.7/write_protocols/line_protocol_tutorial/)
 
@@ -3558,7 +3587,7 @@ meta_influx-post() { ## meta influx-post <db> <file>: Post contents of file (in 
 	curl --silent -XPOST "${INFLUX_URL}/write?db=${DB}&u=${INFLUX_USER}&p=${INFLUX_PASS}" --data-binary @${FILE}
 }
 
-meta_influx-query() { ## meta influx-query <db> "<query>": Query an influx DB
+meta_influx-query() { ## meta influx-query <db> "<query>": (NEW) Query an influx DB
 	handle_help "$@" <<-EOF
 		Query an InfluxDB
 

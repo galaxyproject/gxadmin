@@ -122,8 +122,8 @@ Command | Description
 
 Command | Description
 ------- | -----------
-[`meta influx-post`](docs/README.meta.md#meta-influx-post) | Post contents of file (in influx line protocol) to influx
-[`meta influx-query`](docs/README.meta.md#meta-influx-query) | Query an influx DB
+[`meta influx-post`](docs/README.meta.md#meta-influx-post) | (NEW) Post contents of file (in influx line protocol) to influx
+[`meta influx-query`](docs/README.meta.md#meta-influx-query) | (NEW) Query an influx DB
 [`meta iquery-grt-export`](docs/README.meta.md#meta-iquery-grt-export) | Export data from a GRT database for sending to influx
 [`meta slurp-current`](docs/README.meta.md#meta-slurp-current) | Executes what used to be "Galaxy Slurp"
 [`meta slurp-upto`](docs/README.meta.md#meta-slurp-upto) | Slurps data "up to" a specific date.
@@ -179,6 +179,7 @@ Command | Description
 [`query training-members`](docs/README.query.md#query-training-members) | List users in a specific training
 [`query training-queue`](docs/README.query.md#query-training-queue) | Jobs currently being run by people in a given training
 [`query ts-repos`](docs/README.query.md#query-ts-repos) | Counts of toolshed repositories by toolshed and owner.
+[`query user-recent-aggregate-jobs`](docs/README.query.md#query-user-recent-aggregate-jobs) | (NEW) Show aggregate information for jobs in past N days for user
 [`query users-count`](docs/README.query.md#query-users-count) | Shows sums of active/external/deleted/purged accounts
 [`query users-total`](docs/README.query.md#query-users-total) | Total number of Galaxy users (incl deleted, purged, inactive)
 [`query workflow-connections`](docs/README.query.md#query-workflow-connections) | The connections of tools, from output to input, in the latest (or all) versions of user workflows

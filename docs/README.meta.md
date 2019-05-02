@@ -2,8 +2,8 @@
 
 Command | Description
 ------- | -----------
-[`meta influx-post`](#galaxy-migrate-tool-install-to-sqlite) | Post contents of file (in influx line protocol) to influx
-[`meta influx-query`](#galaxy-migrate-tool-install-to-sqlite) | Query an influx DB
+[`meta influx-post`](#galaxy-migrate-tool-install-to-sqlite) | (NEW) Post contents of file (in influx line protocol) to influx
+[`meta influx-query`](#galaxy-migrate-tool-install-to-sqlite) | (NEW) Query an influx DB
 [`meta iquery-grt-export`](#galaxy-migrate-tool-install-to-sqlite) | Export data from a GRT database for sending to influx
 [`meta slurp-current`](#galaxy-migrate-tool-install-to-sqlite) | Executes what used to be "Galaxy Slurp"
 [`meta slurp-upto`](#galaxy-migrate-tool-install-to-sqlite) | Slurps data "up to" a specific date.
@@ -14,7 +14,7 @@ Command | Description
 
 **NAME**
 
-meta influx-post -  Post contents of file (in influx line protocol) to influx
+meta influx-post -  (NEW) Post contents of file (in influx line protocol) to influx
 
 **SYNOPSIS**
 
@@ -47,7 +47,7 @@ them. Influx recommends 5-10k lines:
 
 **NAME**
 
-meta influx-query -  Query an influx DB
+meta influx-query -  (NEW) Query an influx DB
 
 **SYNOPSIS**
 

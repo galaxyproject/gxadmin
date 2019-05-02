@@ -18,6 +18,8 @@ colour_word() {
 		color_idx=1
 	elif [[ $color == "orange" ]]; then
 		color_idx=2
+	elif [[ $color == "green" ]]; then
+		color_idx=4
 	fi
 
 	cat | sed "s|${word}|$(tput setab $color_idx)${word}$(tput sgr0)|g"
@@ -25,7 +27,7 @@ colour_word() {
 
 filter_commands() {
 	if [[ $2 == $1 ]]; then
-		cat | grep "^$1 " | sort -k2 | column -s: -t | sed 's/^/    /' | colour_word Deprecated orange
+		cat | grep "^$1 " | sort -k2 | column -s: -t | sed 's/^/    /' | colour_word Deprecated orange | colour_word '(NEW)' green
 	else
 		cat | grep "^$1 " | sort -k2 | column -s: -t | sed 's/^/    /' | ifmore "$1"
 	fi

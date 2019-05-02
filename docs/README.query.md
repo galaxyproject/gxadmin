@@ -40,6 +40,7 @@ Command | Description
 [`query training-members`](#mutate-fail-terminal-datasets) | List users in a specific training
 [`query training-queue`](#mutate-fail-terminal-datasets) | Jobs currently being run by people in a given training
 [`query ts-repos`](#mutate-fail-terminal-datasets) | Counts of toolshed repositories by toolshed and owner.
+[`query user-recent-aggregate-jobs`](#mutate-fail-terminal-datasets) | (NEW) Show aggregate information for jobs in past N days for user
 [`query users-count`](#mutate-fail-terminal-datasets) | Shows sums of active/external/deleted/purged accounts
 [`query users-total`](#mutate-fail-terminal-datasets) | Total number of Galaxy users (incl deleted, purged, inactive)
 [`query workflow-connections`](#mutate-fail-terminal-datasets) | The connections of tools, from output to input, in the latest (or all) versions of user workflows
@@ -827,6 +828,21 @@ query ts-repos -  Counts of toolshed repositories by toolshed and owner.
 **SYNOPSIS**
 
 `gxadmin query ts-repos`
+
+
+### query user-recent-aggregate-jobs
+
+**NAME**
+
+query user-recent-aggregate-jobs -  (NEW) Show aggregate information for jobs in past N days for user
+
+**SYNOPSIS**
+
+`gxadmin query user-recent-aggregate-jobs <username|id|email> [days|7]`
+
+**NOTES**
+
+Obtain an overview of tools that a user has run in the past N days
 
 
 ### query users-count

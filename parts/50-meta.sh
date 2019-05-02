@@ -192,7 +192,7 @@ meta_success() {
 }
 
 
-meta_influx-post() { ## meta influx-post <db> <file>: Post contents of file (in influx line protocol) to influx
+meta_influx-post() { ## meta influx-post <db> <file>: (NEW) Post contents of file (in influx line protocol) to influx
 	handle_help "$@" <<-EOF
 		Post data to InfluxDB. Must be [influx line protocol formatted](https://docs.influxdata.com/influxdb/v1.7/write_protocols/line_protocol_tutorial/)
 
@@ -233,7 +233,7 @@ meta_influx-post() { ## meta influx-post <db> <file>: Post contents of file (in 
 	curl --silent -XPOST "${INFLUX_URL}/write?db=${DB}&u=${INFLUX_USER}&p=${INFLUX_PASS}" --data-binary @${FILE}
 }
 
-meta_influx-query() { ## meta influx-query <db> "<query>": Query an influx DB
+meta_influx-query() { ## meta influx-query <db> "<query>": (NEW) Query an influx DB
 	handle_help "$@" <<-EOF
 		Query an InfluxDB
 
