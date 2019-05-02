@@ -131,7 +131,7 @@ uwsgi_zerg-swap() { ## uwsgi zerg-swap: Swap zerglings in order (unintelligent v
 	EOF
 
 	# Obtain current running ones
-	for zergling in $(status | grep -v inactive | grep zergling | cut -d: -f1); do
+	for zergling in $(uwsgi_status | grep -v inactive | grep zergling | cut -d: -f1); do
 		systemctl restart $zergling
 		number=$(echo "$zergling" | sed 's/.*@//g')
 		stats="127.0.0.1:401$number"

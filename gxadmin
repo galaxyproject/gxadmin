@@ -2574,7 +2574,7 @@ uwsgi_zerg-swap() { ## uwsgi zerg-swap: Swap zerglings in order (unintelligent v
 	EOF
 
 	# Obtain current running ones
-	for zergling in $(status | grep -v inactive | grep zergling | cut -d: -f1); do
+	for zergling in $(uwsgi_status | grep -v inactive | grep zergling | cut -d: -f1); do
 		systemctl restart $zergling
 		number=$(echo "$zergling" | sed 's/.*@//g')
 		stats="127.0.0.1:401$number"
@@ -3555,7 +3555,7 @@ meta_influx-post() { ## meta influx-post <db> <file>: Post contents of file (in 
 		assert_file "$FILE"
 	fi
 
-	curl -XPOST "${INFLUX_URL}/write?db=${DB}&u=${INFLUX_USER}&p=${INFLUX_PASS}" --data-binary @${FILE}
+	curl --silent -XPOST "${INFLUX_URL}/write?db=${DB}&u=${INFLUX_USER}&p=${INFLUX_PASS}" --data-binary @${FILE}
 }
 
 meta_influx-query() { ## meta influx-query <db> "<query>": Query an influx DB

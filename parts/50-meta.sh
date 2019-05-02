@@ -230,7 +230,7 @@ meta_influx-post() { ## meta influx-post <db> <file>: Post contents of file (in 
 		assert_file "$FILE"
 	fi
 
-	curl -XPOST "${INFLUX_URL}/write?db=${DB}&u=${INFLUX_USER}&p=${INFLUX_PASS}" --data-binary @${FILE}
+	curl --silent -XPOST "${INFLUX_URL}/write?db=${DB}&u=${INFLUX_USER}&p=${INFLUX_PASS}" --data-binary @${FILE}
 }
 
 meta_influx-query() { ## meta influx-query <db> "<query>": Query an influx DB
