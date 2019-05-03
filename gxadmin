@@ -2658,7 +2658,6 @@ uwsgi_stats() { ## : uwsgi stats
 	uwsgi_stats-influx 127.0.0.1:4012 2>/dev/null || true
 	uwsgi_stats-influx 127.0.0.1:4013 2>/dev/null || true
 
-
 	echo "systemd service=galaxy-zergpool memory=$(cat /sys/fs/cgroup/memory/system.slice/galaxy-zergpool.service/memory.memsw.usage_in_bytes)"
 	for folder in $(find /sys/fs/cgroup/memory/system.slice/system-galaxy\\x2dzergling.slice/ -mindepth 1 -type d -name 'galaxy-zergling*service'); do
 		service=$(basename $folder)
@@ -2676,8 +2675,15 @@ uwsgi_zerg-swap() { ## : Swap zerglings in order (unintelligent version)
 		This is the "dumb" version which loops across the zerglings and restarts them in series
 	EOF
 
+	active="$(uwsgi_status | grep -v inactive | grep zergling | cut -d: -f1 | wc -l)"
+	if (( $active == 1 )); then
+		error "Won't restart when only a single zergling is active as this will trigger downtime"
+		exit 1
+	fi
+
 	# Obtain current running ones
 	for zergling in $(uwsgi_status | grep -v inactive | grep zergling | cut -d: -f1); do
+		echo "Restarting $zergling"
 		systemctl restart $zergling
 		number=$(echo "$zergling" | sed 's/.*@//g')
 		stats="127.0.0.1:401$number"
@@ -2744,7 +2750,6 @@ uwsgi_handler-restart() { ## : Restart all handlers
 		systemctl restart galaxy-handler@$i &
 	done
 }
-
 
 uwsgi_lastlog(){ ## : Fetch the number of seconds since the last log message was written
 	handle_help "$@" <<-EOF
