@@ -1,29 +1,10 @@
-#mutate_fail_job() { # mutate fail-job <job-id>: Cause a specific job and all of its outputs to be marked as failing
-	#handle_help "$@" <<-EOF
-	#EOF
-
-	#commit="ROLLBACK;"
-	##if [[ $1 == "--commit" ]]; then
-		##commit="COMMIT;"
-	##fi
-
-	#read -r -d '' QUERY <<-EOF
-		#BEGIN TRANSACTION;
-
-		#UPDATE dataset
-		#SET
-			#state = 'error'
-		#WHERE id in (select id from dataset where )
-
-		#UPDATE history_dataset_association
-		#SET
-			#blurb = 'execution error',
-			#info = 'This dataset''s job failed and has been manually addressed by a Galaxy administrator. Please use the bug icon to report this if you need assistance.'
-		#WHERE id in (select hda_id from terminal_jobs_temp)
-
-		#$COMMIT
-	#EOF
-#}
+should_commit() {
+	if [[ $2 == "--commit" ]]; then
+		printf "COMMIT;"
+	else
+		printf "ROLLBACK;"
+	fi
+}
 
 mutate_fail-terminal-datasets() { ## [--commit]: Causes the output datasets of jobs which were manually failed, to be marked as failed
 	handle_help "$@" <<-EOF
@@ -78,14 +59,9 @@ mutate_fail-terminal-datasets() { ## [--commit]: Causes the output datasets of j
 	EOF
 	# TODO(hxr): support collections
 
-	commit="ROLLBACK;"
-	if [[ $1 == "--commit" ]]; then
-		commit="COMMIT;"
-	fi
+	commit=$(should_commit $2)
 
 	read -r -d '' QUERY <<-EOF
-		BEGIN TRANSACTION;
-
 		CREATE TEMP TABLE terminal_jobs_temp AS
 			SELECT
 				dataset.id as ds_id,
@@ -119,10 +95,10 @@ mutate_fail-terminal-datasets() { ## [--commit]: Causes the output datasets of j
 		SET
 			blurb = 'execution error',
 			info = 'This dataset''s job failed and has been manually addressed by a Galaxy administrator. Please use the bug icon to report this if you need assistance.'
-		WHERE id in (select hda_id from terminal_jobs_temp);
-
-		$commit
+		WHERE id in (select hda_id from terminal_jobs_temp)
 	EOF
+
+	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
 }
 
 mutate_fail-job() { ## <job_id> [--commit]: Sets a job state to error
@@ -133,22 +109,55 @@ mutate_fail-job() { ## <job_id> [--commit]: Sets a job state to error
 	assert_count_ge $# 1 "Must supply a job ID"
 	id=$1
 
-	commit="ROLLBACK;"
-	if [[ $2 == "--commit" ]]; then
-		commit="COMMIT;"
-	fi
-
+	commit=$(should_commit $2)
 
 	read -r -d '' QUERY <<-EOF
-		BEGIN TRANSACTION;
-
 		UPDATE
 			job
 		SET
 			state = 'error'
 		WHERE
 			id = '$id'
-
-		$commit
 	EOF
+
+	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
+}
+
+mutate_fail-history() { ## <history_id> [--commit]: Mark all jobs within a history to state error
+	handle_help "$@" <<-EOF
+		Set all jobs within a history to error
+	EOF
+
+	assert_count_ge $# 1 "Must supply a history ID"
+	id=$1
+
+	commit=$(should_commit $2)
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			id, state
+		FROM
+			job
+		WHERE
+			id
+			IN (
+					SELECT
+						job_id
+					FROM
+						job_to_output_dataset
+					WHERE
+						dataset_id
+						IN (
+								SELECT
+									id
+								FROM
+									history_dataset_association
+								WHERE
+									history_id = $1
+							)
+				)
+			AND state NOT IN ('ok', 'error')
+	EOF
+
+	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
 }

@@ -2,8 +2,24 @@
 
 Command | Description
 ------- | -----------
+[`mutate fail-history`](#mutate-fail-history) | Mark all jobs within a history to state error
 [`mutate fail-job`](#mutate-fail-job) | Sets a job state to error
 [`mutate fail-terminal-datasets`](#mutate-fail-terminal-datasets) | Causes the output datasets of jobs which were manually failed, to be marked as failed
+
+### mutate fail-history
+
+**NAME**
+
+mutate fail-history -  Mark all jobs within a history to state error
+
+**SYNOPSIS**
+
+`gxadmin mutate fail-history <history_id> [--commit]`
+
+**NOTES**
+
+Set all jobs within a history to error
+
 
 ### mutate fail-job
 
