@@ -741,7 +741,7 @@ mutate_fail-terminal-datasets() { ## [--commit]: Causes the output datasets of j
 	EOF
 	# TODO(hxr): support collections
 
-	commit=$(should_commit $2)
+	commit=$(should_commit $1)
 
 	read -r -d '' QUERY <<-EOF
 		CREATE TEMP TABLE terminal_jobs_temp AS
