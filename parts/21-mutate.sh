@@ -1,5 +1,5 @@
 should_commit() {
-	if [[ $2 == "--commit" ]]; then
+	if [[ $1 == "--commit" ]]; then
 		printf "COMMIT;"
 	else
 		printf "ROLLBACK;"
