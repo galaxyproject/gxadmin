@@ -3,6 +3,7 @@
 Command | Description
 ------- | -----------
 [`galaxy cleanup`](#galaxy-cleanup) | Cleanup histories/hdas/etc for past N days (default=30)
+[`galaxy migrate-tool-install-from-sqlite`](#galaxy-migrate-tool-install-from-sqlite) | (NEW) Converts normal SQLite version into normal potsgres toolshed repository tables
 [`galaxy migrate-tool-install-to-sqlite`](#galaxy-migrate-tool-install-to-sqlite) | Converts normal potsgres toolshed repository tables into the SQLite version
 
 ### galaxy cleanup
@@ -18,6 +19,28 @@ galaxy cleanup -  Cleanup histories/hdas/etc for past N days (default=30)
 **NOTES**
 
 Cleanup histories/hdas/etc for past N days using the python objects-based method
+
+
+### galaxy migrate-tool-install-from-sqlite
+
+**NAME**
+
+galaxy migrate-tool-install-from-sqlite -  (NEW) Converts normal SQLite version into normal potsgres toolshed repository tables
+
+**SYNOPSIS**
+
+`gxadmin galaxy migrate-tool-install-from-sqlite [sqlite-db]`
+
+**NOTES**
+
+    $ gxadmin migrate-tool-install-from-sqlite db.sqlite
+    Migrating tables
+      export: tool_shed_repository
+      import: tool_shed_repository
+      ...
+      export: repository_repository_dependency_association
+      import: repository_repository_dependency_association
+    Complete
 
 
 ### galaxy migrate-tool-install-to-sqlite

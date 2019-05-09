@@ -14,6 +14,7 @@
 	- "query hdca-info"
 	- "query hdca-datasets"
 	- "mutate fail-history", when failing individual jobs is too slow
+	- "galaxy migrate-tool-install-from-sqlite"
 - Fixed:
 	- Escaped commas in influx outputs, switched to tabs to further prevent
 	  comma issues.

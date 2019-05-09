@@ -194,3 +194,37 @@ galaxy_migrate-tool-install-to-sqlite() { ## : Converts normal potsgres toolshed
 
 	success "Complete"
 }
+
+galaxy_migrate-tool-install-from-sqlite() { ## [sqlite-db]: (NEW) Converts normal SQLite version into normal potsgres toolshed repository tables
+	handle_help "$@" <<-EOF
+		    $ gxadmin migrate-tool-install-from-sqlite db.sqlite
+		    Migrating tables
+		      export: tool_shed_repository
+		      import: tool_shed_repository
+		      ...
+		      export: repository_repository_dependency_association
+		      import: repository_repository_dependency_association
+		    Complete
+	EOF
+	assert_count_eq $# 1 "Must provide database"
+
+	success "Migrating tables"
+
+	for table in {migrate_version,tool_shed_repository,tool_version,tool_version_association,migrate_tools,tool_dependency,repository_dependency,repository_repository_dependency_association}; do
+		success "  export: ${table}"
+		export_csv=$(mktemp /tmp/tmp.gxadmin.${table}.XXXXXXXXXXX)
+
+		sqlite3 -csv $1 "select * from $table" > $export_csv;
+		psql -c "truncate $table"
+		cat $export_csv | psql -c "COPY $table FROM STDIN with CSV";
+
+		if (( $? == 0 )); then
+			rm ${export_csv}
+			success "  import: ${table}"
+		else
+			error "  csv: ${export_csv}"
+		fi
+	done
+
+	success "Complete"
+}
