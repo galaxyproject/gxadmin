@@ -206,7 +206,7 @@ galaxy_migrate-tool-install-from-sqlite() { ## [sqlite-db]: (NEW) Converts norma
 		      import: repository_repository_dependency_association
 		    Complete
 	EOF
-	assert_count_eq $# 1 "Must provide database"
+	assert_count $# 1 "Must provide database"
 
 	success "Migrating tables"
 
@@ -224,7 +224,12 @@ galaxy_migrate-tool-install-from-sqlite() { ## [sqlite-db]: (NEW) Converts norma
 		success "  export: ${table}"
 		export_csv=$(mktemp /tmp/tmp.gxadmin.${table}.XXXXXXXXXXX)
 
-		sqlite3 -csv $1 "select * from $table" | python -c "$hexencodefield9" > $export_csv;
+		if [[ "$table" == "tool_shed_repository" ]]; then
+			sqlite3 -csv $1 "select * from $table" | python -c "$hexencodefield9" > $export_csv;
+		else
+			sqlite3 -csv $1 "select * from $table" > $export_csv;
+		fi
+
 		cat $export_csv | psql -c "COPY $table FROM STDIN with CSV";
 
 		if (( $? == 0 )); then
