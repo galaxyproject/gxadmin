@@ -224,7 +224,7 @@ galaxy_migrate-tool-install-from-sqlite() { ## [sqlite-db]: (NEW) Converts norma
 		success "  export: ${table}"
 		export_csv=$(mktemp /tmp/tmp.gxadmin.${table}.XXXXXXXXXXX)
 
-		sqlite3 -csv $1 "select * from $table" > $export_csv;
+		sqlite3 -csv $1 "select * from $table" | python -c "$hexencodefield9" > $export_csv;
 		cat $export_csv | psql -c "COPY $table FROM STDIN with CSV";
 
 		if (( $? == 0 )); then
