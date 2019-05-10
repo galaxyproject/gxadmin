@@ -232,6 +232,7 @@ galaxy_migrate-tool-install-from-sqlite() { ## [sqlite-db]: (NEW) Converts norma
 			success "  import: ${table}"
 		else
 			error "  csv: ${export_csv}"
+			break
 		fi
 	done
 
