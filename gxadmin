@@ -3042,12 +3042,16 @@ galaxy_migrate-tool-install-from-sqlite() { ## [sqlite-db]: (NEW) Converts norma
 		export_csv=$(mktemp /tmp/tmp.gxadmin.${table}.XXXXXXXXXXX)
 
 		if [[ "$table" == "tool_shed_repository" ]]; then
+			# Might have json instead of hexencoded json
 			sqlite3 -csv $1 "select * from $table" | python -c "$hexencodefield9" > $export_csv;
+		elif [[ "$table" == "tool_version" ]]; then
+			# Might have null values quoted as empty string
+			sqlite3 -csv $1 "select * from $table" | sed 's/""$//' > $export_csv;
 		else
 			sqlite3 -csv $1 "select * from $table" > $export_csv;
 		fi
 
-		cat $export_csv | psql -c "COPY $table FROM STDIN with CSV";
+		psql -c "COPY $table FROM STDIN with CSV" < $export_csv;
 
 		if (( $? == 0 )); then
 			rm ${export_csv}
@@ -3056,6 +3060,15 @@ galaxy_migrate-tool-install-from-sqlite() { ## [sqlite-db]: (NEW) Converts norma
 			error "  csv: ${export_csv}"
 			break
 		fi
+	done
+
+	for table in {migrate_version,tool_shed_repository,tool_version,tool_version_association,migrate_tools,tool_dependency,repository_dependency,repository_repository_dependency_association}; do
+		postgres=$(psql -c "COPY (select count(*) from $table) to STDOUT with CSV")
+		sqlite=$(sqlite3 -csv $1 "select count(*) from $table")
+
+		echo "Comparing $table"
+		echo "  postgres: $postgres"
+		echo "  sqlite3: $sqlite"
 	done
 
 	success "Complete"
