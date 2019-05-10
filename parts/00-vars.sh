@@ -26,14 +26,13 @@ import sys
 csv.field_size_limit(sys.maxsize)
 
 
-with open(sys.argv[1], 'rb') as csvin:
-	spamreader = csv.reader(csvin, delimiter=',', quotechar='"')
-	spwamwrite = csv.writer(sys.stdout, delimiter=',', quotechar='"')
+spamreader = csv.reader(sys.stdin, delimiter=',', quotechar='"')
+spwamwrite = csv.writer(sys.stdout, delimiter=',', quotechar='"')
 
-	for row in spamreader:
-		if row[9][0] != "\\\\":
-			row[9] = "\\\\x" + binascii.hexlify(row[9])
-		spwamwrite.writerow(row)
+for row in spamreader:
+	if row[9][0] != "\\\\":
+		row[9] = "\\\\x" + binascii.hexlify(row[9])
+	spwamwrite.writerow(row)
 EOF
 )
 
