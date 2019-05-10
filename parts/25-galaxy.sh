@@ -210,12 +210,23 @@ galaxy_migrate-tool-install-from-sqlite() { ## [sqlite-db]: (NEW) Converts norma
 
 	success "Migrating tables"
 
+	# Truncate first, since need to be removed in a specific ordering (probably
+	# cascade would work but cascade is SCARY)
+	for table in {repository_repository_dependency_association,repository_dependency,tool_dependency,migrate_tools,tool_version_association,tool_version,tool_shed_repository,migrate_version}; do
+		psql -c "truncate $table"
+		if (( $? == 0 )); then
+			success "  Cleaned"
+		else
+			error "  Failed to clean"
+		fi
+	done
+
+	# Then load data in same 'safe' order as in sqlite version
 	for table in {migrate_version,tool_shed_repository,tool_version,tool_version_association,migrate_tools,tool_dependency,repository_dependency,repository_repository_dependency_association}; do
 		success "  export: ${table}"
 		export_csv=$(mktemp /tmp/tmp.gxadmin.${table}.XXXXXXXXXXX)
 
 		sqlite3 -csv $1 "select * from $table" > $export_csv;
-		psql -c "truncate $table"
 		cat $export_csv | psql -c "COPY $table FROM STDIN with CSV";
 
 		if (( $? == 0 )); then
