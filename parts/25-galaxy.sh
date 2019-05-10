@@ -212,8 +212,15 @@ galaxy_migrate-tool-install-from-sqlite() { ## [sqlite-db]: (NEW) Converts norma
 
 	# Truncate first, since need to be removed in a specific ordering (probably
 	# cascade would work but cascade is SCARY)
-	psql -c "TRUNCATE TABLE repository_repository_dependency_association, repository_dependency, tool_dependency, migrate_tools, tool_version_association, tool_version, tool_shed_repository, migrate_version"
-	if (( $? == 0 )); then
+	psql -c "TRUNCATE TABLE repository_repository_dependency_association, repository_dependency, tool_dependency, migrate_tools, tool_version_association, tool_version, tool_shed_repository"
+	ec1=$?
+
+	# If you truncate this one, then it also removes galaxy codebase version,
+	# breaking everything.
+	psql -c "delete from migrate_version where repository_id = 'ToolShedInstall'"
+	ec2=$?
+
+	if (( ec1 == 0  && ec2 == 0 )); then
 		success "  Cleaned"
 	else
 		error "  Failed to clean"
