@@ -3068,13 +3068,23 @@ galaxy_migrate-tool-install-from-sqlite() { ## [sqlite-db]: (NEW) Converts norma
 		fi
 	done
 
+	# Update sequences
+	success "Updating sequences"
+	for table in {tool_shed_repository,tool_version,tool_version_association,tool_dependency,repository_dependency,repository_repository_dependency_association}; do
+		psql -c "SELECT setval('${table}_id_seq', (SELECT MAX(id) FROM ${table}));"
+	done
+
+	success "Comparing table counts"
+
 	for table in {migrate_version,tool_shed_repository,tool_version,tool_version_association,migrate_tools,tool_dependency,repository_dependency,repository_repository_dependency_association}; do
 		postgres=$(psql -c "COPY (select count(*) from $table) to STDOUT with CSV")
 		sqlite=$(sqlite3 -csv $1 "select count(*) from $table")
 
-		echo "Comparing $table"
-		echo "  postgres: $postgres"
-		echo "  sqlite3: $sqlite"
+		if (( $postgres == $sqlite )); then
+			success "  $table: $postgres == $sqlite"
+		else
+			error "  $table: $postgres != $sqlite"
+		fi
 	done
 
 	success "Complete"
