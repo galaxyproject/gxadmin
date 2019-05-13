@@ -264,9 +264,11 @@ galaxy_migrate-tool-install-from-sqlite() { ## [sqlite-db]: (NEW) Converts norma
 		postgres=$(psql -c "COPY (select count(*) from $table) to STDOUT with CSV")
 		sqlite=$(sqlite3 -csv $1 "select count(*) from $table")
 
-		echo "Comparing $table"
-		echo "  postgres: $postgres"
-		echo "  sqlite3: $sqlite"
+		if (( $postgres == $sqlite )); then
+			success "  $table: $postgres == $sqlite"
+		else
+			error "  $table: $postgres != $sqlite"
+		fi
 	done
 
 	success "Complete"
