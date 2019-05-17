@@ -59,8 +59,6 @@ mutate_fail-terminal-datasets() { ## [--commit]: Causes the output datasets of j
 	EOF
 	# TODO(hxr): support collections
 
-	commit=$(should_commit $1)
-
 	read -r -d '' QUERY <<-EOF
 		CREATE TEMP TABLE terminal_jobs_temp AS
 			SELECT
@@ -98,6 +96,7 @@ mutate_fail-terminal-datasets() { ## [--commit]: Causes the output datasets of j
 		WHERE id in (select hda_id from terminal_jobs_temp)
 	EOF
 
+	commit=$(should_commit $1)
 	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
 }
 
@@ -109,8 +108,6 @@ mutate_fail-job() { ## <job_id> [--commit]: Sets a job state to error
 	assert_count_ge $# 1 "Must supply a job ID"
 	id=$1
 
-	commit=$(should_commit $2)
-
 	read -r -d '' QUERY <<-EOF
 		UPDATE
 			job
@@ -120,6 +117,7 @@ mutate_fail-job() { ## <job_id> [--commit]: Sets a job state to error
 			id = '$id'
 	EOF
 
+	commit=$(should_commit $2)
 	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
 }
 
@@ -130,8 +128,6 @@ mutate_fail-history() { ## <history_id> [--commit]: Mark all jobs within a histo
 
 	assert_count_ge $# 1 "Must supply a history ID"
 	id=$1
-
-	commit=$(should_commit $2)
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
@@ -159,5 +155,35 @@ mutate_fail-history() { ## <history_id> [--commit]: Mark all jobs within a histo
 			AND state NOT IN ('ok', 'error')
 	EOF
 
+	commit=$(should_commit $2)
+	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
+}
+
+mutate_delete-group-role() { ## <group_name> [--commit]: Remove the group, role, and any user-group + user-role associations
+	handle_help "$@" <<-EOF
+		Wipe out a group+role, and user associations.
+	EOF
+
+	assert_count_ge $# 1 "Must supply a group name"
+	id=$1
+
+	read -r -d '' QUERY <<-EOF
+		DELETE FROM group_role_association
+		WHERE group_id = (SELECT id FROM galaxy_group WHERE name = '$1');
+
+		DELETE FROM user_group_association
+		WHERE group_id = (SELECT id FROM galaxy_group WHERE name = '$1');
+
+		DELETE FROM user_role_association
+		WHERE role_id = (SELECT role_id FROM group_role_association WHERE group_id= (SELECT id FROM galaxy_group WHERE name = '$1'));
+
+		DELETE FROM role
+		WHERE id = (SELECT role_id FROM group_role_association WHERE group_id = (SELECT id FROM galaxy_group WHERE name = '$1'));
+
+		DELETE FROM galaxy_group
+		WHERE name = '$1'
+	EOF
+
+	commit=$(should_commit $2)
 	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
 }
