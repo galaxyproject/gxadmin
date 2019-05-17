@@ -117,7 +117,7 @@ Command | Description
 ------- | -----------
 [`galaxy amqp-test`](docs/README.galaxy.md#galaxy-amqp-test) | (NEW) Test a given AMQP URL for connectivity
 [`galaxy cleanup`](docs/README.galaxy.md#galaxy-cleanup) | Cleanup histories/hdas/etc for past N days (default=30)
-[`galaxy migrate-tool-install-from-sqlite`](docs/README.galaxy.md#galaxy-migrate-tool-install-from-sqlite) | (NEW) Converts normal SQLite version into normal potsgres toolshed repository tables
+[`galaxy migrate-tool-install-from-sqlite`](docs/README.galaxy.md#galaxy-migrate-tool-install-from-sqlite) | (NEW) Converts SQLite version into normal potsgres toolshed repository tables
 [`galaxy migrate-tool-install-to-sqlite`](docs/README.galaxy.md#galaxy-migrate-tool-install-to-sqlite) | Converts normal potsgres toolshed repository tables into the SQLite version
 
 ### meta

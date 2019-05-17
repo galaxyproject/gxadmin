@@ -3037,7 +3037,7 @@ galaxy_migrate-tool-install-to-sqlite() { ## : Converts normal potsgres toolshed
 	success "Complete"
 }
 
-galaxy_migrate-tool-install-from-sqlite() { ## [sqlite-db]: (NEW) Converts normal SQLite version into normal potsgres toolshed repository tables
+galaxy_migrate-tool-install-from-sqlite() { ## [sqlite-db]: (NEW) Converts SQLite version into normal potsgres toolshed repository tables
 	handle_help "$@" <<-EOF
 		    $ gxadmin migrate-tool-install-from-sqlite db.sqlite
 		    Migrating tables

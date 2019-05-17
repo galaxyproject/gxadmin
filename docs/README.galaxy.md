@@ -4,7 +4,7 @@ Command | Description
 ------- | -----------
 [`galaxy amqp-test`](#galaxy-amqp-test) | (NEW) Test a given AMQP URL for connectivity
 [`galaxy cleanup`](#galaxy-cleanup) | Cleanup histories/hdas/etc for past N days (default=30)
-[`galaxy migrate-tool-install-from-sqlite`](#galaxy-migrate-tool-install-from-sqlite) | (NEW) Converts normal SQLite version into normal potsgres toolshed repository tables
+[`galaxy migrate-tool-install-from-sqlite`](#galaxy-migrate-tool-install-from-sqlite) | (NEW) Converts SQLite version into normal potsgres toolshed repository tables
 [`galaxy migrate-tool-install-to-sqlite`](#galaxy-migrate-tool-install-to-sqlite) | Converts normal potsgres toolshed repository tables into the SQLite version
 
 ### galaxy amqp-test
@@ -69,7 +69,7 @@ Cleanup histories/hdas/etc for past N days using the python objects-based method
 
 **NAME**
 
-galaxy migrate-tool-install-from-sqlite -  (NEW) Converts normal SQLite version into normal potsgres toolshed repository tables
+galaxy migrate-tool-install-from-sqlite -  (NEW) Converts SQLite version into normal potsgres toolshed repository tables
 
 **SYNOPSIS**
 
