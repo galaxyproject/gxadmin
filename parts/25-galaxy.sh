@@ -273,3 +273,52 @@ galaxy_migrate-tool-install-from-sqlite() { ## [sqlite-db]: (NEW) Converts norma
 
 	success "Complete"
 }
+
+galaxy_amqp-test() { ## <amqp_url>: (NEW) Test a given AMQP URL for connectivity
+	handle_help "$@" <<-EOF
+		**Note**: must be run in Galaxy Virtualenv
+
+		Simple script to test an AMQP URL. If connection works, it will
+		immediately exit with a python object:
+
+		    $ gxadmin galaxy amqp-test pyamqp://user:pass@host:port/vhost
+		    <kombu.transport.pyamqp.Channel object at 0x7fe56a836290>
+
+		    $ gxadmin galaxy amqp-test pyamqp://user:pass@host:port/vhost?ssl=1
+		    <kombu.transport.pyamqp.Channel object at 0x7fe56a836290>
+
+		Some errors look weird:
+
+		*wrong password*:
+
+		    $ gxadmin galaxy amqp-test ...
+		    Traceback
+		    ...
+		    amqp.exceptions.AccessRefused: (0, 0): (403) ACCESS_REFUSED - Login was refused using authentication mechanism AMQPLAIN. For details see the broker logfile.
+
+		*wrong host*, *inaccessible host*, basically any other problem:
+
+		    $ gxadmin galaxy amqp-test ...
+		    [hangs forever]
+
+		Basically any error results in a hang forever. It is recommended you run it with a timeout:
+
+		    $ timeout 1 gxadmin galaxy amqp-test
+		    $
+
+	EOF
+	assert_count $# 1 "Must provide URL"
+
+	URL="$1"
+
+	script=$(cat <<EOF
+from kombu import Connection
+from kombu import Exchange
+
+with Connection('$URL') as conn:
+    print(conn.default_channel)
+EOF
+)
+
+	python -c "$script"
+}

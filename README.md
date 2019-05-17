@@ -115,6 +115,7 @@ Command | Description
 
 Command | Description
 ------- | -----------
+[`galaxy amqp-test`](docs/README.galaxy.md#galaxy-amqp-test) | (NEW) Test a given AMQP URL for connectivity
 [`galaxy cleanup`](docs/README.galaxy.md#galaxy-cleanup) | Cleanup histories/hdas/etc for past N days (default=30)
 [`galaxy migrate-tool-install-from-sqlite`](docs/README.galaxy.md#galaxy-migrate-tool-install-from-sqlite) | (NEW) Converts normal SQLite version into normal potsgres toolshed repository tables
 [`galaxy migrate-tool-install-to-sqlite`](docs/README.galaxy.md#galaxy-migrate-tool-install-to-sqlite) | Converts normal potsgres toolshed repository tables into the SQLite version
@@ -135,7 +136,7 @@ Command | Description
 
 Command | Description
 ------- | -----------
-[`mutate delete-group-role`](docs/README.mutate.md#mutate-delete-group-role) | Remove the group, role, and any user-group + user-role associations
+[`mutate delete-group-role`](docs/README.mutate.md#mutate-delete-group-role) | (NEW) Remove the group, role, and any user-group + user-role associations
 [`mutate fail-history`](docs/README.mutate.md#mutate-fail-history) | Mark all jobs within a history to state error
 [`mutate fail-job`](docs/README.mutate.md#mutate-fail-job) | Sets a job state to error
 [`mutate fail-terminal-datasets`](docs/README.mutate.md#mutate-fail-terminal-datasets) | Causes the output datasets of jobs which were manually failed, to be marked as failed
