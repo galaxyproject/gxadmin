@@ -1,6 +1,6 @@
 PARTS=$(sort $(wildcard parts/*.sh))
 
-all: README.md test
+all: test README.md
 
 README.md: gxadmin
 	sed -n -i '/^## Commands$$/q;p' README.md
@@ -10,7 +10,13 @@ gxadmin: $(PARTS)
 	cat $(PARTS) > gxadmin
 	chmod +x gxadmin
 
-test:
+test: gxadmin shellcheck shellcheck-parts
 	./test.sh
+
+shellcheck: gxadmin
+	shellcheck -s bash -f gcc --exclude SC2001,SC2120,SC2119,SC2129,SC2044 gxadmin
+
+shellcheck-parts:
+	shellcheck -s bash -f gcc --exclude SC2001,SC2120,SC2119,SC2129,SC2044,SC2154,SC2034 parts/[023456789]*
 
 .PHONY = update_readme

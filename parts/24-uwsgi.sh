@@ -42,20 +42,20 @@ uwsgi_stats-influx(){ ## <addr>: InfluxDB formatted output for the current stats
 
 	# fetch data
 	uwsgi=$(which uwsgi)
-	data="$($uwsgi --connect-and-read $address 2>&1)"
+	data="$($uwsgi --connect-and-read "$address" 2>&1)"
 
 	echo "$data" | \
-		jq -r '.locks[] | to_entries[] |  "uwsgi.locks,addr='$address',group=\(.key) count=\(.value)"' | \
+		jq -r '.locks[] | to_entries[] |  "uwsgi.locks,addr='"$address"',group=\(.key) count=\(.value)"' | \
 		sed 's/group=user 0/group=user_0/g'
 
 	echo "$data" | \
-		jq -r '. | "uwsgi.general,addr='$address' listen_queue=\(.listen_queue),listen_queue_errors=\(.listen_queue_errors),load=\(.load),signal_queue=\(.signal_queue)"'
+		jq -r '. | "uwsgi.general,addr='"$address"' listen_queue=\(.listen_queue),listen_queue_errors=\(.listen_queue_errors),load=\(.load),signal_queue=\(.signal_queue)"'
 
 	echo "$data" | \
-		jq -r '.sockets[] | "uwsgi.sockets,addr='$address',name=\(.name),proto=\(.proto) queue=\(.queue),max_queue=\(.max_queue),shared=\(.shared),can_offload=\(.can_offload)"'
+		jq -r '.sockets[] | "uwsgi.sockets,addr='"$address"',name=\(.name),proto=\(.proto) queue=\(.queue),max_queue=\(.max_queue),shared=\(.shared),can_offload=\(.can_offload)"'
 
 	echo "$data" | \
-		jq -r '.workers[] | "uwsgi.worker,addr='$address',id=\(.id) accepting=\(.accepting),requests=\(.requests),exceptions=\(.exceptions),harakiri_count=\(.harakiri_count),signals=\(.signals),signal_queue=\(.signal_queue),status=\"\(.status)\",rss=\(.rss),vsz=\(.vsz),running_time=\(.running_time),respawn_count=\(.respawn_count),tx=\(.tx),avg_rt=\(.avg_rt)"' | \
+		jq -r '.workers[] | "uwsgi.worker,addr='"$address"',id=\(.id) accepting=\(.accepting),requests=\(.requests),exceptions=\(.exceptions),harakiri_count=\(.harakiri_count),signals=\(.signals),signal_queue=\(.signal_queue),status=\"\(.status)\",rss=\(.rss),vsz=\(.vsz),running_time=\(.running_time),respawn_count=\(.respawn_count),tx=\(.tx),avg_rt=\(.avg_rt)"' | \
 		sed 's/"busy"/1/g;s/"idle"/0/g;'
 }
 
@@ -82,13 +82,13 @@ uwsgi_memory() { ## : Current system memory usage
 
 	echo "galaxy-zergpool.service $(cat /sys/fs/cgroup/memory/system.slice/galaxy-zergpool.service/memory.memsw.usage_in_bytes)"
 	for folder in $(find /sys/fs/cgroup/memory/system.slice/system-galaxy\\x2dzergling.slice/ -mindepth 1 -type d -name 'galaxy-zergling*service'); do
-		service=$(basename $folder)
-		echo "$service $(cat $folder/memory.memsw.usage_in_bytes)"
+		service=$(basename "$folder")
+		echo "$service $(cat "$folder/memory.memsw.usage_in_bytes")"
 	done
 
 	for folder in $(find /sys/fs/cgroup/memory/system.slice/system-galaxy\\x2dhandler.slice/ -mindepth 1 -type d -name 'galaxy-handler*service'); do
-		service=$(basename $folder)
-		echo "$service $(cat $folder/memory.memsw.usage_in_bytes)"
+		service=$(basename "$folder")
+		echo "$service $(cat "$folder/memory.memsw.usage_in_bytes")"
 	done
 }
 
@@ -114,13 +114,13 @@ uwsgi_stats() { ## : uwsgi stats
 
 	echo "systemd service=galaxy-zergpool memory=$(cat /sys/fs/cgroup/memory/system.slice/galaxy-zergpool.service/memory.memsw.usage_in_bytes)"
 	for folder in $(find /sys/fs/cgroup/memory/system.slice/system-galaxy\\x2dzergling.slice/ -mindepth 1 -type d -name 'galaxy-zergling*service'); do
-		service=$(basename $folder)
-		echo "systemd service=$service memory=$(cat $folder/memory.memsw.usage_in_bytes)"
+		service=$(basename "$folder")
+		echo "systemd service=$service memory=$(cat "$folder/memory.memsw.usage_in_bytes")"
 	done
 
 	for folder in $(find /sys/fs/cgroup/memory/system.slice/system-galaxy\\x2dhandler.slice/ -mindepth 1 -type d -name 'galaxy-handler*service'); do
-		service=$(basename $folder)
-		echo "systemd service=$service memory=$(cat $folder/memory.memsw.usage_in_bytes)"
+		service=$(basename "$folder")
+		echo "systemd service=$service memory=$(cat "$folder/memory.memsw.usage_in_bytes")"
 	done
 }
 
@@ -130,7 +130,7 @@ uwsgi_zerg-swap() { ## : Swap zerglings in order (unintelligent version)
 	EOF
 
 	active="$(uwsgi_status | grep -v inactive | grep zergling | cut -d: -f1 | wc -l)"
-	if (( $active == 1 )); then
+	if (( active == 1 )); then
 		error "Won't restart when only a single zergling is active as this will trigger downtime"
 		exit 1
 	fi
@@ -138,10 +138,10 @@ uwsgi_zerg-swap() { ## : Swap zerglings in order (unintelligent version)
 	# Obtain current running ones
 	for zergling in $(uwsgi_status | grep -v inactive | grep zergling | cut -d: -f1); do
 		echo "Restarting $zergling"
-		systemctl restart $zergling
+		systemctl restart "$zergling"
 		number=$(echo "$zergling" | sed 's/.*@//g')
 		stats="127.0.0.1:401$number"
-		wait_for_url $stats
+		wait_for_url "$stats"
 		success "$zergling is alive"
 	done
 }
@@ -153,26 +153,26 @@ uwsgi_zerg-scale-up() { ## : Add another zergling to deal with high load
 	# Obtain current running ones
 	an_inactive=$(status | grep inactive | grep zergling | head -n1 | cut -d: -f1)
 	echo "$an_inactive is inactive, starting"
-	systemctl start $an_inactive
+	systemctl start "$an_inactive"
 }
 
-uwsgi_zerg-scale-down() { ## : Remove an extraneous zergling
-	handle_help "$@" <<-EOF
-	EOF
+#uwsgi_zerg-scale-down() { ## : Remove an extraneous zergling
+	#handle_help "$@" <<-EOF
+	#EOF
 
-	# Obtain current running ones
-	active="$(status | grep -v inactive | grep zergling | cut -d: -f1)"
-	num_active=$(echo "$active" | wc -l)
+	## Obtain current running ones
+	#active="$(status | grep -v inactive | grep zergling | cut -d: -f1)"
+	#num_active=$(echo "$active" | wc -l)
 
-	if (( $num_active <= 2 )); then
-		error "We do not permit scaling below 2 zerglings"
-		exit 1
-	fi
+	#if (( num_active <= 2 )); then
+		#error "We do not permit scaling below 2 zerglings"
+		#exit 1
+	#fi
 
-	# Kill highest numbered one
-	warning "$to_kill will be stopped"
-	systemctl stop $to_kill
-}
+	## Kill highest numbered one
+	#warning "$to_kill will be stopped"
+	#systemctl stop "$to_kill"
+#}
 
 uwsgi_zerg-strace() { ## [number]: Strace a zergling
 	handle_help "$@" <<-EOF
@@ -181,8 +181,8 @@ uwsgi_zerg-strace() { ## [number]: Strace a zergling
 	if (( $# > 0 )); then
 		number=$1;
 	fi
-	procs=$(uwsgi_pids | grep zergling@${number} | cut -d':' -f2 | sed 's/\s*//g;' | tr '\n' ' ' | sed 's/^\s*//;s/\s*$//g;s/ / -p /g')
-	strace -e open,openat -p $procs
+	procs=$(uwsgi_pids | grep "zergling@${number}" | cut -d':' -f2 | sed 's/\s*//g;' | tr '\n' ' ' | sed 's/^\s*//;s/\s*$//g;s/ / -p /g')
+	strace -e open,openat -p "$procs"
 }
 
 uwsgi_handler-strace() { ## [number]: Strace a handler
@@ -192,8 +192,8 @@ uwsgi_handler-strace() { ## [number]: Strace a handler
 	if (( $# > 0 )); then
 		number=$1;
 	fi
-	procs=$(uwsgi_pids | grep handler@${number} | cut -d':' -f2 | sed 's/\s*//g;' | tr '\n' ' ' | sed 's/^\s*//;s/\s*$//g;s/ / -p /g')
-	strace -e open,openat -p $procs
+	procs=$(uwsgi_pids | grep "handler@${number}" | cut -d':' -f2 | sed 's/\s*//g;' | tr '\n' ' ' | sed 's/^\s*//;s/\s*$//g;s/ / -p /g')
+	strace -e open,openat -p "$procs"
 }
 
 uwsgi_handler-restart() { ## : Restart all handlers
@@ -235,7 +235,7 @@ uwsgi_lastlog(){ ## : Fetch the number of seconds since the last log message was
 		if (( $(echo "$lines" | wc -l) > 1 )); then
 			timestamp=$(journalctl -u galaxy-handler@$i -n 1 --no-pager | grep -v 'Logs begin' | awk '{print $1" "$2" "$3}');
 			unix=$(date -d "$timestamp" +%s)
-			date_diff=$(($NOW - $unix));
+			date_diff=$((NOW - unix));
 			echo "journalctl.lastlog,service=galaxy-handler@$i seconds=$date_diff";
 		fi
 	done
@@ -245,7 +245,7 @@ uwsgi_lastlog(){ ## : Fetch the number of seconds since the last log message was
 		if (( $(echo "$lines" | wc -l) > 1 )); then
 			timestamp=$(journalctl -u galaxy-zergling@$i -n 1 --no-pager | grep -v 'Logs begin' | awk '{print $1" "$2" "$3}');
 			unix=$(date -d "$timestamp" +%s)
-			date_diff=$(($NOW - $unix));
+			date_diff=$((NOW - unix));
 			echo "journalctl.lastlog,service=galaxy-zergling@$i seconds=$date_diff";
 		fi
 	done

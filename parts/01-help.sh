@@ -26,7 +26,7 @@ colour_word() {
 }
 
 filter_commands() {
-	if [[ $2 == $1 ]]; then
+	if [[ $2 == "$1" ]]; then
 		cat | grep "^$1 " | sort -k2 | column -s: -t | sed 's/^/    /' | colour_word Deprecated orange | colour_word '(NEW)' green
 	else
 		cat | grep "^$1 " | sort -k2 | column -s: -t | sed 's/^/    /' | ifmore "$1"
@@ -34,11 +34,11 @@ filter_commands() {
 }
 
 locate_cmds() {
-	grep -s -h -o '^[a-z0-9_-]*()\s*{ ## .*' $0 $GXADMIN_SITE_SPECIFIC | grep -v grep | grep -v '| sed' | sort
+	grep -s -h -o '^[a-z0-9_-]*()\s*{ ## .*' "$0" "$GXADMIN_SITE_SPECIFIC" | grep -v grep | grep -v '| sed' | sort
 }
 
 locate_cmds_nolocal() {
-	grep -s -h -o '^[a-z0-9_-]*()\s*{ ## .*' $0 | grep -v grep | grep -v '| sed' | sort
+	grep -s -h -o '^[a-z0-9_-]*()\s*{ ## .*' "$0" | grep -v grep | grep -v '| sed' | sort
 }
 
 correct_cmd() {
@@ -53,89 +53,89 @@ usage(){
 
 	EOF
 
-	if (( $# == 0  )) || [[ $1 == "config" ]]; then
+	if (( $# == 0  )) || [[ "$1" == "config" ]]; then
 		cat <<-EOF
 			Configuration:
 
-			$(echo "$cmds" | filter_commands config $1)
+			$(echo "$cmds" | filter_commands config "$1")
 
 		EOF
 	fi
 
-	if (( $# == 0  )) || [[ $1 == "filter" ]]; then
+	if (( $# == 0  )) || [[ "$1" == "filter" ]]; then
 		cat <<-EOF
 			Filters:
 
-			$(echo "$cmds" | filter_commands filter $1)
+			$(echo "$cmds" | filter_commands filter "$1")
 
 		EOF
 	fi
 
-	if (( $# == 0  )) || [[ $1 == "galaxy" ]]; then
+	if (( $# == 0  )) || [[ "$1" == "galaxy" ]]; then
 		cat <<-EOF
 			Galaxy Administration:
 
-			$(echo "$cmds" | filter_commands galaxy $1)
+			$(echo "$cmds" | filter_commands galaxy "$1")
 
 		EOF
 	fi
 
-	if (( $# == 0  )) || [[ $1 == "uwsgi" ]]; then
+	if (( $# == 0  )) || [[ "$1" == "uwsgi" ]]; then
 		cat <<-EOF
 			uwsgi:
 
-			$(echo "$cmds" | filter_commands uwsgi $1)
+			$(echo "$cmds" | filter_commands uwsgi "$1")
 
 		EOF
 	fi
 
 
-	if (( $# == 0  )) || [[ $1 == "query" ]]; then
+	if (( $# == 0  )) || [[ "$1" == "query" ]]; then
 		cat <<-EOF
 			DB Queries:
 			  'query' can be exchanged with 'tsvquery' or 'csvquery' for tab- and comma-separated variants.
 			  In some cases 'iquery' is supported for InfluxDB compatible output.
 			  In all cases 'explainquery' will show you the query plan, in case you need to optimise or index data. 'explainjsonquery' is useful with PEV: http://tatiyants.com/pev/
 
-			$(echo "$cmds" | filter_commands query $1)
+			$(echo "$cmds" | filter_commands query "$1")
 
 		EOF
 	fi
 
-	if (( $# == 0  )) || [[ $1 == "report" ]]; then
+	if (( $# == 0  )) || [[ "$1" == "report" ]]; then
 		cat <<-EOF
 			Report:
 			  Consider https://github.com/ttscoff/mdless for easier reading in the terminal
 
-			$(echo "$cmds" | filter_commands report $1)
+			$(echo "$cmds" | filter_commands report "$1")
 
 		EOF
 	fi
 
-	if (( $# == 0  )) || [[ $1 == "mutate" ]]; then
+	if (( $# == 0  )) || [[ "$1" == "mutate" ]]; then
 		cat <<-EOF
 			DB Mutations: (csv/tsv queries are NOT available)
 
-			$(echo "$cmds" | filter_commands mutate $1)
+			$(echo "$cmds" | filter_commands mutate "$1")
 
 		EOF
 	fi
 
-	if (( $# == 0  )) || [[ $1 == "meta" ]]; then
+	if (( $# == 0  )) || [[ "$1" == "meta" ]]; then
 		cat <<-EOF
 			Meta:
 
-			$(echo "$cmds" | filter_commands meta $1)
+			$(echo "$cmds" | filter_commands meta "$1")
 
 		EOF
 	fi
 
-	if [[ -f $GXADMIN_SITE_SPECIFIC ]]; then
-		if (( $# == 0  )) || [[ $1 == "local" ]]; then
+	if [[ -f "$GXADMIN_SITE_SPECIFIC" ]]; then
+		if (( $# == 0  )) || [[ "$1" == "local" ]]; then
 			cat <<-EOF
-				Local: (These can be configured in $GXADMIN_SITE_SPECIFIC)
+				Local: (These can be configured in "$GXADMIN_SITE_SPECIFIC")
 
-				$(echo "$cmds" | filter_commands local $1)
+				$(echo "$cmds" | filter_commands local "$1")
 
 			EOF
 		fi
@@ -168,7 +168,7 @@ handle_help() {
 	fi
 
 	for i in "$@"; do
-		if [[ $i = --help || $i = -h ]]; then
+		if [[ "$i" = --help || "$i" = -h ]]; then
 
 			key="${mode}"
 			if [[ ! -z "${query_name}" ]]; then
@@ -177,17 +177,17 @@ handle_help() {
 
 			echo "**NAME**"
 			echo
-			invoke_desc=$(grep -s -h "${key}()\s*{" $0 $GXADMIN_SITE_SPECIFIC | correct_cmd | sed "s/^/gxadmin /g")
-			short_desc=$(echo $invoke_desc | sed 's/.*://g')
-			short_parm=$(echo $invoke_desc | sed 's/:.*//g')
+			invoke_desc=$(grep -s -h "${key}()\s*{" "$0" "$GXADMIN_SITE_SPECIFIC" | correct_cmd | sed "s/^/gxadmin /g")
+			short_desc=$(echo "$invoke_desc" | sed 's/.*://g')
+			short_parm=$(echo "$invoke_desc" | sed 's/:.*//g')
 			echo "${mode} ${query_name} - ${short_desc}"
 			echo
 			echo "**SYNOPSIS**"
 			echo
-			echo '`'$short_parm'`'
+			echo '`'"$short_parm"'`'
 			echo
 			manual="$(cat -)"
-			manual_wc="$(echo $manual | wc -c)"
+			manual_wc="${#manual}"
 			if (( manual_wc > 3 )); then
 				echo "**NOTES**"
 				echo

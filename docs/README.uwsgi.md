@@ -11,7 +11,6 @@ Command | Description
 `uwsgi stats_influx` | Deprecated, use uwsgi stats-influx
 [`uwsgi stats`](#uwsgi-stats) | uwsgi stats
 [`uwsgi status`](#uwsgi-status) | Current system status
-[`uwsgi zerg-scale-down`](#uwsgi-zerg-scale-down) | Remove an extraneous zergling
 [`uwsgi zerg-scale-up`](#uwsgi-zerg-scale-up) | Add another zergling to deal with high load
 [`uwsgi zerg-strace`](#uwsgi-zerg-strace) | Strace a zergling
 [`uwsgi zerg-swap`](#uwsgi-zerg-swap) | Swap zerglings in order (unintelligent version)
@@ -166,17 +165,6 @@ uwsgi status -  Current system status
 **NOTES**
 
 Current status of all uwsgi processes
-
-
-### uwsgi zerg-scale-down
-
-**NAME**
-
-uwsgi zerg-scale-down -  Remove an extraneous zergling
-
-**SYNOPSIS**
-
-`gxadmin uwsgi zerg-scale-down`
 
 
 ### uwsgi zerg-scale-up

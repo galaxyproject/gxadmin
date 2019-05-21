@@ -18,22 +18,22 @@ config_validate() { ## : validate config files
 
 	fail_count=0
 	for file in ${GALAXY_CONFIG_DIR}/*.xml; do
-		xmllint $file > /dev/null 2>/dev/null;
-		exit_code=$?
-		if (( $exit_code > 0 )); then
+		xmllint "$file" > /dev/null 2>/dev/null;
+		ec=$?
+		if (( ec > 0 )); then
 			fail_count=$(echo "$fail_count + 1" | bc)
-			error "  FAIL: $file ($exit_code)";
+			error "  FAIL: $file ($ec)";
 		else
 			success "  OK: $file";
 		fi
 	done;
 
 	for file in ${GALAXY_MUTABLE_CONFIG_DIR}/*.xml; do
-		xmllint $file > /dev/null 2>/dev/null;
-		exit_code=$?
-		if (( $exit_code > 0 )); then
+		xmllint "$file" > /dev/null 2>/dev/null;
+		ec=$?
+		if (( ec > 0 )); then
 			fail_count=$(echo "$fail_count + 1" | bc)
-			error "  FAIL: $file ($exit_code)";
+			error "  FAIL: $file ($ec)";
 		else
 			success "  OK: $file";
 		fi

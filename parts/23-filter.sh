@@ -57,7 +57,7 @@ filter_digest-color() { ## : Color an input stream based on the contents (e.g. h
 
 	data="$(cat)"
 	fg_color=$((16#$(echo "$data" | perl -pe "chomp if eof" | sha256sum | cut -c1-2)))
-	bg_color=$(($fg_color + 15))
+	bg_color=$((fg_color + 15))
 
 	echo "$(tput setaf $fg_color)$(tput setab $bg_color)${data}$(tput sgr0)"
 }

@@ -173,6 +173,8 @@ Roles: %s
 %s
 \n
 EOF
+	# shellcheck disable=SC2086
+	# shellcheck disable=SC2059
 	printf "$template" $results "$group_membership" "$role_membership" "$recent_jobs2" "$running_jobs2" "$recent_wf" "$largest_histories"
 }
 
@@ -216,6 +218,8 @@ Property      | Value
       Created | %s %s (%s %s %s ago)
 Job Runner/ID | %s / %s
 EOF
+	# shellcheck disable=SC2059
+	# shellcheck disable=SC2086
 	printf "$template"  $results
 
 	###       ###
@@ -230,6 +234,8 @@ EOF
 		WHERE job.id = $job_id AND job.user_id = galaxy_user.id
 	EOF
 	job_owner=$(query_tsv "$qstr")
+	# shellcheck disable=SC2183
+	# shellcheck disable=SC2086
 	printf "\n        Owner | %s (id=%s)\n\n" $job_owner
 
 
@@ -243,7 +249,9 @@ EOF
 	EOF
 	results=$(query_tsv "$qstr")
 	printf "## Destination Parameters\n\n"
+	# shellcheck disable=SC2016
 	tbl=$(echo "$results" | python -c "$hexdecodelines" | jq -S '. | to_entries[] | [.key, .value] | @tsv' -r | sed 's/\t/\t`/g;s/$/`/g')
+	# shellcheck disable=SC2059
 	printf "Key\tValue\n---\t---\n$tbl" | sed 's/\t/\t | \t/g' | column -t -s'	'
 
 	###          ###
@@ -257,6 +265,7 @@ EOF
 	results=$(query_tsv "$qstr")
 	printf "\n## Dependencies\n\n"
 	tbl=$(echo "$results" | python -c "$hexdecodelines" | jq -S '.[] | [.name, .version, .dependency_type, .cacheable, .exact, .environment_path, .model_class] | @tsv' -r)
+	# shellcheck disable=SC2059
 	printf "Name\tVersion\tDependency Type\tCacheable\tExact\tEnvironment Path\tModel Class\n----\t-------\t---------------\t---------\t-----\t----------------\t-----------\n$tbl\n" | sed 's/\t/\t | \t/g'       #| column -t -s'	'
 
 	###        ###
@@ -269,6 +278,7 @@ EOF
 	EOF
 	results=$(query_tsv "$qstr")
 	printf "\n## Tool Parameters\n\n"
+	# shellcheck disable=SC2059
 	printf "Name\tSettings\n---------\t------------------------------------\n$results\n\n" | sed 's/\t/\t | \t/g' | sed 's/[\"\`]//g'
 
 	###      ###
@@ -343,6 +353,7 @@ EOF
 
 \n
 EOF
+	# shellcheck disable=SC2059
 	printf "$template3" "$input_ds_tbl" "$output_ds_tbl"
 }
 
@@ -352,7 +363,7 @@ report_assigned-to-handler(){ ## <handler>: Report what items are assigned to a 
 	EOF
 
 	assert_count $# 1 "Missing Handler ID"
-	printf "# Handler $1\n\n"
+	printf "# Handler %s\n\n" "$1"
 
 	# Jerbs
 	printf "## Jobs\n\n"

@@ -110,7 +110,7 @@ colour_word() {
 }
 
 filter_commands() {
-	if [[ $2 == $1 ]]; then
+	if [[ $2 == "$1" ]]; then
 		cat | grep "^$1 " | sort -k2 | column -s: -t | sed 's/^/    /' | colour_word Deprecated orange | colour_word '(NEW)' green
 	else
 		cat | grep "^$1 " | sort -k2 | column -s: -t | sed 's/^/    /' | ifmore "$1"
@@ -118,11 +118,11 @@ filter_commands() {
 }
 
 locate_cmds() {
-	grep -s -h -o '^[a-z0-9_-]*()\s*{ ## .*' $0 $GXADMIN_SITE_SPECIFIC | grep -v grep | grep -v '| sed' | sort
+	grep -s -h -o '^[a-z0-9_-]*()\s*{ ## .*' "$0" "$GXADMIN_SITE_SPECIFIC" | grep -v grep | grep -v '| sed' | sort
 }
 
 locate_cmds_nolocal() {
-	grep -s -h -o '^[a-z0-9_-]*()\s*{ ## .*' $0 | grep -v grep | grep -v '| sed' | sort
+	grep -s -h -o '^[a-z0-9_-]*()\s*{ ## .*' "$0" | grep -v grep | grep -v '| sed' | sort
 }
 
 correct_cmd() {
@@ -137,89 +137,89 @@ usage(){
 
 	EOF
 
-	if (( $# == 0  )) || [[ $1 == "config" ]]; then
+	if (( $# == 0  )) || [[ "$1" == "config" ]]; then
 		cat <<-EOF
 			Configuration:
 
-			$(echo "$cmds" | filter_commands config $1)
+			$(echo "$cmds" | filter_commands config "$1")
 
 		EOF
 	fi
 
-	if (( $# == 0  )) || [[ $1 == "filter" ]]; then
+	if (( $# == 0  )) || [[ "$1" == "filter" ]]; then
 		cat <<-EOF
 			Filters:
 
-			$(echo "$cmds" | filter_commands filter $1)
+			$(echo "$cmds" | filter_commands filter "$1")
 
 		EOF
 	fi
 
-	if (( $# == 0  )) || [[ $1 == "galaxy" ]]; then
+	if (( $# == 0  )) || [[ "$1" == "galaxy" ]]; then
 		cat <<-EOF
 			Galaxy Administration:
 
-			$(echo "$cmds" | filter_commands galaxy $1)
+			$(echo "$cmds" | filter_commands galaxy "$1")
 
 		EOF
 	fi
 
-	if (( $# == 0  )) || [[ $1 == "uwsgi" ]]; then
+	if (( $# == 0  )) || [[ "$1" == "uwsgi" ]]; then
 		cat <<-EOF
 			uwsgi:
 
-			$(echo "$cmds" | filter_commands uwsgi $1)
+			$(echo "$cmds" | filter_commands uwsgi "$1")
 
 		EOF
 	fi
 
 
-	if (( $# == 0  )) || [[ $1 == "query" ]]; then
+	if (( $# == 0  )) || [[ "$1" == "query" ]]; then
 		cat <<-EOF
 			DB Queries:
 			  'query' can be exchanged with 'tsvquery' or 'csvquery' for tab- and comma-separated variants.
 			  In some cases 'iquery' is supported for InfluxDB compatible output.
 			  In all cases 'explainquery' will show you the query plan, in case you need to optimise or index data. 'explainjsonquery' is useful with PEV: http://tatiyants.com/pev/
 
-			$(echo "$cmds" | filter_commands query $1)
+			$(echo "$cmds" | filter_commands query "$1")
 
 		EOF
 	fi
 
-	if (( $# == 0  )) || [[ $1 == "report" ]]; then
+	if (( $# == 0  )) || [[ "$1" == "report" ]]; then
 		cat <<-EOF
 			Report:
 			  Consider https://github.com/ttscoff/mdless for easier reading in the terminal
 
-			$(echo "$cmds" | filter_commands report $1)
+			$(echo "$cmds" | filter_commands report "$1")
 
 		EOF
 	fi
 
-	if (( $# == 0  )) || [[ $1 == "mutate" ]]; then
+	if (( $# == 0  )) || [[ "$1" == "mutate" ]]; then
 		cat <<-EOF
 			DB Mutations: (csv/tsv queries are NOT available)
 
-			$(echo "$cmds" | filter_commands mutate $1)
+			$(echo "$cmds" | filter_commands mutate "$1")
 
 		EOF
 	fi
 
-	if (( $# == 0  )) || [[ $1 == "meta" ]]; then
+	if (( $# == 0  )) || [[ "$1" == "meta" ]]; then
 		cat <<-EOF
 			Meta:
 
-			$(echo "$cmds" | filter_commands meta $1)
+			$(echo "$cmds" | filter_commands meta "$1")
 
 		EOF
 	fi
 
-	if [[ -f $GXADMIN_SITE_SPECIFIC ]]; then
-		if (( $# == 0  )) || [[ $1 == "local" ]]; then
+	if [[ -f "$GXADMIN_SITE_SPECIFIC" ]]; then
+		if (( $# == 0  )) || [[ "$1" == "local" ]]; then
 			cat <<-EOF
-				Local: (These can be configured in $GXADMIN_SITE_SPECIFIC)
+				Local: (These can be configured in "$GXADMIN_SITE_SPECIFIC")
 
-				$(echo "$cmds" | filter_commands local $1)
+				$(echo "$cmds" | filter_commands local "$1")
 
 			EOF
 		fi
@@ -252,7 +252,7 @@ handle_help() {
 	fi
 
 	for i in "$@"; do
-		if [[ $i = --help || $i = -h ]]; then
+		if [[ "$i" = --help || "$i" = -h ]]; then
 
 			key="${mode}"
 			if [[ ! -z "${query_name}" ]]; then
@@ -261,17 +261,17 @@ handle_help() {
 
 			echo "**NAME**"
 			echo
-			invoke_desc=$(grep -s -h "${key}()\s*{" $0 $GXADMIN_SITE_SPECIFIC | correct_cmd | sed "s/^/gxadmin /g")
-			short_desc=$(echo $invoke_desc | sed 's/.*://g')
-			short_parm=$(echo $invoke_desc | sed 's/:.*//g')
+			invoke_desc=$(grep -s -h "${key}()\s*{" "$0" "$GXADMIN_SITE_SPECIFIC" | correct_cmd | sed "s/^/gxadmin /g")
+			short_desc=$(echo "$invoke_desc" | sed 's/.*://g')
+			short_parm=$(echo "$invoke_desc" | sed 's/:.*//g')
 			echo "${mode} ${query_name} - ${short_desc}"
 			echo
 			echo "**SYNOPSIS**"
 			echo
-			echo '`'$short_parm'`'
+			echo '`'"$short_parm"'`'
 			echo
 			manual="$(cat -)"
-			manual_wc="$(echo $manual | wc -c)"
+			manual_wc="${#manual}"
 			if (( manual_wc > 3 )); then
 				echo "**NOTES**"
 				echo
@@ -284,7 +284,7 @@ handle_help() {
 	done
 }
 assert_restart_lock(){
-	if [ -f $HOME/.restart-lock ]; then
+	if [ -f "$HOME/.restart-lock" ]; then
 		echo "A restart lock exists. This means someone is probably already restarting galaxy."
 		exit 3
 	fi
@@ -293,7 +293,7 @@ assert_restart_lock(){
 assert_set_env() {
 	env_var=$1
 	if [[ -z "${!env_var}" ]]; then
-		error Please set \$${env_var}
+		error Please set "\$${env_var}"
 		exit 1
 	fi
 }
@@ -301,7 +301,7 @@ assert_set_env() {
 wait_for_url() {
 	url=$1; shift;
 
-	while [ $(curl --connect-timeout 5 --silent $url | wc -c) -eq "0" ]; do
+	while [ "$(curl --connect-timeout 5 --silent "$url" | wc -c)" -eq "0" ]; do
 		sleep 5;
 		echo -n '.'
 	done
@@ -323,14 +323,14 @@ assert_count_ge() {
 
 assert_file() {
 	if [[ ! -f "$1" ]]; then
-		error File $1 does not exist
+		error "File $1 does not exist"
 		exit 1
 	fi
 }
 
 assert_file_warn() {
 	if [[ ! -f "$1" ]]; then
-		warning File $1 does not exist
+		warning "File $1 does not exist"
 	fi
 }
 query_tbl() {
@@ -408,15 +408,15 @@ gdpr_safe() {
 	fi
 }
 error() {
-	(>&2 echo "$(tput setab 1)$@$(tput sgr0)")
+	(>&2 echo "$(tput setab 1)$*$(tput sgr0)")
 }
 
 warning() {
-	(>&2 echo "$(tput setab 2)$@$(tput sgr0)")
+	(>&2 echo "$(tput setab 2)$*$(tput sgr0)")
 }
 
 success() {
-	echo "$(tput setaf 40)$@$(tput sgr0)"
+	echo "$(tput setaf 40)$*$(tput sgr0)"
 }
 CHANGELOG=$(cat <<EOF
 # 13 - pre
@@ -625,22 +625,22 @@ config_validate() { ## : validate config files
 
 	fail_count=0
 	for file in ${GALAXY_CONFIG_DIR}/*.xml; do
-		xmllint $file > /dev/null 2>/dev/null;
-		exit_code=$?
-		if (( $exit_code > 0 )); then
+		xmllint "$file" > /dev/null 2>/dev/null;
+		ec=$?
+		if (( ec > 0 )); then
 			fail_count=$(echo "$fail_count + 1" | bc)
-			error "  FAIL: $file ($exit_code)";
+			error "  FAIL: $file ($ec)";
 		else
 			success "  OK: $file";
 		fi
 	done;
 
 	for file in ${GALAXY_MUTABLE_CONFIG_DIR}/*.xml; do
-		xmllint $file > /dev/null 2>/dev/null;
-		exit_code=$?
-		if (( $exit_code > 0 )); then
+		xmllint "$file" > /dev/null 2>/dev/null;
+		ec=$?
+		if (( ec > 0 )); then
 			fail_count=$(echo "$fail_count + 1" | bc)
-			error "  FAIL: $file ($exit_code)";
+			error "  FAIL: $file ($ec)";
 		else
 			success "  OK: $file";
 		fi
@@ -797,7 +797,7 @@ mutate_fail-terminal-datasets() { ## [--commit]: Causes the output datasets of j
 		WHERE id in (select hda_id from terminal_jobs_temp)
 	EOF
 
-	commit=$(should_commit $1)
+	commit=$(should_commit "$1")
 	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
 }
 
@@ -818,7 +818,7 @@ mutate_fail-job() { ## <job_id> [--commit]: Sets a job state to error
 			id = '$id'
 	EOF
 
-	commit=$(should_commit $2)
+	commit=$(should_commit "$2")
 	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
 }
 
@@ -856,7 +856,7 @@ mutate_fail-history() { ## <history_id> [--commit]: Mark all jobs within a histo
 			AND state NOT IN ('ok', 'error')
 	EOF
 
-	commit=$(should_commit $2)
+	commit=$(should_commit "$2")
 	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
 }
 
@@ -885,7 +885,7 @@ mutate_delete-group-role() { ## <group_name> [--commit]: (NEW) Remove the group,
 		WHERE name = '$1'
 	EOF
 
-	commit=$(should_commit $2)
+	commit=$(should_commit "$2")
 	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
 }
 query_latest-users() { ## : 40 recently registered users
@@ -1434,7 +1434,7 @@ query_training-members-remove() { ## <training> <username> [YESDOIT]: Remove a u
 		if (( uga_id > -1 )); then
 			qstr="delete from user_group_association where id = $uga_id"
 		fi
-		echo $qstr
+		echo "$qstr"
 	else
 		read -r -d '' QUERY <<-EOF
 			SELECT
@@ -2577,7 +2577,7 @@ filter_digest-color() { ## : Color an input stream based on the contents (e.g. h
 
 	data="$(cat)"
 	fg_color=$((16#$(echo "$data" | perl -pe "chomp if eof" | sha256sum | cut -c1-2)))
-	bg_color=$(($fg_color + 15))
+	bg_color=$((fg_color + 15))
 
 	echo "$(tput setaf $fg_color)$(tput setab $bg_color)${data}$(tput sgr0)"
 }
@@ -2678,20 +2678,20 @@ uwsgi_stats-influx(){ ## <addr>: InfluxDB formatted output for the current stats
 
 	# fetch data
 	uwsgi=$(which uwsgi)
-	data="$($uwsgi --connect-and-read $address 2>&1)"
+	data="$($uwsgi --connect-and-read "$address" 2>&1)"
 
 	echo "$data" | \
-		jq -r '.locks[] | to_entries[] |  "uwsgi.locks,addr='$address',group=\(.key) count=\(.value)"' | \
+		jq -r '.locks[] | to_entries[] |  "uwsgi.locks,addr='"$address"',group=\(.key) count=\(.value)"' | \
 		sed 's/group=user 0/group=user_0/g'
 
 	echo "$data" | \
-		jq -r '. | "uwsgi.general,addr='$address' listen_queue=\(.listen_queue),listen_queue_errors=\(.listen_queue_errors),load=\(.load),signal_queue=\(.signal_queue)"'
+		jq -r '. | "uwsgi.general,addr='"$address"' listen_queue=\(.listen_queue),listen_queue_errors=\(.listen_queue_errors),load=\(.load),signal_queue=\(.signal_queue)"'
 
 	echo "$data" | \
-		jq -r '.sockets[] | "uwsgi.sockets,addr='$address',name=\(.name),proto=\(.proto) queue=\(.queue),max_queue=\(.max_queue),shared=\(.shared),can_offload=\(.can_offload)"'
+		jq -r '.sockets[] | "uwsgi.sockets,addr='"$address"',name=\(.name),proto=\(.proto) queue=\(.queue),max_queue=\(.max_queue),shared=\(.shared),can_offload=\(.can_offload)"'
 
 	echo "$data" | \
-		jq -r '.workers[] | "uwsgi.worker,addr='$address',id=\(.id) accepting=\(.accepting),requests=\(.requests),exceptions=\(.exceptions),harakiri_count=\(.harakiri_count),signals=\(.signals),signal_queue=\(.signal_queue),status=\"\(.status)\",rss=\(.rss),vsz=\(.vsz),running_time=\(.running_time),respawn_count=\(.respawn_count),tx=\(.tx),avg_rt=\(.avg_rt)"' | \
+		jq -r '.workers[] | "uwsgi.worker,addr='"$address"',id=\(.id) accepting=\(.accepting),requests=\(.requests),exceptions=\(.exceptions),harakiri_count=\(.harakiri_count),signals=\(.signals),signal_queue=\(.signal_queue),status=\"\(.status)\",rss=\(.rss),vsz=\(.vsz),running_time=\(.running_time),respawn_count=\(.respawn_count),tx=\(.tx),avg_rt=\(.avg_rt)"' | \
 		sed 's/"busy"/1/g;s/"idle"/0/g;'
 }
 
@@ -2718,13 +2718,13 @@ uwsgi_memory() { ## : Current system memory usage
 
 	echo "galaxy-zergpool.service $(cat /sys/fs/cgroup/memory/system.slice/galaxy-zergpool.service/memory.memsw.usage_in_bytes)"
 	for folder in $(find /sys/fs/cgroup/memory/system.slice/system-galaxy\\x2dzergling.slice/ -mindepth 1 -type d -name 'galaxy-zergling*service'); do
-		service=$(basename $folder)
-		echo "$service $(cat $folder/memory.memsw.usage_in_bytes)"
+		service=$(basename "$folder")
+		echo "$service $(cat "$folder/memory.memsw.usage_in_bytes")"
 	done
 
 	for folder in $(find /sys/fs/cgroup/memory/system.slice/system-galaxy\\x2dhandler.slice/ -mindepth 1 -type d -name 'galaxy-handler*service'); do
-		service=$(basename $folder)
-		echo "$service $(cat $folder/memory.memsw.usage_in_bytes)"
+		service=$(basename "$folder")
+		echo "$service $(cat "$folder/memory.memsw.usage_in_bytes")"
 	done
 }
 
@@ -2750,13 +2750,13 @@ uwsgi_stats() { ## : uwsgi stats
 
 	echo "systemd service=galaxy-zergpool memory=$(cat /sys/fs/cgroup/memory/system.slice/galaxy-zergpool.service/memory.memsw.usage_in_bytes)"
 	for folder in $(find /sys/fs/cgroup/memory/system.slice/system-galaxy\\x2dzergling.slice/ -mindepth 1 -type d -name 'galaxy-zergling*service'); do
-		service=$(basename $folder)
-		echo "systemd service=$service memory=$(cat $folder/memory.memsw.usage_in_bytes)"
+		service=$(basename "$folder")
+		echo "systemd service=$service memory=$(cat "$folder/memory.memsw.usage_in_bytes")"
 	done
 
 	for folder in $(find /sys/fs/cgroup/memory/system.slice/system-galaxy\\x2dhandler.slice/ -mindepth 1 -type d -name 'galaxy-handler*service'); do
-		service=$(basename $folder)
-		echo "systemd service=$service memory=$(cat $folder/memory.memsw.usage_in_bytes)"
+		service=$(basename "$folder")
+		echo "systemd service=$service memory=$(cat "$folder/memory.memsw.usage_in_bytes")"
 	done
 }
 
@@ -2766,7 +2766,7 @@ uwsgi_zerg-swap() { ## : Swap zerglings in order (unintelligent version)
 	EOF
 
 	active="$(uwsgi_status | grep -v inactive | grep zergling | cut -d: -f1 | wc -l)"
-	if (( $active == 1 )); then
+	if (( active == 1 )); then
 		error "Won't restart when only a single zergling is active as this will trigger downtime"
 		exit 1
 	fi
@@ -2774,10 +2774,10 @@ uwsgi_zerg-swap() { ## : Swap zerglings in order (unintelligent version)
 	# Obtain current running ones
 	for zergling in $(uwsgi_status | grep -v inactive | grep zergling | cut -d: -f1); do
 		echo "Restarting $zergling"
-		systemctl restart $zergling
+		systemctl restart "$zergling"
 		number=$(echo "$zergling" | sed 's/.*@//g')
 		stats="127.0.0.1:401$number"
-		wait_for_url $stats
+		wait_for_url "$stats"
 		success "$zergling is alive"
 	done
 }
@@ -2789,26 +2789,26 @@ uwsgi_zerg-scale-up() { ## : Add another zergling to deal with high load
 	# Obtain current running ones
 	an_inactive=$(status | grep inactive | grep zergling | head -n1 | cut -d: -f1)
 	echo "$an_inactive is inactive, starting"
-	systemctl start $an_inactive
+	systemctl start "$an_inactive"
 }
 
-uwsgi_zerg-scale-down() { ## : Remove an extraneous zergling
-	handle_help "$@" <<-EOF
-	EOF
+#uwsgi_zerg-scale-down() { ## : Remove an extraneous zergling
+	#handle_help "$@" <<-EOF
+	#EOF
 
-	# Obtain current running ones
-	active="$(status | grep -v inactive | grep zergling | cut -d: -f1)"
-	num_active=$(echo "$active" | wc -l)
+	## Obtain current running ones
+	#active="$(status | grep -v inactive | grep zergling | cut -d: -f1)"
+	#num_active=$(echo "$active" | wc -l)
 
-	if (( $num_active <= 2 )); then
-		error "We do not permit scaling below 2 zerglings"
-		exit 1
-	fi
+	#if (( num_active <= 2 )); then
+		#error "We do not permit scaling below 2 zerglings"
+		#exit 1
+	#fi
 
-	# Kill highest numbered one
-	warning "$to_kill will be stopped"
-	systemctl stop $to_kill
-}
+	## Kill highest numbered one
+	#warning "$to_kill will be stopped"
+	#systemctl stop "$to_kill"
+#}
 
 uwsgi_zerg-strace() { ## [number]: Strace a zergling
 	handle_help "$@" <<-EOF
@@ -2817,8 +2817,8 @@ uwsgi_zerg-strace() { ## [number]: Strace a zergling
 	if (( $# > 0 )); then
 		number=$1;
 	fi
-	procs=$(uwsgi_pids | grep zergling@${number} | cut -d':' -f2 | sed 's/\s*//g;' | tr '\n' ' ' | sed 's/^\s*//;s/\s*$//g;s/ / -p /g')
-	strace -e open,openat -p $procs
+	procs=$(uwsgi_pids | grep "zergling@${number}" | cut -d':' -f2 | sed 's/\s*//g;' | tr '\n' ' ' | sed 's/^\s*//;s/\s*$//g;s/ / -p /g')
+	strace -e open,openat -p "$procs"
 }
 
 uwsgi_handler-strace() { ## [number]: Strace a handler
@@ -2828,8 +2828,8 @@ uwsgi_handler-strace() { ## [number]: Strace a handler
 	if (( $# > 0 )); then
 		number=$1;
 	fi
-	procs=$(uwsgi_pids | grep handler@${number} | cut -d':' -f2 | sed 's/\s*//g;' | tr '\n' ' ' | sed 's/^\s*//;s/\s*$//g;s/ / -p /g')
-	strace -e open,openat -p $procs
+	procs=$(uwsgi_pids | grep "handler@${number}" | cut -d':' -f2 | sed 's/\s*//g;' | tr '\n' ' ' | sed 's/^\s*//;s/\s*$//g;s/ / -p /g')
+	strace -e open,openat -p "$procs"
 }
 
 uwsgi_handler-restart() { ## : Restart all handlers
@@ -2871,7 +2871,7 @@ uwsgi_lastlog(){ ## : Fetch the number of seconds since the last log message was
 		if (( $(echo "$lines" | wc -l) > 1 )); then
 			timestamp=$(journalctl -u galaxy-handler@$i -n 1 --no-pager | grep -v 'Logs begin' | awk '{print $1" "$2" "$3}');
 			unix=$(date -d "$timestamp" +%s)
-			date_diff=$(($NOW - $unix));
+			date_diff=$((NOW - unix));
 			echo "journalctl.lastlog,service=galaxy-handler@$i seconds=$date_diff";
 		fi
 	done
@@ -2881,7 +2881,7 @@ uwsgi_lastlog(){ ## : Fetch the number of seconds since the last log message was
 		if (( $(echo "$lines" | wc -l) > 1 )); then
 			timestamp=$(journalctl -u galaxy-zergling@$i -n 1 --no-pager | grep -v 'Logs begin' | awk '{print $1" "$2" "$3}');
 			unix=$(date -d "$timestamp" +%s)
-			date_diff=$(($NOW - $unix));
+			date_diff=$((NOW - unix));
 			echo "journalctl.lastlog,service=galaxy-zergling@$i seconds=$date_diff";
 		fi
 	done
@@ -2903,10 +2903,10 @@ galaxy_cleanup() { ## [days]: Cleanup histories/hdas/etc for past N days (defaul
 	run_date=$(date --rfc-3339=seconds)
 
 	for action in {delete_userless_histories,delete_exported_histories,purge_deleted_histories,purge_deleted_hdas,delete_datasets,purge_datasets}; do
-		python $GALAXY_ROOT/scripts/cleanup_datasets/pgcleanup.py \
-			-c $GALAXY_CONFIG_FILE \
-			-o $days \
-			-l $GALAXY_LOG_DIR \
+		python "$GALAXY_ROOT/scripts/cleanup_datasets/pgcleanup.py" \
+			-c "$GALAXY_CONFIG_FILE" \
+			-o "$days" \
+			-l "$GALAXY_LOG_DIR" \
 			-s $action \
 			-w 128MB \
 			 >> "$GALAXY_LOG_DIR/cleanup-${run_date}-${action}.log" \
@@ -3041,9 +3041,9 @@ galaxy_migrate-tool-install-to-sqlite() { ## : Converts normal potsgres toolshed
 	CREATE INDEX ix_repository_repository_dependency_association_tool_shed_repository_id ON repository_repository_dependency_association (tool_shed_repository_id);
 	CREATE INDEX ix_repository_repository_dependency_association_repository_dependency_id ON repository_repository_dependency_association (repository_dependency_id);
 	COMMIT;
-	" > ${empty_schema}
-	sqlite3 galaxy_install.sqlite < ${empty_schema}
-	rm ${empty_schema}
+	" > "${empty_schema}"
+	sqlite3 galaxy_install.sqlite < "${empty_schema}"
+	rm "${empty_schema}"
 
 	success "Migrating tables"
 
@@ -3052,13 +3052,14 @@ galaxy_migrate-tool-install-to-sqlite() { ## : Converts normal potsgres toolshed
 	success "  export: ${table}"
 	export_csv=$(mktemp /tmp/tmp.gxadmin.${table}.XXXXXXXXXXX)
 	psql -c "COPY (select
-		id, create_time, update_time, tool_shed, name, description, owner, changeset_revision, case when deleted then 1 else 0 end, metadata, includes_datatypes, installed_changeset_revision, uninstalled, dist_to_shed, ctx_rev, status, error_message, tool_shed_status from $table) to STDOUT with CSV" > $export_csv;
+		id, create_time, update_time, tool_shed, name, description, owner, changeset_revision, case when deleted then 1 else 0 end, metadata, includes_datatypes, installed_changeset_revision, uninstalled, dist_to_shed, ctx_rev, status, error_message, tool_shed_status from $table) to STDOUT with CSV" > "$export_csv";
 
 	success "  import: ${table}"
 	echo ".mode csv
 .import ${export_csv} ${table}" | sqlite3 galaxy_install.sqlite
-	if (( $? == 0 )); then
-		rm ${export_csv}
+	ec=$?
+	if (( ec == 0 )); then
+		rm "${export_csv}";
 	else
 		error "  sql: ${export_csv}"
 	fi
@@ -3068,13 +3069,14 @@ galaxy_migrate-tool-install-to-sqlite() { ## : Converts normal potsgres toolshed
 	for table in {tool_version,tool_version_association,migrate_tools,tool_dependency,repository_dependency,repository_repository_dependency_association}; do
 		success "  export: ${table}"
 		export_csv=$(mktemp /tmp/tmp.gxadmin.${table}.XXXXXXXXXXX)
-		psql -c "COPY (select * from $table) to STDOUT with CSV" > $export_csv;
+		psql -c "COPY (select * from $table) to STDOUT with CSV" > "$export_csv";
 
 		success "  import: ${table}"
 		echo ".mode csv
 .import ${export_csv} ${table}" | sqlite3 galaxy_install.sqlite
-		if (( $? == 0 )); then
-			rm ${export_csv}
+		ec=$?
+		if (( ec == 0 )); then
+			rm "${export_csv}"
 		else
 			error "  sql: ${export_csv}"
 		fi
@@ -3121,18 +3123,19 @@ galaxy_migrate-tool-install-from-sqlite() { ## [sqlite-db]: (NEW) Converts SQLit
 
 		if [[ "$table" == "tool_shed_repository" ]]; then
 			# Might have json instead of hexencoded json
-			sqlite3 -csv $1 "select * from $table" | python -c "$hexencodefield9" > $export_csv;
+			sqlite3 -csv "$1" "select * from $table" | python -c "$hexencodefield9" > "$export_csv";
 		elif [[ "$table" == "tool_version" ]]; then
 			# Might have null values quoted as empty string
-			sqlite3 -csv $1 "select * from $table" | sed 's/""$//' > $export_csv;
+			sqlite3 -csv "$1" "select * from $table" | sed 's/""$//' > "$export_csv";
 		else
-			sqlite3 -csv $1 "select * from $table" > $export_csv;
+			sqlite3 -csv "$1" "select * from $table" > "$export_csv";
 		fi
 
-		psql -c "COPY $table FROM STDIN with CSV" < $export_csv;
+		psql -c "COPY $table FROM STDIN with CSV" < "$export_csv";
+		ec=$?
 
-		if (( $? == 0 )); then
-			rm ${export_csv}
+		if (( ec == 0 )); then
+			rm "${export_csv}"
 			success "  import: ${table}"
 		else
 			error "  csv: ${export_csv}"
@@ -3150,9 +3153,9 @@ galaxy_migrate-tool-install-from-sqlite() { ## [sqlite-db]: (NEW) Converts SQLit
 
 	for table in {migrate_version,tool_shed_repository,tool_version,tool_version_association,migrate_tools,tool_dependency,repository_dependency,repository_repository_dependency_association}; do
 		postgres=$(psql -c "COPY (select count(*) from $table) to STDOUT with CSV")
-		sqlite=$(sqlite3 -csv $1 "select count(*) from $table")
+		sqlite=$(sqlite3 -csv "$1" "select count(*) from $table")
 
-		if (( $postgres == $sqlite )); then
+		if (( postgres == sqlite )); then
 			success "  $table: $postgres == $sqlite"
 		else
 			error "  $table: $postgres != $sqlite"
@@ -3385,6 +3388,8 @@ Roles: %s
 %s
 \n
 EOF
+	# shellcheck disable=SC2086
+	# shellcheck disable=SC2059
 	printf "$template" $results "$group_membership" "$role_membership" "$recent_jobs2" "$running_jobs2" "$recent_wf" "$largest_histories"
 }
 
@@ -3428,6 +3433,8 @@ Property      | Value
       Created | %s %s (%s %s %s ago)
 Job Runner/ID | %s / %s
 EOF
+	# shellcheck disable=SC2059
+	# shellcheck disable=SC2086
 	printf "$template"  $results
 
 	###       ###
@@ -3442,6 +3449,8 @@ EOF
 		WHERE job.id = $job_id AND job.user_id = galaxy_user.id
 	EOF
 	job_owner=$(query_tsv "$qstr")
+	# shellcheck disable=SC2183
+	# shellcheck disable=SC2086
 	printf "\n        Owner | %s (id=%s)\n\n" $job_owner
 
 
@@ -3455,7 +3464,9 @@ EOF
 	EOF
 	results=$(query_tsv "$qstr")
 	printf "## Destination Parameters\n\n"
+	# shellcheck disable=SC2016
 	tbl=$(echo "$results" | python -c "$hexdecodelines" | jq -S '. | to_entries[] | [.key, .value] | @tsv' -r | sed 's/\t/\t`/g;s/$/`/g')
+	# shellcheck disable=SC2059
 	printf "Key\tValue\n---\t---\n$tbl" | sed 's/\t/\t | \t/g' | column -t -s'	'
 
 	###          ###
@@ -3469,6 +3480,7 @@ EOF
 	results=$(query_tsv "$qstr")
 	printf "\n## Dependencies\n\n"
 	tbl=$(echo "$results" | python -c "$hexdecodelines" | jq -S '.[] | [.name, .version, .dependency_type, .cacheable, .exact, .environment_path, .model_class] | @tsv' -r)
+	# shellcheck disable=SC2059
 	printf "Name\tVersion\tDependency Type\tCacheable\tExact\tEnvironment Path\tModel Class\n----\t-------\t---------------\t---------\t-----\t----------------\t-----------\n$tbl\n" | sed 's/\t/\t | \t/g'       #| column -t -s'	'
 
 	###        ###
@@ -3481,6 +3493,7 @@ EOF
 	EOF
 	results=$(query_tsv "$qstr")
 	printf "\n## Tool Parameters\n\n"
+	# shellcheck disable=SC2059
 	printf "Name\tSettings\n---------\t------------------------------------\n$results\n\n" | sed 's/\t/\t | \t/g' | sed 's/[\"\`]//g'
 
 	###      ###
@@ -3555,6 +3568,7 @@ EOF
 
 \n
 EOF
+	# shellcheck disable=SC2059
 	printf "$template3" "$input_ds_tbl" "$output_ds_tbl"
 }
 
@@ -3564,7 +3578,7 @@ report_assigned-to-handler(){ ## <handler>: Report what items are assigned to a 
 	EOF
 
 	assert_count $# 1 "Missing Handler ID"
-	printf "# Handler $1\n\n"
+	printf "# Handler %s\n\n" "$1"
 
 	# Jerbs
 	printf "## Jobs\n\n"
@@ -3605,6 +3619,7 @@ query_memory-and-cpu-on-same-node() {
 	EOF
 
 	assert_count $# 1 "Missing host name"
+	host="$1"
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
@@ -3654,9 +3669,9 @@ meta_update() { ## : Update the script
 	EOF
 
 	tmp=$(mktemp);
-	curl https://raw.githubusercontent.com/usegalaxy-eu/gxadmin/master/gxadmin > $tmp;
-	chmod ugo+rx $tmp;
-	mv $tmp $0;
+	curl https://raw.githubusercontent.com/usegalaxy-eu/gxadmin/master/gxadmin > "$tmp";
+	chmod ugo+rx "$tmp";
+	mv "$tmp" "$0";
 	exit 0;
 }
 
@@ -3669,20 +3684,20 @@ meta_cmdlist() {
 	echo "## Commands"
 	echo
 	for section in $(locate_cmds_nolocal | correct_cmd | awk '{print $1}' | sort -u); do
-		echo "# $section"            > docs/README.${section}.md
-		echo                         >> docs/README.${section}.md
-		echo "Command | Description" >> docs/README.${section}.md
-		echo "------- | -----------" >> docs/README.${section}.md
+		echo "# $section"            >  "docs/README.${section}.md"
+		echo                         >> "docs/README.${section}.md"
+		echo "Command | Description" >> "docs/README.${section}.md"
+		echo "------- | -----------" >> "docs/README.${section}.md"
 		for command in $(locate_cmds_nolocal | correct_cmd | grep "^$section"); do
-			cmd_part="$(echo $command | sed 's/:.*//g;s/\s*<.*//g;s/\s*\[.*//')"
-			desc_part="$(echo $command | sed 's/^[^:]*:\s*//g')"
-			key_part="$(echo $cmd_part | sed 's/ /-/g')"
+			cmd_part="$(echo "$command" | sed 's/:.*//g;s/\s*<.*//g;s/\s*\[.*//')"
+			desc_part="$(echo "$command" | sed 's/^[^:]*:\s*//g')"
+			key_part="$(echo "$cmd_part" | sed 's/ /-/g')"
 
 			if [[ "$command" != *"Deprecated"* ]]; then
 				# Main ToC
-				echo "[\`${cmd_part}\`](#${key_part}) | $desc_part" >> docs/README.${section}.md
+				echo "[\`${cmd_part}\`](#${key_part}) | $desc_part" >> "docs/README.${section}.md"
 			else
-				echo "\`${cmd_part}\` | $desc_part" >> docs/README.${section}.md
+				echo "\`${cmd_part}\` | $desc_part" >> "docs/README.${section}.md"
 			fi
 		done
 
@@ -3691,19 +3706,19 @@ meta_cmdlist() {
 		echo "Command | Description"
 		echo "------- | -----------"
 		for command in $(locate_cmds_nolocal | correct_cmd | grep "^$section"); do
-			cmd_part="$(echo $command | sed 's/:.*//g;s/\s*<.*//g;s/\s*\[.*//;s/\s*$//')"
-			desc_part="$(echo $command | sed 's/^[^:]*:\s*//g;s/\s*$//')"
-			key_part="$(echo $cmd_part | sed 's/ /-/g')"
+			cmd_part="$(echo "$command" | sed 's/:.*//g;s/\s*<.*//g;s/\s*\[.*//;s/\s*$//')"
+			desc_part="$(echo "$command" | sed 's/^[^:]*:\s*//g;s/\s*$//')"
+			key_part="$(echo "$cmd_part" | sed 's/ /-/g')"
 
 			if [[ "$command" != *"Deprecated"* ]]; then
 				# Main ToC
 				echo "[\`${cmd_part}\`](docs/README.${section}.md#${key_part}) | $desc_part"
 
 				# Subsec documentation
-				echo                          >> docs/README.${section}.md
-				echo "### $cmd_part"          >> docs/README.${section}.md
-				echo                          >> docs/README.${section}.md
-				bash -c "$0 $cmd_part --help" >> docs/README.${section}.md
+				echo                          >> "docs/README.${section}.md"
+				echo "### $cmd_part"          >> "docs/README.${section}.md"
+				echo                          >> "docs/README.${section}.md"
+				bash -c "$0 $cmd_part --help" >> "docs/README.${section}.md"
 			else
 				echo "\`${cmd_part}\` | $desc_part"
 			fi
@@ -3767,8 +3782,9 @@ meta_slurp-current() { ## [--date]: Executes what used to be "Galaxy Slurp"
 		append=" "$(date +%s%N)
 	fi
 
-	for func in $(grep -s -h -o '^query_server-[a-z-]*' $0 $GXADMIN_SITE_SPECIFIC | sort | sed 's/query_//g'); do
-		obtain_query $func
+	# shellcheck disable=SC2013
+	for func in $(grep -s -h -o '^query_server-[a-z-]*' "$0" "$GXADMIN_SITE_SPECIFIC" | sort | sed 's/query_//g'); do
+		obtain_query "$func"
 		$wrapper query_influx "$QUERY" "$query_name" "$fields" "$tags" | sed "s/$/$append/"
 	done
 }
@@ -3825,8 +3841,9 @@ meta_slurp-upto() { ## <yyyy-mm-dd> [--date]: Slurps data "up to" a specific dat
 		append=" "$(date -d "$1" +%s%N)
 	fi
 
-	for func in $(grep -s -h -o '^query_server-[a-z-]*' $0 $GXADMIN_SITE_SPECIFIC | sort | sed 's/query_//g'); do
-		obtain_query $func $1
+	# shellcheck disable=SC2013
+	for func in $(grep -s -h -o '^query_server-[a-z-]*' "$0" "$GXADMIN_SITE_SPECIFIC" | sort | sed 's/query_//g'); do
+		obtain_query "$func" "$1"
 		$wrapper query_influx "$QUERY" "$query_name.daily" "$fields" "$tags" | sed "s/$/$append/"
 	done
 }
@@ -3882,7 +3899,7 @@ meta_influx-post() { ## <db> <file>: (NEW) Post contents of file (in influx line
 		assert_file "$FILE"
 	fi
 
-	curl --silent -XPOST "${INFLUX_URL}/write?db=${DB}&u=${INFLUX_USER}&p=${INFLUX_PASS}" --data-binary @${FILE}
+	curl --silent -XPOST "${INFLUX_URL}/write?db=${DB}&u=${INFLUX_USER}&p=${INFLUX_PASS}" --data-binary @"${FILE}"
 }
 
 meta_influx-query() { ## <db> "<query>": (NEW) Query an influx DB
@@ -3949,17 +3966,17 @@ meta_whatsnew() { ## : What's new in this version of gxadmin
 	current_version=$(version)
 	prev_version=$(( current_version - 1 ))
 	#sed -n '1,/^# 12/d;/^# 11/q;p'
-	echo "$CHANGELOG" | sed -n '/^# 11/q;p'
+	echo "$CHANGELOG" | sed -n "/^# ${prev_version}/q;p"
 }
 meta_completion() {
 	IFS=$'\n'
-	commands="$(grep -o '{ ## .*' $0 | grep -v grep | grep -v '| sed' | sort | sed 's/^{ ## //g' | \
+	commands="$(grep -o '{ ## .*' "$0" | grep -v grep | grep -v '| sed' | sort | sed 's/^{ ## //g' | \
 		sed 's/:.*//g;s/\s*<.*//g;s/\s*\[.*//')"
 
 	leading=$(echo "$commands" | awk '{print $1}' | sort -u | paste -s -d' ')
 	subcommands=""
 	for cmd in $(echo "$commands" | awk '{print $1}' | sort -u); do
-		subcmds=$(echo "$commands" | awk '($1 == "'$cmd'"){ print $2 }' | sort -u | paste -s -d' ')
+		subcmds=$(echo "$commands" | awk '($1 == "'"$cmd"'"){ print $2 }' | sort -u | paste -s -d' ')
 		if (( ${#subcmds} > 0 )); then
 			subcommands="${subcommands}\n\n\t\t$cmd)\n\t\t\tCOMPREPLY=( \$(compgen -W \"${subcmds}\" \${cur}) )\n\t\t\treturn 0\n\t\t;;"
 		fi
@@ -3989,6 +4006,7 @@ complete -F _gxadmin gxadmin
 EOF
 )
 
+	# shellcheck disable=SC2059
 	printf "${BASH_COMPLETION_TEMPLATE}\n" "$leading" "$subcommands"
 }
 look_for() {
@@ -3997,9 +4015,10 @@ look_for() {
 
 	# Check that FN exists
 	fn="${group_name}_${query_name}"
-	LC_ALL=C type $fn 2> /dev/null | grep -q 'function'
+	LC_ALL=C type "$fn" 2> /dev/null | grep -q 'function'
+	ec=$?
 
-	if (( $? == 0 )); then
+	if (( ec == 0 )); then
 		$fn "$@";
 
 		if [[ "${query_name}" == "query"* ]]; then
@@ -4008,16 +4027,17 @@ look_for() {
 			query_influx "$QUERY" "$query_name" "$fields" "$tags" "$timestamp"
 		fi
 	else
-		usage ${group_name}
+		usage "${group_name}"
 	fi
 }
 obtain_mutate() {
 	query_name="$1"; shift
 
 	fn="mutate_${query_name}"
-	LC_ALL=C type $fn 2> /dev/null | grep -q 'function'
+	LC_ALL=C type "$fn" 2> /dev/null | grep -q 'function'
+	ec=$?
 
-	if (( $? == 0 )); then
+	if (( ec == 0 )); then
 		$fn "$@";
 	else
 		export QUERY="ERROR"
@@ -4029,7 +4049,7 @@ mutate() {
 	query_name="$1"; shift
 
 	# We do not run this in a subshell because we need to "return" multiple things.
-	obtain_mutate $query_name "$@"
+	obtain_mutate "$query_name" "$@"
 
 	# TODO(hxr)
 	if [[ "$QUERY" == "ERROR" ]]; then
@@ -4042,9 +4062,10 @@ obtain_query() {
 	query_name="$1"; shift
 
 	fn="query_${query_name}"
-	LC_ALL=C type $fn 2> /dev/null | grep -q 'function'
+	LC_ALL=C type "$fn" 2> /dev/null | grep -q 'function'
+	ec=$?
 
-	if (( $? == 0 )); then
+	if (( ec == 0 )); then
 		$fn "$@";
 	else
 		export QUERY="ERROR"
@@ -4058,7 +4079,7 @@ query() {
 	query_name="$1"; shift
 
 	# We do not run this in a subshell because we need to "return" multiple things.
-	obtain_query $query_name "$@"
+	obtain_query "$query_name" "$@"
 
 	# If query in error, exit.
 	if [[ "$QUERY" == "ERROR" ]]; then
@@ -4086,7 +4107,8 @@ local_funcs() {
 		exit 1
 	else
 		# Load functions
-		. ${GXADMIN_SITE_SPECIFIC}
+		# shellcheck disable=SC1090
+		. "${GXADMIN_SITE_SPECIFIC}"
 	fi
 
 	group_name="local"
@@ -4094,10 +4116,11 @@ local_funcs() {
 
 	# Check that FN exists
 	fn="${group_name}_${query_name}"
-	LC_ALL=C type $fn 2> /dev/null | grep -q 'function'
+	LC_ALL=C type "$fn" 2> /dev/null | grep -q 'function'
+	ec=$?
 
-	if (( $? == 0 )); then
-		if [[ -z "${GXADMIN_BUGGER_OFF}" ]] && (( ($RANDOM % 25) == 0 )); then
+	if (( ec == 0 )); then
+		if [[ -z "${GXADMIN_BUGGER_OFF}" ]] && (( (RANDOM % 25) == 0 )); then
 			warning "Hey! It's great that you're using gxadmin! You should contribute these functions back :) Other people might find these useful, or could learn something from the code you've written, even if you think it is too specific to your site."
 		fi
 

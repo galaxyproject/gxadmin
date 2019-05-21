@@ -4,9 +4,10 @@ look_for() {
 
 	# Check that FN exists
 	fn="${group_name}_${query_name}"
-	LC_ALL=C type $fn 2> /dev/null | grep -q 'function'
+	LC_ALL=C type "$fn" 2> /dev/null | grep -q 'function'
+	ec=$?
 
-	if (( $? == 0 )); then
+	if (( ec == 0 )); then
 		$fn "$@";
 
 		if [[ "${query_name}" == "query"* ]]; then
@@ -15,6 +16,6 @@ look_for() {
 			query_influx "$QUERY" "$query_name" "$fields" "$tags" "$timestamp"
 		fi
 	else
-		usage ${group_name}
+		usage "${group_name}"
 	fi
 }

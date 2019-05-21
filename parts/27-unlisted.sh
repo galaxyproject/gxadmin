@@ -13,6 +13,7 @@ query_memory-and-cpu-on-same-node() {
 	EOF
 
 	assert_count $# 1 "Missing host name"
+	host="$1"
 
 	read -r -d '' QUERY <<-EOF
 		SELECT

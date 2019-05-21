@@ -96,7 +96,7 @@ mutate_fail-terminal-datasets() { ## [--commit]: Causes the output datasets of j
 		WHERE id in (select hda_id from terminal_jobs_temp)
 	EOF
 
-	commit=$(should_commit $1)
+	commit=$(should_commit "$1")
 	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
 }
 
@@ -117,7 +117,7 @@ mutate_fail-job() { ## <job_id> [--commit]: Sets a job state to error
 			id = '$id'
 	EOF
 
-	commit=$(should_commit $2)
+	commit=$(should_commit "$2")
 	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
 }
 
@@ -155,7 +155,7 @@ mutate_fail-history() { ## <history_id> [--commit]: Mark all jobs within a histo
 			AND state NOT IN ('ok', 'error')
 	EOF
 
-	commit=$(should_commit $2)
+	commit=$(should_commit "$2")
 	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
 }
 
@@ -184,6 +184,6 @@ mutate_delete-group-role() { ## <group_name> [--commit]: (NEW) Remove the group,
 		WHERE name = '$1'
 	EOF
 
-	commit=$(should_commit $2)
+	commit=$(should_commit "$2")
 	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
 }

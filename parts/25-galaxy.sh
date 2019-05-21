@@ -15,10 +15,10 @@ galaxy_cleanup() { ## [days]: Cleanup histories/hdas/etc for past N days (defaul
 	run_date=$(date --rfc-3339=seconds)
 
 	for action in {delete_userless_histories,delete_exported_histories,purge_deleted_histories,purge_deleted_hdas,delete_datasets,purge_datasets}; do
-		python $GALAXY_ROOT/scripts/cleanup_datasets/pgcleanup.py \
-			-c $GALAXY_CONFIG_FILE \
-			-o $days \
-			-l $GALAXY_LOG_DIR \
+		python "$GALAXY_ROOT/scripts/cleanup_datasets/pgcleanup.py" \
+			-c "$GALAXY_CONFIG_FILE" \
+			-o "$days" \
+			-l "$GALAXY_LOG_DIR" \
 			-s $action \
 			-w 128MB \
 			 >> "$GALAXY_LOG_DIR/cleanup-${run_date}-${action}.log" \
@@ -153,9 +153,9 @@ galaxy_migrate-tool-install-to-sqlite() { ## : Converts normal potsgres toolshed
 	CREATE INDEX ix_repository_repository_dependency_association_tool_shed_repository_id ON repository_repository_dependency_association (tool_shed_repository_id);
 	CREATE INDEX ix_repository_repository_dependency_association_repository_dependency_id ON repository_repository_dependency_association (repository_dependency_id);
 	COMMIT;
-	" > ${empty_schema}
-	sqlite3 galaxy_install.sqlite < ${empty_schema}
-	rm ${empty_schema}
+	" > "${empty_schema}"
+	sqlite3 galaxy_install.sqlite < "${empty_schema}"
+	rm "${empty_schema}"
 
 	success "Migrating tables"
 
@@ -164,13 +164,14 @@ galaxy_migrate-tool-install-to-sqlite() { ## : Converts normal potsgres toolshed
 	success "  export: ${table}"
 	export_csv=$(mktemp /tmp/tmp.gxadmin.${table}.XXXXXXXXXXX)
 	psql -c "COPY (select
-		id, create_time, update_time, tool_shed, name, description, owner, changeset_revision, case when deleted then 1 else 0 end, metadata, includes_datatypes, installed_changeset_revision, uninstalled, dist_to_shed, ctx_rev, status, error_message, tool_shed_status from $table) to STDOUT with CSV" > $export_csv;
+		id, create_time, update_time, tool_shed, name, description, owner, changeset_revision, case when deleted then 1 else 0 end, metadata, includes_datatypes, installed_changeset_revision, uninstalled, dist_to_shed, ctx_rev, status, error_message, tool_shed_status from $table) to STDOUT with CSV" > "$export_csv";
 
 	success "  import: ${table}"
 	echo ".mode csv
 .import ${export_csv} ${table}" | sqlite3 galaxy_install.sqlite
-	if (( $? == 0 )); then
-		rm ${export_csv}
+	ec=$?
+	if (( ec == 0 )); then
+		rm "${export_csv}";
 	else
 		error "  sql: ${export_csv}"
 	fi
@@ -180,13 +181,14 @@ galaxy_migrate-tool-install-to-sqlite() { ## : Converts normal potsgres toolshed
 	for table in {tool_version,tool_version_association,migrate_tools,tool_dependency,repository_dependency,repository_repository_dependency_association}; do
 		success "  export: ${table}"
 		export_csv=$(mktemp /tmp/tmp.gxadmin.${table}.XXXXXXXXXXX)
-		psql -c "COPY (select * from $table) to STDOUT with CSV" > $export_csv;
+		psql -c "COPY (select * from $table) to STDOUT with CSV" > "$export_csv";
 
 		success "  import: ${table}"
 		echo ".mode csv
 .import ${export_csv} ${table}" | sqlite3 galaxy_install.sqlite
-		if (( $? == 0 )); then
-			rm ${export_csv}
+		ec=$?
+		if (( ec == 0 )); then
+			rm "${export_csv}"
 		else
 			error "  sql: ${export_csv}"
 		fi
@@ -233,18 +235,19 @@ galaxy_migrate-tool-install-from-sqlite() { ## [sqlite-db]: (NEW) Converts SQLit
 
 		if [[ "$table" == "tool_shed_repository" ]]; then
 			# Might have json instead of hexencoded json
-			sqlite3 -csv $1 "select * from $table" | python -c "$hexencodefield9" > $export_csv;
+			sqlite3 -csv "$1" "select * from $table" | python -c "$hexencodefield9" > "$export_csv";
 		elif [[ "$table" == "tool_version" ]]; then
 			# Might have null values quoted as empty string
-			sqlite3 -csv $1 "select * from $table" | sed 's/""$//' > $export_csv;
+			sqlite3 -csv "$1" "select * from $table" | sed 's/""$//' > "$export_csv";
 		else
-			sqlite3 -csv $1 "select * from $table" > $export_csv;
+			sqlite3 -csv "$1" "select * from $table" > "$export_csv";
 		fi
 
-		psql -c "COPY $table FROM STDIN with CSV" < $export_csv;
+		psql -c "COPY $table FROM STDIN with CSV" < "$export_csv";
+		ec=$?
 
-		if (( $? == 0 )); then
-			rm ${export_csv}
+		if (( ec == 0 )); then
+			rm "${export_csv}"
 			success "  import: ${table}"
 		else
 			error "  csv: ${export_csv}"
@@ -262,9 +265,9 @@ galaxy_migrate-tool-install-from-sqlite() { ## [sqlite-db]: (NEW) Converts SQLit
 
 	for table in {migrate_version,tool_shed_repository,tool_version,tool_version_association,migrate_tools,tool_dependency,repository_dependency,repository_repository_dependency_association}; do
 		postgres=$(psql -c "COPY (select count(*) from $table) to STDOUT with CSV")
-		sqlite=$(sqlite3 -csv $1 "select count(*) from $table")
+		sqlite=$(sqlite3 -csv "$1" "select count(*) from $table")
 
-		if (( $postgres == $sqlite )); then
+		if (( postgres == sqlite )); then
 			success "  $table: $postgres == $sqlite"
 		else
 			error "  $table: $postgres != $sqlite"

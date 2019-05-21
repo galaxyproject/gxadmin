@@ -214,7 +214,6 @@ Command | Description
 `uwsgi stats_influx` | Deprecated, use uwsgi stats-influx
 [`uwsgi stats`](docs/README.uwsgi.md#uwsgi-stats) | uwsgi stats
 [`uwsgi status`](docs/README.uwsgi.md#uwsgi-status) | Current system status
-[`uwsgi zerg-scale-down`](docs/README.uwsgi.md#uwsgi-zerg-scale-down) | Remove an extraneous zergling
 [`uwsgi zerg-scale-up`](docs/README.uwsgi.md#uwsgi-zerg-scale-up) | Add another zergling to deal with high load
 [`uwsgi zerg-strace`](docs/README.uwsgi.md#uwsgi-zerg-strace) | Strace a zergling
 [`uwsgi zerg-swap`](docs/README.uwsgi.md#uwsgi-zerg-swap) | Swap zerglings in order (unintelligent version)

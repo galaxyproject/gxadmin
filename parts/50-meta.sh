@@ -3,9 +3,9 @@ meta_update() { ## : Update the script
 	EOF
 
 	tmp=$(mktemp);
-	curl https://raw.githubusercontent.com/usegalaxy-eu/gxadmin/master/gxadmin > $tmp;
-	chmod ugo+rx $tmp;
-	mv $tmp $0;
+	curl https://raw.githubusercontent.com/usegalaxy-eu/gxadmin/master/gxadmin > "$tmp";
+	chmod ugo+rx "$tmp";
+	mv "$tmp" "$0";
 	exit 0;
 }
 
@@ -18,20 +18,20 @@ meta_cmdlist() {
 	echo "## Commands"
 	echo
 	for section in $(locate_cmds_nolocal | correct_cmd | awk '{print $1}' | sort -u); do
-		echo "# $section"            > docs/README.${section}.md
-		echo                         >> docs/README.${section}.md
-		echo "Command | Description" >> docs/README.${section}.md
-		echo "------- | -----------" >> docs/README.${section}.md
+		echo "# $section"            >  "docs/README.${section}.md"
+		echo                         >> "docs/README.${section}.md"
+		echo "Command | Description" >> "docs/README.${section}.md"
+		echo "------- | -----------" >> "docs/README.${section}.md"
 		for command in $(locate_cmds_nolocal | correct_cmd | grep "^$section"); do
-			cmd_part="$(echo $command | sed 's/:.*//g;s/\s*<.*//g;s/\s*\[.*//')"
-			desc_part="$(echo $command | sed 's/^[^:]*:\s*//g')"
-			key_part="$(echo $cmd_part | sed 's/ /-/g')"
+			cmd_part="$(echo "$command" | sed 's/:.*//g;s/\s*<.*//g;s/\s*\[.*//')"
+			desc_part="$(echo "$command" | sed 's/^[^:]*:\s*//g')"
+			key_part="$(echo "$cmd_part" | sed 's/ /-/g')"
 
 			if [[ "$command" != *"Deprecated"* ]]; then
 				# Main ToC
-				echo "[\`${cmd_part}\`](#${key_part}) | $desc_part" >> docs/README.${section}.md
+				echo "[\`${cmd_part}\`](#${key_part}) | $desc_part" >> "docs/README.${section}.md"
 			else
-				echo "\`${cmd_part}\` | $desc_part" >> docs/README.${section}.md
+				echo "\`${cmd_part}\` | $desc_part" >> "docs/README.${section}.md"
 			fi
 		done
 
@@ -40,19 +40,19 @@ meta_cmdlist() {
 		echo "Command | Description"
 		echo "------- | -----------"
 		for command in $(locate_cmds_nolocal | correct_cmd | grep "^$section"); do
-			cmd_part="$(echo $command | sed 's/:.*//g;s/\s*<.*//g;s/\s*\[.*//;s/\s*$//')"
-			desc_part="$(echo $command | sed 's/^[^:]*:\s*//g;s/\s*$//')"
-			key_part="$(echo $cmd_part | sed 's/ /-/g')"
+			cmd_part="$(echo "$command" | sed 's/:.*//g;s/\s*<.*//g;s/\s*\[.*//;s/\s*$//')"
+			desc_part="$(echo "$command" | sed 's/^[^:]*:\s*//g;s/\s*$//')"
+			key_part="$(echo "$cmd_part" | sed 's/ /-/g')"
 
 			if [[ "$command" != *"Deprecated"* ]]; then
 				# Main ToC
 				echo "[\`${cmd_part}\`](docs/README.${section}.md#${key_part}) | $desc_part"
 
 				# Subsec documentation
-				echo                          >> docs/README.${section}.md
-				echo "### $cmd_part"          >> docs/README.${section}.md
-				echo                          >> docs/README.${section}.md
-				bash -c "$0 $cmd_part --help" >> docs/README.${section}.md
+				echo                          >> "docs/README.${section}.md"
+				echo "### $cmd_part"          >> "docs/README.${section}.md"
+				echo                          >> "docs/README.${section}.md"
+				bash -c "$0 $cmd_part --help" >> "docs/README.${section}.md"
 			else
 				echo "\`${cmd_part}\` | $desc_part"
 			fi
@@ -116,8 +116,9 @@ meta_slurp-current() { ## [--date]: Executes what used to be "Galaxy Slurp"
 		append=" "$(date +%s%N)
 	fi
 
-	for func in $(grep -s -h -o '^query_server-[a-z-]*' $0 $GXADMIN_SITE_SPECIFIC | sort | sed 's/query_//g'); do
-		obtain_query $func
+	# shellcheck disable=SC2013
+	for func in $(grep -s -h -o '^query_server-[a-z-]*' "$0" "$GXADMIN_SITE_SPECIFIC" | sort | sed 's/query_//g'); do
+		obtain_query "$func"
 		$wrapper query_influx "$QUERY" "$query_name" "$fields" "$tags" | sed "s/$/$append/"
 	done
 }
@@ -174,8 +175,9 @@ meta_slurp-upto() { ## <yyyy-mm-dd> [--date]: Slurps data "up to" a specific dat
 		append=" "$(date -d "$1" +%s%N)
 	fi
 
-	for func in $(grep -s -h -o '^query_server-[a-z-]*' $0 $GXADMIN_SITE_SPECIFIC | sort | sed 's/query_//g'); do
-		obtain_query $func $1
+	# shellcheck disable=SC2013
+	for func in $(grep -s -h -o '^query_server-[a-z-]*' "$0" "$GXADMIN_SITE_SPECIFIC" | sort | sed 's/query_//g'); do
+		obtain_query "$func" "$1"
 		$wrapper query_influx "$QUERY" "$query_name.daily" "$fields" "$tags" | sed "s/$/$append/"
 	done
 }
@@ -231,7 +233,7 @@ meta_influx-post() { ## <db> <file>: (NEW) Post contents of file (in influx line
 		assert_file "$FILE"
 	fi
 
-	curl --silent -XPOST "${INFLUX_URL}/write?db=${DB}&u=${INFLUX_USER}&p=${INFLUX_PASS}" --data-binary @${FILE}
+	curl --silent -XPOST "${INFLUX_URL}/write?db=${DB}&u=${INFLUX_USER}&p=${INFLUX_PASS}" --data-binary @"${FILE}"
 }
 
 meta_influx-query() { ## <db> "<query>": (NEW) Query an influx DB
@@ -298,5 +300,5 @@ meta_whatsnew() { ## : What's new in this version of gxadmin
 	current_version=$(version)
 	prev_version=$(( current_version - 1 ))
 	#sed -n '1,/^# 12/d;/^# 11/q;p'
-	echo "$CHANGELOG" | sed -n '/^# 11/q;p'
+	echo "$CHANGELOG" | sed -n "/^# ${prev_version}/q;p"
 }

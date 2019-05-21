@@ -544,7 +544,7 @@ query_training-members-remove() { ## <training> <username> [YESDOIT]: Remove a u
 		if (( uga_id > -1 )); then
 			qstr="delete from user_group_association where id = $uga_id"
 		fi
-		echo $qstr
+		echo "$qstr"
 	else
 		read -r -d '' QUERY <<-EOF
 			SELECT
