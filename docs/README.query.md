@@ -43,6 +43,7 @@ Command | Description
 [`query training-members`](#query-training-members) | List users in a specific training
 [`query training-queue`](#query-training-queue) | Jobs currently being run by people in a given training
 [`query ts-repos`](#query-ts-repos) | Counts of toolshed repositories by toolshed and owner.
+[`query user-cpu-years`](#query-user-cpu-years) | (NEW) CPU years allocated to tools by user
 [`query user-recent-aggregate-jobs`](#query-user-recent-aggregate-jobs) | (NEW) Show aggregate information for jobs in past N days for user
 [`query users-count`](#query-users-count) | Shows sums of active/external/deleted/purged accounts
 [`query users-total`](#query-users-total) | Total number of Galaxy users (incl deleted, purged, inactive)
@@ -868,6 +869,36 @@ query ts-repos -  Counts of toolshed repositories by toolshed and owner.
 **SYNOPSIS**
 
 `gxadmin query ts-repos`
+
+
+### query user-cpu-years
+
+**NAME**
+
+query user-cpu-years -  (NEW) CPU years allocated to tools by user
+
+**SYNOPSIS**
+
+`gxadmin query user-cpu-years`
+
+**NOTES**
+
+This uses the galaxy_slots and runtime_seconds metrics in order to
+calculate allocated CPU years. This will not be the value of what is
+actually consumed by your jobs, you should use cgroups.
+
+rank  | user_id |  username   | cpu_years
+----- | ------- | ----------- | ----------
+    1 |      25 | 123f911b5f1 |     20.35
+    2 |    2099 | cb0fabc0002 |     14.93
+    3 |    1190 | 7e9e9b00b89 |     14.24
+    4 |     365 | 42f211e5e87 |     14.06
+    5 |     230 | 26cdba62c93 |     12.97
+    6 |     190 | fa87cddfcae |      7.01
+    7 |     428 | 44d2a648aac |      6.70
+    8 |     748 | 66c57b41194 |      6.43
+    9 |    1138 | 6b1467ac118 |      5.45
+   10 |       5 | d755361b59a |      5.19
 
 
 ### query user-recent-aggregate-jobs

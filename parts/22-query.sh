@@ -954,6 +954,51 @@ query_monthly-data(){ ## [year]: Number of active users per month, running jobs
 	EOF
 }
 
+query_user-cpu-years() { ## : (NEW) CPU years allocated to tools by user
+	handle_help "$@" <<-EOF
+		This uses the galaxy_slots and runtime_seconds metrics in order to
+		calculate allocated CPU years. This will not be the value of what is
+		actually consumed by your jobs, you should use cgroups.
+
+		rank  | user_id |  username   | cpu_years
+		----- | ------- | ----------- | ----------
+		    1 |      25 | 123f911b5f1 |     20.35
+		    2 |    2099 | cb0fabc0002 |     14.93
+		    3 |    1190 | 7e9e9b00b89 |     14.24
+		    4 |     365 | 42f211e5e87 |     14.06
+		    5 |     230 | 26cdba62c93 |     12.97
+		    6 |     190 | fa87cddfcae |      7.01
+		    7 |     428 | 44d2a648aac |      6.70
+		    8 |     748 | 66c57b41194 |      6.43
+		    9 |    1138 | 6b1467ac118 |      5.45
+		   10 |       5 | d755361b59a |      5.19
+
+	EOF
+
+	username=$(gdpr_safe galaxy_user.username username)
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			row_number() OVER (ORDER BY round(sum((a.metric_value * b.metric_value) / 3600 / 24 / 365), 2) DESC) as rank,
+			job.user_id,
+			$username,
+			round(sum((a.metric_value * b.metric_value) / 3600 / 24 / 365), 2) as cpu_years
+		FROM
+			job_metric_numeric a,
+			job_metric_numeric b,
+			job
+			LEFT JOIN galaxy_user on job.user_id = galaxy_user.id
+		WHERE
+			b.job_id = a.job_id
+			AND a.job_id = job.id
+			AND a.metric_name = 'runtime_seconds'
+			AND b.metric_name = 'galaxy_slots'
+		GROUP BY job.user_id, galaxy_user.username
+		ORDER BY round(sum((a.metric_value * b.metric_value) / 3600 / 24 / 365), 2) DESC
+		LIMIT 50
+	EOF
+}
+
 query_monthly-users-registered(){ ## [year]: Number of users registered each month
 	handle_help "$@" <<-EOF
 	EOF
