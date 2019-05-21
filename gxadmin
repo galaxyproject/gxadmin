@@ -1,13 +1,13 @@
 #!/bin/bash
 # gxadmin: Galaxy administration swiss army knife
-# license: gplv3
+# license: GPLv3
 #
 # This is the result of admins across the universe working together :)
 #
 # Thanks to everyone for their contributions
 # https://github.com/usegalaxy-eu/gxadmin/graphs/contributors
 version() {
-	echo 12
+	echo 13
 }
 GXADMIN_SITE_SPECIFIC=${GXADMIN_SITE_SPECIFIC:-~/.config/gxadmin-local.sh}
 
@@ -419,7 +419,9 @@ success() {
 	echo "$(tput setaf 40)$*$(tput sgr0)"
 }
 CHANGELOG=$(cat <<EOF
-# 13 - pre
+# 14-pre
+
+# 13
 
 - Added:
 	- local functions support querying when prefixed with "query-"
@@ -437,6 +439,7 @@ CHANGELOG=$(cat <<EOF
 	- "mutate fail-history", when failing individual jobs is too slow
 	- "galaxy migrate-tool-install-from-sqlite"
 	- "query user-cpu-years"
+	- Shellchecking of entire script
 - Fixed:
 	- Escaped commas in influx outputs, switched to tabs to further prevent
 	  comma issues.

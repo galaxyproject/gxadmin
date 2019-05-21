@@ -1,4 +1,6 @@
-# 13 - pre
+# 14-pre
+
+# 13
 
 - Added:
 	- local functions support querying when prefixed with "query-"
@@ -16,6 +18,7 @@
 	- "mutate fail-history", when failing individual jobs is too slow
 	- "galaxy migrate-tool-install-from-sqlite"
 	- "query user-cpu-years"
+	- Shellchecking of entire script
 - Fixed:
 	- Escaped commas in influx outputs, switched to tabs to further prevent
 	  comma issues.
