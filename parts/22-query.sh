@@ -329,7 +329,7 @@ query_queue-detail() { ## [--all]: Detailed overview of running and queued jobs
 		d=", 'new'"
 	fi
 
-	username=$(gdpr_safe galaxy_user.username username)
+	username=$(gdpr_safe galaxy_user.username username "Anonymous User")
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
@@ -342,10 +342,10 @@ query_queue-detail() { ## [--all]: Detailed overview of running and queued jobs
 			job.handler,
 			job.job_runner_name,
 			job.destination_id
-		FROM job, galaxy_user
+		FROM job
+		FULL OUTER JOIN galaxy_user ON job.user_id = galaxy_user.id
 		WHERE
 			state in ('running', 'queued'$d)
-			AND job.user_id = galaxy_user.id
 		ORDER BY
 			state desc,
 			time_since_creation desc
@@ -415,13 +415,15 @@ query_jobs-nonterminal() { ## [username|id|email]: Job info of nonterminal jobs 
 		user_filter="true"
 	fi
 
+	user_id=$(gdpr_safe job.user_id user_id "anon")
+
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			job.id, job.tool_id, job.state, job.create_time AT TIME ZONE 'UTC', job.job_runner_name, job.job_runner_external_id, job.handler, job.user_id
+			job.id, job.tool_id, job.state, job.create_time AT TIME ZONE 'UTC', job.job_runner_name, job.job_runner_external_id, job.handler, $user_id
 		FROM
 			job
-		JOIN
-			galaxy_user ON galaxy_user.id = job.user_id
+		LEFT OUTER JOIN
+			galaxy_user ON job.user_id = galaxy_user.id
 		WHERE
 			$user_filter AND job.state IN ('new', 'queued', 'running')
 		ORDER BY job.id ASC
@@ -975,7 +977,7 @@ query_user-cpu-years() { ## : (NEW) CPU years allocated to tools by user
 
 	EOF
 
-	username=$(gdpr_safe galaxy_user.username username)
+	username=$(gdpr_safe galaxy_user.username username 'Anonymous')
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
@@ -987,7 +989,7 @@ query_user-cpu-years() { ## : (NEW) CPU years allocated to tools by user
 			job_metric_numeric a,
 			job_metric_numeric b,
 			job
-			LEFT JOIN galaxy_user on job.user_id = galaxy_user.id
+			FULL OUTER JOIN galaxy_user ON job.user_id = galaxy_user.id
 		WHERE
 			b.job_id = a.job_id
 			AND a.job_id = job.id

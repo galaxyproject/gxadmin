@@ -1,5 +1,9 @@
 # 14-pre
 
+- Fixed:
+	- Correct bug in queue-detail and a couple other functions which did not
+	  correctly include data from anonymous users.
+
 # 13
 
 - Added:
