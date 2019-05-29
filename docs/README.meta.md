@@ -2,12 +2,13 @@
 
 Command | Description
 ------- | -----------
-[`meta influx-post`](#galaxy-migrate-tool-install-to-sqlite) | Post contents of file (in influx line protocol) to influx
-[`meta influx-query`](#galaxy-migrate-tool-install-to-sqlite) | Query an influx DB
-[`meta iquery-grt-export`](#galaxy-migrate-tool-install-to-sqlite) | Export data from a GRT database for sending to influx
-[`meta slurp-current`](#galaxy-migrate-tool-install-to-sqlite) | Executes what used to be "Galaxy Slurp"
-[`meta slurp-upto`](#galaxy-migrate-tool-install-to-sqlite) | Slurps data "up to" a specific date.
-[`meta update`](#galaxy-migrate-tool-install-to-sqlite) | Update the script
+[`meta influx-post`](#meta-influx-post) | Post contents of file (in influx line protocol) to influx
+[`meta influx-query`](#meta-influx-query) | Query an influx DB
+[`meta iquery-grt-export`](#meta-iquery-grt-export) | Export data from a GRT database for sending to influx
+[`meta slurp-current`](#meta-slurp-current) | Executes what used to be "Galaxy Slurp"
+[`meta slurp-upto`](#meta-slurp-upto) | Slurps data "up to" a specific date.
+[`meta update`](#meta-update) | Update the script
+[`meta whatsnew`](#meta-whatsnew) | What's new in this version of gxadmin
 
 ### meta influx-post
 
@@ -208,4 +209,19 @@ meta update -  Update the script
 **SYNOPSIS**
 
 `gxadmin meta update`
+
+
+### meta whatsnew
+
+**NAME**
+
+meta whatsnew -  What's new in this version of gxadmin
+
+**SYNOPSIS**
+
+`gxadmin meta whatsnew`
+
+**NOTES**
+
+Informs users of what's new in the changelog since their version
 

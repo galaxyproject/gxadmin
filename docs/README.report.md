@@ -2,9 +2,9 @@
 
 Command | Description
 ------- | -----------
-[`report assigned-to-handler`](#query-workflow-invocation-status) | Report what items are assigned to a handler currently.
-[`report job-info`](#query-workflow-invocation-status) | Information about a specific job
-[`report user-info`](#query-workflow-invocation-status) | Quick overview of a Galaxy user in your system
+[`report assigned-to-handler`](#report-assigned-to-handler) | Report what items are assigned to a handler currently.
+[`report job-info`](#report-job-info) | Information about a specific job
+[`report user-info`](#report-user-info) | Quick overview of a Galaxy user in your system
 
 ### report assigned-to-handler
 

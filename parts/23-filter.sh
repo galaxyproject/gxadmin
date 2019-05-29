@@ -1,4 +1,4 @@
-filter_pg2md() { ## filter pg2md: Convert postgres table format outputs to something that can be pasted as markdown
+filter_pg2md() { ## : Convert postgres table format outputs to something that can be pasted as markdown
 	handle_help "$@" <<-EOF
 		Imagine doing something like:
 
@@ -23,7 +23,7 @@ filter_pg2md() { ## filter pg2md: Convert postgres table format outputs to somet
 	cat | sed 's/--+--/- | -/g;s/^\(\s\+\)\([^|]\+\) |/\2 \1|/g' | head -n -2
 }
 
-filter_identicon(){ ## filter identicon: Convert an input data stream into an identicon (e.g. with hostname)
+filter_identicon(){ ## : Convert an input data stream into an identicon (e.g. with hostname)
 	handle_help "$@" <<-EOF
 		Given an input data stream, digest it, and colour it using the same logic as digest-color
 
@@ -40,7 +40,7 @@ filter_identicon(){ ## filter identicon: Convert an input data stream into an id
 	cat | python -c "$identicon_script"
 }
 
-filter_digest-color() { ## filter digest-color: Color an input stream based on the contents (e.g. hostname)
+filter_digest-color() { ## : Color an input stream based on the contents (e.g. hostname)
 	handle_help "$@" <<-EOF
 		Colors entire input stream based on digest of entire input's contents.
 		Mostly useful for colouring a hostname or some similar value.
@@ -57,12 +57,12 @@ filter_digest-color() { ## filter digest-color: Color an input stream based on t
 
 	data="$(cat)"
 	fg_color=$((16#$(echo "$data" | perl -pe "chomp if eof" | sha256sum | cut -c1-2)))
-	bg_color=$(($fg_color + 15))
+	bg_color=$((fg_color + 15))
 
 	echo "$(tput setaf $fg_color)$(tput setab $bg_color)${data}$(tput sgr0)"
 }
 
-filter_hexdecode() { ## filter hexdecode: Decodes any hex blobs from postgres outputs
+filter_hexdecode() { ## : Decodes any hex blobs from postgres outputs
 	handle_help "$@" <<-EOF
 		This automatically replaces any hex strings (\\x[a-f0-9]+) with their decoded versions. This can allow you to query galaxy metadata, decode it, and start processing it with JQ. Just pipe your query to it and it will replace it wherever it is found.
 

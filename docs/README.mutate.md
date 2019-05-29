@@ -2,7 +2,55 @@
 
 Command | Description
 ------- | -----------
-[`mutate fail-terminal-datasets`](#meta-update) | Causes the output datasets of jobs which were manually failed, to be marked as failed
+[`mutate delete-group-role`](#mutate-delete-group-role) | Remove the group, role, and any user-group + user-role associations
+[`mutate fail-history`](#mutate-fail-history) | Mark all jobs within a history to state error
+[`mutate fail-job`](#mutate-fail-job) | Sets a job state to error
+[`mutate fail-terminal-datasets`](#mutate-fail-terminal-datasets) | Causes the output datasets of jobs which were manually failed, to be marked as failed
+
+### mutate delete-group-role
+
+**NAME**
+
+mutate delete-group-role -  Remove the group, role, and any user-group + user-role associations
+
+**SYNOPSIS**
+
+`gxadmin mutate delete-group-role <group_name> [--commit]`
+
+**NOTES**
+
+Wipe out a group+role, and user associations.
+
+
+### mutate fail-history
+
+**NAME**
+
+mutate fail-history -  Mark all jobs within a history to state error
+
+**SYNOPSIS**
+
+`gxadmin mutate fail-history <history_id> [--commit]`
+
+**NOTES**
+
+Set all jobs within a history to error
+
+
+### mutate fail-job
+
+**NAME**
+
+mutate fail-job -  Sets a job state to error
+
+**SYNOPSIS**
+
+`gxadmin mutate fail-job <job_id> [--commit]`
+
+**NOTES**
+
+Sets a job's state to "error"
+
 
 ### mutate fail-terminal-datasets
 

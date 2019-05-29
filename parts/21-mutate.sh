@@ -1,31 +1,12 @@
-#mutate_fail_job() { # mutate fail-job <job-id>: Cause a specific job and all of its outputs to be marked as failing
-	#handle_help "$@" <<-EOF
-	#EOF
+should_commit() {
+	if [[ $1 == "--commit" ]]; then
+		printf "COMMIT;"
+	else
+		printf "ROLLBACK;"
+	fi
+}
 
-	#commit="ROLLBACK;"
-	##if [[ $1 == "--commit" ]]; then
-		##commit="COMMIT;"
-	##fi
-
-	#read -r -d '' QUERY <<-EOF
-		#BEGIN TRANSACTION;
-
-		#UPDATE dataset
-		#SET
-			#state = 'error'
-		#WHERE id in (select id from dataset where )
-
-		#UPDATE history_dataset_association
-		#SET
-			#blurb = 'execution error',
-			#info = 'This dataset''s job failed and has been manually addressed by a Galaxy administrator. Please use the bug icon to report this if you need assistance.'
-		#WHERE id in (select hda_id from terminal_jobs_temp)
-
-		#$COMMIT
-	#EOF
-#}
-
-mutate_fail-terminal-datasets() { ## mutate fail-terminal-datasets [--commit]: Causes the output datasets of jobs which were manually failed, to be marked as failed
+mutate_fail-terminal-datasets() { ## [--commit]: Causes the output datasets of jobs which were manually failed, to be marked as failed
 	handle_help "$@" <<-EOF
 		Whenever an admin marks a job as failed manually (e.g. by updating the
 		state in the database), the output datasets are not accordingly updated
@@ -78,14 +59,7 @@ mutate_fail-terminal-datasets() { ## mutate fail-terminal-datasets [--commit]: C
 	EOF
 	# TODO(hxr): support collections
 
-	commit="ROLLBACK;"
-	if [[ $1 == "--commit" ]]; then
-		commit="COMMIT;"
-	fi
-
 	read -r -d '' QUERY <<-EOF
-		BEGIN TRANSACTION;
-
 		CREATE TEMP TABLE terminal_jobs_temp AS
 			SELECT
 				dataset.id as ds_id,
@@ -119,9 +93,97 @@ mutate_fail-terminal-datasets() { ## mutate fail-terminal-datasets [--commit]: C
 		SET
 			blurb = 'execution error',
 			info = 'This dataset''s job failed and has been manually addressed by a Galaxy administrator. Please use the bug icon to report this if you need assistance.'
-		WHERE id in (select hda_id from terminal_jobs_temp);
-
-		$commit
+		WHERE id in (select hda_id from terminal_jobs_temp)
 	EOF
+
+	commit=$(should_commit "$1")
+	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
 }
 
+mutate_fail-job() { ## <job_id> [--commit]: Sets a job state to error
+	handle_help "$@" <<-EOF
+		Sets a job's state to "error"
+	EOF
+
+	assert_count_ge $# 1 "Must supply a job ID"
+	id=$1
+
+	read -r -d '' QUERY <<-EOF
+		UPDATE
+			job
+		SET
+			state = 'error'
+		WHERE
+			id = '$id'
+	EOF
+
+	commit=$(should_commit "$2")
+	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
+}
+
+mutate_fail-history() { ## <history_id> [--commit]: Mark all jobs within a history to state error
+	handle_help "$@" <<-EOF
+		Set all jobs within a history to error
+	EOF
+
+	assert_count_ge $# 1 "Must supply a history ID"
+	id=$1
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			id, state
+		FROM
+			job
+		WHERE
+			id
+			IN (
+					SELECT
+						job_id
+					FROM
+						job_to_output_dataset
+					WHERE
+						dataset_id
+						IN (
+								SELECT
+									id
+								FROM
+									history_dataset_association
+								WHERE
+									history_id = $1
+							)
+				)
+			AND state NOT IN ('ok', 'error')
+	EOF
+
+	commit=$(should_commit "$2")
+	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
+}
+
+mutate_delete-group-role() { ## <group_name> [--commit]: Remove the group, role, and any user-group + user-role associations
+	handle_help "$@" <<-EOF
+		Wipe out a group+role, and user associations.
+	EOF
+
+	assert_count_ge $# 1 "Must supply a group name"
+	id=$1
+
+	read -r -d '' QUERY <<-EOF
+		DELETE FROM group_role_association
+		WHERE group_id = (SELECT id FROM galaxy_group WHERE name = '$1');
+
+		DELETE FROM user_group_association
+		WHERE group_id = (SELECT id FROM galaxy_group WHERE name = '$1');
+
+		DELETE FROM user_role_association
+		WHERE role_id = (SELECT role_id FROM group_role_association WHERE group_id= (SELECT id FROM galaxy_group WHERE name = '$1'));
+
+		DELETE FROM role
+		WHERE id = (SELECT role_id FROM group_role_association WHERE group_id = (SELECT id FROM galaxy_group WHERE name = '$1'));
+
+		DELETE FROM galaxy_group
+		WHERE name = '$1'
+	EOF
+
+	commit=$(should_commit "$2")
+	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
+}

@@ -3,50 +3,55 @@
 Command | Description
 ------- | -----------
 `query active-users` | Deprecated, use monthly-users-active
-[`query collection-usage`](#mutate-fail-terminal-datasets) | Information about how many collections of various types are used
-[`query datasets-created-daily`](#mutate-fail-terminal-datasets) | The min/max/average/p95/p99 of total size of datasets created in a single day.
-[`query disk-usage`](#mutate-fail-terminal-datasets) | Disk usage per object store.
-[`query errored-jobs`](#mutate-fail-terminal-datasets) | Lists jobs that errored in the last N hours.
-[`query groups-list`](#mutate-fail-terminal-datasets) | List all groups known to Galaxy
-[`query job-history`](#mutate-fail-terminal-datasets) | Job state history for a specific job
-[`query job-inputs`](#mutate-fail-terminal-datasets) | Input datasets to a specific job
-[`query job-outputs`](#mutate-fail-terminal-datasets) | Output datasets from a specific job
-[`query jobs-max-by-cpu-hours`](#mutate-fail-terminal-datasets) | Top 10 jobs by CPU hours consumed (requires CGroups metrics)
-[`query jobs-nonterminal`](#mutate-fail-terminal-datasets) | Job info of nonterminal jobs separated by user
-[`query jobs-per-user`](#mutate-fail-terminal-datasets) | Number of jobs run by a specific user
-[`query largest-collection`](#mutate-fail-terminal-datasets) | Returns the size of the single largest collection
-[`query largest-histories`](#mutate-fail-terminal-datasets) | Largest histories in Galaxy
-[`query latest-users`](#mutate-fail-terminal-datasets) | 40 recently registered users
-[`query monthly-cpu-years`](#mutate-fail-terminal-datasets) | CPU years allocated to tools by month
-[`query monthly-data`](#mutate-fail-terminal-datasets) | Number of active users per month, running jobs
-[`query monthly-jobs`](#mutate-fail-terminal-datasets) | Number of jobs run each month
-[`query monthly-users-active`](#mutate-fail-terminal-datasets) | Number of active users per month, running jobs
+[`query collection-usage`](#query-collection-usage) | Information about how many collections of various types are used
+[`query datasets-created-daily`](#query-datasets-created-daily) | The min/max/average/p95/p99 of total size of datasets created in a single day.
+[`query disk-usage`](#query-disk-usage) | Disk usage per object store.
+[`query errored-jobs`](#query-errored-jobs) | Lists jobs that errored in the last N hours.
+[`query groups-list`](#query-groups-list) | List all groups known to Galaxy
+[`query hdca-datasets`](#query-hdca-datasets) | List of files in a dataset collection
+[`query hdca-info`](#query-hdca-info) | Information on a dataset collection
+[`query history-contents`](#query-history-contents) | List datasets and/or collections in a history
+[`query job-history`](#query-job-history) | Job state history for a specific job
+[`query job-inputs`](#query-job-inputs) | Input datasets to a specific job
+[`query job-outputs`](#query-job-outputs) | Output datasets from a specific job
+[`query jobs-max-by-cpu-hours`](#query-jobs-max-by-cpu-hours) | Top 10 jobs by CPU hours consumed (requires CGroups metrics)
+[`query jobs-nonterminal`](#query-jobs-nonterminal) | Job info of nonterminal jobs separated by user
+[`query jobs-per-user`](#query-jobs-per-user) | Number of jobs run by a specific user
+[`query largest-collection`](#query-largest-collection) | Returns the size of the single largest collection
+[`query largest-histories`](#query-largest-histories) | Largest histories in Galaxy
+[`query latest-users`](#query-latest-users) | 40 recently registered users
+[`query monthly-cpu-years`](#query-monthly-cpu-years) | CPU years allocated to tools by month
+[`query monthly-data`](#query-monthly-data) | Number of active users per month, running jobs
+[`query monthly-jobs`](#query-monthly-jobs) | Number of jobs run each month
+[`query monthly-users-active`](#query-monthly-users-active) | Number of active users per month, running jobs
 `query monthly-users` | Deprecated, use monthly-users-active
-[`query monthly-users-registered`](#mutate-fail-terminal-datasets) | Number of users registered each month
-[`query old-histories`](#mutate-fail-terminal-datasets) | Lists histories that haven't been updated (used) for <weeks>
-[`query queue`](#mutate-fail-terminal-datasets) | Brief overview of currently running jobs
-[`query queue-detail`](#mutate-fail-terminal-datasets) | Detailed overview of running and queued jobs
-[`query queue-overview`](#mutate-fail-terminal-datasets) | View used mostly for monitoring
-[`query queue-time`](#mutate-fail-terminal-datasets) | The average/95%/99% a specific tool spends in queue state.
-[`query recent-jobs`](#mutate-fail-terminal-datasets) | Jobs run in the past <hours> (in any state)
-[`query runtime-per-user`](#mutate-fail-terminal-datasets) | computation time of user (by email)
-[`query tool-available-metrics`](#mutate-fail-terminal-datasets) | list all available metrics for a given tool
-[`query tool-errors`](#mutate-fail-terminal-datasets) | Summarize percent of tool runs in error over the past weeks for all tools that have failed (most popular tools first)
-[`query tool-last-used-date`](#mutate-fail-terminal-datasets) | When was the most recent invocation of every tool
-[`query tool-likely-broken`](#mutate-fail-terminal-datasets) | Find tools that have been executed in recent weeks that are (or were due to job running) likely substantially broken
-[`query tool-metrics`](#mutate-fail-terminal-datasets) | See values of a specific metric
-[`query tool-new-errors`](#mutate-fail-terminal-datasets) | Summarize percent of tool runs in error over the past weeks for "new tools"
-[`query tool-popularity`](#mutate-fail-terminal-datasets) | Most run tools by month
-[`query tool-usage`](#mutate-fail-terminal-datasets) | Counts of tool runs in the past weeks (default = all)
-[`query training-list`](#mutate-fail-terminal-datasets) | List known trainings
-[`query training-members-remove`](#mutate-fail-terminal-datasets) | Remove a user from a training
-[`query training-members`](#mutate-fail-terminal-datasets) | List users in a specific training
-[`query training-queue`](#mutate-fail-terminal-datasets) | Jobs currently being run by people in a given training
-[`query ts-repos`](#mutate-fail-terminal-datasets) | Counts of toolshed repositories by toolshed and owner.
-[`query users-count`](#mutate-fail-terminal-datasets) | Shows sums of active/external/deleted/purged accounts
-[`query users-total`](#mutate-fail-terminal-datasets) | Total number of Galaxy users (incl deleted, purged, inactive)
-[`query workflow-connections`](#mutate-fail-terminal-datasets) | The connections of tools, from output to input, in the latest (or all) versions of user workflows
-[`query workflow-invocation-status`](#mutate-fail-terminal-datasets) | Report on how many workflows are in new state by handler
+[`query monthly-users-registered`](#query-monthly-users-registered) | Number of users registered each month
+[`query old-histories`](#query-old-histories) | Lists histories that haven't been updated (used) for <weeks>
+[`query queue`](#query-queue) | Brief overview of currently running jobs
+[`query queue-detail`](#query-queue-detail) | Detailed overview of running and queued jobs
+[`query queue-overview`](#query-queue-overview) | View used mostly for monitoring
+[`query queue-time`](#query-queue-time) | The average/95%/99% a specific tool spends in queue state.
+[`query recent-jobs`](#query-recent-jobs) | Jobs run in the past <hours> (in any state)
+[`query runtime-per-user`](#query-runtime-per-user) | computation time of user (by email)
+[`query tool-available-metrics`](#query-tool-available-metrics) | list all available metrics for a given tool
+[`query tool-errors query tool-errors`](#query-tool-errors-query-tool-errors) | Summarize percent of tool runs in error over the past weeks for all tools that have failed (most popular tools first)
+[`query tool-last-used-date`](#query-tool-last-used-date) | When was the most recent invocation of every tool
+[`query tool-likely-broken query tool-likely-broken`](#query-tool-likely-broken-query-tool-likely-broken) | Find tools that have been executed in recent weeks that are (or were due to job running) likely substantially broken
+[`query tool-metrics`](#query-tool-metrics) | See values of a specific metric
+[`query tool-new-errors query tool-new-errors`](#query-tool-new-errors-query-tool-new-errors) | Summarize percent of tool runs in error over the past weeks for "new tools"
+[`query tool-popularity`](#query-tool-popularity) | Most run tools by month
+[`query tool-usage`](#query-tool-usage) | Counts of tool runs in the past weeks (default = all)
+[`query training-list`](#query-training-list) | List known trainings
+[`query training-members-remove`](#query-training-members-remove) | Remove a user from a training
+[`query training-members`](#query-training-members) | List users in a specific training
+[`query training-queue`](#query-training-queue) | Jobs currently being run by people in a given training
+[`query ts-repos`](#query-ts-repos) | Counts of toolshed repositories by toolshed and owner.
+[`query user-cpu-years`](#query-user-cpu-years) | CPU years allocated to tools by user
+[`query user-recent-aggregate-jobs`](#query-user-recent-aggregate-jobs) | Show aggregate information for jobs in past N days for user
+[`query users-count`](#query-users-count) | Shows sums of active/external/deleted/purged accounts
+[`query users-total`](#query-users-total) | Total number of Galaxy users (incl deleted, purged, inactive)
+[`query workflow-connections`](#query-workflow-connections) | The connections of tools, from output to input, in the latest (or all) versions of user workflows
+[`query workflow-invocation-status`](#query-workflow-invocation-status) | Report on how many workflows are in new state by handler
 
 ### query collection-usage
 
@@ -137,6 +142,43 @@ query groups-list -  List all groups known to Galaxy
 **SYNOPSIS**
 
 `gxadmin query groups-list`
+
+
+### query hdca-datasets
+
+**NAME**
+
+query hdca-datasets -  List of files in a dataset collection
+
+**SYNOPSIS**
+
+`gxadmin query hdca-datasets <hdca_id>`
+
+
+### query hdca-info
+
+**NAME**
+
+query hdca-info -  Information on a dataset collection
+
+**SYNOPSIS**
+
+`gxadmin query hdca-info <hdca_id>`
+
+
+### query history-contents
+
+**NAME**
+
+query history-contents -  List datasets and/or collections in a history
+
+**SYNOPSIS**
+
+`gxadmin query history-contents <history_id> [--dataset|--collection]`
+
+**NOTES**
+
+Obtain an overview of tools that a user has run in the past N days
 
 
 ### query job-history
@@ -638,7 +680,7 @@ Gives a list of available metrics, which can then be used to query.
      ...
 
 
-### query tool-errors
+### query tool-errors query tool-errors
 
 **NAME**
 
@@ -646,7 +688,7 @@ query tool-errors -  Summarize percent of tool runs in error over the past weeks
 
 **SYNOPSIS**
 
-gxadmin query tool-errors [weeks|4]
+`gxadmin query tool-errors query tool-errors [weeks|4]`
 
 **NOTES**
 
@@ -696,7 +738,7 @@ Example invocation:
 It is not truly every tool, there is no easy way to find the tools which have never been run.
 
 
-### query tool-likely-broken
+### query tool-likely-broken query tool-likely-broken
 
 **NAME**
 
@@ -704,7 +746,7 @@ query tool-likely-broken -  Find tools that have been executed in recent weeks t
 
 **SYNOPSIS**
 
-gxadmin query tool-likely-broken [weeks|4]
+`gxadmin query tool-likely-broken query tool-likely-broken [weeks|4]`
 
 **NOTES**
 
@@ -759,7 +801,7 @@ do some aggregations. The following requires [data_hacks](https://github.com/bit
        95.5703 -   105.8750 [     1]: ∎ (0.23%)
 
 
-### query tool-new-errors
+### query tool-new-errors query tool-new-errors
 
 **NAME**
 
@@ -767,7 +809,7 @@ query tool-new-errors -  Summarize percent of tool runs in error over the past w
 
 **SYNOPSIS**
 
-gxadmin query tool-new-errors [weeks|4]
+`gxadmin query tool-new-errors query tool-new-errors [weeks|4]`
 
 **NOTES**
 
@@ -925,6 +967,51 @@ query ts-repos -  Counts of toolshed repositories by toolshed and owner.
 **SYNOPSIS**
 
 `gxadmin query ts-repos`
+
+
+### query user-cpu-years
+
+**NAME**
+
+query user-cpu-years -  CPU years allocated to tools by user
+
+**SYNOPSIS**
+
+`gxadmin query user-cpu-years`
+
+**NOTES**
+
+This uses the galaxy_slots and runtime_seconds metrics in order to
+calculate allocated CPU years. This will not be the value of what is
+actually consumed by your jobs, you should use cgroups.
+
+rank  | user_id |  username   | cpu_years
+----- | ------- | ----------- | ----------
+1     |         | 123f911b5f1 |     20.35
+2     |         | cb0fabc0002 |     14.93
+3     |         | 7e9e9b00b89 |     14.24
+4     |         | 42f211e5e87 |     14.06
+5     |         | 26cdba62c93 |     12.97
+6     |         | fa87cddfcae |      7.01
+7     |         | 44d2a648aac |      6.70
+8     |         | 66c57b41194 |      6.43
+9     |         | 6b1467ac118 |      5.45
+10    |         | d755361b59a |      5.19
+
+
+### query user-recent-aggregate-jobs
+
+**NAME**
+
+query user-recent-aggregate-jobs -  Show aggregate information for jobs in past N days for user
+
+**SYNOPSIS**
+
+`gxadmin query user-recent-aggregate-jobs <username|id|email> [days|7]`
+
+**NOTES**
+
+Obtain an overview of tools that a user has run in the past N days
 
 
 ### query users-count

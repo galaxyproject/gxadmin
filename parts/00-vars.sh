@@ -19,6 +19,23 @@ for line in sys.stdin:
 EOF
 )
 
+hexencodefield9=$(cat <<EOF
+import csv
+import binascii
+import sys
+csv.field_size_limit(sys.maxsize)
+
+
+spamreader = csv.reader(sys.stdin, delimiter=',', quotechar='"')
+spwamwrite = csv.writer(sys.stdout, delimiter=',', quotechar='"')
+
+for row in spamreader:
+	if row[9][0] != "\\\\":
+		row[9] = "\\\\x" + binascii.hexlify(row[9])
+	spwamwrite.writerow(row)
+EOF
+)
+
 identicon_script=$(cat <<EOF
 import sys
 import hashlib

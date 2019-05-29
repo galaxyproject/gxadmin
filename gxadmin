@@ -1,13 +1,13 @@
 #!/bin/bash
 # gxadmin: Galaxy administration swiss army knife
-# license: gplv3
+# license: GPLv3
 #
 # This is the result of admins across the universe working together :)
 #
 # Thanks to everyone for their contributions
 # https://github.com/usegalaxy-eu/gxadmin/graphs/contributors
 version() {
-	echo 12
+	echo 13
 }
 GXADMIN_SITE_SPECIFIC=${GXADMIN_SITE_SPECIFIC:-~/.config/gxadmin-local.sh}
 
@@ -27,6 +27,23 @@ for line in sys.stdin:
 		else:
 			break
 	sys.stdout.write(out)
+EOF
+)
+
+hexencodefield9=$(cat <<EOF
+import csv
+import binascii
+import sys
+csv.field_size_limit(sys.maxsize)
+
+
+spamreader = csv.reader(sys.stdin, delimiter=',', quotechar='"')
+spwamwrite = csv.writer(sys.stdout, delimiter=',', quotechar='"')
+
+for row in spamreader:
+	if row[9][0] != "\\\\":
+		row[9] = "\\\\x" + binascii.hexlify(row[9])
+	spwamwrite.writerow(row)
 EOF
 )
 
@@ -85,109 +102,124 @@ colour_word() {
 		color_idx=1
 	elif [[ $color == "orange" ]]; then
 		color_idx=2
+	elif [[ $color == "green" ]]; then
+		color_idx=4
 	fi
 
 	cat | sed "s|${word}|$(tput setab $color_idx)${word}$(tput sgr0)|g"
 }
 
 filter_commands() {
-	if [[ $2 == $1 ]]; then
-		cat | grep "^$1 " | sort -k2 | column -s: -t | sed 's/^/    /' | colour_word Deprecated orange
+	if [[ $2 == "$1" ]]; then
+		cat | grep "^$1 " | sort -k2 | column -s: -t | sed 's/^/    /' | colour_word Deprecated orange | colour_word '(NEW)' green
 	else
 		cat | grep "^$1 " | sort -k2 | column -s: -t | sed 's/^/    /' | ifmore "$1"
 	fi
 }
 
+locate_cmds() {
+	grep -s -h -o '^[a-z0-9_-]*()\s*{ ## .*' "$0" "$GXADMIN_SITE_SPECIFIC" | grep -v grep | grep -v '| sed' | sort
+}
+
+locate_cmds_nolocal() {
+	grep -s -h -o '^[a-z0-9_-]*()\s*{ ## .*' "$0" | grep -v grep | grep -v '| sed' | sort
+}
+
+correct_cmd() {
+	cat | sed 's/_/ /;s/()\s*{ ##//;s/ :/:/'
+}
+
 usage(){
-	cmds="$(grep -s -h -o '{ ## .*' $0 $GXADMIN_SITE_SPECIFIC | grep -v grep | grep -v '| sed' | sort | sed 's/^{ ## //g')"
+	cmds="$(locate_cmds | correct_cmd)"
 
 	cat <<-EOF
 		gxadmin usage:
 
 	EOF
 
-	if (( $# == 0  )) || [[ $1 == "config" ]]; then
+	if (( $# == 0  )) || [[ "$1" == "config" ]]; then
 		cat <<-EOF
 			Configuration:
 
-			$(echo "$cmds" | filter_commands config $1)
+			$(echo "$cmds" | filter_commands config "$1")
 
 		EOF
 	fi
 
-	if (( $# == 0  )) || [[ $1 == "filter" ]]; then
+	if (( $# == 0  )) || [[ "$1" == "filter" ]]; then
 		cat <<-EOF
 			Filters:
 
-			$(echo "$cmds" | filter_commands filter $1)
+			$(echo "$cmds" | filter_commands filter "$1")
 
 		EOF
 	fi
 
-	if (( $# == 0  )) || [[ $1 == "galaxy" ]]; then
+	if (( $# == 0  )) || [[ "$1" == "galaxy" ]]; then
 		cat <<-EOF
 			Galaxy Administration:
 
-			$(echo "$cmds" | filter_commands galaxy $1)
+			$(echo "$cmds" | filter_commands galaxy "$1")
 
 		EOF
 	fi
 
-	if (( $# == 0  )) || [[ $1 == "uwsgi" ]]; then
+	if (( $# == 0  )) || [[ "$1" == "uwsgi" ]]; then
 		cat <<-EOF
 			uwsgi:
 
-			$(echo "$cmds" | filter_commands uwsgi $1)
+			$(echo "$cmds" | filter_commands uwsgi "$1")
 
 		EOF
 	fi
 
 
-	if (( $# == 0  )) || [[ $1 == "query" ]]; then
+	if (( $# == 0  )) || [[ "$1" == "query" ]]; then
 		cat <<-EOF
 			DB Queries:
 			  'query' can be exchanged with 'tsvquery' or 'csvquery' for tab- and comma-separated variants.
 			  In some cases 'iquery' is supported for InfluxDB compatible output.
+			  In all cases 'explainquery' will show you the query plan, in case you need to optimise or index data. 'explainjsonquery' is useful with PEV: http://tatiyants.com/pev/
 
-			$(echo "$cmds" | filter_commands query $1)
+			$(echo "$cmds" | filter_commands query "$1")
 
 		EOF
 	fi
 
-	if (( $# == 0  )) || [[ $1 == "report" ]]; then
+	if (( $# == 0  )) || [[ "$1" == "report" ]]; then
 		cat <<-EOF
 			Report:
 			  Consider https://github.com/ttscoff/mdless for easier reading in the terminal
 
-			$(echo "$cmds" | filter_commands report $1)
+			$(echo "$cmds" | filter_commands report "$1")
 
 		EOF
 	fi
 
-	if (( $# == 0  )) || [[ $1 == "mutate" ]]; then
+	if (( $# == 0  )) || [[ "$1" == "mutate" ]]; then
 		cat <<-EOF
 			DB Mutations: (csv/tsv queries are NOT available)
 
-			$(echo "$cmds" | filter_commands mutate $1)
+			$(echo "$cmds" | filter_commands mutate "$1")
 
 		EOF
 	fi
 
-	if (( $# == 0  )) || [[ $1 == "meta" ]]; then
+	if (( $# == 0  )) || [[ "$1" == "meta" ]]; then
 		cat <<-EOF
 			Meta:
 
-			$(echo "$cmds" | filter_commands meta $1)
+			$(echo "$cmds" | filter_commands meta "$1")
 
 		EOF
 	fi
 
-	if [[ -f $GXADMIN_SITE_SPECIFIC ]]; then
-		if (( $# == 0  )) || [[ $1 == "local" ]]; then
+	if [[ -f "$GXADMIN_SITE_SPECIFIC" ]]; then
+		if (( $# == 0  )) || [[ "$1" == "local" ]]; then
 			cat <<-EOF
-				Local: (These can be configured in $GXADMIN_SITE_SPECIFIC)
+				Local: (These can be configured in "$GXADMIN_SITE_SPECIFIC")
 
-				$(echo "$cmds" | filter_commands local $1)
+				$(echo "$cmds" | filter_commands local "$1")
 
 			EOF
 		fi
@@ -198,9 +230,15 @@ usage(){
 		EOF
 	fi
 
+	cat <<-EOF
+		All commands can be prefixed with "time" to print execution time to stderr
+
+	EOF
+
 
 	cat <<-EOF
 		help / -h / --help : this message. Invoke '--help' on any subcommand for help specific to that subcommand
+		Tip: Run "gxadmin meta whatsnew" to find out what's new in this release!
 	EOF
 
 	exit 0;
@@ -214,26 +252,26 @@ handle_help() {
 	fi
 
 	for i in "$@"; do
-		if [[ $i = --help || $i = -h ]]; then
+		if [[ "$i" = --help || "$i" = -h ]]; then
 
 			key="${mode}"
 			if [[ ! -z "${query_name}" ]]; then
-				key="${key} ${query_name}"
+				key="${key}_${query_name}"
 			fi
 
 			echo "**NAME**"
 			echo
-			invoke_desc=$(grep -s -h "{ ## ${key}[ :]" $0 $GXADMIN_SITE_SPECIFIC | sed "s/.*## /gxadmin /g")
-			short_desc=$(echo $invoke_desc | sed 's/.*://g')
-			short_parm=$(echo $invoke_desc | sed 's/:.*//g')
-			echo "${key} - ${short_desc}"
+			invoke_desc=$(grep -s -h "${key}()\s*{" "$0" "$GXADMIN_SITE_SPECIFIC" | correct_cmd | sed "s/^/gxadmin /g")
+			short_desc=$(echo "$invoke_desc" | sed 's/.*://g')
+			short_parm=$(echo "$invoke_desc" | sed 's/:.*//g')
+			echo "${mode} ${query_name} - ${short_desc}"
 			echo
 			echo "**SYNOPSIS**"
 			echo
-			echo '`'$short_parm'`'
+			echo '`'"$short_parm"'`'
 			echo
 			manual="$(cat -)"
-			manual_wc="$(echo $manual | wc -c)"
+			manual_wc="${#manual}"
 			if (( manual_wc > 3 )); then
 				echo "**NOTES**"
 				echo
@@ -246,7 +284,7 @@ handle_help() {
 	done
 }
 assert_restart_lock(){
-	if [ -f $HOME/.restart-lock ]; then
+	if [ -f "$HOME/.restart-lock" ]; then
 		echo "A restart lock exists. This means someone is probably already restarting galaxy."
 		exit 3
 	fi
@@ -255,7 +293,7 @@ assert_restart_lock(){
 assert_set_env() {
 	env_var=$1
 	if [[ -z "${!env_var}" ]]; then
-		error Please set \$${env_var}
+		error Please set "\$${env_var}"
 		exit 1
 	fi
 }
@@ -263,7 +301,7 @@ assert_set_env() {
 wait_for_url() {
 	url=$1; shift;
 
-	while [ $(curl --connect-timeout 5 --silent $url | wc -c) -eq "0" ]; do
+	while [ "$(curl --connect-timeout 5 --silent "$url" | wc -c)" -eq "0" ]; do
 		sleep 5;
 		echo -n '.'
 	done
@@ -285,14 +323,14 @@ assert_count_ge() {
 
 assert_file() {
 	if [[ ! -f "$1" ]]; then
-		error File $1 does not exist
+		error "File $1 does not exist"
 		exit 1
 	fi
 }
 
 assert_file_warn() {
 	if [[ ! -f "$1" ]]; then
-		warning File $1 does not exist
+		warning "File $1 does not exist"
 	fi
 }
 query_tbl() {
@@ -313,6 +351,20 @@ query_csv() {
 	EOF
 }
 
+query_exp() {
+	psql <<-EOF
+	EXPLAIN ANALYZE VERBOSE $1
+	EOF
+}
+
+query_expj() {
+	echo "$1"
+	echo
+	psql -qAt <<-EOF
+	EXPLAIN (ANALYZE, COSTS, VERBOSE, BUFFERS, FORMAT JSON) $1
+	EOF
+}
+
 query_influx() {
 	arr2py=$(cat <<EOF
 import sys
@@ -329,10 +381,10 @@ if len(sys.argv) > 4 and sys.argv[4] != '':
 for line in sys.stdin.read().split('\n'):
 	if len(line) == 0:
 		continue
-	parsed = line.split(',')
+	parsed = line.split('\t')
 	metric = query_name
 	if len(tags):
-		tag_data = ['%s=%s' % (k, parsed[v].replace(' ', '\\ '))  for (k, v) in tags.items()]
+		tag_data = ['%s=%s' % (k, parsed[v].replace(' ', '\\ ').replace(',', '\\,'))  for (k, v) in tags.items()]
 		metric += ',' + ','.join(tag_data)
 	field_data = ['%s=%s' % (k, parsed[v])  for (k, v) in fields.items()]
 	metric += ' ' + ','.join(field_data)
@@ -343,30 +395,233 @@ for line in sys.stdin.read().split('\n'):
 EOF
 )
 
-	psql -c "COPY ($1) to STDOUT with CSV DELIMITER E','"| python -c "$arr2py" "$2" "$3" "$4" "$5"
+	psql -c "COPY ($1) to STDOUT with CSV DELIMITER E'\t'"| python -c "$arr2py" "$2" "$3" "$4" "$5"
 }
 
 gdpr_safe() {
+	local coalesce_to
+	if (( $# > 2 )); then
+		coalesce_to="$3"
+	else
+		coalesce_to="__UNKNOWN__"
+	fi
+
 	if [ -z "$GDPR_MODE"  ]; then
-		echo "$1"
+		echo "COALESCE($1, '$coalesce_to')"
 	else
 		# Try and be privacy respecting while generating numbers that can allow
 		# linking data across tables if need be?
-		echo "substring(md5($1 || now()::date), 0, 12) as ${2:-$1}"
+		echo "substring(md5(COALESCE($1, '$coalesce_to') || now()::date), 0, 12) as ${2:-$1}"
 	fi
 }
 error() {
-	(>&2 echo "$(tput setab 1)$@$(tput sgr0)")
+	(>&2 echo "$(tput setab 1)$*$(tput sgr0)")
 }
 
 warning() {
-	(>&2 echo "$(tput setab 2)$@$(tput sgr0)")
+	(>&2 echo "$(tput setab 2)$*$(tput sgr0)")
 }
 
 success() {
-	echo "$(tput setaf 40)$@$(tput sgr0)"
+	echo "$(tput setaf 40)$*$(tput sgr0)"
 }
-config_validate() { ## config validate: validate config files
+CHANGELOG=$(cat <<EOF
+# 14-pre
+
+- Added:
+	- Job working directory cleaner
+- Fixed:
+	- Correct bug in queue-detail and a couple other functions which did not
+	  correctly include data from anonymous users.
+
+# 13
+
+- Added:
+	- local functions support querying when prefixed with "query-"
+	- "meta influx-post" and "meta influx-query" were added to get data into
+	  and out of Influx
+	- "explainquery" is added as an alternative to csv/tsv/etc queries, which
+	  does an "EXPLAIN ANALYZE" of the current SQL
+	- "explainjsonquery" added for use with http://tatiyants.com/pev/
+	- "time" prefix for all functions added to print execution time to stderr
+	- Function to fail a specific job ID
+	- "query user-recent-aggregate-jobs"
+	- "query history-contents"
+	- "query hdca-info"
+	- "query hdca-datasets"
+	- "mutate fail-history", when failing individual jobs is too slow
+	- "galaxy migrate-tool-install-from-sqlite"
+	- "query user-cpu-years"
+	- Shellchecking of entire script
+- Fixed:
+	- Escaped commas in influx outputs, switched to tabs to further prevent
+	  comma issues.
+	- Correct date filter in "query {server-groups,server-datasets}"
+	- Removed unnecessary function name duplication, e.g.
+	    "query_filter() { ## query filter [id]: Does thing"
+	  can now be written as
+	    "query_filter() { ## [id]: Does thing"
+
+# 12
+
+- Added:
+	- local functions, users can add functions to a separate file which are
+	  made available in gxadmin. @erasche resisted implementing these for a
+	  long time for fears that they won't be contributed back and everyone
+	  would keep their precious sql private. So they may nag you occasionally
+	  to contribute them back.
+	- (semi) EU specific systemd handler/zergling management commands
+	- filter digest-color: command to colour some text
+	- filter identicon: command to generate an identicon
+	- Some basic testing of the overall script
+- Fixed:
+	- Correct time zones in all queries to be client-side time zones rather
+	  than UTC encoded timestamps as stored in db (Thanks @slugger70!)
+	- Renamed: "query monthly-users" → "query monthly-users-active"
+- Removed:
+	- Removed highly EU specific handler and zerg functions
+	- Deprecated: "query active-users"
+- Changed:
+	- Major internal reorganisation and split into parts for easier editing. A
+	  bash script that needs a build system, truly horrifying.
+	- User info query now shows recent WF invocations and whether their largest
+	  histories are deleted or purged or not.
+	- Separated out 'report' types that are markdown-only outputs and don't
+	  support tsv/csv queries
+
+# 11
+
+- Added:
+	- filter hexdecode: to help decode hex blobs in postgres queries
+	- uwsgi stats\_influx: which fetches stats from uWSGI zerglings
+	- filter pg2md: Convert postgres tables into markdown compatible tables
+	- "GDPR_MODE" env var which blanks out usernames and emails
+	- errored-jobs: Lists jobs that errored in the last N hours
+	- workflow-connections: Exports worfklow connections, input to output tools
+	- dump-config: Dump Galaxy configuration as JSON
+	- tool-popularity: Most popular tools per month
+- Changed:
+	- user-details: now reports in markdown compatible output and with more
+	  information about the user
+	- job-info: now reports in markdown compatible output, including job inputs
+	  + outputs
+	- queue-overview: now includes user ID by default ("GDPR_MODE=1" will set
+	  the value to "0"), and allows using shorter tool IDs
+	- user-details: renamed to user-info
+	- user-info: includes largest histories
+
+# 10
+
+- Added:
+	- old-histories: Old histories query to find histories that haven't been
+	  used for X weeks.
+	- user-details: query details about a specific user ID
+- Fixed:
+	- Included date in cleanup logs
+
+# 9
+
+- Added:
+	- Influx queries for:
+		- active-users
+		- collection-usage
+		- disk-usage
+		- groups-list
+		- largest-collection
+		- queue
+		- queue-overview
+		- tool-usage
+		- ts-repos
+		- users-count
+		- users-total
+	- tool-metrics
+	- tool-available-metrics
+	- largest-collection
+- Fixed:
+	- Improved "latest-users" to include any groups they're part of and their
+	  registration status (ack'd email/not)
+	- Influx queries now functional (but not automatic)
+	- Collection usage
+
+# 8
+
+- Added:
+	- Help documentation in-tool
+- Fixed:
+	- rewrote internals to use functions + case/esac
+
+# 7
+
+- Added:
+	- cleanup
+- Fixed:
+	- removed all temporary tables for CTEs, allowing tsv/csv queries for
+	  everything
+	- internal cleanup
+
+# 6
+
+- Added functions:
+	- active-users
+	- training-memberof
+	- training-remove-member
+- Fixed:
+	- update script
+	- removed more EU paths for env vars
+
+
+# 5
+
+- Added functions:
+	- disk-usage
+	- users-count
+	- users-total
+	- groups-list
+	- collection-usage
+	- ts-repos
+- Fixed job-inputs/job-outputs
+- Fixed internal variable names
+
+# 4
+
+- Implemented update function
+- removed all support for legacy "_" calls
+- Fancy new automatically updated help function
+
+# 3
+
+- Added migration to sqlite for toolshed install database
+- Removed some EU specific stuff
+
+# 2
+
+- Added training-queue and job-history functions
+- replaced "_" with "-"
+
+# 1 - Initial Release
+
+Included functions for:
+
+- validating configs
+- zerg tasks
+- handler tasks
+- queries:
+	- latest-users
+	- tool-usage
+	- job-info
+	- job-outputs
+	- queue
+	- queue-detail
+	- recent-jobs
+	- jobs-per-user
+	- runtime-per-user
+	- training
+	- training-members
+	- queue-time
+	- datasets-created-daily
+EOF
+)
+config_validate() { ## : validate config files
 	handle_help "$@" <<-EOF
 		Validate the configuration files
 		**Warning**:
@@ -386,22 +641,22 @@ config_validate() { ## config validate: validate config files
 
 	fail_count=0
 	for file in ${GALAXY_CONFIG_DIR}/*.xml; do
-		xmllint $file > /dev/null 2>/dev/null;
-		exit_code=$?
-		if (( $exit_code > 0 )); then
+		xmllint "$file" > /dev/null 2>/dev/null;
+		ec=$?
+		if (( ec > 0 )); then
 			fail_count=$(echo "$fail_count + 1" | bc)
-			error "  FAIL: $file ($exit_code)";
+			error "  FAIL: $file ($ec)";
 		else
 			success "  OK: $file";
 		fi
 	done;
 
 	for file in ${GALAXY_MUTABLE_CONFIG_DIR}/*.xml; do
-		xmllint $file > /dev/null 2>/dev/null;
-		exit_code=$?
-		if (( $exit_code > 0 )); then
+		xmllint "$file" > /dev/null 2>/dev/null;
+		ec=$?
+		if (( ec > 0 )); then
 			fail_count=$(echo "$fail_count + 1" | bc)
-			error "  FAIL: $file ($exit_code)";
+			error "  FAIL: $file ($ec)";
 		else
 			success "  OK: $file";
 		fi
@@ -415,7 +670,7 @@ config_validate() { ## config validate: validate config files
 	fi
 }
 
-config_dump() { ## config dump: Dump Galaxy configuration as JSON
+config_dump() { ## : Dump Galaxy configuration as JSON
 	handle_help "$@" <<-EOF
 		This function was added with the intention to use it internally, but it may be useful in your workflows. It uses the python code from the Galaxy codebase in order to properly load the configuration which is then dumped as JSON.
 
@@ -460,34 +715,15 @@ EOF
 	echo "$dump_config_python" | python
 }
 
-#mutate_fail_job() { # mutate fail-job <job-id>: Cause a specific job and all of its outputs to be marked as failing
-	#handle_help "$@" <<-EOF
-	#EOF
+should_commit() {
+	if [[ $1 == "--commit" ]]; then
+		printf "COMMIT;"
+	else
+		printf "ROLLBACK;"
+	fi
+}
 
-	#commit="ROLLBACK;"
-	##if [[ $1 == "--commit" ]]; then
-		##commit="COMMIT;"
-	##fi
-
-	#read -r -d '' QUERY <<-EOF
-		#BEGIN TRANSACTION;
-
-		#UPDATE dataset
-		#SET
-			#state = 'error'
-		#WHERE id in (select id from dataset where )
-
-		#UPDATE history_dataset_association
-		#SET
-			#blurb = 'execution error',
-			#info = 'This dataset''s job failed and has been manually addressed by a Galaxy administrator. Please use the bug icon to report this if you need assistance.'
-		#WHERE id in (select hda_id from terminal_jobs_temp)
-
-		#$COMMIT
-	#EOF
-#}
-
-mutate_fail-terminal-datasets() { ## mutate fail-terminal-datasets [--commit]: Causes the output datasets of jobs which were manually failed, to be marked as failed
+mutate_fail-terminal-datasets() { ## [--commit]: Causes the output datasets of jobs which were manually failed, to be marked as failed
 	handle_help "$@" <<-EOF
 		Whenever an admin marks a job as failed manually (e.g. by updating the
 		state in the database), the output datasets are not accordingly updated
@@ -540,14 +776,7 @@ mutate_fail-terminal-datasets() { ## mutate fail-terminal-datasets [--commit]: C
 	EOF
 	# TODO(hxr): support collections
 
-	commit="ROLLBACK;"
-	if [[ $1 == "--commit" ]]; then
-		commit="COMMIT;"
-	fi
-
 	read -r -d '' QUERY <<-EOF
-		BEGIN TRANSACTION;
-
 		CREATE TEMP TABLE terminal_jobs_temp AS
 			SELECT
 				dataset.id as ds_id,
@@ -581,13 +810,101 @@ mutate_fail-terminal-datasets() { ## mutate fail-terminal-datasets [--commit]: C
 		SET
 			blurb = 'execution error',
 			info = 'This dataset''s job failed and has been manually addressed by a Galaxy administrator. Please use the bug icon to report this if you need assistance.'
-		WHERE id in (select hda_id from terminal_jobs_temp);
-
-		$commit
+		WHERE id in (select hda_id from terminal_jobs_temp)
 	EOF
+
+	commit=$(should_commit "$1")
+	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
 }
 
-query_latest-users() { ## query latest-users: 40 recently registered users
+mutate_fail-job() { ## <job_id> [--commit]: Sets a job state to error
+	handle_help "$@" <<-EOF
+		Sets a job's state to "error"
+	EOF
+
+	assert_count_ge $# 1 "Must supply a job ID"
+	id=$1
+
+	read -r -d '' QUERY <<-EOF
+		UPDATE
+			job
+		SET
+			state = 'error'
+		WHERE
+			id = '$id'
+	EOF
+
+	commit=$(should_commit "$2")
+	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
+}
+
+mutate_fail-history() { ## <history_id> [--commit]: Mark all jobs within a history to state error
+	handle_help "$@" <<-EOF
+		Set all jobs within a history to error
+	EOF
+
+	assert_count_ge $# 1 "Must supply a history ID"
+	id=$1
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			id, state
+		FROM
+			job
+		WHERE
+			id
+			IN (
+					SELECT
+						job_id
+					FROM
+						job_to_output_dataset
+					WHERE
+						dataset_id
+						IN (
+								SELECT
+									id
+								FROM
+									history_dataset_association
+								WHERE
+									history_id = $1
+							)
+				)
+			AND state NOT IN ('ok', 'error')
+	EOF
+
+	commit=$(should_commit "$2")
+	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
+}
+
+mutate_delete-group-role() { ## <group_name> [--commit]: Remove the group, role, and any user-group + user-role associations
+	handle_help "$@" <<-EOF
+		Wipe out a group+role, and user associations.
+	EOF
+
+	assert_count_ge $# 1 "Must supply a group name"
+	id=$1
+
+	read -r -d '' QUERY <<-EOF
+		DELETE FROM group_role_association
+		WHERE group_id = (SELECT id FROM galaxy_group WHERE name = '$1');
+
+		DELETE FROM user_group_association
+		WHERE group_id = (SELECT id FROM galaxy_group WHERE name = '$1');
+
+		DELETE FROM user_role_association
+		WHERE role_id = (SELECT role_id FROM group_role_association WHERE group_id= (SELECT id FROM galaxy_group WHERE name = '$1'));
+
+		DELETE FROM role
+		WHERE id = (SELECT role_id FROM group_role_association WHERE group_id = (SELECT id FROM galaxy_group WHERE name = '$1'));
+
+		DELETE FROM galaxy_group
+		WHERE name = '$1'
+	EOF
+
+	commit=$(should_commit "$2")
+	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
+}
+query_latest-users() { ## : 40 recently registered users
 	handle_help "$@" <<-EOF
 		Returns 40 most recently registered users
 
@@ -619,7 +936,7 @@ query_latest-users() { ## query latest-users: 40 recently registered users
 	EOF
 }
 
-query_tool-usage() { ## query tool-usage [weeks]: Counts of tool runs in the past weeks (default = all)
+query_tool-usage() { ## [weeks]: Counts of tool runs in the past weeks (default = all)
 	handle_help "$@" <<-EOF
 		    $ gxadmin tool-usage
 		                                    tool_id                                 | count
@@ -653,7 +970,7 @@ query_tool-usage() { ## query tool-usage [weeks]: Counts of tool runs in the pas
 	EOF
 }
 
-query_tool-popularity() { ## query tool-popularity [months|24]: Most run tools by month
+query_tool-popularity() { ## [months|24]: Most run tools by month
 	handle_help "$@" <<-EOF
 		See most popular tools by month
 
@@ -688,7 +1005,7 @@ query_tool-popularity() { ## query tool-popularity [months|24]: Most run tools b
 	EOF
 }
 
-query_workflow-connections() { ## query workflow-connections [--all]: The connections of tools, from output to input, in the latest (or all) versions of user workflows
+query_workflow-connections() { ## [--all]: The connections of tools, from output to input, in the latest (or all) versions of user workflows
 	handle_help "$@" <<-EOF
 		This is used by the usegalaxy.eu tool prediction workflow, allowing for building models out of tool connections in workflows.
 
@@ -741,7 +1058,7 @@ query_workflow-connections() { ## query workflow-connections [--all]: The connec
 	EOF
 }
 
-query_datasets-created-daily() { ## query datasets-created-daily: The min/max/average/p95/p99 of total size of datasets created in a single day.
+query_datasets-created-daily() { ## : The min/max/average/p95/p99 of total size of datasets created in a single day.
 	handle_help "$@" <<-EOF
 		    $ gxadmin query datasets-created-daily
 		       min   |  avg   | perc_95 | perc_99 |  max
@@ -767,7 +1084,7 @@ query_datasets-created-daily() { ## query datasets-created-daily: The min/max/av
 	EOF
 }
 
-query_largest-collection() { ## query largest-collection: Returns the size of the single largest collection
+query_largest-collection() { ## : Returns the size of the single largest collection
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -785,7 +1102,7 @@ query_largest-collection() { ## query largest-collection: Returns the size of th
 	EOF
 }
 
-query_queue-time() { ## query queue-time <tool_id>: The average/95%/99% a specific tool spends in queue state.
+query_queue-time() { ## <tool_id>: The average/95%/99% a specific tool spends in queue state.
 	handle_help "$@" <<-EOF
 		    $ gxadmin query queue-time toolshed.g2.bx.psu.edu/repos/nilesh/rseqc/rseqc_geneBody_coverage/2.6.4.3
 		           min       |     perc_95     |     perc_99     |       max
@@ -823,7 +1140,7 @@ query_queue-time() { ## query queue-time <tool_id>: The average/95%/99% a specif
 	EOF
 }
 
-query_queue() { ## query queue: Brief overview of currently running jobs
+query_queue() { ## : Brief overview of currently running jobs
 	handle_help "$@" <<-EOF
 		    $ gxadmin query queue
 		                                tool_id                                |  state  | count
@@ -852,7 +1169,7 @@ query_queue() { ## query queue: Brief overview of currently running jobs
 	EOF
 }
 
-query_queue-overview() { ## query queue-overview [--short-tool-id]: View used mostly for monitoring
+query_queue-overview() { ## [--short-tool-id]: View used mostly for monitoring
 	handle_help "$@" <<-EOF
 		Primarily for monitoring of queue. Optimally used with 'iquery' and passed to Telegraf.
 
@@ -895,7 +1212,7 @@ query_queue-overview() { ## query queue-overview [--short-tool-id]: View used mo
 	EOF
 }
 
-query_queue-detail() { ## query queue-detail [--all]: Detailed overview of running and queued jobs
+query_queue-detail() { ## [--all]: Detailed overview of running and queued jobs
 	handle_help "$@" <<-EOF
 		    $ gxadmin query queue-detail
 		      state  |   id    |  extid  |                                 tool_id                                   | username | time_since_creation
@@ -918,7 +1235,7 @@ query_queue-detail() { ## query queue-detail [--all]: Detailed overview of runni
 		d=", 'new'"
 	fi
 
-	username=$(gdpr_safe galaxy_user.username username)
+	username=$(gdpr_safe galaxy_user.username username "Anonymous User")
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
@@ -931,17 +1248,17 @@ query_queue-detail() { ## query queue-detail [--all]: Detailed overview of runni
 			job.handler,
 			job.job_runner_name,
 			job.destination_id
-		FROM job, galaxy_user
+		FROM job
+		FULL OUTER JOIN galaxy_user ON job.user_id = galaxy_user.id
 		WHERE
 			state in ('running', 'queued'$d)
-			AND job.user_id = galaxy_user.id
 		ORDER BY
 			state desc,
 			time_since_creation desc
 	EOF
 }
 
-query_runtime-per-user() { ## query runtime-per-user <email>: computation time of user (by email)
+query_runtime-per-user() { ## <email>: computation time of user (by email)
 	handle_help "$@" <<-EOF
 		    $ gxadmin query runtime-per-user hxr@informatik.uni-freiburg.de
 		       sum
@@ -966,7 +1283,7 @@ query_runtime-per-user() { ## query runtime-per-user <email>: computation time o
 	EOF
 }
 
-query_jobs-nonterminal() { ## query jobs-nonterminal [username|id|email]: Job info of nonterminal jobs separated by user
+query_jobs-nonterminal() { ## [username|id|email]: Job info of nonterminal jobs separated by user
 	handle_help "$@" <<-EOF
 		You can request the user information by username, id, and user email
 
@@ -1004,20 +1321,22 @@ query_jobs-nonterminal() { ## query jobs-nonterminal [username|id|email]: Job in
 		user_filter="true"
 	fi
 
+	user_id=$(gdpr_safe job.user_id user_id "anon")
+
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			job.id, job.tool_id, job.state, job.create_time AT TIME ZONE 'UTC', job.job_runner_name, job.job_runner_external_id, job.handler, job.user_id
+			job.id, job.tool_id, job.state, job.create_time AT TIME ZONE 'UTC', job.job_runner_name, job.job_runner_external_id, job.handler, $user_id
 		FROM
 			job
-		JOIN
-			galaxy_user ON galaxy_user.id = job.user_id
+		LEFT OUTER JOIN
+			galaxy_user ON job.user_id = galaxy_user.id
 		WHERE
 			$user_filter AND job.state IN ('new', 'queued', 'running')
 		ORDER BY job.id ASC
 	EOF
 }
 
-query_jobs-per-user() { ## query jobs-per-user <email>: Number of jobs run by a specific user
+query_jobs-per-user() { ## <email>: Number of jobs run by a specific user
 	handle_help "$@" <<-EOF
 		    $ gxadmin query jobs-per-user hxr@informatik.uni-freiburg.de
 		     count
@@ -1037,7 +1356,7 @@ query_jobs-per-user() { ## query jobs-per-user <email>: Number of jobs run by a 
 	EOF
 }
 
-query_recent-jobs() { ## query recent-jobs <hours>: Jobs run in the past <hours> (in any state)
+query_recent-jobs() { ## <hours>: Jobs run in the past <hours> (in any state)
 	handle_help "$@" <<-EOF
 		    $ gxadmin query recent-jobs 2.1
 		       id    |     create_time     |      tool_id          | state |    username
@@ -1067,7 +1386,7 @@ query_recent-jobs() { ## query recent-jobs <hours>: Jobs run in the past <hours>
 	EOF
 }
 
-query_training-list() { ## query training-list [--all]: List known trainings
+query_training-list() { ## [--all]: List known trainings
 	handle_help "$@" <<-EOF
 		This module is specific to EU's implementation of Training Infrastructure as a Service. But this specifically just checks for all groups with the name prefix 'training-'
 
@@ -1095,7 +1414,7 @@ query_training-list() { ## query training-list [--all]: List known trainings
 	EOF
 }
 
-query_training-members() { ## query training-members <tr_id>: List users in a specific training
+query_training-members() { ## <tr_id>: List users in a specific training
 	handle_help "$@" <<-EOF
 		    $ gxadmin query training-members hts2018
 		          username      |       joined
@@ -1119,7 +1438,7 @@ query_training-members() { ## query training-members <tr_id>: List users in a sp
 	EOF
 }
 
-query_training-members-remove() { ## query training-members-remove <training> <username> [YESDOIT]: Remove a user from a training
+query_training-members-remove() { ## <training> <username> [YESDOIT]: Remove a user from a training
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -1133,7 +1452,7 @@ query_training-members-remove() { ## query training-members-remove <training> <u
 		if (( uga_id > -1 )); then
 			qstr="delete from user_group_association where id = $uga_id"
 		fi
-		echo $qstr
+		echo "$qstr"
 	else
 		read -r -d '' QUERY <<-EOF
 			SELECT
@@ -1151,7 +1470,7 @@ query_training-members-remove() { ## query training-members-remove <training> <u
 	fi
 }
 
-query_largest-histories() { ## query largest-histories: Largest histories in Galaxy
+query_largest-histories() { ## : Largest histories in Galaxy
 	handle_help "$@" <<-EOF
 		Finds all jobs by people in that queue (including things they are executing that are not part of a training)
 
@@ -1185,7 +1504,7 @@ query_largest-histories() { ## query largest-histories: Largest histories in Gal
 	EOF
 }
 
-query_training-queue() { ## query training-queue <training_id>: Jobs currently being run by people in a given training
+query_training-queue() { ## <training_id>: Jobs currently being run by people in a given training
 	handle_help "$@" <<-EOF
 		Finds all jobs by people in that queue (including things they are executing that are not part of a training)
 
@@ -1228,7 +1547,7 @@ query_training-queue() { ## query training-queue <training_id>: Jobs currently b
 	EOF
 }
 
-query_disk-usage() { ## query disk-usage [--nice]: Disk usage per object store.
+query_disk-usage() { ## [--nice]: Disk usage per object store.
 	handle_help "$@" <<-EOF
 		Query the different object stores referenced in your Galaxy database
 
@@ -1269,7 +1588,7 @@ query_disk-usage() { ## query disk-usage [--nice]: Disk usage per object store.
 	EOF
 }
 
-query_users-count() { ## query users-count: Shows sums of active/external/deleted/purged accounts
+query_users-count() { ## : Shows sums of active/external/deleted/purged accounts
 	handle_help "$@" <<-EOF
 		     active | external | deleted | purged | count
 		    --------+----------+---------+--------+-------
@@ -1293,7 +1612,7 @@ query_users-count() { ## query users-count: Shows sums of active/external/delete
 	EOF
 }
 
-query_tool-last-used-date() { ## query tool-last-used-date: When was the most recent invocation of every tool
+query_tool-last-used-date() { ## : When was the most recent invocation of every tool
 	handle_help "$@" <<-EOF
 		Example invocation:
 
@@ -1315,7 +1634,7 @@ query_tool-last-used-date() { ## query tool-last-used-date: When was the most re
 	EOF
 }
 
-query_users-total() { ## query users-total: Total number of Galaxy users (incl deleted, purged, inactive)
+query_users-total() { ## : Total number of Galaxy users (incl deleted, purged, inactive)
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -1327,7 +1646,7 @@ query_users-total() { ## query users-total: Total number of Galaxy users (incl d
 	EOF
 }
 
-query_groups-list() { ## query groups-list: List all groups known to Galaxy
+query_groups-list() { ## : List all groups known to Galaxy
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -1345,7 +1664,7 @@ query_groups-list() { ## query groups-list: List all groups known to Galaxy
 	EOF
 }
 
-query_collection-usage() { ## query collection-usage: Information about how many collections of various types are used
+query_collection-usage() { ## : Information about how many collections of various types are used
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -1365,7 +1684,7 @@ query_collection-usage() { ## query collection-usage: Information about how many
 	EOF
 }
 
-query_ts-repos() { ## query ts-repos: Counts of toolshed repositories by toolshed and owner.
+query_ts-repos() { ## : Counts of toolshed repositories by toolshed and owner.
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -1382,11 +1701,11 @@ query_ts-repos() { ## query ts-repos: Counts of toolshed repositories by toolshe
 	EOF
 }
 
-query_active-users() { ## query active-users [weeks]: Deprecated, use monthly-users-active
+query_active-users() { ## [weeks]: Deprecated, use monthly-users-active
 	error "Deprecated, use monthly-users-active"
 }
 
-query_tool-metrics() { ## query tool-metrics <tool_id> <metric_id> [--like]: See values of a specific metric
+query_tool-metrics() { ## <tool_id> <metric_id> [--like]: See values of a specific metric
 	handle_help "$@" <<-EOF
 		A good way to use this is to fetch the memory usage of a tool and then
 		do some aggregations. The following requires [data_hacks](https://github.com/bitly/data_hacks)
@@ -1430,7 +1749,7 @@ query_tool-metrics() { ## query tool-metrics <tool_id> <metric_id> [--like]: See
 	EOF
 }
 
-query_tool-available-metrics() { ## query tool-available-metrics <tool_id>: list all available metrics for a given tool
+query_tool-available-metrics() { ## <tool_id>: list all available metrics for a given tool
 	handle_help "$@" <<-EOF
 		Gives a list of available metrics, which can then be used to query.
 
@@ -1457,7 +1776,7 @@ query_tool-available-metrics() { ## query tool-available-metrics <tool_id>: list
 	EOF
 }
 
-query_monthly-cpu-years() { ## query monthly-cpu-years: CPU years allocated to tools by month
+query_monthly-cpu-years() { ## : CPU years allocated to tools by month
 	handle_help "$@" <<-EOF
 		This uses the galaxy_slots and runtime_seconds metrics in order to
 		calculate allocated CPU years. This will not be the value of what is
@@ -1504,7 +1823,7 @@ query_monthly-cpu-years() { ## query monthly-cpu-years: CPU years allocated to t
 }
 
 
-query_monthly-data(){ ## query monthly-data [year]: Number of active users per month, running jobs
+query_monthly-data(){ ## [year]: Number of active users per month, running jobs
 	handle_help "$@" <<-EOF
 		Find out how much data was ingested or created by Galaxy during the past months.
 
@@ -1543,7 +1862,52 @@ query_monthly-data(){ ## query monthly-data [year]: Number of active users per m
 	EOF
 }
 
-query_monthly-users-registered(){ ## query monthly-users-registered [year]: Number of users registered each month
+query_user-cpu-years() { ## : CPU years allocated to tools by user
+	handle_help "$@" <<-EOF
+		This uses the galaxy_slots and runtime_seconds metrics in order to
+		calculate allocated CPU years. This will not be the value of what is
+		actually consumed by your jobs, you should use cgroups.
+
+		rank  | user_id |  username   | cpu_years
+		----- | ------- | ----------- | ----------
+		1     |         | 123f911b5f1 |     20.35
+		2     |         | cb0fabc0002 |     14.93
+		3     |         | 7e9e9b00b89 |     14.24
+		4     |         | 42f211e5e87 |     14.06
+		5     |         | 26cdba62c93 |     12.97
+		6     |         | fa87cddfcae |      7.01
+		7     |         | 44d2a648aac |      6.70
+		8     |         | 66c57b41194 |      6.43
+		9     |         | 6b1467ac118 |      5.45
+		10    |         | d755361b59a |      5.19
+
+	EOF
+
+	username=$(gdpr_safe galaxy_user.username username 'Anonymous')
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			row_number() OVER (ORDER BY round(sum((a.metric_value * b.metric_value) / 3600 / 24 / 365), 2) DESC) as rank,
+			job.user_id,
+			$username,
+			round(sum((a.metric_value * b.metric_value) / 3600 / 24 / 365), 2) as cpu_years
+		FROM
+			job_metric_numeric a,
+			job_metric_numeric b,
+			job
+			FULL OUTER JOIN galaxy_user ON job.user_id = galaxy_user.id
+		WHERE
+			b.job_id = a.job_id
+			AND a.job_id = job.id
+			AND a.metric_name = 'runtime_seconds'
+			AND b.metric_name = 'galaxy_slots'
+		GROUP BY job.user_id, galaxy_user.username
+		ORDER BY round(sum((a.metric_value * b.metric_value) / 3600 / 24 / 365), 2) DESC
+		LIMIT 50
+	EOF
+}
+
+query_monthly-users-registered(){ ## [year]: Number of users registered each month
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -1565,11 +1929,11 @@ query_monthly-users-registered(){ ## query monthly-users-registered [year]: Numb
 	EOF
 }
 
-query_monthly-users() { ## query monthly-users: Deprecated, use monthly-users-active
+query_monthly-users() { ## : Deprecated, use monthly-users-active
 	error "Deprecated, use monthly-users-active"
 }
 
-query_monthly-users-active(){ ## query monthly-users-active [year]: Number of active users per month, running jobs
+query_monthly-users-active(){ ## [year]: Number of active users per month, running jobs
 	handle_help "$@" <<-EOF
 		Number of unique users each month who ran jobs. **NOTE**: does not include anonymous users.
 
@@ -1605,7 +1969,7 @@ query_monthly-users-active(){ ## query monthly-users-active [year]: Number of ac
 	EOF
 }
 
-query_monthly-jobs(){ ## query monthly-jobs [year]: Number of jobs run each month
+query_monthly-jobs(){ ## [year]: Number of jobs run each month
 	handle_help "$@" <<-EOF
 		Count jobs run each month
 
@@ -1645,7 +2009,7 @@ query_monthly-jobs(){ ## query monthly-jobs [year]: Number of jobs run each mont
 
 }
 
-query_job-history() { ## query job-history <id>: Job state history for a specific job
+query_job-history() { ## <id>: Job state history for a specific job
 	handle_help "$@" <<-EOF
 		    $ gxadmin query job-history 4384025
 		            time         |  state
@@ -1668,7 +2032,7 @@ query_job-history() { ## query job-history <id>: Job state history for a specifi
 	EOF
 }
 
-query_job-inputs() { ## query job-inputs <id>: Input datasets to a specific job
+query_job-inputs() { ## <id>: Input datasets to a specific job
 	handle_help "$@" <<-EOF
 	EOF
 	assert_count $# 1 "Missing Job ID"
@@ -1695,7 +2059,7 @@ query_job-inputs() { ## query job-inputs <id>: Input datasets to a specific job
 	EOF
 }
 
-query_job-outputs() { ## query job-outputs <id>: Output datasets from a specific job
+query_job-outputs() { ## <id>: Output datasets from a specific job
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -1724,7 +2088,7 @@ query_job-outputs() { ## query job-outputs <id>: Output datasets from a specific
 	EOF
 }
 
-query_old-histories(){ ## query old-histories <weeks>: Lists histories that haven't been updated (used) for <weeks>
+query_old-histories(){ ## <weeks>: Lists histories that haven't been updated (used) for <weeks>
 	handle_help "$@" <<-EOF
 		Histories and their users who haven't been updated for a specified number of weeks. Default number of weeks is 15.
 
@@ -1772,7 +2136,7 @@ query_old-histories(){ ## query old-histories <weeks>: Lists histories that have
 }
 
 # TODO(hxr): generic summation by metric? Leave math to consumer?
-query_jobs-max-by-cpu-hours() { ## query jobs-max-by-cpu-hours: Top 10 jobs by CPU hours consumed (requires CGroups metrics)
+query_jobs-max-by-cpu-hours() { ## : Top 10 jobs by CPU hours consumed (requires CGroups metrics)
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -1791,7 +2155,7 @@ query_jobs-max-by-cpu-hours() { ## query jobs-max-by-cpu-hours: Top 10 jobs by C
 	EOF
 }
 
-query_errored-jobs(){ ## query errored-jobs <hours>: Lists jobs that errored in the last N hours.
+query_errored-jobs(){ ## <hours>: Lists jobs that errored in the last N hours.
 	handle_help "$@" <<-EOF
 		Lists details of jobs that have status = 'error' for the specified number of hours. Default = 24 hours
 
@@ -1830,7 +2194,7 @@ query_server-users() {
 
 	date_filter=""
 	if (( $# > 0 )); then
-		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '$1'::date"
+		date_filter="WHERE create_time AT TIME ZONE 'UTC' = '$1'::date"
 	fi
 
 	fields="count=4"
@@ -1853,7 +2217,7 @@ query_server-groups() {
 
 	date_filter=""
 	if (( $# > 0 )); then
-		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '$1'::date"
+		date_filter="AND galaxy_group.create_time AT TIME ZONE 'UTC' <= '$1'::date AND  user_group_association.create_time AT TIME ZONE 'UTC' = '$1'::date"
 	fi
 
 
@@ -1867,6 +2231,7 @@ query_server-groups() {
 			galaxy_group, user_group_association
 		WHERE
 			user_group_association.group_id = galaxy_group.id
+			$date_filter
 		GROUP BY name
 	EOF
 }
@@ -1877,7 +2242,7 @@ query_server-datasets() {
 
 	date_filter=""
 	if (( $# > 0 )); then
-		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '$1'::date"
+		date_filter="WHERE create_time AT TIME ZONE 'UTC' = '$1'::date"
 	fi
 
 	fields="count=4;size=5"
@@ -1885,9 +2250,15 @@ query_server-datasets() {
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			state, deleted, purged, coalesce(object_store_id, 'none'), count(*), coalesce(sum(total_size), 0)
+			COALESCE(state, '__unknown__'),
+			deleted,
+			purged,
+			COALESCE(object_store_id, 'none'),
+			count(*),
+			COALESCE(sum(total_size), 0)
 		FROM
 			dataset
+		$date_filter
 		GROUP BY
 			state, deleted, purged, object_store_id
 	EOF
@@ -1899,20 +2270,20 @@ query_server-hda() {
 
 	date_filter=""
 	if (( $# > 0 )); then
-		date_filter="AND history_dataset_association.create_time AT TIME ZONE 'UTC' <= '$1'::date"
+		date_filter="AND history_dataset_association.create_time AT TIME ZONE 'UTC' = '$1'::date"
 	fi
 
-	fields="sum=2;avg=3;min=4;max=5"
+	fields="sum=2;avg=3;min=4;max=5;count=6"
 	tags="extension=0;deleted=1"
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			history_dataset_association.extension,
+			COALESCE(history_dataset_association.extension, '__unknown__'),
 			history_dataset_association.deleted,
-			coalesce(sum(dataset.file_size), 0),
-			coalesce(avg(dataset.file_size), 0)::bigint,
-			coalesce(min(dataset.file_size), 0),
-			coalesce(max(dataset.file_size), 0),
+			COALESCE(sum(dataset.file_size), 0),
+			COALESCE(avg(dataset.file_size), 0)::bigint,
+			COALESCE(min(dataset.file_size), 0),
+			COALESCE(max(dataset.file_size), 0),
 			count(*)
 		FROM
 			history_dataset_association, dataset
@@ -1930,7 +2301,7 @@ query_server-ts-repos() {
 
 	date_filter=""
 	if (( $# > 0 )); then
-		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '$1'::date"
+		date_filter="WHERE create_time AT TIME ZONE 'UTC' = '$1'::date"
 	fi
 
 	fields="count=2"
@@ -1954,7 +2325,7 @@ query_server-histories() {
 
 	date_filter=""
 	if (( $# > 0 )); then
-		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '$1'::date"
+		date_filter="WHERE create_time AT TIME ZONE 'UTC' = '$1'::date"
 	fi
 
 	fields="count=6"
@@ -1962,7 +2333,7 @@ query_server-histories() {
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			deleted, purged, published, importable, importing, genome_build, count(*)
+			deleted, purged, published, importable, importing, COALESCE(genome_build, '__unknown__'), count(*)
 		FROM history
 		${date_filter}
 		GROUP BY
@@ -1977,7 +2348,7 @@ query_server-jobs() {
 
 	date_filter=""
 	if (( $# > 0 )); then
-		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '$1'::date"
+		date_filter="WHERE create_time AT TIME ZONE 'UTC' = '$1'::date"
 	fi
 
 	fields="count=3"
@@ -1985,7 +2356,9 @@ query_server-jobs() {
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			state, job_runner_name, destination_id, count(*)
+			COALESCE(state, '__unknown__'),
+			COALESCE(job_runner_name, '__unknown__'),
+			COALESCE(destination_id, '__unknown__'), count(*)
 		FROM
 			job
 		${date_filter}
@@ -2000,10 +2373,10 @@ query_server-allocated-cpu() {
 
 	date_filter=""
 	if (( $# > 0 )); then
-		date_filter="AND job.create_time AT TIME ZONE 'UTC' <= '$1'::date"
+		date_filter="AND job.create_time AT TIME ZONE 'UTC' = '$1'::date"
 	fi
 
-	fields="cpu_years=1"
+	fields="cpu_seconds=1"
 	tags="job_runner_name=0"
 
 	read -r -d '' QUERY <<-EOF
@@ -2031,7 +2404,7 @@ query_server-workflows() {
 
 	date_filter=""
 	if (( $# > 0 )); then
-		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '$1'::date"
+		date_filter="WHERE create_time AT TIME ZONE 'UTC' = '$1'::date"
 	fi
 
 	fields="count=3"
@@ -2054,7 +2427,7 @@ query_server-workflow-invocations() {
 
 	date_filter=""
 	if (( $# > 0 )); then
-		date_filter="WHERE create_time AT TIME ZONE 'UTC' <= '$1'::date"
+		date_filter="WHERE create_time AT TIME ZONE 'UTC' = '$1'::date"
 	fi
 
 	fields="count=2"
@@ -2062,7 +2435,9 @@ query_server-workflow-invocations() {
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			scheduler, handler, count(*)
+			COALESCE(scheduler, '__unknown__'),
+			COALESCE(handler, '__unknown__'),
+			count(*)
 		FROM
 			workflow_invocation
 		${date_filter}
@@ -2071,7 +2446,7 @@ query_server-workflow-invocations() {
 	EOF
 }
 
-query_workflow-invocation-status() { ## query workflow-invocation-status: Report on how many workflows are in new state by handler
+query_workflow-invocation-status() { ## : Report on how many workflows are in new state by handler
 	handle_help "$@" <<-EOF
 		Really only intended to be used in influx queries.
 	EOF
@@ -2096,43 +2471,44 @@ query_tool-new-errors() { ## query tool-new-errors [weeks|4]: Summarize percent 
 		See jobs-in-error summary for recent tools (tools whose first execution is in recent weeks).
 
 		    $ gxadmin tool-new-errors 4
-		                            tool_id                                                  | tool_runs | percent_failed_errored |
-		    ---------------------------------------------------------------------------------+-----------+------------------------+
-		     toolshed.g2.bx.psu.edu/repos/bgruening/bismark/bismark_bowtie2/0.7.12           |        16 |   100.0000000000000000 |
-		     toolshed.g2.bx.psu.edu/repos/devteam/samtools_phase/samtools_phase/2.0.1        |        20 |   100.0000000000000000 |
-		     toolshed.g2.bx.psu.edu/repos/iuc/snpsift/snpSift_rmInfo/4.3+t.galaxy0           |         1 |   100.0000000000000000 |
-		     toolshed.g2.bx.psu.edu/repos/devteam/principal_component_analysis/pca1/1.0.2    |       177 |    98.8700564971751412 |
-		     toolshed.g2.bx.psu.edu/repos/bgruening/bismark/bismark_bowtie/0.7.12            |       225 |    96.0000000000000000 |
-		     toolshed.g2.bx.psu.edu/repos/devteam/picard/PicardHsMetrics/1.56.0              |        41 |    95.1219512195121951 |
-		     toolshed.g2.bx.psu.edu/repos/iuc/stacks_procrad/stacks_procrad/1.46.0           |      3288 |    94.0389294403892944 |
-		     toolshed.g2.bx.psu.edu/repos/iuc/jcvi_gff_stats/jcvi_gff_stats/0.8.4            |        16 |    93.7500000000000000 |
-		     genomespace_exporter                                                            |        72 |    93.0555555555555556 |
-		     toolshed.g2.bx.psu.edu/repos/devteam/ncbi_blast_plus/ncbi_tblastn_wrapper/0.3.1 |      1638 |    86.7521367521367521 |
-		     toolshed.g2.bx.psu.edu/repos/iuc/samtools_sort/samtools_rmdup/1.0.1             |       355 |    86.4788732394366197 |
-		     toolshed.g2.bx.psu.edu/repos/iuc/bcftools_call/bcftools_call/1.9                |         7 |    85.7142857142857143 |
-		     toolshed.g2.bx.psu.edu/repos/iuc/stacks_denovomap/stacks_denovomap/1.46.0       |       214 |    83.6448598130841121 |
-		     toolshed.g2.bx.psu.edu/repos/iuc/intervene/intervene_upset/0.6.4                |        11 |    81.8181818181818182 |
-		     toolshed.g2.bx.psu.edu/repos/rnateam/rnalien/RNAlien/1.3.6                      |         5 |    80.0000000000000000 |
+		                            tool_id                                                  | tool_runs | percent_failed_errored | percent_failed
+		    ---------------------------------------------------------------------------------+-----------+------------------------+----------------
+		     toolshed.g2.bx.psu.edu/repos/bgruening/bismark/bismark_bowtie2/0.7.12           |        16 |   100.0000000000000000 |              0
+		     toolshed.g2.bx.psu.edu/repos/devteam/samtools_phase/samtools_phase/2.0.1        |        20 |   100.0000000000000000 |              0
+		     toolshed.g2.bx.psu.edu/repos/iuc/snpsift/snpSift_rmInfo/4.3+t.galaxy0           |         1 |   100.0000000000000000 |              0
+		     toolshed.g2.bx.psu.edu/repos/devteam/principal_component_analysis/pca1/1.0.2    |       177 |    98.8700564971751412 |              0
+		     toolshed.g2.bx.psu.edu/repos/bgruening/bismark/bismark_bowtie/0.7.12            |       225 |    96.0000000000000000 |              0
+		     toolshed.g2.bx.psu.edu/repos/devteam/picard/PicardHsMetrics/1.56.0              |        41 |    95.1219512195121951 |              0
+		     toolshed.g2.bx.psu.edu/repos/iuc/stacks_procrad/stacks_procrad/1.46.0           |      3288 |    94.0389294403892944 |              0
+		     toolshed.g2.bx.psu.edu/repos/iuc/jcvi_gff_stats/jcvi_gff_stats/0.8.4            |        16 |    93.7500000000000000 |              0
+		     genomespace_exporter                                                            |        72 |    93.0555555555555556 |              0
+		     toolshed.g2.bx.psu.edu/repos/devteam/ncbi_blast_plus/ncbi_tblastn_wrapper/0.3.1 |      1638 |    86.7521367521367521 |              0
+		     toolshed.g2.bx.psu.edu/repos/iuc/samtools_sort/samtools_rmdup/1.0.1             |       355 |    86.4788732394366197 |              0
+		     toolshed.g2.bx.psu.edu/repos/iuc/bcftools_call/bcftools_call/1.9                |         7 |    85.7142857142857143 |              0
+		     toolshed.g2.bx.psu.edu/repos/iuc/stacks_denovomap/stacks_denovomap/1.46.0       |       214 |    83.6448598130841121 |              0
+		     toolshed.g2.bx.psu.edu/repos/iuc/intervene/intervene_upset/0.6.4                |        11 |    81.8181818181818182 |              0
+		     toolshed.g2.bx.psu.edu/repos/rnateam/rnalien/RNAlien/1.3.6                      |         5 |    80.0000000000000000 |              0
 	EOF
 
 	weeks=${1:-4}
 
-	fields="tool_runs=1;percent_failed_errored=2"
+	fields="tool_runs=1;percent_failed_errored=2;percent_failed=3"
 	tags="tool_id=0"
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
 			j.tool_id,
 			count(*) AS tool_runs,
-			sum(CASE WHEN j.state IN ('error', 'failed') THEN 1 ELSE 0 END) * 100.0 / count(*) AS percent_failed_errored
+			sum(CASE WHEN j.state IN ('error', 'failed') THEN 1 ELSE 0 END) * 100.0 / count(*) AS percent_failed_errored,
+			sum(CASE WHEN j.state = 'failed' THEN 1 ELSE 0 END) / count(*) AS percent_failed
 		FROM job AS j
 		WHERE
 			j.tool_id
 			IN (
 					SELECT tool_id
 					FROM job AS j
+					WHERE j.create_time > (now() - '$weeks weeks'::INTERVAL)
 					GROUP BY j.tool_id
-					HAVING min(j.create_time) > (now() - '$weeks weeks'::INTERVAL);
 				)
 		GROUP BY j.tool_id
 		ORDER BY percent_failed_errored DESC
@@ -2143,37 +2519,37 @@ query_tool-errors() { ## query tool-errors [weeks|4]: Summarize percent of tool 
 	handle_help "$@" <<-EOF
 		See jobs-in-error summary for recently executed tools that have failed at least 10% of the time.
 
-		    $ gxadmin tool-errors 4
-		                                    tool_id                                        | tool_runs | percent_failed_errored |
-		    -------------------------------------------------------------------------------+-----------+------------------------+
-		     toolshed.g2.bx.psu.edu/repos/iuc/featurecounts/featurecounts/1.6.3+galaxy2    |      1332 |    10.5105105105105105 |
-		     toolshed.g2.bx.psu.edu/repos/iuc/multiqc/multiqc/1.7                          |       937 |    10.1387406616862327 |
-		     toolshed.g2.bx.psu.edu/repos/iuc/deseq2/deseq2/2.11.40.6                      |       595 |    32.7731092436974790 |
-		     toolshed.g2.bx.psu.edu/repos/iuc/bedtools/bedtools_bedtobam/2.27.0.0          |       573 |    21.6404886561954625 |
-		     toolshed.g2.bx.psu.edu/repos/iuc/sra_tools/fastq_dump/2.9.1.3                 |       510 |    15.4901960784313725 |
-		     toolshed.g2.bx.psu.edu/repos/iuc/rgrnastar/rna_star/2.6.0b-2                  |       469 |    13.4328358208955224 |
-		     toolshed.g2.bx.psu.edu/repos/lparsons/htseq_count/htseq_count/0.9.1           |       429 |    10.4895104895104895 |
-		     toolshed.g2.bx.psu.edu/repos/devteam/xy_plot/XY_Plot_1/1.0.2                  |       378 |    12.1693121693121693 |
-		     toolshed.g2.bx.psu.edu/repos/iuc/macs2/macs2_callpeak/2.1.1.20160309.5        |       355 |    13.8028169014084507 |
-		     toolshed.g2.bx.psu.edu/repos/iuc/datamash_ops/datamash_ops/1.1.0              |       296 |    18.5810810810810811 |
-		     toolshed.g2.bx.psu.edu/repos/devteam/vcffilter/vcffilter2/1.0.0_rc1+galaxy2   |       266 |    13.9097744360902256 |
-		     toolshed.g2.bx.psu.edu/repos/devteam/fastqtofasta/fastq_to_fasta_python/1.1.1 |       253 |    11.0671936758893281 |
+		    $ gxadmin tool-new-errors 4
+		                                    tool_id                                        | tool_runs | percent_failed_errored | percent_failed
+		    -------------------------------------------------------------------------------+-----------+------------------------+----------------
+		     toolshed.g2.bx.psu.edu/repos/iuc/featurecounts/featurecounts/1.6.3+galaxy2    |      1332 |    10.5105105105105105 |              0
+		     toolshed.g2.bx.psu.edu/repos/iuc/multiqc/multiqc/1.7                          |       937 |    10.1387406616862327 |              0
+		     toolshed.g2.bx.psu.edu/repos/iuc/deseq2/deseq2/2.11.40.6                      |       595 |    32.7731092436974790 |              0
+		     toolshed.g2.bx.psu.edu/repos/iuc/bedtools/bedtools_bedtobam/2.27.0.0          |       573 |    21.6404886561954625 |              0
+		     toolshed.g2.bx.psu.edu/repos/iuc/sra_tools/fastq_dump/2.9.1.3                 |       510 |    15.4901960784313725 |              0
+		     toolshed.g2.bx.psu.edu/repos/iuc/rgrnastar/rna_star/2.6.0b-2                  |       469 |    13.4328358208955224 |              0
+		     toolshed.g2.bx.psu.edu/repos/lparsons/htseq_count/htseq_count/0.9.1           |       429 |    10.4895104895104895 |              0
+		     toolshed.g2.bx.psu.edu/repos/devteam/xy_plot/XY_Plot_1/1.0.2                  |       378 |    12.1693121693121693 |              0
+		     toolshed.g2.bx.psu.edu/repos/iuc/macs2/macs2_callpeak/2.1.1.20160309.5        |       355 |    13.8028169014084507 |              0
+		     toolshed.g2.bx.psu.edu/repos/iuc/datamash_ops/datamash_ops/1.1.0              |       296 |    18.5810810810810811 |              0
+		     toolshed.g2.bx.psu.edu/repos/devteam/vcffilter/vcffilter2/1.0.0_rc1+galaxy2   |       266 |    13.9097744360902256 |              0
+		     toolshed.g2.bx.psu.edu/repos/devteam/fastqtofasta/fastq_to_fasta_python/1.1.1 |       253 |    11.0671936758893281 |              0
 	EOF
 
 	weeks=${1:-4}
-	fields="tool_runs=1;distinct_tool_users=2,percent_failed_errored=3"
+	fields="tool_runs=1;percent_failed_errored=2;percent_failed=3"
 	tags="tool_id=0"
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
 			j.tool_id,
 			count(*) AS tool_runs,
-			count(DISTINCT j.user_id) AS distinct_tool_users,
-			sum(CASE WHEN j.state IN ('error', 'failed') THEN 1 ELSE 0 END) * 100.0 / count(*) AS percent_failed_errored
+			sum(CASE WHEN j.state IN ('error', 'failed') THEN 1 ELSE 0 END) * 100.0 / count(*) AS percent_failed_errored,
+			sum(CASE WHEN j.state = 'failed' THEN 1 ELSE 0 END) / count(*) AS percent_failed
 		FROM
 			job AS j
 		WHERE
-			j.create_time > (now() - '$weeks weeks'::INTERVAL) AND j.state in ('error', 'failed', 'ok')
+			j.create_time > (now() - '$weeks weeks'::INTERVAL)
 		GROUP BY
 			j.tool_id
 		HAVING
@@ -2189,34 +2565,34 @@ query_tool-likely-broken() { ## query tool-likely-broken [weeks|4]: Find tools t
 		which were run more than 4 times, and have a failure rate over 95%.
 
 		    $ gxadmin tool-likely-broken 4
-		                                              tool_id                              | tool_runs | percent_failed_errored |
-		    -------------------------------------------------------------------------------+-----------+------------------------+
-		     toolshed.g2.bx.psu.edu/repos/iuc/stacks_denovomap/stacks_denovomap/1.46.0     |       133 |    96.2406015037593985 |
-		     toolshed.g2.bx.psu.edu/repos/iuc/stacks_populations/stacks_populations/1.46.0 |        49 |    97.9591836734693878 |
-		     toolshed.g2.bx.psu.edu/repos/rnateam/dorina/dorina_search/1.0.0               |        44 |   100.0000000000000000 |
-		     toolshed.g2.bx.psu.edu/repos/bgruening/diamond/bg_diamond/0.8.24.1            |        43 |   100.0000000000000000 |
-		     toolshed.g2.bx.psu.edu/repos/devteam/dna_filtering/histogram_rpy/1.0.3        |        31 |    96.7741935483870968 |
-		     toolshed.g2.bx.psu.edu/repos/iuc/bcftools_cnv/bcftools_cnv/1.9                |        30 |   100.0000000000000000 |
-		     intermine                                                                     |        26 |   100.0000000000000000 |
-		     toolshed.g2.bx.psu.edu/repos/galaxyp/proteomics_moff/proteomics_moff/2.0.2.0  |        23 |   100.0000000000000000 |
-		     toolshed.g2.bx.psu.edu/repos/devteam/picard/PicardHsMetrics/1.56.0            |        23 |   100.0000000000000000 |
-		     toolshed.g2.bx.psu.edu/repos/iuc/stacks_refmap/stacks_refmap/1.46.0           |        21 |   100.0000000000000000 |
+		                                              tool_id                              | tool_runs | percent_failed_errored | percent_failed
+		    -------------------------------------------------------------------------------+-----------+------------------------+----------------
+		     toolshed.g2.bx.psu.edu/repos/iuc/stacks_denovomap/stacks_denovomap/1.46.0     |       133 |    96.2406015037593985 |              0
+		     toolshed.g2.bx.psu.edu/repos/iuc/stacks_populations/stacks_populations/1.46.0 |        49 |    97.9591836734693878 |              0
+		     toolshed.g2.bx.psu.edu/repos/rnateam/dorina/dorina_search/1.0.0               |        44 |   100.0000000000000000 |              0
+		     toolshed.g2.bx.psu.edu/repos/bgruening/diamond/bg_diamond/0.8.24.1            |        43 |   100.0000000000000000 |              0
+		     toolshed.g2.bx.psu.edu/repos/devteam/dna_filtering/histogram_rpy/1.0.3        |        31 |    96.7741935483870968 |              0
+		     toolshed.g2.bx.psu.edu/repos/iuc/bcftools_cnv/bcftools_cnv/1.9                |        30 |   100.0000000000000000 |              0
+		     intermine                                                                     |        26 |   100.0000000000000000 |              0
+		     toolshed.g2.bx.psu.edu/repos/galaxyp/proteomics_moff/proteomics_moff/2.0.2.0  |        23 |   100.0000000000000000 |              0
+		     toolshed.g2.bx.psu.edu/repos/devteam/picard/PicardHsMetrics/1.56.0            |        23 |   100.0000000000000000 |              0
+		     toolshed.g2.bx.psu.edu/repos/iuc/stacks_refmap/stacks_refmap/1.46.0           |        21 |   100.0000000000000000 |              0
 	EOF
 
 	weeks=${1:-4}
-	fields="tool_runs=1;distinct_tool_users=2,percent_failed_errored=3"
+	fields="tool_runs=1;percent_failed_errored=2;percent_failed=3"
 	tags="tool_id=0"
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
 			j.tool_id,
 			count(*) AS tool_runs,
-			count(DISTINCT j.user_id) AS distinct_tool_users,
-			sum(CASE WHEN j.state IN ('error', 'failed') THEN 1 ELSE 0 END) * 100.0 / count(*) AS percent_failed_errored
+			sum(CASE WHEN j.state IN ('error', 'failed') THEN 1 ELSE 0 END) * 100.0 / count(*) AS percent_failed_errored,
+			sum(CASE WHEN j.state = 'failed' THEN 1 ELSE 0 END) / count(*) AS percent_failed
 		FROM
 			job AS j
 		WHERE
-			j.create_time > (now() - '$weeks weeks'::INTERVAL) AND j.state in ('error', 'failed', 'ok')
+			j.create_time > (now() - '$weeks weeks'::INTERVAL)
 		GROUP BY
 			j.tool_id
 		HAVING
@@ -2227,7 +2603,77 @@ query_tool-likely-broken() { ## query tool-likely-broken [weeks|4]: Find tools t
 	EOF
 }
 
-filter_pg2md() { ## filter pg2md: Convert postgres table format outputs to something that can be pasted as markdown
+query_user-recent-aggregate-jobs() { ## <username|id|email> [days|7]: Show aggregate information for jobs in past N days for user
+	handle_help "$@" <<-EOF
+		Obtain an overview of tools that a user has run in the past N days
+	EOF
+
+	# args
+	assert_count_ge $# 1 "Must supply <username|id|email>"
+	user_filter="(galaxy_user.email = '$1' or galaxy_user.username = '$1' or galaxy_user.id = CAST(REGEXP_REPLACE(COALESCE('$1','0'), '[^0-9]+', '0', 'g') AS INTEGER))"
+	days_filter="${2:-7}"
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			date_trunc('day', create_time), tool_id, state, count(*)
+		FROM
+			job
+		JOIN
+			galaxy_user on galaxy_user.id = job.user_id
+		WHERE
+			$user_filter AND create_time > (now() - '$days_filter days'::INTERVAL)
+		GROUP BY
+			date_trunc, tool_id, state
+		ORDER BY
+			date_trunc DESC
+	EOF
+}
+
+query_history-contents() { ## <history_id> [--dataset|--collection]: List datasets and/or collections in a history
+	handle_help "$@" <<-EOF
+		Obtain an overview of tools that a user has run in the past N days
+	EOF
+	local dsq clq q
+
+	dsq="select dataset_id, name, hid, visible, deleted, copied_from_history_dataset_association_id as copied_from from history_dataset_association where history_id = $1"
+	clq="select collection_id, name, hid, visible, deleted, copied_from_history_dataset_collection_association_id as copied_from from history_dataset_collection_association where history_id = $1;"
+
+	if [[ $2 == "--dataset" ]] || [[ $2 == "--datasets" ]]; then
+			q="$dsq"
+	elif [[ $2 == "--collection" ]] || [[ $2 == "--collections" ]]; then
+			q="$clq"
+	else
+			q="$dsq;$clq"
+	fi
+
+	read -r -d '' QUERY <<-EOF
+			$q
+	EOF
+}
+
+query_hdca-info() { ## <hdca_id>: Information on a dataset collection
+	handle_help "$@" <<-EOF
+	EOF
+
+	read -r -d '' QUERY <<-EOF
+		SELECT *
+		FROM dataset_collection
+		WHERE id = $1
+	EOF
+}
+
+query_hdca-datasets() { ## <hdca_id>: List of files in a dataset collection
+	handle_help "$@" <<-EOF
+	EOF
+
+	read -r -d '' QUERY <<-EOF
+		SELECT element_index, hda_id, ldda_id, child_collection_id, element_identifier
+		FROM dataset_collection_element
+		WHERE dataset_collection_id = $1
+		ORDER by element_index asc
+	EOF
+}
+filter_pg2md() { ## : Convert postgres table format outputs to something that can be pasted as markdown
 	handle_help "$@" <<-EOF
 		Imagine doing something like:
 
@@ -2252,7 +2698,7 @@ filter_pg2md() { ## filter pg2md: Convert postgres table format outputs to somet
 	cat | sed 's/--+--/- | -/g;s/^\(\s\+\)\([^|]\+\) |/\2 \1|/g' | head -n -2
 }
 
-filter_identicon(){ ## filter identicon: Convert an input data stream into an identicon (e.g. with hostname)
+filter_identicon(){ ## : Convert an input data stream into an identicon (e.g. with hostname)
 	handle_help "$@" <<-EOF
 		Given an input data stream, digest it, and colour it using the same logic as digest-color
 
@@ -2269,7 +2715,7 @@ filter_identicon(){ ## filter identicon: Convert an input data stream into an id
 	cat | python -c "$identicon_script"
 }
 
-filter_digest-color() { ## filter digest-color: Color an input stream based on the contents (e.g. hostname)
+filter_digest-color() { ## : Color an input stream based on the contents (e.g. hostname)
 	handle_help "$@" <<-EOF
 		Colors entire input stream based on digest of entire input's contents.
 		Mostly useful for colouring a hostname or some similar value.
@@ -2286,12 +2732,12 @@ filter_digest-color() { ## filter digest-color: Color an input stream based on t
 
 	data="$(cat)"
 	fg_color=$((16#$(echo "$data" | perl -pe "chomp if eof" | sha256sum | cut -c1-2)))
-	bg_color=$(($fg_color + 15))
+	bg_color=$((fg_color + 15))
 
 	echo "$(tput setaf $fg_color)$(tput setab $bg_color)${data}$(tput sgr0)"
 }
 
-filter_hexdecode() { ## filter hexdecode: Decodes any hex blobs from postgres outputs
+filter_hexdecode() { ## : Decodes any hex blobs from postgres outputs
 	handle_help "$@" <<-EOF
 		This automatically replaces any hex strings (\\x[a-f0-9]+) with their decoded versions. This can allow you to query galaxy metadata, decode it, and start processing it with JQ. Just pipe your query to it and it will replace it wherever it is found.
 
@@ -2343,11 +2789,11 @@ filter_hexdecode() { ## filter hexdecode: Decodes any hex blobs from postgres ou
 
 	cat | python -c "$hexdecodelines"
 }
-uwsgi_stats_influx() { ## uwsgi stats_influx: Deprecated, use uwsgi stats-influx
+uwsgi_stats_influx() { ## : Deprecated, use uwsgi stats-influx
 	uwsgi_stats-influx
 }
 
-uwsgi_stats-influx(){ ## uwsgi stats-influx <addr>: InfluxDB formatted output for the current stats
+uwsgi_stats-influx(){ ## <addr>: InfluxDB formatted output for the current stats
 	handle_help "$@" <<-EOF
 		Contact a specific uWSGI stats address (requires uwsgi binary on path)
 		and requests the current stats + formats them for InfluxDB. For some
@@ -2387,24 +2833,24 @@ uwsgi_stats-influx(){ ## uwsgi stats-influx <addr>: InfluxDB formatted output fo
 
 	# fetch data
 	uwsgi=$(which uwsgi)
-	data="$($uwsgi --connect-and-read $address 2>&1)"
+	data="$($uwsgi --connect-and-read "$address" 2>&1)"
 
 	echo "$data" | \
-		jq -r '.locks[] | to_entries[] |  "uwsgi.locks,addr='$address',group=\(.key) count=\(.value)"' | \
+		jq -r '.locks[] | to_entries[] |  "uwsgi.locks,addr='"$address"',group=\(.key) count=\(.value)"' | \
 		sed 's/group=user 0/group=user_0/g'
 
 	echo "$data" | \
-		jq -r '. | "uwsgi.general,addr='$address' listen_queue=\(.listen_queue),listen_queue_errors=\(.listen_queue_errors),load=\(.load),signal_queue=\(.signal_queue)"'
+		jq -r '. | "uwsgi.general,addr='"$address"' listen_queue=\(.listen_queue),listen_queue_errors=\(.listen_queue_errors),load=\(.load),signal_queue=\(.signal_queue)"'
 
 	echo "$data" | \
-		jq -r '.sockets[] | "uwsgi.sockets,addr='$address',name=\(.name),proto=\(.proto) queue=\(.queue),max_queue=\(.max_queue),shared=\(.shared),can_offload=\(.can_offload)"'
+		jq -r '.sockets[] | "uwsgi.sockets,addr='"$address"',name=\(.name),proto=\(.proto) queue=\(.queue),max_queue=\(.max_queue),shared=\(.shared),can_offload=\(.can_offload)"'
 
 	echo "$data" | \
-		jq -r '.workers[] | "uwsgi.worker,addr='$address',id=\(.id) accepting=\(.accepting),requests=\(.requests),exceptions=\(.exceptions),harakiri_count=\(.harakiri_count),signals=\(.signals),signal_queue=\(.signal_queue),status=\"\(.status)\",rss=\(.rss),vsz=\(.vsz),running_time=\(.running_time),respawn_count=\(.respawn_count),tx=\(.tx),avg_rt=\(.avg_rt)"' | \
+		jq -r '.workers[] | "uwsgi.worker,addr='"$address"',id=\(.id) accepting=\(.accepting),requests=\(.requests),exceptions=\(.exceptions),harakiri_count=\(.harakiri_count),signals=\(.signals),signal_queue=\(.signal_queue),status=\"\(.status)\",rss=\(.rss),vsz=\(.vsz),running_time=\(.running_time),respawn_count=\(.respawn_count),tx=\(.tx),avg_rt=\(.avg_rt)"' | \
 		sed 's/"busy"/1/g;s/"idle"/0/g;'
 }
 
-uwsgi_status() { ## uwsgi status: Current system status
+uwsgi_status() { ## : Current system status
 	handle_help "$@" <<-EOF
 		Current status of all uwsgi processes
 	EOF
@@ -2418,7 +2864,7 @@ uwsgi_status() { ## uwsgi status: Current system status
 	done
 }
 
-uwsgi_memory() { ## uwsgi memory: Current system memory usage
+uwsgi_memory() { ## : Current system memory usage
 	handle_help "$@" <<-EOF
 		Obtain memory usage of the various Galaxy processes
 
@@ -2427,17 +2873,17 @@ uwsgi_memory() { ## uwsgi memory: Current system memory usage
 
 	echo "galaxy-zergpool.service $(cat /sys/fs/cgroup/memory/system.slice/galaxy-zergpool.service/memory.memsw.usage_in_bytes)"
 	for folder in $(find /sys/fs/cgroup/memory/system.slice/system-galaxy\\x2dzergling.slice/ -mindepth 1 -type d -name 'galaxy-zergling*service'); do
-		service=$(basename $folder)
-		echo "$service $(cat $folder/memory.memsw.usage_in_bytes)"
+		service=$(basename "$folder")
+		echo "$service $(cat "$folder/memory.memsw.usage_in_bytes")"
 	done
 
 	for folder in $(find /sys/fs/cgroup/memory/system.slice/system-galaxy\\x2dhandler.slice/ -mindepth 1 -type d -name 'galaxy-handler*service'); do
-		service=$(basename $folder)
-		echo "$service $(cat $folder/memory.memsw.usage_in_bytes)"
+		service=$(basename "$folder")
+		echo "$service $(cat "$folder/memory.memsw.usage_in_bytes")"
 	done
 }
 
-uwsgi_pids() { ## uwsgi pids: Galaxy process PIDs
+uwsgi_pids() { ## : Galaxy process PIDs
 	handle_help "$@" <<-EOF
 		Obtain memory usage of the various Galaxy processes
 	EOF
@@ -2451,91 +2897,97 @@ uwsgi_pids() { ## uwsgi pids: Galaxy process PIDs
 	done
 }
 
-uwsgi_stats() { ## uwsgi stats: uwsgi stats
+uwsgi_stats() { ## : uwsgi stats
 	uwsgi_stats-influx 127.0.0.1:4010 2>/dev/null || true
 	uwsgi_stats-influx 127.0.0.1:4011 2>/dev/null || true
 	uwsgi_stats-influx 127.0.0.1:4012 2>/dev/null || true
 	uwsgi_stats-influx 127.0.0.1:4013 2>/dev/null || true
 
-
 	echo "systemd service=galaxy-zergpool memory=$(cat /sys/fs/cgroup/memory/system.slice/galaxy-zergpool.service/memory.memsw.usage_in_bytes)"
 	for folder in $(find /sys/fs/cgroup/memory/system.slice/system-galaxy\\x2dzergling.slice/ -mindepth 1 -type d -name 'galaxy-zergling*service'); do
-		service=$(basename $folder)
-		echo "systemd service=$service memory=$(cat $folder/memory.memsw.usage_in_bytes)"
+		service=$(basename "$folder")
+		echo "systemd service=$service memory=$(cat "$folder/memory.memsw.usage_in_bytes")"
 	done
 
 	for folder in $(find /sys/fs/cgroup/memory/system.slice/system-galaxy\\x2dhandler.slice/ -mindepth 1 -type d -name 'galaxy-handler*service'); do
-		service=$(basename $folder)
-		echo "systemd service=$service memory=$(cat $folder/memory.memsw.usage_in_bytes)"
+		service=$(basename "$folder")
+		echo "systemd service=$service memory=$(cat "$folder/memory.memsw.usage_in_bytes")"
 	done
 }
 
-uwsgi_zerg-swap() { ## uwsgi zerg-swap: Swap zerglings in order (unintelligent version)
+uwsgi_zerg-swap() { ## : Swap zerglings in order (unintelligent version)
 	handle_help "$@" <<-EOF
 		This is the "dumb" version which loops across the zerglings and restarts them in series
 	EOF
 
+	active="$(uwsgi_status | grep -v inactive | grep zergling | cut -d: -f1 | wc -l)"
+	if (( active == 1 )); then
+		error "Won't restart when only a single zergling is active as this will trigger downtime"
+		exit 1
+	fi
+
 	# Obtain current running ones
-	for zergling in $(status | grep -v inactive | grep zergling | cut -d: -f1); do
-		systemctl restart $zergling
+	for zergling in $(uwsgi_status | grep -v inactive | grep zergling | cut -d: -f1); do
+		echo "Restarting $zergling"
+		systemctl restart "$zergling"
 		number=$(echo "$zergling" | sed 's/.*@//g')
 		stats="127.0.0.1:401$number"
-		wait_for_url $stats
+		wait_for_url "$stats"
 		success "$zergling is alive"
 	done
 }
 
-uwsgi_zerg-scale-up() { ## uwsgi zerg-scale-up: Add another zergling to deal with high load
+uwsgi_zerg-scale-up() { ## : Add another zergling to deal with high load
 	handle_help "$@" <<-EOF
 	EOF
 
 	# Obtain current running ones
 	an_inactive=$(status | grep inactive | grep zergling | head -n1 | cut -d: -f1)
 	echo "$an_inactive is inactive, starting"
-	systemctl start $an_inactive
+	systemctl start "$an_inactive"
 }
 
-uwsgi_zerg-scale-down() { ## uwsgi zerg-scale-down: Remove an extraneous zergling
-	handle_help "$@" <<-EOF
-	EOF
+#uwsgi_zerg-scale-down() { ## : Remove an extraneous zergling
+	#handle_help "$@" <<-EOF
+	#EOF
 
-	# Obtain current running ones
-	active="$(status | grep -v inactive | grep zergling | cut -d: -f1)"
-	num_active=$(echo "$active" | wc -l)
+	## Obtain current running ones
+	#active="$(status | grep -v inactive | grep zergling | cut -d: -f1)"
+	#num_active=$(echo "$active" | wc -l)
 
-	if (( $num_active <= 2 )); then
-		error "We do not permit scaling below 2 zerglings"
-		exit 1
-	fi
+	#if (( num_active <= 2 )); then
+		#error "We do not permit scaling below 2 zerglings"
+		#exit 1
+	#fi
 
-	# Kill highest numbered one
-	warning "$to_kill will be stopped"
-	systemctl stop $to_kill
-}
+	## Kill highest numbered one
+	#warning "$to_kill will be stopped"
+	#systemctl stop "$to_kill"
+#}
 
-uwsgi_zerg-strace() { ## uwsgi zerg-strace [number]: Strace a zergling
-	handle_help "$@" <<-EOF
-	EOF
-
-	if (( $# > 0 )); then
-		number=$1;
-	fi
-	procs=$(uwsgi_pids | grep zergling@${number} | cut -d':' -f2 | sed 's/\s*//g;' | tr '\n' ' ' | sed 's/^\s*//;s/\s*$//g;s/ / -p /g')
-	strace -e open,openat -p $procs
-}
-
-uwsgi_handler-strace() { ## uwsgi handler-strace [number]: Strace a handler
+uwsgi_zerg-strace() { ## [number]: Strace a zergling
 	handle_help "$@" <<-EOF
 	EOF
 
 	if (( $# > 0 )); then
 		number=$1;
 	fi
-	procs=$(uwsgi_pids | grep handler@${number} | cut -d':' -f2 | sed 's/\s*//g;' | tr '\n' ' ' | sed 's/^\s*//;s/\s*$//g;s/ / -p /g')
-	strace -e open,openat -p $procs
+	procs=$(uwsgi_pids | grep "zergling@${number}" | cut -d':' -f2 | sed 's/\s*//g;' | tr '\n' ' ' | sed 's/^\s*//;s/\s*$//g;s/ / -p /g')
+	strace -e open,openat -p "$procs"
 }
 
-uwsgi_handler-restart() { ## uwsgi handler-restart: Restart all handlers
+uwsgi_handler-strace() { ## [number]: Strace a handler
+	handle_help "$@" <<-EOF
+	EOF
+
+	if (( $# > 0 )); then
+		number=$1;
+	fi
+	procs=$(uwsgi_pids | grep "handler@${number}" | cut -d':' -f2 | sed 's/\s*//g;' | tr '\n' ' ' | sed 's/^\s*//;s/\s*$//g;s/ / -p /g')
+	strace -e open,openat -p "$procs"
+}
+
+uwsgi_handler-restart() { ## : Restart all handlers
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -2544,8 +2996,7 @@ uwsgi_handler-restart() { ## uwsgi handler-restart: Restart all handlers
 	done
 }
 
-
-uwsgi_lastlog(){ ## uwsgi lastlog: Fetch the number of seconds since the last log message was written
+uwsgi_lastlog(){ ## : Fetch the number of seconds since the last log message was written
 	handle_help "$@" <<-EOF
 		Lets you know if any of your workers or handlers have maybe stopped processing jobs.
 
@@ -2575,7 +3026,7 @@ uwsgi_lastlog(){ ## uwsgi lastlog: Fetch the number of seconds since the last lo
 		if (( $(echo "$lines" | wc -l) > 1 )); then
 			timestamp=$(journalctl -u galaxy-handler@$i -n 1 --no-pager | grep -v 'Logs begin' | awk '{print $1" "$2" "$3}');
 			unix=$(date -d "$timestamp" +%s)
-			date_diff=$(($NOW - $unix));
+			date_diff=$((NOW - unix));
 			echo "journalctl.lastlog,service=galaxy-handler@$i seconds=$date_diff";
 		fi
 	done
@@ -2585,12 +3036,12 @@ uwsgi_lastlog(){ ## uwsgi lastlog: Fetch the number of seconds since the last lo
 		if (( $(echo "$lines" | wc -l) > 1 )); then
 			timestamp=$(journalctl -u galaxy-zergling@$i -n 1 --no-pager | grep -v 'Logs begin' | awk '{print $1" "$2" "$3}');
 			unix=$(date -d "$timestamp" +%s)
-			date_diff=$(($NOW - $unix));
+			date_diff=$((NOW - unix));
 			echo "journalctl.lastlog,service=galaxy-zergling@$i seconds=$date_diff";
 		fi
 	done
 }
-galaxy_cleanup() { ## galaxy cleanup [days]: Cleanup histories/hdas/etc for past N days (default=30)
+galaxy_cleanup() { ## [days]: Cleanup histories/hdas/etc for past N days (default=30)
 	handle_help "$@" <<-EOF
 		Cleanup histories/hdas/etc for past N days using the python objects-based method
 	EOF
@@ -2607,10 +3058,10 @@ galaxy_cleanup() { ## galaxy cleanup [days]: Cleanup histories/hdas/etc for past
 	run_date=$(date --rfc-3339=seconds)
 
 	for action in {delete_userless_histories,delete_exported_histories,purge_deleted_histories,purge_deleted_hdas,delete_datasets,purge_datasets}; do
-		python $GALAXY_ROOT/scripts/cleanup_datasets/pgcleanup.py \
-			-c $GALAXY_CONFIG_FILE \
-			-o $days \
-			-l $GALAXY_LOG_DIR \
+		python "$GALAXY_ROOT/scripts/cleanup_datasets/pgcleanup.py" \
+			-c "$GALAXY_CONFIG_FILE" \
+			-o "$days" \
+			-l "$GALAXY_LOG_DIR" \
 			-s $action \
 			-w 128MB \
 			 >> "$GALAXY_LOG_DIR/cleanup-${run_date}-${action}.log" \
@@ -2626,7 +3077,7 @@ galaxy_cleanup() { ## galaxy cleanup [days]: Cleanup histories/hdas/etc for past
 	done
 }
 
-galaxy_migrate-tool-install-to-sqlite() { ## galaxy migrate-tool-install-to-sqlite: Converts normal potsgres toolshed repository tables into the SQLite version
+galaxy_migrate-tool-install-to-sqlite() { ## : Converts normal potsgres toolshed repository tables into the SQLite version
 	handle_help "$@" <<-EOF
 		    $ gxadmin migrate-tool-install-to-sqlite
 		    Creating new sqlite database: galaxy_install.sqlite
@@ -2745,9 +3196,9 @@ galaxy_migrate-tool-install-to-sqlite() { ## galaxy migrate-tool-install-to-sqli
 	CREATE INDEX ix_repository_repository_dependency_association_tool_shed_repository_id ON repository_repository_dependency_association (tool_shed_repository_id);
 	CREATE INDEX ix_repository_repository_dependency_association_repository_dependency_id ON repository_repository_dependency_association (repository_dependency_id);
 	COMMIT;
-	" > ${empty_schema}
-	sqlite3 galaxy_install.sqlite < ${empty_schema}
-	rm ${empty_schema}
+	" > "${empty_schema}"
+	sqlite3 galaxy_install.sqlite < "${empty_schema}"
+	rm "${empty_schema}"
 
 	success "Migrating tables"
 
@@ -2756,13 +3207,14 @@ galaxy_migrate-tool-install-to-sqlite() { ## galaxy migrate-tool-install-to-sqli
 	success "  export: ${table}"
 	export_csv=$(mktemp /tmp/tmp.gxadmin.${table}.XXXXXXXXXXX)
 	psql -c "COPY (select
-		id, create_time, update_time, tool_shed, name, description, owner, changeset_revision, case when deleted then 1 else 0 end, metadata, includes_datatypes, installed_changeset_revision, uninstalled, dist_to_shed, ctx_rev, status, error_message, tool_shed_status from $table) to STDOUT with CSV" > $export_csv;
+		id, create_time, update_time, tool_shed, name, description, owner, changeset_revision, case when deleted then 1 else 0 end, metadata, includes_datatypes, installed_changeset_revision, uninstalled, dist_to_shed, ctx_rev, status, error_message, tool_shed_status from $table) to STDOUT with CSV" > "$export_csv";
 
 	success "  import: ${table}"
 	echo ".mode csv
 .import ${export_csv} ${table}" | sqlite3 galaxy_install.sqlite
-	if (( $? == 0 )); then
-		rm ${export_csv}
+	ec=$?
+	if (( ec == 0 )); then
+		rm "${export_csv}";
 	else
 		error "  sql: ${export_csv}"
 	fi
@@ -2772,13 +3224,14 @@ galaxy_migrate-tool-install-to-sqlite() { ## galaxy migrate-tool-install-to-sqli
 	for table in {tool_version,tool_version_association,migrate_tools,tool_dependency,repository_dependency,repository_repository_dependency_association}; do
 		success "  export: ${table}"
 		export_csv=$(mktemp /tmp/tmp.gxadmin.${table}.XXXXXXXXXXX)
-		psql -c "COPY (select * from $table) to STDOUT with CSV" > $export_csv;
+		psql -c "COPY (select * from $table) to STDOUT with CSV" > "$export_csv";
 
 		success "  import: ${table}"
 		echo ".mode csv
 .import ${export_csv} ${table}" | sqlite3 galaxy_install.sqlite
-		if (( $? == 0 )); then
-			rm ${export_csv}
+		ec=$?
+		if (( ec == 0 )); then
+			rm "${export_csv}"
 		else
 			error "  sql: ${export_csv}"
 		fi
@@ -2786,7 +3239,168 @@ galaxy_migrate-tool-install-to-sqlite() { ## galaxy migrate-tool-install-to-sqli
 
 	success "Complete"
 }
-report_user-info() { ## report user-info <user_id|username|email>: Quick overview of a Galaxy user in your system
+
+galaxy_migrate-tool-install-from-sqlite() { ## [sqlite-db]: Converts SQLite version into normal potsgres toolshed repository tables
+	handle_help "$@" <<-EOF
+		    $ gxadmin migrate-tool-install-from-sqlite db.sqlite
+		    Migrating tables
+		      export: tool_shed_repository
+		      import: tool_shed_repository
+		      ...
+		      export: repository_repository_dependency_association
+		      import: repository_repository_dependency_association
+		    Complete
+	EOF
+	assert_count $# 1 "Must provide database"
+
+	success "Migrating tables"
+
+	# Truncate first, since need to be removed in a specific ordering (probably
+	# cascade would work but cascade is SCARY)
+	psql -c "TRUNCATE TABLE repository_repository_dependency_association, repository_dependency, tool_dependency, migrate_tools, tool_version_association, tool_version, tool_shed_repository"
+	ec1=$?
+
+	# If you truncate this one, then it also removes galaxy codebase version,
+	# breaking everything.
+	psql -c "delete from migrate_version where repository_id = 'ToolShedInstall'"
+	ec2=$?
+
+	if (( ec1 == 0  && ec2 == 0 )); then
+		success "  Cleaned"
+	else
+		error "  Failed to clean"
+	fi
+
+	# Then load data in same 'safe' order as in sqlite version
+	for table in {migrate_version,tool_shed_repository,tool_version,tool_version_association,migrate_tools,tool_dependency,repository_dependency,repository_repository_dependency_association}; do
+		success "  export: ${table}"
+		export_csv=$(mktemp /tmp/tmp.gxadmin.${table}.XXXXXXXXXXX)
+
+		if [[ "$table" == "tool_shed_repository" ]]; then
+			# Might have json instead of hexencoded json
+			sqlite3 -csv "$1" "select * from $table" | python -c "$hexencodefield9" > "$export_csv";
+		elif [[ "$table" == "tool_version" ]]; then
+			# Might have null values quoted as empty string
+			sqlite3 -csv "$1" "select * from $table" | sed 's/""$//' > "$export_csv";
+		else
+			sqlite3 -csv "$1" "select * from $table" > "$export_csv";
+		fi
+
+		psql -c "COPY $table FROM STDIN with CSV" < "$export_csv";
+		ec=$?
+
+		if (( ec == 0 )); then
+			rm "${export_csv}"
+			success "  import: ${table}"
+		else
+			error "  csv: ${export_csv}"
+			break
+		fi
+	done
+
+	# Update sequences
+	success "Updating sequences"
+	for table in {tool_shed_repository,tool_version,tool_version_association,tool_dependency,repository_dependency,repository_repository_dependency_association}; do
+		psql -c "SELECT setval('${table}_id_seq', (SELECT MAX(id) FROM ${table}));"
+	done
+
+	success "Comparing table counts"
+
+	for table in {migrate_version,tool_shed_repository,tool_version,tool_version_association,migrate_tools,tool_dependency,repository_dependency,repository_repository_dependency_association}; do
+		postgres=$(psql -c "COPY (select count(*) from $table) to STDOUT with CSV")
+		sqlite=$(sqlite3 -csv "$1" "select count(*) from $table")
+
+		if (( postgres == sqlite )); then
+			success "  $table: $postgres == $sqlite"
+		else
+			error "  $table: $postgres != $sqlite"
+		fi
+	done
+
+	success "Complete"
+}
+
+galaxy_amqp-test() { ## <amqp_url>: Test a given AMQP URL for connectivity
+	handle_help "$@" <<-EOF
+		**Note**: must be run in Galaxy Virtualenv
+
+		Simple script to test an AMQP URL. If connection works, it will
+		immediately exit with a python object:
+
+		    $ gxadmin galaxy amqp-test pyamqp://user:pass@host:port/vhost
+		    <kombu.transport.pyamqp.Channel object at 0x7fe56a836290>
+
+		    $ gxadmin galaxy amqp-test pyamqp://user:pass@host:port/vhost?ssl=1
+		    <kombu.transport.pyamqp.Channel object at 0x7fe56a836290>
+
+		Some errors look weird:
+
+		*wrong password*:
+
+		    $ gxadmin galaxy amqp-test ...
+		    Traceback
+		    ...
+		    amqp.exceptions.AccessRefused: (0, 0): (403) ACCESS_REFUSED - Login was refused using authentication mechanism AMQPLAIN. For details see the broker logfile.
+
+		*wrong host*, *inaccessible host*, basically any other problem:
+
+		    $ gxadmin galaxy amqp-test ...
+		    [hangs forever]
+
+		Basically any error results in a hang forever. It is recommended you run it with a timeout:
+
+		    $ timeout 1 gxadmin galaxy amqp-test
+		    $
+
+	EOF
+	assert_count $# 1 "Must provide URL"
+
+	URL="$1"
+
+	script=$(cat <<EOF
+from kombu import Connection
+from kombu import Exchange
+
+with Connection('$URL') as conn:
+    print(conn.default_channel)
+EOF
+)
+
+	python -c "$script"
+}
+
+
+galaxy_cleanup-jwd() { ## <working_dir> [1|months ago]: (NEW) Cleanup job working directories
+	handle_help "$@" <<-EOF
+		Scans through a provided job working directory subfolder, e.g.
+		job_working_directory/005/ to find all folders which were changed less
+		recently than N months.
+
+		Then it takes the first 1000 entries and cleans them up. This was more
+		of a hack to handle the fact that the list produced by find is really
+		long, and the for loop hangs until it's done generating the list.
+	EOF
+
+	assert_count_ge $# 1 "Must supply at least working dir"
+
+	jwd=$1
+	months=${2:-1}
+
+	# scan a given directory for jwds.
+	for possible_dir in $(find "$jwd" -maxdepth 2 -mindepth 2  -newermt "$months month ago" | head -n 1000); do
+			job_id=$(basename $possible_dir)
+			if [[ "$job_id" =~ ^[0-9]{3,}$ ]]; then
+					state=$(psql -c "COPY (select state from job where id = $job_id) to STDOUT with CSV")
+					if [[ "$state" == "error" ]] || [[ "$state" == "ok" ]] || [[ "$state" == "deleted" ]] || [[ "$state" == "paused" ]]; then
+							echo "- $possible_dir $job_id $state"
+							rm -rf $possible_dir
+					else
+							echo "? $possible_dir $job_id $state"
+					fi
+			fi
+	done
+}
+report_user-info(){ ## <user_id|username|email>: Quick overview of a Galaxy user in your system
 	handle_help "$@" <<-EOF
 		This command lets you quickly find out information about a user. The output is formatted as markdown by default.
 
@@ -2874,10 +3488,10 @@ report_user-info() { ## report user-info <user_id|username|email>: Quick overvie
 	recent_jobs=$(query_tsv "$qstr")
 	recent_jobs2=$(printf "Tool ID\tStatus\tCreated\tExit Code\tRuntime\n----\t----\t----\t---\t----\n%s" "$recent_jobs" | sed 's/\t/\t | \t/g' | column -t -s'	')
 
-	# Recent jobs
+	# running jobs
 	read -r -d '' qstr <<-EOF
 		SELECT
-			tool_id, tool_version, handler, destination_id, state, create_time AT TIME ZONE 'UTC' as create_time, now() AT TIME ZONE 'UTC' - create_time  AT TIME ZONE 'UTC' as runtime
+			id, tool_id, tool_version, handler, destination_id, state, create_time AT TIME ZONE 'UTC' as create_time, now() AT TIME ZONE 'UTC' - create_time  AT TIME ZONE 'UTC' as runtime
 		FROM
 			job
 		WHERE
@@ -2961,10 +3575,12 @@ Roles: %s
 %s
 \n
 EOF
+	# shellcheck disable=SC2086
+	# shellcheck disable=SC2059
 	printf "$template" $results "$group_membership" "$role_membership" "$recent_jobs2" "$running_jobs2" "$recent_wf" "$largest_histories"
 }
 
-report_job-info() { ## report job-info <id>: Information about a specific job
+report_job-info(){ ## <id>: Information about a specific job
 	handle_help "$@" <<-EOF
 		    $ gxadmin report job-info 1
 		     tool_id | state | username |        create_time         | job_runner_name | job_runner_external_id
@@ -3004,6 +3620,8 @@ Property      | Value
       Created | %s %s (%s %s %s ago)
 Job Runner/ID | %s / %s
 EOF
+	# shellcheck disable=SC2059
+	# shellcheck disable=SC2086
 	printf "$template"  $results
 
 	###       ###
@@ -3018,6 +3636,8 @@ EOF
 		WHERE job.id = $job_id AND job.user_id = galaxy_user.id
 	EOF
 	job_owner=$(query_tsv "$qstr")
+	# shellcheck disable=SC2183
+	# shellcheck disable=SC2086
 	printf "\n        Owner | %s (id=%s)\n\n" $job_owner
 
 
@@ -3031,7 +3651,9 @@ EOF
 	EOF
 	results=$(query_tsv "$qstr")
 	printf "## Destination Parameters\n\n"
+	# shellcheck disable=SC2016
 	tbl=$(echo "$results" | python -c "$hexdecodelines" | jq -S '. | to_entries[] | [.key, .value] | @tsv' -r | sed 's/\t/\t`/g;s/$/`/g')
+	# shellcheck disable=SC2059
 	printf "Key\tValue\n---\t---\n$tbl" | sed 's/\t/\t | \t/g' | column -t -s'	'
 
 	###          ###
@@ -3045,6 +3667,7 @@ EOF
 	results=$(query_tsv "$qstr")
 	printf "\n## Dependencies\n\n"
 	tbl=$(echo "$results" | python -c "$hexdecodelines" | jq -S '.[] | [.name, .version, .dependency_type, .cacheable, .exact, .environment_path, .model_class] | @tsv' -r)
+	# shellcheck disable=SC2059
 	printf "Name\tVersion\tDependency Type\tCacheable\tExact\tEnvironment Path\tModel Class\n----\t-------\t---------------\t---------\t-----\t----------------\t-----------\n$tbl\n" | sed 's/\t/\t | \t/g'       #| column -t -s'	'
 
 	###        ###
@@ -3057,6 +3680,7 @@ EOF
 	EOF
 	results=$(query_tsv "$qstr")
 	printf "\n## Tool Parameters\n\n"
+	# shellcheck disable=SC2059
 	printf "Name\tSettings\n---------\t------------------------------------\n$results\n\n" | sed 's/\t/\t | \t/g' | sed 's/[\"\`]//g'
 
 	###      ###
@@ -3131,16 +3755,17 @@ EOF
 
 \n
 EOF
+	# shellcheck disable=SC2059
 	printf "$template3" "$input_ds_tbl" "$output_ds_tbl"
 }
 
 
-report_assigned-to-handler() { ## report assigned-to-handler <handler>: Report what items are assigned to a handler currently.
+report_assigned-to-handler(){ ## <handler>: Report what items are assigned to a handler currently.
 	handle_help "$@" <<-EOF
 	EOF
 
 	assert_count $# 1 "Missing Handler ID"
-	printf "# Handler $1\n\n"
+	printf "# Handler %s\n\n" "$1"
 
 	# Jerbs
 	printf "## Jobs\n\n"
@@ -3181,6 +3806,7 @@ query_memory-and-cpu-on-same-node() {
 	EOF
 
 	assert_count $# 1 "Missing host name"
+	host="$1"
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
@@ -3225,14 +3851,14 @@ query_memory-and-cpu-on-same-node() {
 	EOF
 }
 
-meta_update() { ## meta update: Update the script
+meta_update() { ## : Update the script
 	handle_help "$@" <<-EOF
 	EOF
 
 	tmp=$(mktemp);
-	curl https://raw.githubusercontent.com/usegalaxy-eu/gxadmin/master/gxadmin > $tmp;
-	chmod ugo+rx $tmp;
-	mv $tmp $0;
+	curl https://raw.githubusercontent.com/usegalaxy-eu/gxadmin/master/gxadmin > "$tmp";
+	chmod ugo+rx "$tmp";
+	mv "$tmp" "$0";
 	exit 0;
 }
 
@@ -3244,20 +3870,21 @@ meta_cmdlist() {
 	# TOC
 	echo "## Commands"
 	echo
-	for section in $(grep -o '{ ## .*' $0 | grep -v grep | grep -v '| sed' | awk '{print $3}' | sort -u); do
-		echo "# $section"            > docs/README.${section}.md
-		echo                         >> docs/README.${section}.md
-		echo "Command | Description" >> docs/README.${section}.md
-		echo "------- | -----------" >> docs/README.${section}.md
-		for command in $(grep -o '{ ## .*' $0 | grep -v grep | grep -v '| sed' | sort | sed 's/^{ ## //g' | grep "^$section"); do
-			cmd_part="$(echo $command | sed 's/:.*//g;s/\s*<.*//g;s/\s*\[.*//')"
-			desc_part="$(echo $command | sed 's/^[^:]*:\s*//g')"
+	for section in $(locate_cmds_nolocal | correct_cmd | awk '{print $1}' | sort -u); do
+		echo "# $section"            >  "docs/README.${section}.md"
+		echo                         >> "docs/README.${section}.md"
+		echo "Command | Description" >> "docs/README.${section}.md"
+		echo "------- | -----------" >> "docs/README.${section}.md"
+		for command in $(locate_cmds_nolocal | correct_cmd | grep "^$section"); do
+			cmd_part="$(echo "$command" | sed 's/:.*//g;s/\s*<.*//g;s/\s*\[.*//')"
+			desc_part="$(echo "$command" | sed 's/^[^:]*:\s*//g')"
+			key_part="$(echo "$cmd_part" | sed 's/ /-/g')"
 
 			if [[ "$command" != *"Deprecated"* ]]; then
 				# Main ToC
-				echo "[\`${cmd_part}\`](#${key_part}) | $desc_part" >> docs/README.${section}.md
+				echo "[\`${cmd_part}\`](#${key_part}) | $desc_part" >> "docs/README.${section}.md"
 			else
-				echo "\`${cmd_part}\` | $desc_part" >> docs/README.${section}.md
+				echo "\`${cmd_part}\` | $desc_part" >> "docs/README.${section}.md"
 			fi
 		done
 
@@ -3265,20 +3892,20 @@ meta_cmdlist() {
 		echo
 		echo "Command | Description"
 		echo "------- | -----------"
-		for command in $(grep -o '{ ## .*' $0 | grep -v grep | grep -v '| sed' | sort | sed 's/^{ ## //g' | grep "^$section"); do
-			cmd_part="$(echo $command | sed 's/:.*//g;s/\s*<.*//g;s/\s*\[.*//')"
-			desc_part="$(echo $command | sed 's/^[^:]*:\s*//g')"
-			key_part="$(echo $cmd_part | sed 's/ /-/g')"
+		for command in $(locate_cmds_nolocal | correct_cmd | grep "^$section"); do
+			cmd_part="$(echo "$command" | sed 's/:.*//g;s/\s*<.*//g;s/\s*\[.*//;s/\s*$//')"
+			desc_part="$(echo "$command" | sed 's/^[^:]*:\s*//g;s/\s*$//')"
+			key_part="$(echo "$cmd_part" | sed 's/ /-/g')"
 
 			if [[ "$command" != *"Deprecated"* ]]; then
 				# Main ToC
 				echo "[\`${cmd_part}\`](docs/README.${section}.md#${key_part}) | $desc_part"
 
 				# Subsec documentation
-				echo                          >> docs/README.${section}.md
-				echo "### $cmd_part"          >> docs/README.${section}.md
-				echo                          >> docs/README.${section}.md
-				bash -c "$0 $cmd_part --help" >> docs/README.${section}.md
+				echo                          >> "docs/README.${section}.md"
+				echo "### $cmd_part"          >> "docs/README.${section}.md"
+				echo                          >> "docs/README.${section}.md"
+				bash -c "$0 $cmd_part --help" >> "docs/README.${section}.md"
 			else
 				echo "\`${cmd_part}\` | $desc_part"
 			fi
@@ -3288,7 +3915,7 @@ meta_cmdlist() {
 	done
 }
 
-meta_slurp-current() { ## meta slurp-current [--date]: Executes what used to be "Galaxy Slurp"
+meta_slurp-current() { ## [--date]: Executes what used to be "Galaxy Slurp"
 	handle_help "$@" <<-EOF
 		Obtain influx compatible metrics regarding the current state of the
 		server. UseGalaxy.EU uses this to display things like "Current user
@@ -3342,13 +3969,14 @@ meta_slurp-current() { ## meta slurp-current [--date]: Executes what used to be 
 		append=" "$(date +%s%N)
 	fi
 
-	for func in $(grep -s -h -o '^query_server-[a-z-]*' $0 $GXADMIN_SITE_SPECIFIC | sort | sed 's/query_//g'); do
-		obtain_query $func
-		query_influx "$QUERY" "$query_name" "$fields" "$tags" | sed "s/$/$append/"
+	# shellcheck disable=SC2013
+	for func in $(grep -s -h -o '^query_server-[a-z-]*' "$0" "$GXADMIN_SITE_SPECIFIC" | sort | sed 's/query_//g'); do
+		obtain_query "$func"
+		$wrapper query_influx "$QUERY" "$query_name" "$fields" "$tags" | sed "s/$/$append/"
 	done
 }
 
-meta_slurp-upto() { ## meta slurp-upto <yyyy-mm-dd> [--date]: Slurps data "up to" a specific date.
+meta_slurp-upto() { ## <yyyy-mm-dd> [--date]: Slurps data "up to" a specific date.
 	handle_help "$@" <<-EOF
 		Obtain influx compatible metrics regarding the summed state of the
 		server up to a specific date. UseGalaxy.EU uses this to display things
@@ -3400,9 +4028,10 @@ meta_slurp-upto() { ## meta slurp-upto <yyyy-mm-dd> [--date]: Slurps data "up to
 		append=" "$(date -d "$1" +%s%N)
 	fi
 
-	for func in $(grep -s -h -o '^query_server-[a-z-]*' $0 $GXADMIN_SITE_SPECIFIC | sort | sed 's/query_//g'); do
-		obtain_query $func $1
-		query_influx "$QUERY" "$query_name.daily" "$fields" "$tags" | sed "s/$/$append/"
+	# shellcheck disable=SC2013
+	for func in $(grep -s -h -o '^query_server-[a-z-]*' "$0" "$GXADMIN_SITE_SPECIFIC" | sort | sed 's/query_//g'); do
+		obtain_query "$func" "$1"
+		$wrapper query_influx "$QUERY" "$query_name.daily" "$fields" "$tags" | sed "s/$/$append/"
 	done
 }
 
@@ -3419,7 +4048,7 @@ meta_success() {
 }
 
 
-meta_influx-post() { ## meta influx-post <db> <file>: Post contents of file (in influx line protocol) to influx
+meta_influx-post() { ## <db> <file>: Post contents of file (in influx line protocol) to influx
 	handle_help "$@" <<-EOF
 		Post data to InfluxDB. Must be [influx line protocol formatted](https://docs.influxdata.com/influxdb/v1.7/write_protocols/line_protocol_tutorial/)
 
@@ -3457,10 +4086,10 @@ meta_influx-post() { ## meta influx-post <db> <file>: Post contents of file (in 
 		assert_file "$FILE"
 	fi
 
-	curl -XPOST "${INFLUX_URL}/write?db=${DB}&u=${INFLUX_USER}&p=${INFLUX_PASS}" --data-binary @${FILE}
+	curl --silent -XPOST "${INFLUX_URL}/write?db=${DB}&u=${INFLUX_USER}&p=${INFLUX_PASS}" --data-binary @"${FILE}"
 }
 
-meta_influx-query() { ## meta influx-query <db> "<query>": Query an influx DB
+meta_influx-query() { ## <db> "<query>": Query an influx DB
 	handle_help "$@" <<-EOF
 		Query an InfluxDB
 
@@ -3488,7 +4117,7 @@ meta_influx-query() { ## meta influx-query <db> "<query>": Query an influx DB
 	curl --silent "${INFLUX_URL}/query?db=${DB}&u=${INFLUX_USER}&p=${INFLUX_PASS}" --data-urlencode "q=${QUERY}"
 }
 
-meta_iquery-grt-export() { ## meta iquery-grt-export: Export data from a GRT database for sending to influx
+meta_iquery-grt-export() { ## : Export data from a GRT database for sending to influx
 	handle_help "$@" <<-EOF
 		**WARNING**: GRT database specific query, will not work with a galaxy database!
 	EOF
@@ -3515,15 +4144,26 @@ meta_iquery-grt-export() { ## meta iquery-grt-export: Export data from a GRT dat
 			date
 	EOF
 }
+
+meta_whatsnew() { ## : What's new in this version of gxadmin
+	handle_help "$@" <<-EOF
+		Informs users of what's new in the changelog since their version
+	EOF
+
+	current_version=$(version)
+	prev_version=$(( current_version - 1 ))
+	#sed -n '1,/^# 12/d;/^# 11/q;p'
+	echo "$CHANGELOG" | sed -n "/^# ${prev_version}/q;p"
+}
 meta_completion() {
 	IFS=$'\n'
-	commands="$(grep -o '{ ## .*' $0 | grep -v grep | grep -v '| sed' | sort | sed 's/^{ ## //g' | \
+	commands="$(grep -o '{ ## .*' "$0" | grep -v grep | grep -v '| sed' | sort | sed 's/^{ ## //g' | \
 		sed 's/:.*//g;s/\s*<.*//g;s/\s*\[.*//')"
 
 	leading=$(echo "$commands" | awk '{print $1}' | sort -u | paste -s -d' ')
 	subcommands=""
 	for cmd in $(echo "$commands" | awk '{print $1}' | sort -u); do
-		subcmds=$(echo "$commands" | awk '($1 == "'$cmd'"){ print $2 }' | sort -u | paste -s -d' ')
+		subcmds=$(echo "$commands" | awk '($1 == "'"$cmd"'"){ print $2 }' | sort -u | paste -s -d' ')
 		if (( ${#subcmds} > 0 )); then
 			subcommands="${subcommands}\n\n\t\t$cmd)\n\t\t\tCOMPREPLY=( \$(compgen -W \"${subcmds}\" \${cur}) )\n\t\t\treturn 0\n\t\t;;"
 		fi
@@ -3553,6 +4193,7 @@ complete -F _gxadmin gxadmin
 EOF
 )
 
+	# shellcheck disable=SC2059
 	printf "${BASH_COMPLETION_TEMPLATE}\n" "$leading" "$subcommands"
 }
 look_for() {
@@ -3561,9 +4202,10 @@ look_for() {
 
 	# Check that FN exists
 	fn="${group_name}_${query_name}"
-	LC_ALL=C type $fn 2> /dev/null | grep -q 'function'
+	LC_ALL=C type "$fn" 2> /dev/null | grep -q 'function'
+	ec=$?
 
-	if (( $? == 0 )); then
+	if (( ec == 0 )); then
 		$fn "$@";
 
 		if [[ "${query_name}" == "query"* ]]; then
@@ -3572,16 +4214,17 @@ look_for() {
 			query_influx "$QUERY" "$query_name" "$fields" "$tags" "$timestamp"
 		fi
 	else
-		usage ${group_name}
+		usage "${group_name}"
 	fi
 }
 obtain_mutate() {
 	query_name="$1"; shift
 
 	fn="mutate_${query_name}"
-	LC_ALL=C type $fn 2> /dev/null | grep -q 'function'
+	LC_ALL=C type "$fn" 2> /dev/null | grep -q 'function'
+	ec=$?
 
-	if (( $? == 0 )); then
+	if (( ec == 0 )); then
 		$fn "$@";
 	else
 		export QUERY="ERROR"
@@ -3593,7 +4236,7 @@ mutate() {
 	query_name="$1"; shift
 
 	# We do not run this in a subshell because we need to "return" multiple things.
-	obtain_mutate $query_name "$@"
+	obtain_mutate "$query_name" "$@"
 
 	# TODO(hxr)
 	if [[ "$QUERY" == "ERROR" ]]; then
@@ -3606,9 +4249,10 @@ obtain_query() {
 	query_name="$1"; shift
 
 	fn="query_${query_name}"
-	LC_ALL=C type $fn 2> /dev/null | grep -q 'function'
+	LC_ALL=C type "$fn" 2> /dev/null | grep -q 'function'
+	ec=$?
 
-	if (( $? == 0 )); then
+	if (( ec == 0 )); then
 		$fn "$@";
 	else
 		export QUERY="ERROR"
@@ -3622,7 +4266,7 @@ query() {
 	query_name="$1"; shift
 
 	# We do not run this in a subshell because we need to "return" multiple things.
-	obtain_query $query_name "$@"
+	obtain_query "$query_name" "$@"
 
 	# If query in error, exit.
 	if [[ "$QUERY" == "ERROR" ]]; then
@@ -3632,12 +4276,14 @@ query() {
 
 	# Run the queries
 	case "$query_type" in
-		tsvquery )  query_tsv "$QUERY";;
-		csvquery )  query_csv "$QUERY";;
-		query    )  query_tbl "$QUERY";;
-		iquery   )  query_influx "$QUERY" "$query_name" "$fields" "$tags" "$timestamp";;
+		tsvquery         ) $wrapper query_tsv "$QUERY";;
+		csvquery         ) $wrapper query_csv "$QUERY";;
+		query            ) $wrapper query_tbl "$QUERY";;
+		iquery           ) $wrapper query_influx "$QUERY" "$query_name" "$fields" "$tags" "$timestamp";;
+		explainquery     ) $wrapper query_exp "$QUERY";;
+		explainjsonquery ) $wrapper query_expj "$QUERY";;
 		# default
-		*        )  usage "Error";;
+		*            )  usage "Error";;
 	esac
 }
 
@@ -3648,7 +4294,8 @@ local_funcs() {
 		exit 1
 	else
 		# Load functions
-		. ${GXADMIN_SITE_SPECIFIC}
+		# shellcheck disable=SC1090
+		. "${GXADMIN_SITE_SPECIFIC}"
 	fi
 
 	group_name="local"
@@ -3656,10 +4303,11 @@ local_funcs() {
 
 	# Check that FN exists
 	fn="${group_name}_${query_name}"
-	LC_ALL=C type $fn 2> /dev/null | grep -q 'function'
+	LC_ALL=C type "$fn" 2> /dev/null | grep -q 'function'
+	ec=$?
 
-	if (( $? == 0 )); then
-		if [[ -z "${GXADMIN_BUGGER_OFF}" ]] && (( ($RANDOM % 25) == 0 )); then
+	if (( ec == 0 )); then
+		if [[ -z "${GXADMIN_BUGGER_OFF}" ]] && (( (RANDOM % 25) == 0 )); then
 			warning "Hey! It's great that you're using gxadmin! You should contribute these functions back :) Other people might find these useful, or could learn something from the code you've written, even if you think it is too specific to your site."
 		fi
 
@@ -3672,22 +4320,31 @@ local_funcs() {
 		usage ${group_name}
 	fi
 }
+wrap_time() {
+	local TIMEFORMAT="Time to execute $1: %R seconds"
+	time "$@"
+}
 if (( $# == 0 )); then
 	usage
 fi
 
 mode="$1"; shift
+wrapper=
+if [[ "$mode" == time* ]]; then
+	wrapper=wrap_time
+	mode=${mode:4}
+fi
 
 case "$mode" in
 	*query ) query "$mode"   "$@" ;;
-	config ) look_for config "$@" ;;
-	filter ) look_for filter "$@" ;;
-	galaxy ) look_for galaxy "$@" ;;
-	report ) look_for report "$@" ;;
-	local  ) local_funcs     "$@" ;;
-	mutate ) mutate "$mode"  "$@" ;;
-	uwsgi  ) look_for uwsgi  "$@" ;;
-	meta   ) look_for meta   "$@" ;;
+	config ) $wrapper look_for config "$@" ;;
+	filter ) $wrapper look_for filter "$@" ;;
+	galaxy ) $wrapper look_for galaxy "$@" ;;
+	report ) $wrapper look_for report "$@" ;;
+	local  ) $wrapper local_funcs     "$@" ;;
+	mutate ) $wrapper mutate "$mode"  "$@" ;;
+	uwsgi  ) $wrapper look_for uwsgi  "$@" ;;
+	meta   ) $wrapper look_for meta   "$@" ;;
 
 	# version commands
 	version   ) version ;;

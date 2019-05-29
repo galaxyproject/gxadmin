@@ -68,7 +68,7 @@ If you want to add some site-specific functions, you can do this in `~/.config/g
 You should write a bash script which looks like. **ALL functions must be prefixed with `local_`**
 
 ```bash
-local_cats() { ## cats: Makes cat noises
+local_cats() { ## : Makes cat noises
 	handle_help "$@" <<-EOF
 		Here is some documentation on this function
 	EOF
@@ -115,7 +115,10 @@ Command | Description
 
 Command | Description
 ------- | -----------
+[`galaxy amqp-test`](docs/README.galaxy.md#galaxy-amqp-test) | Test a given AMQP URL for connectivity
 [`galaxy cleanup`](docs/README.galaxy.md#galaxy-cleanup) | Cleanup histories/hdas/etc for past N days (default=30)
+[`galaxy cleanup-jwd`](docs/README.galaxy.md#galaxy-cleanup-jwd) | (NEW) Cleanup job working directories
+[`galaxy migrate-tool-install-from-sqlite`](docs/README.galaxy.md#galaxy-migrate-tool-install-from-sqlite) | Converts SQLite version into normal potsgres toolshed repository tables
 [`galaxy migrate-tool-install-to-sqlite`](docs/README.galaxy.md#galaxy-migrate-tool-install-to-sqlite) | Converts normal potsgres toolshed repository tables into the SQLite version
 
 ### meta
@@ -128,11 +131,15 @@ Command | Description
 [`meta slurp-current`](docs/README.meta.md#meta-slurp-current) | Executes what used to be "Galaxy Slurp"
 [`meta slurp-upto`](docs/README.meta.md#meta-slurp-upto) | Slurps data "up to" a specific date.
 [`meta update`](docs/README.meta.md#meta-update) | Update the script
+[`meta whatsnew`](docs/README.meta.md#meta-whatsnew) | What's new in this version of gxadmin
 
 ### mutate
 
 Command | Description
 ------- | -----------
+[`mutate delete-group-role`](docs/README.mutate.md#mutate-delete-group-role) | Remove the group, role, and any user-group + user-role associations
+[`mutate fail-history`](docs/README.mutate.md#mutate-fail-history) | Mark all jobs within a history to state error
+[`mutate fail-job`](docs/README.mutate.md#mutate-fail-job) | Sets a job state to error
 [`mutate fail-terminal-datasets`](docs/README.mutate.md#mutate-fail-terminal-datasets) | Causes the output datasets of jobs which were manually failed, to be marked as failed
 
 ### query
@@ -145,6 +152,9 @@ Command | Description
 [`query disk-usage`](docs/README.query.md#query-disk-usage) | Disk usage per object store.
 [`query errored-jobs`](docs/README.query.md#query-errored-jobs) | Lists jobs that errored in the last N hours.
 [`query groups-list`](docs/README.query.md#query-groups-list) | List all groups known to Galaxy
+[`query hdca-datasets`](docs/README.query.md#query-hdca-datasets) | List of files in a dataset collection
+[`query hdca-info`](docs/README.query.md#query-hdca-info) | Information on a dataset collection
+[`query history-contents`](docs/README.query.md#query-history-contents) | List datasets and/or collections in a history
 [`query job-history`](docs/README.query.md#query-job-history) | Job state history for a specific job
 [`query job-inputs`](docs/README.query.md#query-job-inputs) | Input datasets to a specific job
 [`query job-outputs`](docs/README.query.md#query-job-outputs) | Output datasets from a specific job
@@ -168,11 +178,11 @@ Command | Description
 [`query recent-jobs`](docs/README.query.md#query-recent-jobs) | Jobs run in the past <hours> (in any state)
 [`query runtime-per-user`](docs/README.query.md#query-runtime-per-user) | computation time of user (by email)
 [`query tool-available-metrics`](docs/README.query.md#query-tool-available-metrics) | list all available metrics for a given tool
-[`query tool-errors`](docs/README.query.md#query-tool-errors) | Summarize percent of tool runs in error over the past weeks for all tools that have failed (most popular tools first)
+[`query tool-errors query tool-errors`](docs/README.query.md#query-tool-errors-query-tool-errors) | Summarize percent of tool runs in error over the past weeks for all tools that have failed (most popular tools first)
 [`query tool-last-used-date`](docs/README.query.md#query-tool-last-used-date) | When was the most recent invocation of every tool
-[`query tool-likely-broken`](docs/README.query.md#query-tool-likely-broken) | Find tools that have been executed in recent weeks that are (or were due to job running) likely substantially broken
+[`query tool-likely-broken query tool-likely-broken`](docs/README.query.md#query-tool-likely-broken-query-tool-likely-broken) | Find tools that have been executed in recent weeks that are (or were due to job running) likely substantially broken
 [`query tool-metrics`](docs/README.query.md#query-tool-metrics) | See values of a specific metric
-[`query tool-new-errors`](docs/README.query.md#query-tool-new-errors) | Summarize percent of tool runs in error over the past weeks for "new tools"
+[`query tool-new-errors query tool-new-errors`](docs/README.query.md#query-tool-new-errors-query-tool-new-errors) | Summarize percent of tool runs in error over the past weeks for "new tools"
 [`query tool-popularity`](docs/README.query.md#query-tool-popularity) | Most run tools by month
 [`query tool-usage`](docs/README.query.md#query-tool-usage) | Counts of tool runs in the past weeks (default = all)
 [`query training-list`](docs/README.query.md#query-training-list) | List known trainings
@@ -180,6 +190,8 @@ Command | Description
 [`query training-members`](docs/README.query.md#query-training-members) | List users in a specific training
 [`query training-queue`](docs/README.query.md#query-training-queue) | Jobs currently being run by people in a given training
 [`query ts-repos`](docs/README.query.md#query-ts-repos) | Counts of toolshed repositories by toolshed and owner.
+[`query user-cpu-years`](docs/README.query.md#query-user-cpu-years) | CPU years allocated to tools by user
+[`query user-recent-aggregate-jobs`](docs/README.query.md#query-user-recent-aggregate-jobs) | Show aggregate information for jobs in past N days for user
 [`query users-count`](docs/README.query.md#query-users-count) | Shows sums of active/external/deleted/purged accounts
 [`query users-total`](docs/README.query.md#query-users-total) | Total number of Galaxy users (incl deleted, purged, inactive)
 [`query workflow-connections`](docs/README.query.md#query-workflow-connections) | The connections of tools, from output to input, in the latest (or all) versions of user workflows
@@ -206,7 +218,6 @@ Command | Description
 `uwsgi stats_influx` | Deprecated, use uwsgi stats-influx
 [`uwsgi stats`](docs/README.uwsgi.md#uwsgi-stats) | uwsgi stats
 [`uwsgi status`](docs/README.uwsgi.md#uwsgi-status) | Current system status
-[`uwsgi zerg-scale-down`](docs/README.uwsgi.md#uwsgi-zerg-scale-down) | Remove an extraneous zergling
 [`uwsgi zerg-scale-up`](docs/README.uwsgi.md#uwsgi-zerg-scale-up) | Add another zergling to deal with high load
 [`uwsgi zerg-strace`](docs/README.uwsgi.md#uwsgi-zerg-strace) | Strace a zergling
 [`uwsgi zerg-swap`](docs/README.uwsgi.md#uwsgi-zerg-swap) | Swap zerglings in order (unintelligent version)

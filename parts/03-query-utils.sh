@@ -16,6 +16,20 @@ query_csv() {
 	EOF
 }
 
+query_exp() {
+	psql <<-EOF
+	EXPLAIN ANALYZE VERBOSE $1
+	EOF
+}
+
+query_expj() {
+	echo "$1"
+	echo
+	psql -qAt <<-EOF
+	EXPLAIN (ANALYZE, COSTS, VERBOSE, BUFFERS, FORMAT JSON) $1
+	EOF
+}
+
 query_influx() {
 	arr2py=$(cat <<EOF
 import sys
@@ -32,10 +46,10 @@ if len(sys.argv) > 4 and sys.argv[4] != '':
 for line in sys.stdin.read().split('\n'):
 	if len(line) == 0:
 		continue
-	parsed = line.split(',')
+	parsed = line.split('\t')
 	metric = query_name
 	if len(tags):
-		tag_data = ['%s=%s' % (k, parsed[v].replace(' ', '\\ '))  for (k, v) in tags.items()]
+		tag_data = ['%s=%s' % (k, parsed[v].replace(' ', '\\ ').replace(',', '\\,'))  for (k, v) in tags.items()]
 		metric += ',' + ','.join(tag_data)
 	field_data = ['%s=%s' % (k, parsed[v])  for (k, v) in fields.items()]
 	metric += ' ' + ','.join(field_data)
@@ -46,15 +60,22 @@ for line in sys.stdin.read().split('\n'):
 EOF
 )
 
-	psql -c "COPY ($1) to STDOUT with CSV DELIMITER E','"| python -c "$arr2py" "$2" "$3" "$4" "$5"
+	psql -c "COPY ($1) to STDOUT with CSV DELIMITER E'\t'"| python -c "$arr2py" "$2" "$3" "$4" "$5"
 }
 
 gdpr_safe() {
+	local coalesce_to
+	if (( $# > 2 )); then
+		coalesce_to="$3"
+	else
+		coalesce_to="__UNKNOWN__"
+	fi
+
 	if [ -z "$GDPR_MODE"  ]; then
-		echo "$1"
+		echo "COALESCE($1, '$coalesce_to')"
 	else
 		# Try and be privacy respecting while generating numbers that can allow
 		# linking data across tables if need be?
-		echo "substring(md5($1 || now()::date), 0, 12) as ${2:-$1}"
+		echo "substring(md5(COALESCE($1, '$coalesce_to') || now()::date), 0, 12) as ${2:-$1}"
 	fi
 }

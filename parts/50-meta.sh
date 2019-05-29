@@ -1,11 +1,11 @@
-meta_update() { ## meta update: Update the script
+meta_update() { ## : Update the script
 	handle_help "$@" <<-EOF
 	EOF
 
 	tmp=$(mktemp);
-	curl https://raw.githubusercontent.com/usegalaxy-eu/gxadmin/master/gxadmin > $tmp;
-	chmod ugo+rx $tmp;
-	mv $tmp $0;
+	curl https://raw.githubusercontent.com/usegalaxy-eu/gxadmin/master/gxadmin > "$tmp";
+	chmod ugo+rx "$tmp";
+	mv "$tmp" "$0";
 	exit 0;
 }
 
@@ -17,20 +17,21 @@ meta_cmdlist() {
 	# TOC
 	echo "## Commands"
 	echo
-	for section in $(grep -o '{ ## .*' $0 | grep -v grep | grep -v '| sed' | awk '{print $3}' | sort -u); do
-		echo "# $section"            > docs/README.${section}.md
-		echo                         >> docs/README.${section}.md
-		echo "Command | Description" >> docs/README.${section}.md
-		echo "------- | -----------" >> docs/README.${section}.md
-		for command in $(grep -o '{ ## .*' $0 | grep -v grep | grep -v '| sed' | sort | sed 's/^{ ## //g' | grep "^$section"); do
-			cmd_part="$(echo $command | sed 's/:.*//g;s/\s*<.*//g;s/\s*\[.*//')"
-			desc_part="$(echo $command | sed 's/^[^:]*:\s*//g')"
+	for section in $(locate_cmds_nolocal | correct_cmd | awk '{print $1}' | sort -u); do
+		echo "# $section"            >  "docs/README.${section}.md"
+		echo                         >> "docs/README.${section}.md"
+		echo "Command | Description" >> "docs/README.${section}.md"
+		echo "------- | -----------" >> "docs/README.${section}.md"
+		for command in $(locate_cmds_nolocal | correct_cmd | grep "^$section"); do
+			cmd_part="$(echo "$command" | sed 's/:.*//g;s/\s*<.*//g;s/\s*\[.*//')"
+			desc_part="$(echo "$command" | sed 's/^[^:]*:\s*//g')"
+			key_part="$(echo "$cmd_part" | sed 's/ /-/g')"
 
 			if [[ "$command" != *"Deprecated"* ]]; then
 				# Main ToC
-				echo "[\`${cmd_part}\`](#${key_part}) | $desc_part" >> docs/README.${section}.md
+				echo "[\`${cmd_part}\`](#${key_part}) | $desc_part" >> "docs/README.${section}.md"
 			else
-				echo "\`${cmd_part}\` | $desc_part" >> docs/README.${section}.md
+				echo "\`${cmd_part}\` | $desc_part" >> "docs/README.${section}.md"
 			fi
 		done
 
@@ -38,20 +39,20 @@ meta_cmdlist() {
 		echo
 		echo "Command | Description"
 		echo "------- | -----------"
-		for command in $(grep -o '{ ## .*' $0 | grep -v grep | grep -v '| sed' | sort | sed 's/^{ ## //g' | grep "^$section"); do
-			cmd_part="$(echo $command | sed 's/:.*//g;s/\s*<.*//g;s/\s*\[.*//')"
-			desc_part="$(echo $command | sed 's/^[^:]*:\s*//g')"
-			key_part="$(echo $cmd_part | sed 's/ /-/g')"
+		for command in $(locate_cmds_nolocal | correct_cmd | grep "^$section"); do
+			cmd_part="$(echo "$command" | sed 's/:.*//g;s/\s*<.*//g;s/\s*\[.*//;s/\s*$//')"
+			desc_part="$(echo "$command" | sed 's/^[^:]*:\s*//g;s/\s*$//')"
+			key_part="$(echo "$cmd_part" | sed 's/ /-/g')"
 
 			if [[ "$command" != *"Deprecated"* ]]; then
 				# Main ToC
 				echo "[\`${cmd_part}\`](docs/README.${section}.md#${key_part}) | $desc_part"
 
 				# Subsec documentation
-				echo                          >> docs/README.${section}.md
-				echo "### $cmd_part"          >> docs/README.${section}.md
-				echo                          >> docs/README.${section}.md
-				bash -c "$0 $cmd_part --help" >> docs/README.${section}.md
+				echo                          >> "docs/README.${section}.md"
+				echo "### $cmd_part"          >> "docs/README.${section}.md"
+				echo                          >> "docs/README.${section}.md"
+				bash -c "$0 $cmd_part --help" >> "docs/README.${section}.md"
 			else
 				echo "\`${cmd_part}\` | $desc_part"
 			fi
@@ -61,7 +62,7 @@ meta_cmdlist() {
 	done
 }
 
-meta_slurp-current() { ## meta slurp-current [--date]: Executes what used to be "Galaxy Slurp"
+meta_slurp-current() { ## [--date]: Executes what used to be "Galaxy Slurp"
 	handle_help "$@" <<-EOF
 		Obtain influx compatible metrics regarding the current state of the
 		server. UseGalaxy.EU uses this to display things like "Current user
@@ -115,13 +116,14 @@ meta_slurp-current() { ## meta slurp-current [--date]: Executes what used to be 
 		append=" "$(date +%s%N)
 	fi
 
-	for func in $(grep -s -h -o '^query_server-[a-z-]*' $0 $GXADMIN_SITE_SPECIFIC | sort | sed 's/query_//g'); do
-		obtain_query $func
-		query_influx "$QUERY" "$query_name" "$fields" "$tags" | sed "s/$/$append/"
+	# shellcheck disable=SC2013
+	for func in $(grep -s -h -o '^query_server-[a-z-]*' "$0" "$GXADMIN_SITE_SPECIFIC" | sort | sed 's/query_//g'); do
+		obtain_query "$func"
+		$wrapper query_influx "$QUERY" "$query_name" "$fields" "$tags" | sed "s/$/$append/"
 	done
 }
 
-meta_slurp-upto() { ## meta slurp-upto <yyyy-mm-dd> [--date]: Slurps data "up to" a specific date.
+meta_slurp-upto() { ## <yyyy-mm-dd> [--date]: Slurps data "up to" a specific date.
 	handle_help "$@" <<-EOF
 		Obtain influx compatible metrics regarding the summed state of the
 		server up to a specific date. UseGalaxy.EU uses this to display things
@@ -173,9 +175,10 @@ meta_slurp-upto() { ## meta slurp-upto <yyyy-mm-dd> [--date]: Slurps data "up to
 		append=" "$(date -d "$1" +%s%N)
 	fi
 
-	for func in $(grep -s -h -o '^query_server-[a-z-]*' $0 $GXADMIN_SITE_SPECIFIC | sort | sed 's/query_//g'); do
-		obtain_query $func $1
-		query_influx "$QUERY" "$query_name.daily" "$fields" "$tags" | sed "s/$/$append/"
+	# shellcheck disable=SC2013
+	for func in $(grep -s -h -o '^query_server-[a-z-]*' "$0" "$GXADMIN_SITE_SPECIFIC" | sort | sed 's/query_//g'); do
+		obtain_query "$func" "$1"
+		$wrapper query_influx "$QUERY" "$query_name.daily" "$fields" "$tags" | sed "s/$/$append/"
 	done
 }
 
@@ -192,7 +195,7 @@ meta_success() {
 }
 
 
-meta_influx-post() { ## meta influx-post <db> <file>: Post contents of file (in influx line protocol) to influx
+meta_influx-post() { ## <db> <file>: Post contents of file (in influx line protocol) to influx
 	handle_help "$@" <<-EOF
 		Post data to InfluxDB. Must be [influx line protocol formatted](https://docs.influxdata.com/influxdb/v1.7/write_protocols/line_protocol_tutorial/)
 
@@ -230,10 +233,10 @@ meta_influx-post() { ## meta influx-post <db> <file>: Post contents of file (in 
 		assert_file "$FILE"
 	fi
 
-	curl -XPOST "${INFLUX_URL}/write?db=${DB}&u=${INFLUX_USER}&p=${INFLUX_PASS}" --data-binary @${FILE}
+	curl --silent -XPOST "${INFLUX_URL}/write?db=${DB}&u=${INFLUX_USER}&p=${INFLUX_PASS}" --data-binary @"${FILE}"
 }
 
-meta_influx-query() { ## meta influx-query <db> "<query>": Query an influx DB
+meta_influx-query() { ## <db> "<query>": Query an influx DB
 	handle_help "$@" <<-EOF
 		Query an InfluxDB
 
@@ -261,7 +264,7 @@ meta_influx-query() { ## meta influx-query <db> "<query>": Query an influx DB
 	curl --silent "${INFLUX_URL}/query?db=${DB}&u=${INFLUX_USER}&p=${INFLUX_PASS}" --data-urlencode "q=${QUERY}"
 }
 
-meta_iquery-grt-export() { ## meta iquery-grt-export: Export data from a GRT database for sending to influx
+meta_iquery-grt-export() { ## : Export data from a GRT database for sending to influx
 	handle_help "$@" <<-EOF
 		**WARNING**: GRT database specific query, will not work with a galaxy database!
 	EOF
@@ -287,4 +290,15 @@ meta_iquery-grt-export() { ## meta iquery-grt-export: Export data from a GRT dat
 			api_galaxyinstance.title,
 			date
 	EOF
+}
+
+meta_whatsnew() { ## : What's new in this version of gxadmin
+	handle_help "$@" <<-EOF
+		Informs users of what's new in the changelog since their version
+	EOF
+
+	current_version=$(version)
+	prev_version=$(( current_version - 1 ))
+	#sed -n '1,/^# 12/d;/^# 11/q;p'
+	echo "$CHANGELOG" | sed -n "/^# ${prev_version}/q;p"
 }
