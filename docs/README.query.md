@@ -34,11 +34,11 @@ Command | Description
 [`query recent-jobs`](#query-recent-jobs) | Jobs run in the past <hours> (in any state)
 [`query runtime-per-user`](#query-runtime-per-user) | computation time of user (by email)
 [`query tool-available-metrics`](#query-tool-available-metrics) | list all available metrics for a given tool
-[`query tool-errors query tool-errors`](#query-tool-errors-query-tool-errors) | Summarize percent of tool runs in error over the past weeks for all tools that have failed (most popular tools first)
+[`query tool-errors`](#query-tool-errors) | Summarize percent of tool runs in error over the past weeks for all tools that have failed (most popular tools first)
 [`query tool-last-used-date`](#query-tool-last-used-date) | When was the most recent invocation of every tool
-[`query tool-likely-broken query tool-likely-broken`](#query-tool-likely-broken-query-tool-likely-broken) | Find tools that have been executed in recent weeks that are (or were due to job running) likely substantially broken
+[`query tool-likely-broken`](#query-tool-likely-broken) | Find tools that have been executed in recent weeks that are (or were due to job running) likely substantially broken
 [`query tool-metrics`](#query-tool-metrics) | See values of a specific metric
-[`query tool-new-errors query tool-new-errors`](#query-tool-new-errors-query-tool-new-errors) | Summarize percent of tool runs in error over the past weeks for "new tools"
+[`query tool-new-errors`](#query-tool-new-errors) | Summarize percent of tool runs in error over the past weeks for "new tools"
 [`query tool-popularity`](#query-tool-popularity) | Most run tools by month
 [`query tool-usage`](#query-tool-usage) | Counts of tool runs in the past weeks (default = all)
 [`query training-list`](#query-training-list) | List known trainings
@@ -680,7 +680,7 @@ Gives a list of available metrics, which can then be used to query.
      ...
 
 
-### query tool-errors query tool-errors
+### query tool-errors
 
 **NAME**
 
@@ -688,7 +688,7 @@ query tool-errors -  Summarize percent of tool runs in error over the past weeks
 
 **SYNOPSIS**
 
-`gxadmin query tool-errors query tool-errors [weeks|4]`
+`gxadmin query tool-errors [weeks|4]`
 
 **NOTES**
 
@@ -738,7 +738,7 @@ Example invocation:
 It is not truly every tool, there is no easy way to find the tools which have never been run.
 
 
-### query tool-likely-broken query tool-likely-broken
+### query tool-likely-broken
 
 **NAME**
 
@@ -746,7 +746,7 @@ query tool-likely-broken -  Find tools that have been executed in recent weeks t
 
 **SYNOPSIS**
 
-`gxadmin query tool-likely-broken query tool-likely-broken [weeks|4]`
+`gxadmin query tool-likely-broken [weeks|4]`
 
 **NOTES**
 
@@ -801,7 +801,7 @@ do some aggregations. The following requires [data_hacks](https://github.com/bit
        95.5703 -   105.8750 [     1]: ∎ (0.23%)
 
 
-### query tool-new-errors query tool-new-errors
+### query tool-new-errors
 
 **NAME**
 
@@ -809,7 +809,7 @@ query tool-new-errors -  Summarize percent of tool runs in error over the past w
 
 **SYNOPSIS**
 
-`gxadmin query tool-new-errors query tool-new-errors [weeks|4]`
+`gxadmin query tool-new-errors [weeks|4]`
 
 **NOTES**
 

@@ -2466,7 +2466,7 @@ query_workflow-invocation-status() { ## : Report on how many workflows are in ne
 	EOF
 }
 
-query_tool-new-errors() { ## query tool-new-errors [weeks|4]: Summarize percent of tool runs in error over the past weeks for "new tools"
+query_tool-new-errors() { ## [weeks|4]: Summarize percent of tool runs in error over the past weeks for "new tools"
 	handle_help "$@" <<-EOF
 		See jobs-in-error summary for recent tools (tools whose first execution is in recent weeks).
 
@@ -2515,7 +2515,7 @@ query_tool-new-errors() { ## query tool-new-errors [weeks|4]: Summarize percent 
 	EOF
 }
 
-query_tool-errors() { ## query tool-errors [weeks|4]: Summarize percent of tool runs in error over the past weeks for all tools that have failed (most popular tools first)
+query_tool-errors() { ## [weeks|4]: Summarize percent of tool runs in error over the past weeks for all tools that have failed (most popular tools first)
 	handle_help "$@" <<-EOF
 		See jobs-in-error summary for recently executed tools that have failed at least 10% of the time.
 
@@ -2559,7 +2559,7 @@ query_tool-errors() { ## query tool-errors [weeks|4]: Summarize percent of tool 
 	EOF
 }
 
-query_tool-likely-broken() { ## query tool-likely-broken [weeks|4]: Find tools that have been executed in recent weeks that are (or were due to job running) likely substantially broken
+query_tool-likely-broken() { ## [weeks|4]: Find tools that have been executed in recent weeks that are (or were due to job running) likely substantially broken
 	handle_help "$@" <<-EOF
 		This runs an identical query to tool-errors, except filtering for tools
 		which were run more than 4 times, and have a failure rate over 95%.

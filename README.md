@@ -178,11 +178,11 @@ Command | Description
 [`query recent-jobs`](docs/README.query.md#query-recent-jobs) | Jobs run in the past <hours> (in any state)
 [`query runtime-per-user`](docs/README.query.md#query-runtime-per-user) | computation time of user (by email)
 [`query tool-available-metrics`](docs/README.query.md#query-tool-available-metrics) | list all available metrics for a given tool
-[`query tool-errors query tool-errors`](docs/README.query.md#query-tool-errors-query-tool-errors) | Summarize percent of tool runs in error over the past weeks for all tools that have failed (most popular tools first)
+[`query tool-errors`](docs/README.query.md#query-tool-errors) | Summarize percent of tool runs in error over the past weeks for all tools that have failed (most popular tools first)
 [`query tool-last-used-date`](docs/README.query.md#query-tool-last-used-date) | When was the most recent invocation of every tool
-[`query tool-likely-broken query tool-likely-broken`](docs/README.query.md#query-tool-likely-broken-query-tool-likely-broken) | Find tools that have been executed in recent weeks that are (or were due to job running) likely substantially broken
+[`query tool-likely-broken`](docs/README.query.md#query-tool-likely-broken) | Find tools that have been executed in recent weeks that are (or were due to job running) likely substantially broken
 [`query tool-metrics`](docs/README.query.md#query-tool-metrics) | See values of a specific metric
-[`query tool-new-errors query tool-new-errors`](docs/README.query.md#query-tool-new-errors-query-tool-new-errors) | Summarize percent of tool runs in error over the past weeks for "new tools"
+[`query tool-new-errors`](docs/README.query.md#query-tool-new-errors) | Summarize percent of tool runs in error over the past weeks for "new tools"
 [`query tool-popularity`](docs/README.query.md#query-tool-popularity) | Most run tools by month
 [`query tool-usage`](docs/README.query.md#query-tool-usage) | Counts of tool runs in the past weeks (default = all)
 [`query training-list`](docs/README.query.md#query-training-list) | List known trainings
