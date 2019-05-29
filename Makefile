@@ -10,7 +10,7 @@ gxadmin: $(PARTS)
 	cat $(PARTS) > gxadmin
 	chmod +x gxadmin
 
-test: gxadmin shellcheck
+test: gxadmin
 	./test.sh
 
 shellcheck: gxadmin

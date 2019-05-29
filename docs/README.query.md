@@ -8,9 +8,9 @@ Command | Description
 [`query disk-usage`](#query-disk-usage) | Disk usage per object store.
 [`query errored-jobs`](#query-errored-jobs) | Lists jobs that errored in the last N hours.
 [`query groups-list`](#query-groups-list) | List all groups known to Galaxy
-[`query hdca-datasets`](#query-hdca-datasets) | (NEW) List of files in a dataset collection
-[`query hdca-info`](#query-hdca-info) | (NEW) Information on a dataset collection
-[`query history-contents`](#query-history-contents) | (NEW) List datasets and/or collections in a history
+[`query hdca-datasets`](#query-hdca-datasets) | List of files in a dataset collection
+[`query hdca-info`](#query-hdca-info) | Information on a dataset collection
+[`query history-contents`](#query-history-contents) | List datasets and/or collections in a history
 [`query job-history`](#query-job-history) | Job state history for a specific job
 [`query job-inputs`](#query-job-inputs) | Input datasets to a specific job
 [`query job-outputs`](#query-job-outputs) | Output datasets from a specific job
@@ -43,8 +43,8 @@ Command | Description
 [`query training-members`](#query-training-members) | List users in a specific training
 [`query training-queue`](#query-training-queue) | Jobs currently being run by people in a given training
 [`query ts-repos`](#query-ts-repos) | Counts of toolshed repositories by toolshed and owner.
-[`query user-cpu-years`](#query-user-cpu-years) | (NEW) CPU years allocated to tools by user
-[`query user-recent-aggregate-jobs`](#query-user-recent-aggregate-jobs) | (NEW) Show aggregate information for jobs in past N days for user
+[`query user-cpu-years`](#query-user-cpu-years) | CPU years allocated to tools by user
+[`query user-recent-aggregate-jobs`](#query-user-recent-aggregate-jobs) | Show aggregate information for jobs in past N days for user
 [`query users-count`](#query-users-count) | Shows sums of active/external/deleted/purged accounts
 [`query users-total`](#query-users-total) | Total number of Galaxy users (incl deleted, purged, inactive)
 [`query workflow-connections`](#query-workflow-connections) | The connections of tools, from output to input, in the latest (or all) versions of user workflows
@@ -145,7 +145,7 @@ query groups-list -  List all groups known to Galaxy
 
 **NAME**
 
-query hdca-datasets -  (NEW) List of files in a dataset collection
+query hdca-datasets -  List of files in a dataset collection
 
 **SYNOPSIS**
 
@@ -156,7 +156,7 @@ query hdca-datasets -  (NEW) List of files in a dataset collection
 
 **NAME**
 
-query hdca-info -  (NEW) Information on a dataset collection
+query hdca-info -  Information on a dataset collection
 
 **SYNOPSIS**
 
@@ -167,7 +167,7 @@ query hdca-info -  (NEW) Information on a dataset collection
 
 **NAME**
 
-query history-contents -  (NEW) List datasets and/or collections in a history
+query history-contents -  List datasets and/or collections in a history
 
 **SYNOPSIS**
 
@@ -875,7 +875,7 @@ query ts-repos -  Counts of toolshed repositories by toolshed and owner.
 
 **NAME**
 
-query user-cpu-years -  (NEW) CPU years allocated to tools by user
+query user-cpu-years -  CPU years allocated to tools by user
 
 **SYNOPSIS**
 
@@ -905,7 +905,7 @@ rank  | user_id |  username   | cpu_years
 
 **NAME**
 
-query user-recent-aggregate-jobs -  (NEW) Show aggregate information for jobs in past N days for user
+query user-recent-aggregate-jobs -  Show aggregate information for jobs in past N days for user
 
 **SYNOPSIS**
 

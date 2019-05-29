@@ -159,7 +159,7 @@ mutate_fail-history() { ## <history_id> [--commit]: Mark all jobs within a histo
 	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
 }
 
-mutate_delete-group-role() { ## <group_name> [--commit]: (NEW) Remove the group, role, and any user-group + user-role associations
+mutate_delete-group-role() { ## <group_name> [--commit]: Remove the group, role, and any user-group + user-role associations
 	handle_help "$@" <<-EOF
 		Wipe out a group+role, and user associations.
 	EOF

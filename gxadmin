@@ -874,7 +874,7 @@ mutate_fail-history() { ## <history_id> [--commit]: Mark all jobs within a histo
 	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
 }
 
-mutate_delete-group-role() { ## <group_name> [--commit]: (NEW) Remove the group, role, and any user-group + user-role associations
+mutate_delete-group-role() { ## <group_name> [--commit]: Remove the group, role, and any user-group + user-role associations
 	handle_help "$@" <<-EOF
 		Wipe out a group+role, and user associations.
 	EOF
@@ -1860,7 +1860,7 @@ query_monthly-data(){ ## [year]: Number of active users per month, running jobs
 	EOF
 }
 
-query_user-cpu-years() { ## : (NEW) CPU years allocated to tools by user
+query_user-cpu-years() { ## : CPU years allocated to tools by user
 	handle_help "$@" <<-EOF
 		This uses the galaxy_slots and runtime_seconds metrics in order to
 		calculate allocated CPU years. This will not be the value of what is
@@ -2464,7 +2464,7 @@ query_workflow-invocation-status() { ## : Report on how many workflows are in ne
 	EOF
 }
 
-query_user-recent-aggregate-jobs() { ## <username|id|email> [days|7]: (NEW) Show aggregate information for jobs in past N days for user
+query_user-recent-aggregate-jobs() { ## <username|id|email> [days|7]: Show aggregate information for jobs in past N days for user
 	handle_help "$@" <<-EOF
 		Obtain an overview of tools that a user has run in the past N days
 	EOF
@@ -2490,7 +2490,7 @@ query_user-recent-aggregate-jobs() { ## <username|id|email> [days|7]: (NEW) Show
 	EOF
 }
 
-query_history-contents() { ## <history_id> [--dataset|--collection]: (NEW) List datasets and/or collections in a history
+query_history-contents() { ## <history_id> [--dataset|--collection]: List datasets and/or collections in a history
 	handle_help "$@" <<-EOF
 		Obtain an overview of tools that a user has run in the past N days
 	EOF
@@ -2512,7 +2512,7 @@ query_history-contents() { ## <history_id> [--dataset|--collection]: (NEW) List 
 	EOF
 }
 
-query_hdca-info() { ## <hdca_id>: (NEW) Information on a dataset collection
+query_hdca-info() { ## <hdca_id>: Information on a dataset collection
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -2523,7 +2523,7 @@ query_hdca-info() { ## <hdca_id>: (NEW) Information on a dataset collection
 	EOF
 }
 
-query_hdca-datasets() { ## <hdca_id>: (NEW) List of files in a dataset collection
+query_hdca-datasets() { ## <hdca_id>: List of files in a dataset collection
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -3101,7 +3101,7 @@ galaxy_migrate-tool-install-to-sqlite() { ## : Converts normal potsgres toolshed
 	success "Complete"
 }
 
-galaxy_migrate-tool-install-from-sqlite() { ## [sqlite-db]: (NEW) Converts SQLite version into normal potsgres toolshed repository tables
+galaxy_migrate-tool-install-from-sqlite() { ## [sqlite-db]: Converts SQLite version into normal potsgres toolshed repository tables
 	handle_help "$@" <<-EOF
 		    $ gxadmin migrate-tool-install-from-sqlite db.sqlite
 		    Migrating tables
@@ -3181,7 +3181,7 @@ galaxy_migrate-tool-install-from-sqlite() { ## [sqlite-db]: (NEW) Converts SQLit
 	success "Complete"
 }
 
-galaxy_amqp-test() { ## <amqp_url>: (NEW) Test a given AMQP URL for connectivity
+galaxy_amqp-test() { ## <amqp_url>: Test a given AMQP URL for connectivity
 	handle_help "$@" <<-EOF
 		**Note**: must be run in Galaxy Virtualenv
 
@@ -3228,6 +3228,38 @@ EOF
 )
 
 	python -c "$script"
+}
+
+
+galaxy_cleanup-jwd() { ## <working_dir> [1|months ago]: (NEW) Cleanup job working directories
+	handle_help "$@" <<-EOF
+		Scans through a provided job working directory subfolder, e.g.
+		job_working_directory/005/ to find all folders which were changed less
+		recently than N months.
+
+		Then it takes the first 1000 entries and cleans them up. This was more
+		of a hack to handle the fact that the list produced by find is really
+		long, and the for loop hangs until it's done generating the list.
+	EOF
+
+	assert_count_ge $# 1 "Must supply at least working dir"
+
+	jwd=$1
+	months=${2:-1}
+
+	# scan a given directory for jwds.
+	for possible_dir in $(find "$jwd" -maxdepth 2 -mindepth 2  -newermt "$months month ago" | head -n 1000); do
+			job_id=$(basename $possible_dir)
+			if [[ "$job_id" =~ ^[0-9]{3,}$ ]]; then
+					state=$(psql -c "COPY (select state from job where id = $job_id) to STDOUT with CSV")
+					if [[ "$state" == "error" ]] || [[ "$state" == "ok" ]] || [[ "$state" == "deleted" ]] || [[ "$state" == "paused" ]]; then
+							echo "- $possible_dir $job_id $state"
+							rm -rf $possible_dir
+					else
+							echo "? $possible_dir $job_id $state"
+					fi
+			fi
+	done
 }
 report_user-info(){ ## <user_id|username|email>: Quick overview of a Galaxy user in your system
 	handle_help "$@" <<-EOF
@@ -3877,7 +3909,7 @@ meta_success() {
 }
 
 
-meta_influx-post() { ## <db> <file>: (NEW) Post contents of file (in influx line protocol) to influx
+meta_influx-post() { ## <db> <file>: Post contents of file (in influx line protocol) to influx
 	handle_help "$@" <<-EOF
 		Post data to InfluxDB. Must be [influx line protocol formatted](https://docs.influxdata.com/influxdb/v1.7/write_protocols/line_protocol_tutorial/)
 
@@ -3918,7 +3950,7 @@ meta_influx-post() { ## <db> <file>: (NEW) Post contents of file (in influx line
 	curl --silent -XPOST "${INFLUX_URL}/write?db=${DB}&u=${INFLUX_USER}&p=${INFLUX_PASS}" --data-binary @"${FILE}"
 }
 
-meta_influx-query() { ## <db> "<query>": (NEW) Query an influx DB
+meta_influx-query() { ## <db> "<query>": Query an influx DB
 	handle_help "$@" <<-EOF
 		Query an InfluxDB
 

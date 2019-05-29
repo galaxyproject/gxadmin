@@ -115,17 +115,18 @@ Command | Description
 
 Command | Description
 ------- | -----------
-[`galaxy amqp-test`](docs/README.galaxy.md#galaxy-amqp-test) | (NEW) Test a given AMQP URL for connectivity
+[`galaxy amqp-test`](docs/README.galaxy.md#galaxy-amqp-test) | Test a given AMQP URL for connectivity
 [`galaxy cleanup`](docs/README.galaxy.md#galaxy-cleanup) | Cleanup histories/hdas/etc for past N days (default=30)
-[`galaxy migrate-tool-install-from-sqlite`](docs/README.galaxy.md#galaxy-migrate-tool-install-from-sqlite) | (NEW) Converts SQLite version into normal potsgres toolshed repository tables
+[`galaxy cleanup-jwd`](docs/README.galaxy.md#galaxy-cleanup-jwd) | (NEW) Cleanup job working directories
+[`galaxy migrate-tool-install-from-sqlite`](docs/README.galaxy.md#galaxy-migrate-tool-install-from-sqlite) | Converts SQLite version into normal potsgres toolshed repository tables
 [`galaxy migrate-tool-install-to-sqlite`](docs/README.galaxy.md#galaxy-migrate-tool-install-to-sqlite) | Converts normal potsgres toolshed repository tables into the SQLite version
 
 ### meta
 
 Command | Description
 ------- | -----------
-[`meta influx-post`](docs/README.meta.md#meta-influx-post) | (NEW) Post contents of file (in influx line protocol) to influx
-[`meta influx-query`](docs/README.meta.md#meta-influx-query) | (NEW) Query an influx DB
+[`meta influx-post`](docs/README.meta.md#meta-influx-post) | Post contents of file (in influx line protocol) to influx
+[`meta influx-query`](docs/README.meta.md#meta-influx-query) | Query an influx DB
 [`meta iquery-grt-export`](docs/README.meta.md#meta-iquery-grt-export) | Export data from a GRT database for sending to influx
 [`meta slurp-current`](docs/README.meta.md#meta-slurp-current) | Executes what used to be "Galaxy Slurp"
 [`meta slurp-upto`](docs/README.meta.md#meta-slurp-upto) | Slurps data "up to" a specific date.
@@ -136,7 +137,7 @@ Command | Description
 
 Command | Description
 ------- | -----------
-[`mutate delete-group-role`](docs/README.mutate.md#mutate-delete-group-role) | (NEW) Remove the group, role, and any user-group + user-role associations
+[`mutate delete-group-role`](docs/README.mutate.md#mutate-delete-group-role) | Remove the group, role, and any user-group + user-role associations
 [`mutate fail-history`](docs/README.mutate.md#mutate-fail-history) | Mark all jobs within a history to state error
 [`mutate fail-job`](docs/README.mutate.md#mutate-fail-job) | Sets a job state to error
 [`mutate fail-terminal-datasets`](docs/README.mutate.md#mutate-fail-terminal-datasets) | Causes the output datasets of jobs which were manually failed, to be marked as failed
@@ -151,9 +152,9 @@ Command | Description
 [`query disk-usage`](docs/README.query.md#query-disk-usage) | Disk usage per object store.
 [`query errored-jobs`](docs/README.query.md#query-errored-jobs) | Lists jobs that errored in the last N hours.
 [`query groups-list`](docs/README.query.md#query-groups-list) | List all groups known to Galaxy
-[`query hdca-datasets`](docs/README.query.md#query-hdca-datasets) | (NEW) List of files in a dataset collection
-[`query hdca-info`](docs/README.query.md#query-hdca-info) | (NEW) Information on a dataset collection
-[`query history-contents`](docs/README.query.md#query-history-contents) | (NEW) List datasets and/or collections in a history
+[`query hdca-datasets`](docs/README.query.md#query-hdca-datasets) | List of files in a dataset collection
+[`query hdca-info`](docs/README.query.md#query-hdca-info) | Information on a dataset collection
+[`query history-contents`](docs/README.query.md#query-history-contents) | List datasets and/or collections in a history
 [`query job-history`](docs/README.query.md#query-job-history) | Job state history for a specific job
 [`query job-inputs`](docs/README.query.md#query-job-inputs) | Input datasets to a specific job
 [`query job-outputs`](docs/README.query.md#query-job-outputs) | Output datasets from a specific job
@@ -186,8 +187,8 @@ Command | Description
 [`query training-members`](docs/README.query.md#query-training-members) | List users in a specific training
 [`query training-queue`](docs/README.query.md#query-training-queue) | Jobs currently being run by people in a given training
 [`query ts-repos`](docs/README.query.md#query-ts-repos) | Counts of toolshed repositories by toolshed and owner.
-[`query user-cpu-years`](docs/README.query.md#query-user-cpu-years) | (NEW) CPU years allocated to tools by user
-[`query user-recent-aggregate-jobs`](docs/README.query.md#query-user-recent-aggregate-jobs) | (NEW) Show aggregate information for jobs in past N days for user
+[`query user-cpu-years`](docs/README.query.md#query-user-cpu-years) | CPU years allocated to tools by user
+[`query user-recent-aggregate-jobs`](docs/README.query.md#query-user-recent-aggregate-jobs) | Show aggregate information for jobs in past N days for user
 [`query users-count`](docs/README.query.md#query-users-count) | Shows sums of active/external/deleted/purged accounts
 [`query users-total`](docs/README.query.md#query-users-total) | Total number of Galaxy users (incl deleted, purged, inactive)
 [`query workflow-connections`](docs/README.query.md#query-workflow-connections) | The connections of tools, from output to input, in the latest (or all) versions of user workflows

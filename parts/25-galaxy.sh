@@ -197,7 +197,7 @@ galaxy_migrate-tool-install-to-sqlite() { ## : Converts normal potsgres toolshed
 	success "Complete"
 }
 
-galaxy_migrate-tool-install-from-sqlite() { ## [sqlite-db]: (NEW) Converts SQLite version into normal potsgres toolshed repository tables
+galaxy_migrate-tool-install-from-sqlite() { ## [sqlite-db]: Converts SQLite version into normal potsgres toolshed repository tables
 	handle_help "$@" <<-EOF
 		    $ gxadmin migrate-tool-install-from-sqlite db.sqlite
 		    Migrating tables
@@ -277,7 +277,7 @@ galaxy_migrate-tool-install-from-sqlite() { ## [sqlite-db]: (NEW) Converts SQLit
 	success "Complete"
 }
 
-galaxy_amqp-test() { ## <amqp_url>: (NEW) Test a given AMQP URL for connectivity
+galaxy_amqp-test() { ## <amqp_url>: Test a given AMQP URL for connectivity
 	handle_help "$@" <<-EOF
 		**Note**: must be run in Galaxy Virtualenv
 
@@ -324,4 +324,36 @@ EOF
 )
 
 	python -c "$script"
+}
+
+
+galaxy_cleanup-jwd() { ## <working_dir> [1|months ago]: (NEW) Cleanup job working directories
+	handle_help "$@" <<-EOF
+		Scans through a provided job working directory subfolder, e.g.
+		job_working_directory/005/ to find all folders which were changed less
+		recently than N months.
+
+		Then it takes the first 1000 entries and cleans them up. This was more
+		of a hack to handle the fact that the list produced by find is really
+		long, and the for loop hangs until it's done generating the list.
+	EOF
+
+	assert_count_ge $# 1 "Must supply at least working dir"
+
+	jwd=$1
+	months=${2:-1}
+
+	# scan a given directory for jwds.
+	for possible_dir in $(find "$jwd" -maxdepth 2 -mindepth 2  -newermt "$months month ago" | head -n 1000); do
+			job_id=$(basename $possible_dir)
+			if [[ "$job_id" =~ ^[0-9]{3,}$ ]]; then
+					state=$(psql -c "COPY (select state from job where id = $job_id) to STDOUT with CSV")
+					if [[ "$state" == "error" ]] || [[ "$state" == "ok" ]] || [[ "$state" == "deleted" ]] || [[ "$state" == "paused" ]]; then
+							echo "- $possible_dir $job_id $state"
+							rm -rf $possible_dir
+					else
+							echo "? $possible_dir $job_id $state"
+					fi
+			fi
+	done
 }

@@ -2,8 +2,8 @@
 
 Command | Description
 ------- | -----------
-[`meta influx-post`](#meta-influx-post) | (NEW) Post contents of file (in influx line protocol) to influx
-[`meta influx-query`](#meta-influx-query) | (NEW) Query an influx DB
+[`meta influx-post`](#meta-influx-post) | Post contents of file (in influx line protocol) to influx
+[`meta influx-query`](#meta-influx-query) | Query an influx DB
 [`meta iquery-grt-export`](#meta-iquery-grt-export) | Export data from a GRT database for sending to influx
 [`meta slurp-current`](#meta-slurp-current) | Executes what used to be "Galaxy Slurp"
 [`meta slurp-upto`](#meta-slurp-upto) | Slurps data "up to" a specific date.
@@ -14,7 +14,7 @@ Command | Description
 
 **NAME**
 
-meta influx-post -  (NEW) Post contents of file (in influx line protocol) to influx
+meta influx-post -  Post contents of file (in influx line protocol) to influx
 
 **SYNOPSIS**
 
@@ -47,7 +47,7 @@ them. Influx recommends 5-10k lines:
 
 **NAME**
 
-meta influx-query -  (NEW) Query an influx DB
+meta influx-query -  Query an influx DB
 
 **SYNOPSIS**
 

@@ -2,16 +2,17 @@
 
 Command | Description
 ------- | -----------
-[`galaxy amqp-test`](#galaxy-amqp-test) | (NEW) Test a given AMQP URL for connectivity
+[`galaxy amqp-test`](#galaxy-amqp-test) | Test a given AMQP URL for connectivity
 [`galaxy cleanup`](#galaxy-cleanup) | Cleanup histories/hdas/etc for past N days (default=30)
-[`galaxy migrate-tool-install-from-sqlite`](#galaxy-migrate-tool-install-from-sqlite) | (NEW) Converts SQLite version into normal potsgres toolshed repository tables
+[`galaxy cleanup-jwd`](#galaxy-cleanup-jwd) | (NEW) Cleanup job working directories
+[`galaxy migrate-tool-install-from-sqlite`](#galaxy-migrate-tool-install-from-sqlite) | Converts SQLite version into normal potsgres toolshed repository tables
 [`galaxy migrate-tool-install-to-sqlite`](#galaxy-migrate-tool-install-to-sqlite) | Converts normal potsgres toolshed repository tables into the SQLite version
 
 ### galaxy amqp-test
 
 **NAME**
 
-galaxy amqp-test -  (NEW) Test a given AMQP URL for connectivity
+galaxy amqp-test -  Test a given AMQP URL for connectivity
 
 **SYNOPSIS**
 
@@ -65,11 +66,32 @@ galaxy cleanup -  Cleanup histories/hdas/etc for past N days (default=30)
 Cleanup histories/hdas/etc for past N days using the python objects-based method
 
 
+### galaxy cleanup-jwd
+
+**NAME**
+
+galaxy cleanup-jwd -  (NEW) Cleanup job working directories
+
+**SYNOPSIS**
+
+`gxadmin galaxy cleanup-jwd <working_dir> [1|months ago]`
+
+**NOTES**
+
+Scans through a provided job working directory subfolder, e.g.
+job_working_directory/005/ to find all folders which were changed less
+recently than N months.
+
+Then it takes the first 1000 entries and cleans them up. This was more
+of a hack to handle the fact that the list produced by find is really
+long, and the for loop hangs until it's done generating the list.
+
+
 ### galaxy migrate-tool-install-from-sqlite
 
 **NAME**
 
-galaxy migrate-tool-install-from-sqlite -  (NEW) Converts SQLite version into normal potsgres toolshed repository tables
+galaxy migrate-tool-install-from-sqlite -  Converts SQLite version into normal potsgres toolshed repository tables
 
 **SYNOPSIS**
 

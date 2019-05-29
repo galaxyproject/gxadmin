@@ -956,7 +956,7 @@ query_monthly-data(){ ## [year]: Number of active users per month, running jobs
 	EOF
 }
 
-query_user-cpu-years() { ## : (NEW) CPU years allocated to tools by user
+query_user-cpu-years() { ## : CPU years allocated to tools by user
 	handle_help "$@" <<-EOF
 		This uses the galaxy_slots and runtime_seconds metrics in order to
 		calculate allocated CPU years. This will not be the value of what is
@@ -1560,7 +1560,7 @@ query_workflow-invocation-status() { ## : Report on how many workflows are in ne
 	EOF
 }
 
-query_user-recent-aggregate-jobs() { ## <username|id|email> [days|7]: (NEW) Show aggregate information for jobs in past N days for user
+query_user-recent-aggregate-jobs() { ## <username|id|email> [days|7]: Show aggregate information for jobs in past N days for user
 	handle_help "$@" <<-EOF
 		Obtain an overview of tools that a user has run in the past N days
 	EOF
@@ -1586,7 +1586,7 @@ query_user-recent-aggregate-jobs() { ## <username|id|email> [days|7]: (NEW) Show
 	EOF
 }
 
-query_history-contents() { ## <history_id> [--dataset|--collection]: (NEW) List datasets and/or collections in a history
+query_history-contents() { ## <history_id> [--dataset|--collection]: List datasets and/or collections in a history
 	handle_help "$@" <<-EOF
 		Obtain an overview of tools that a user has run in the past N days
 	EOF
@@ -1608,7 +1608,7 @@ query_history-contents() { ## <history_id> [--dataset|--collection]: (NEW) List 
 	EOF
 }
 
-query_hdca-info() { ## <hdca_id>: (NEW) Information on a dataset collection
+query_hdca-info() { ## <hdca_id>: Information on a dataset collection
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -1619,7 +1619,7 @@ query_hdca-info() { ## <hdca_id>: (NEW) Information on a dataset collection
 	EOF
 }
 
-query_hdca-datasets() { ## <hdca_id>: (NEW) List of files in a dataset collection
+query_hdca-datasets() { ## <hdca_id>: List of files in a dataset collection
 	handle_help "$@" <<-EOF
 	EOF
 
