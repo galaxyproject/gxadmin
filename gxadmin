@@ -3905,7 +3905,7 @@ meta_slurp-upto() { ## <yyyy-mm-dd>: Slurps data up to a specific date.
 	for func in $(grep -s -h -o '^query_server-[a-z-]*' "$0" "$GXADMIN_SITE_SPECIFIC" | sort | sed 's/query_//g'); do
 		obtain_query "$func" "$1" "<="
 		$wrapper query_influx "$QUERY" "$query_name.upto" "$fields" "$tags" | \
-			sed "s/$/$(date -d "$1" +%s%N)/"
+			sed "s/$/ $(date -d "$1" +%s%N)/"
 	done
 }
 
@@ -3957,7 +3957,7 @@ meta_slurp-day() { ## <yyyy-mm-dd>: Slurps data on a specific date.
 	for func in $(grep -s -h -o '^query_server-[a-z-]*' "$0" "$GXADMIN_SITE_SPECIFIC" | sort | sed 's/query_//g'); do
 		obtain_query "$func" "$1"
 		$wrapper query_influx "$QUERY" "$query_name.daily" "$fields" "$tags" | \
-			sed "s/$/$(date -d "$1" +%s%N)/"
+			sed "s/$/ $(date -d "$1" +%s%N)/"
 	done
 }
 
