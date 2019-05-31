@@ -123,16 +123,34 @@ meta_slurp-current() { ## [--date]: Executes what used to be "Galaxy Slurp"
 	done
 }
 
-meta_slurp-upto() { ## <yyyy-mm-dd> [--date]: Slurps data "up to" a specific date.
+meta_slurp-upto() { ## <yyyy-mm-dd>: Slurps data up to a specific date.
 	handle_help "$@" <<-EOF
 		Obtain influx compatible metrics regarding the summed state of the
 		server up to a specific date. UseGalaxy.EU uses this to display things
+		like charts of "how many users were registered as of date X".
+
+		This calls all of the same functions as 'gxadmin meta slurp-current',
+		but with date filters for the entries' creation times.
+	EOF
+
+	# shellcheck disable=SC2013
+	for func in $(grep -s -h -o '^query_server-[a-z-]*' "$0" "$GXADMIN_SITE_SPECIFIC" | sort | sed 's/query_//g'); do
+		obtain_query "$func" "$1" "<="
+		$wrapper query_influx "$QUERY" "$query_name.upto" "$fields" "$tags" | \
+			sed "s/$/$(date -d "$1" +%s%N)/"
+	done
+}
+
+meta_slurp-day() { ## <yyyy-mm-dd>: Slurps data on a specific date.
+	handle_help "$@" <<-EOF
+		Obtain influx compatible metrics regarding the state of the
+		server on a specific date. UseGalaxy.EU uses this to display things
 		like charts of "how many users were registered as of date X". You can
 		backfill data from your server by running a for loop like:
 
 		    #!/bin/bash
 		    for i in range {1..365}; do
-		        gxadmin meta slurp-upto \$(date -d "$i days ago" "+%Y-%m-%d") | <get into influx somehow>
+		        gxadmin meta slurp-day \$(date -d "$i days ago" "+%Y-%m-%d") | <get into influx somehow>
 		    done
 
 		It is expected that you are passing this straight to telegraf, there is
@@ -141,15 +159,12 @@ meta_slurp-upto() { ## <yyyy-mm-dd> [--date]: Slurps data "up to" a specific dat
 		This calls all of the same functions as 'gxadmin meta slurp-current',
 		but with date filters for the entries' creation times.
 
-		Supplying --date will include the supplied yyyy-mm-dd timestamp at the
-	end of the line, making it compatible for "gxadmin meta influx-post" usage
-
 		You can add your own functions which are included in this output, using
 		the \$GXADMIN_SITE_SPECIFIC file. They must start with the prefix
 		"query_server-", e.g. "query_server-mymetric". They should include a
 		date filter as well, or the metrics reported here will be less useful.
 
-		    $ gxadmin meta slurp-upto 2019-01-01
+		    $ gxadmin meta slurp-day 2019-01-01
 		    server-allocated-cpu.daily,job_runner_name=condor cpu_years=102.00
 		    server-datasets.daily,deleted=f,object_store_id=,state=error,purged=f count=37,size=29895528
 		    server-datasets.daily,deleted=f,object_store_id=,state=ok,purged=f count=72,size=76739510
@@ -170,15 +185,11 @@ meta_slurp-upto() { ## <yyyy-mm-dd> [--date]: Slurps data "up to" a specific dat
 
 	EOF
 
-	append=""
-	if [[ $2 == "--date" ]]; then
-		append=" "$(date -d "$1" +%s%N)
-	fi
-
 	# shellcheck disable=SC2013
 	for func in $(grep -s -h -o '^query_server-[a-z-]*' "$0" "$GXADMIN_SITE_SPECIFIC" | sort | sed 's/query_//g'); do
 		obtain_query "$func" "$1"
-		$wrapper query_influx "$QUERY" "$query_name.daily" "$fields" "$tags" | sed "s/$/$append/"
+		$wrapper query_influx "$QUERY" "$query_name.daily" "$fields" "$tags" | \
+			sed "s/$/$(date -d "$1" +%s%N)/"
 	done
 }
 

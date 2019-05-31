@@ -1286,9 +1286,14 @@ query_server-users() {
 	handle_help "$@" <<-EOF
 	EOF
 
+	op="="
+	if (( $# > 1 )); then
+		op="$2"
+	fi
+
 	date_filter=""
 	if (( $# > 0 )); then
-		date_filter="WHERE date_trunc('day', create_time AT TIME ZONE 'UTC') = '$1'::date"
+		date_filter="WHERE date_trunc('day', create_time AT TIME ZONE 'UTC') $op '$1'::date"
 	fi
 
 	fields="count=4"
@@ -1309,9 +1314,14 @@ query_server-groups() {
 	handle_help "$@" <<-EOF
 	EOF
 
+	op="="
+	if (( $# > 1 )); then
+		op="$2"
+	fi
+
 	date_filter=""
 	if (( $# > 0 )); then
-		date_filter="AND galaxy_group.create_time AT TIME ZONE 'UTC' <= '$1'::date AND date_trunc('day', user_group_association.create_time AT TIME ZONE 'UTC') = '$1'::date"
+		date_filter="AND galaxy_group.create_time AT TIME ZONE 'UTC' <= '$1'::date AND date_trunc('day', user_group_association.create_time AT TIME ZONE 'UTC') $op '$1'::date"
 	fi
 
 
@@ -1334,9 +1344,14 @@ query_server-datasets() {
 	handle_help "$@" <<-EOF
 	EOF
 
+	op="="
+	if (( $# > 1 )); then
+		op="$2"
+	fi
+
 	date_filter=""
 	if (( $# > 0 )); then
-		date_filter="WHERE date_trunc('day', create_time) AT TIME ZONE 'UTC' = '$1'::date"
+		date_filter="WHERE date_trunc('day', create_time) AT TIME ZONE 'UTC' $op '$1'::date"
 	fi
 
 	fields="count=4;size=5"
@@ -1362,9 +1377,14 @@ query_server-hda() {
 	handle_help "$@" <<-EOF
 	EOF
 
+	op="="
+	if (( $# > 1 )); then
+		op="$2"
+	fi
+
 	date_filter=""
 	if (( $# > 0 )); then
-		date_filter="AND date_trunc('day', history_dataset_association.create_time) AT TIME ZONE 'UTC' = '$1'::date"
+		date_filter="AND date_trunc('day', history_dataset_association.create_time) AT TIME ZONE 'UTC' $op '$1'::date"
 	fi
 
 	fields="sum=2;avg=3;min=4;max=5;count=6"
@@ -1393,9 +1413,14 @@ query_server-ts-repos() {
 	handle_help "$@" <<-EOF
 	EOF
 
+	op="="
+	if (( $# > 1 )); then
+		op="$2"
+	fi
+
 	date_filter=""
 	if (( $# > 0 )); then
-		date_filter="WHERE date_trunc('day', create_time AT TIME ZONE 'UTC') = '$1'::date"
+		date_filter="WHERE date_trunc('day', create_time AT TIME ZONE 'UTC') $op '$1'::date"
 	fi
 
 	fields="count=2"
@@ -1417,9 +1442,14 @@ query_server-histories() {
 	handle_help "$@" <<-EOF
 	EOF
 
+	op="="
+	if (( $# > 1 )); then
+		op="$2"
+	fi
+
 	date_filter=""
 	if (( $# > 0 )); then
-		date_filter="WHERE date_trunc('day', create_time AT TIME ZONE 'UTC') = '$1'::date"
+		date_filter="WHERE date_trunc('day', create_time AT TIME ZONE 'UTC') $op '$1'::date"
 	fi
 
 	fields="count=6"
@@ -1440,9 +1470,14 @@ query_server-jobs() {
 	handle_help "$@" <<-EOF
 	EOF
 
+	op="="
+	if (( $# > 1 )); then
+		op="$2"
+	fi
+
 	date_filter=""
 	if (( $# > 0 )); then
-		date_filter="WHERE date_trunc('day', create_time AT TIME ZONE 'UTC') = '$1'::date"
+		date_filter="WHERE date_trunc('day', create_time AT TIME ZONE 'UTC') $op '$1'::date"
 	fi
 
 	fields="count=3"
@@ -1465,9 +1500,14 @@ query_server-allocated-cpu() {
 	handle_help "$@" <<-EOF
 	EOF
 
+	op="="
+	if (( $# > 1 )); then
+		op="$2"
+	fi
+
 	date_filter=""
 	if (( $# > 0 )); then
-		date_filter="AND date_trunc('day', job.create_time AT TIME ZONE 'UTC') = '$1'::date"
+		date_filter="AND date_trunc('day', job.create_time AT TIME ZONE 'UTC') $op '$1'::date"
 	fi
 
 	fields="cpu_seconds=1"
@@ -1496,9 +1536,14 @@ query_server-workflows() {
 	handle_help "$@" <<-EOF
 	EOF
 
+	op="="
+	if (( $# > 1 )); then
+		op="$2"
+	fi
+
 	date_filter=""
 	if (( $# > 0 )); then
-		date_filter="WHERE date_trunc('day', create_time AT TIME ZONE 'UTC') = '$1'::date"
+		date_filter="WHERE date_trunc('day', create_time AT TIME ZONE 'UTC') $op '$1'::date"
 	fi
 
 	fields="count=3"
@@ -1519,9 +1564,14 @@ query_server-workflow-invocations() {
 	handle_help "$@" <<-EOF
 	EOF
 
+	op="="
+	if (( $# > 1 )); then
+		op="$2"
+	fi
+
 	date_filter=""
 	if (( $# > 0 )); then
-		date_filter="WHERE date_trunc('day', create_time AT TIME ZONE 'UTC') = '$1'::date"
+		date_filter="WHERE date_trunc('day', create_time AT TIME ZONE 'UTC') $op '$1'::date"
 	fi
 
 	fields="count=2"

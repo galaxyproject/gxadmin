@@ -129,7 +129,8 @@ Command | Description
 [`meta influx-query`](docs/README.meta.md#meta-influx-query) | Query an influx DB
 [`meta iquery-grt-export`](docs/README.meta.md#meta-iquery-grt-export) | Export data from a GRT database for sending to influx
 [`meta slurp-current`](docs/README.meta.md#meta-slurp-current) | Executes what used to be "Galaxy Slurp"
-[`meta slurp-upto`](docs/README.meta.md#meta-slurp-upto) | Slurps data "up to" a specific date.
+[`meta slurp-day`](docs/README.meta.md#meta-slurp-day) | Slurps data on a specific date.
+[`meta slurp-upto`](docs/README.meta.md#meta-slurp-upto) | Slurps data up to a specific date.
 [`meta update`](docs/README.meta.md#meta-update) | Update the script
 [`meta whatsnew`](docs/README.meta.md#meta-whatsnew) | What's new in this version of gxadmin
 

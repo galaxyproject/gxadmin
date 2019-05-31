@@ -2,6 +2,8 @@
 
 - Added:
 	- Job working directory cleaner
+	- meta slurp-upto
+	- meta slurp-day
 - Fixed:
 	- Correct bug in queue-detail and a couple other functions which did not
 	  correctly include data from anonymous users.
