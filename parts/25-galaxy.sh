@@ -345,12 +345,12 @@ galaxy_cleanup-jwd() { ## <working_dir> [1|months ago]: (NEW) Cleanup job workin
 
 	# scan a given directory for jwds.
 	for possible_dir in $(find "$jwd" -maxdepth 2 -mindepth 2  -not -newermt "$months month ago" | head -n 1000); do
-			job_id=$(basename $possible_dir)
+			job_id=$(basename "$possible_dir")
 			if [[ "$job_id" =~ ^[0-9]{3,}$ ]]; then
 					state=$(psql -c "COPY (select state from job where id = $job_id) to STDOUT with CSV")
-					if [[ "$state" == "error" ]] || [[ "$state" == "ok" ]] || [[ "$state" == "deleted" ]] || [[ "$state" == "paused" ]]; then
+					if [[ "$state" == "error" ]] || [[ "$state" == "ok" ]] || [[ "$state" == "deleted" ]] || [[ "$state" == "paused" ]] || [[ "$state" == "new_manually_dropped" ]]; then
 							echo "- $possible_dir $job_id $state"
-							rm -rf $possible_dir
+							rm -rf "$possible_dir"
 					else
 							echo "? $possible_dir $job_id $state"
 					fi
