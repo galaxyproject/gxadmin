@@ -1735,7 +1735,8 @@ query_jobs-queued() { ## : How many queued jobs have external cluster IDs
 	tags="group=0"
 
 	read -r -d '' QUERY <<-EOF
-		CASE WHEN job_runner_external_id IS NOT null THEN 'processed' ELSE 'unprocessed' END as n,
+		SELECT
+			CASE WHEN job_runner_external_id IS NOT null THEN 'processed' ELSE 'unprocessed' END as n,
 			count(*)
 		FROM
 			job
