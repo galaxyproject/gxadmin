@@ -17,6 +17,8 @@ Command | Description
 [`query jobs-max-by-cpu-hours`](#query-jobs-max-by-cpu-hours) | Top 10 jobs by CPU hours consumed (requires CGroups metrics)
 [`query jobs-nonterminal`](#query-jobs-nonterminal) | Job info of nonterminal jobs separated by user
 [`query jobs-per-user`](#query-jobs-per-user) | Number of jobs run by a specific user
+[`query jobs-queued`](#query-jobs-queued) | How many queued jobs have external cluster IDs
+[`query jobs-queued-internal-by-handler`](#query-jobs-queued-internal-by-handler) | How many queued jobs do not have external IDs, by handler
 [`query largest-collection`](#query-largest-collection) | Returns the size of the single largest collection
 [`query largest-histories`](#query-largest-histories) | Largest histories in Galaxy
 [`query latest-users`](#query-latest-users) | 40 recently registered users
@@ -291,6 +293,57 @@ query jobs-per-user -  Number of jobs run by a specific user
      count
     -------
       1460
+
+
+### query jobs-queued
+
+**NAME**
+
+query jobs-queued -  How many queued jobs have external cluster IDs
+
+**SYNOPSIS**
+
+`gxadmin query jobs-queued`
+
+**NOTES**
+
+Shows the distribution of jobs in queued state, whether or not they have received an external ID.
+
+
+n            | count
+------------ + ------
+unprocessed  |   118
+processed    |    37
+
+
+### query jobs-queued-internal-by-handler
+
+**NAME**
+
+query jobs-queued-internal-by-handler -  How many queued jobs do not have external IDs, by handler
+
+**SYNOPSIS**
+
+`gxadmin query jobs-queued-internal-by-handler`
+
+**NOTES**
+
+Identify which handlers have a backlog of jobs which should be
+receiving external cluster IDs but have not yet.
+
+handler          | count
+---------------- + ------
+handler_main_0   |    14
+handler_main_1   |     4
+handler_main_10  |    13
+handler_main_2   |    11
+handler_main_3   |    14
+handler_main_4   |    12
+handler_main_5   |     9
+handler_main_6   |     7
+handler_main_7   |    13
+handler_main_8   |     9
+handler_main_9   |    14
 
 
 ### query largest-collection

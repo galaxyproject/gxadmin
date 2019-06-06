@@ -162,6 +162,8 @@ Command | Description
 [`query jobs-max-by-cpu-hours`](docs/README.query.md#query-jobs-max-by-cpu-hours) | Top 10 jobs by CPU hours consumed (requires CGroups metrics)
 [`query jobs-nonterminal`](docs/README.query.md#query-jobs-nonterminal) | Job info of nonterminal jobs separated by user
 [`query jobs-per-user`](docs/README.query.md#query-jobs-per-user) | Number of jobs run by a specific user
+[`query jobs-queued`](docs/README.query.md#query-jobs-queued) | How many queued jobs have external cluster IDs
+[`query jobs-queued-internal-by-handler`](docs/README.query.md#query-jobs-queued-internal-by-handler) | How many queued jobs do not have external IDs, by handler
 [`query largest-collection`](docs/README.query.md#query-largest-collection) | Returns the size of the single largest collection
 [`query largest-histories`](docs/README.query.md#query-largest-histories) | Largest histories in Galaxy
 [`query latest-users`](docs/README.query.md#query-latest-users) | 40 recently registered users

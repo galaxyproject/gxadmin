@@ -4,6 +4,7 @@
 	- Job working directory cleaner
 	- meta slurp-upto
 	- meta slurp-day
+	- Imported jobs-queued-internal-by-handler and jobs-queued queries from main
 - Fixed:
 	- Correct bug in queue-detail and a couple other functions which did not
 	  correctly include data from anonymous users.

@@ -432,6 +432,7 @@ CHANGELOG=$(cat <<EOF
 	- Job working directory cleaner
 	- meta slurp-upto
 	- meta slurp-day
+	- Imported jobs-queued-internal-by-handler and jobs-queued queries from main
 - Fixed:
 	- Correct bug in queue-detail and a couple other functions which did not
 	  correctly include data from anonymous users.
@@ -2259,7 +2260,7 @@ query_server-datasets() {
 
 	date_filter=""
 	if (( $# > 0 )); then
-		date_filter="WHERE date_trunc('day', create_time) AT TIME ZONE 'UTC' $op '$1'::date"
+		date_filter="WHERE date_trunc('day', create_time AT TIME ZONE 'UTC') $op '$1'::date"
 	fi
 
 	fields="count=4;size=5"
@@ -2292,7 +2293,7 @@ query_server-hda() {
 
 	date_filter=""
 	if (( $# > 0 )); then
-		date_filter="AND date_trunc('day', history_dataset_association.create_time) AT TIME ZONE 'UTC' $op '$1'::date"
+		date_filter="AND date_trunc('day', history_dataset_association.create_time AT TIME ZONE 'UTC') $op '$1'::date"
 	fi
 
 	fields="sum=2;avg=3;min=4;max=5;count=6"
@@ -2586,6 +2587,70 @@ query_hdca-datasets() { ## <hdca_id>: List of files in a dataset collection
 		FROM dataset_collection_element
 		WHERE dataset_collection_id = $1
 		ORDER by element_index asc
+	EOF
+}
+
+query_jobs-queued-internal-by-handler() { ## : How many queued jobs do not have external IDs, by handler
+	handle_help "$@" <<-EOF
+		Identify which handlers have a backlog of jobs which should be
+		receiving external cluster IDs but have not yet.
+
+		handler          | count
+		---------------- + ------
+		handler_main_0   |    14
+		handler_main_1   |     4
+		handler_main_10  |    13
+		handler_main_2   |    11
+		handler_main_3   |    14
+		handler_main_4   |    12
+		handler_main_5   |     9
+		handler_main_6   |     7
+		handler_main_7   |    13
+		handler_main_8   |     9
+		handler_main_9   |    14
+	EOF
+
+	fields="count=1"
+	tags="handler=0"
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			handler,
+			count(handler)
+		FROM
+			job
+		WHERE
+			state = 'queued'
+			AND job_runner_external_id IS null
+		GROUP BY
+			handler
+	EOF
+}
+
+
+
+query_jobs-queued() { ## : How many queued jobs have external cluster IDs
+	handle_help "$@" <<-EOF
+		Shows the distribution of jobs in queued state, whether or not they have received an external ID.
+
+
+		n            | count
+		------------ + ------
+		unprocessed  |   118
+		processed    |    37
+	EOF
+
+	fields="count=1"
+	tags="group=0"
+
+	read -r -d '' QUERY <<-EOF
+		CASE WHEN job_runner_external_id IS NOT null THEN 'processed' ELSE 'unprocessed' END as n,
+			count(*)
+		FROM
+			job
+		WHERE
+			state = 'queued'
+		GROUP BY n
 	EOF
 }
 filter_pg2md() { ## : Convert postgres table format outputs to something that can be pasted as markdown
