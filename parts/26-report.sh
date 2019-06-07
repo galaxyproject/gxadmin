@@ -77,14 +77,14 @@ report_user-info(){ ## <user_id|username|email>: Quick overview of a Galaxy user
 	# Recent jobs
 	read -r -d '' qstr <<-EOF
 		SELECT
-			tool_id, state, create_time AT TIME ZONE 'UTC' as create_time, exit_code, metric_value::text::interval
+			id, tool_id, state, create_time AT TIME ZONE 'UTC' as create_time, exit_code, metric_value::text::interval
 		FROM
 			job, job_metric_numeric
 		WHERE
 			job.user_id = $user_id and job.id = job_metric_numeric.job_id and metric_name = 'runtime_seconds' order by job.id desc limit 10
 	EOF
 	recent_jobs=$(query_tsv "$qstr")
-	recent_jobs2=$(printf "Tool ID\tStatus\tCreated\tExit Code\tRuntime\n----\t----\t----\t---\t----\n%s" "$recent_jobs" | sed 's/\t/\t | \t/g' | column -t -s'	')
+	recent_jobs2=$(printf "ID\tTool ID\tStatus\tCreated\tExit Code\tRuntime\n----\t----\t----\t----\t---\t----\n%s" "$recent_jobs" | sed 's/\t/\t | \t/g' | column -t -s'	')
 
 	# running jobs
 	read -r -d '' qstr <<-EOF
