@@ -3460,7 +3460,7 @@ report_user-info(){ ## <user_id|username|email>: Quick overview of a Galaxy user
 	# Recent jobs
 	read -r -d '' qstr <<-EOF
 		SELECT
-			id, tool_id, state, create_time AT TIME ZONE 'UTC' as create_time, exit_code, metric_value::text::interval
+			job.id, tool_id, state, create_time AT TIME ZONE 'UTC' as create_time, exit_code, metric_value::text::interval
 		FROM
 			job, job_metric_numeric
 		WHERE
