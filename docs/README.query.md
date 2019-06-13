@@ -49,6 +49,7 @@ Command | Description
 [`query user-recent-aggregate-jobs`](#query-user-recent-aggregate-jobs) | Show aggregate information for jobs in past N days for user
 [`query users-count`](#query-users-count) | Shows sums of active/external/deleted/purged accounts
 [`query users-total`](#query-users-total) | Total number of Galaxy users (incl deleted, purged, inactive)
+[`query users-with-oidc`](#query-users-with-oidc) | How many users logged in with OIDC
 [`query workflow-connections`](#query-workflow-connections) | The connections of tools, from output to input, in the latest (or all) versions of user workflows
 [`query workflow-invocation-status`](#query-workflow-invocation-status) | Report on how many workflows are in new state by handler
 
@@ -311,7 +312,7 @@ Shows the distribution of jobs in queued state, whether or not they have receive
 
 
 n            | count
------------- + ------
+------------ | ------
 unprocessed  |   118
 processed    |    37
 
@@ -999,6 +1000,23 @@ query users-total -  Total number of Galaxy users (incl deleted, purged, inactiv
 **SYNOPSIS**
 
 `gxadmin query users-total`
+
+
+### query users-with-oidc
+
+**NAME**
+
+query users-with-oidc -  How many users logged in with OIDC
+
+**SYNOPSIS**
+
+`gxadmin query users-with-oidc`
+
+**NOTES**
+
+provider | count
+-------- | ------
+elixir   |     5
 
 
 ### query workflow-connections

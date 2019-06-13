@@ -194,6 +194,7 @@ Command | Description
 [`query user-recent-aggregate-jobs`](docs/README.query.md#query-user-recent-aggregate-jobs) | Show aggregate information for jobs in past N days for user
 [`query users-count`](docs/README.query.md#query-users-count) | Shows sums of active/external/deleted/purged accounts
 [`query users-total`](docs/README.query.md#query-users-total) | Total number of Galaxy users (incl deleted, purged, inactive)
+[`query users-with-oidc`](docs/README.query.md#query-users-with-oidc) | How many users logged in with OIDC
 [`query workflow-connections`](docs/README.query.md#query-workflow-connections) | The connections of tools, from output to input, in the latest (or all) versions of user workflows
 [`query workflow-invocation-status`](docs/README.query.md#query-workflow-invocation-status) | Report on how many workflows are in new state by handler
 

@@ -1726,7 +1726,7 @@ query_jobs-queued() { ## : How many queued jobs have external cluster IDs
 
 
 		n            | count
-		------------ + ------
+		------------ | ------
 		unprocessed  |   118
 		processed    |    37
 	EOF
@@ -1743,5 +1743,20 @@ query_jobs-queued() { ## : How many queued jobs have external cluster IDs
 		WHERE
 			state = 'queued'
 		GROUP BY n
+	EOF
+}
+
+query_users-with-oidc() { ## : How many users logged in with OIDC
+	handle_help "$@" <<-EOF
+		provider | count
+		-------- | ------
+		elixir   |     5
+	EOF
+
+	fields="count=1"
+	tags="provider=0"
+
+	read -r -d '' QUERY <<-EOF
+		SELECT provider, count(*) FROM oidc_user_authnz_tokens GROUP BY provider
 	EOF
 }
