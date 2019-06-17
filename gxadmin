@@ -1522,13 +1522,15 @@ query_training-queue() { ## <training_id>: Jobs currently being run by people in
 	# Remove training- if they used it.
 	ww=$(echo "$1" | sed 's/^training-//g')
 
+	username=$(gdpr_safe galaxy_user.username username)
+
 	read -r -d '' QUERY <<-EOF
 			SELECT
 				job.state,
 				job.id,
 				job.job_runner_external_id AS extid,
 				job.tool_id,
-				galaxy_user.username,
+				$username,
 				job.create_time AT TIME ZONE 'UTC' AS created
 			FROM
 				job, galaxy_user
