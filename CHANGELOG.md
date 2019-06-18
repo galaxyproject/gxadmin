@@ -7,9 +7,9 @@
 	- Imported jobs-queued-internal-by-handler and jobs-queued queries from main
 	- query users-with-oidc
 	- Three new queries for checking history execution time, thanks [@mmiladi](https://github.com/mmiladi)
-	- query history-runtime-system-by-tool
-	- query history-runtime-system
-	- query history-runtime-wallclock
+		- query history-runtime-system-by-tool
+		- query history-runtime-system
+		- query history-runtime-wallclock
 - Fixed:
 	- Correct bug in queue-detail and a couple other functions which did not
 	  correctly include data from anonymous users.
@@ -56,7 +56,7 @@
 	- Some basic testing of the overall script
 - Fixed:
 	- Correct time zones in all queries to be client-side time zones rather
-	  than UTC encoded timestamps as stored in db (Thanks @slugger70!)
+	  than UTC encoded timestamps as stored in db (Thanks [@slugger70](https://github.com/Slugger70)!)
 	- Renamed: "query monthly-users" → "query monthly-users-active"
 - Removed:
 	- Removed highly EU specific handler and zerg functions
