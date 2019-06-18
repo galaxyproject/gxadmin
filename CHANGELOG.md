@@ -6,6 +6,10 @@
 	- meta slurp-day
 	- Imported jobs-queued-internal-by-handler and jobs-queued queries from main
 	- query users-with-oidc
+	- Three new queries for checking history execution time, thanks [@mmiladi](https://github.com/mmiladi)
+	- query history-runtime-system-by-tool
+	- query history-runtime-system
+	- query history-runtime-wallclock
 - Fixed:
 	- Correct bug in queue-detail and a couple other functions which did not
 	  correctly include data from anonymous users.

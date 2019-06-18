@@ -434,6 +434,10 @@ CHANGELOG=$(cat <<EOF
 	- meta slurp-day
 	- Imported jobs-queued-internal-by-handler and jobs-queued queries from main
 	- query users-with-oidc
+	- Three new queries for checking history execution time, thanks [@mmiladi](https://github.com/mmiladi)
+	- query history-runtime-system-by-tool
+	- query history-runtime-system
+	- query history-runtime-wallclock
 - Fixed:
 	- Correct bug in queue-detail and a couple other functions which did not
 	  correctly include data from anonymous users.
@@ -2670,6 +2674,58 @@ query_users-with-oidc() { ## : How many users logged in with OIDC
 
 	read -r -d '' QUERY <<-EOF
 		SELECT provider, count(*) FROM oidc_user_authnz_tokens GROUP BY provider
+	EOF
+}
+
+query_history-runtime-system() { ## <history_id>: Sum of runtimes by all jobs in a history
+	handle_help "$@" <<-EOF
+	EOF
+
+	assert_count $# 1 "Missing history ID"
+}
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			(sum(job_metric_numeric.metric_value)::INT8 || 'seconds')::INTERVAL
+		FROM
+			job LEFT JOIN job_metric_numeric ON job.id = job_metric_numeric.job_id
+		WHERE
+			job.history_id = $1 AND metric_name = 'runtime_seconds'
+	EOF
+
+query_history-runtime-wallclock() { ## <history_id>: Time as elapsed by a clock on the wall
+	handle_help "$@" <<-EOF
+	EOF
+
+	assert_count $# 1 "Missing history ID"
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			max(job.update_time) - min(job.create_time)
+		FROM
+			job
+		WHERE
+			job.history_id = $1
+	EOF
+}
+
+query_history-runtime-system-by-tool() { ## <history_id>: Sum of runtimes by all jobs in a history, split by tool
+	handle_help "$@" <<-EOF
+	EOF
+
+	assert_count $# 1 "Missing history ID"
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			job.tool_id,
+			(sum(job_metric_numeric.metric_value)::INT || 'seconds')::INTERVAL
+		FROM
+			job LEFT JOIN job_metric_numeric ON job.id = job_metric_numeric.job_id
+		WHERE
+			job.history_id = $1 AND metric_name = 'runtime_seconds'
+		GROUP BY
+			job.tool_id
+		ORDER BY
+			"interval" DESC
 	EOF
 }
 filter_pg2md() { ## : Convert postgres table format outputs to something that can be pasted as markdown

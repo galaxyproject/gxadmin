@@ -11,6 +11,9 @@ Command | Description
 [`query hdca-datasets`](#query-hdca-datasets) | List of files in a dataset collection
 [`query hdca-info`](#query-hdca-info) | Information on a dataset collection
 [`query history-contents`](#query-history-contents) | List datasets and/or collections in a history
+[`query history-runtime-system-by-tool`](#query-history-runtime-system-by-tool) | Sum of runtimes by all jobs in a history, split by tool
+[`query history-runtime-system`](#query-history-runtime-system) | Sum of runtimes by all jobs in a history
+[`query history-runtime-wallclock`](#query-history-runtime-wallclock) | Time as elapsed by a clock on the wall
 [`query job-history`](#query-job-history) | Job state history for a specific job
 [`query job-inputs`](#query-job-inputs) | Input datasets to a specific job
 [`query job-outputs`](#query-job-outputs) | Output datasets from a specific job
@@ -179,6 +182,39 @@ query history-contents -  List datasets and/or collections in a history
 **NOTES**
 
 Obtain an overview of tools that a user has run in the past N days
+
+
+### query history-runtime-system-by-tool
+
+**NAME**
+
+query history-runtime-system-by-tool -  Sum of runtimes by all jobs in a history, split by tool
+
+**SYNOPSIS**
+
+`gxadmin query history-runtime-system-by-tool <history_id>`
+
+
+### query history-runtime-system
+
+**NAME**
+
+query history-runtime-system -  Sum of runtimes by all jobs in a history
+
+**SYNOPSIS**
+
+`gxadmin query history-runtime-system <history_id>`
+
+
+### query history-runtime-wallclock
+
+**NAME**
+
+query history-runtime-wallclock -  Time as elapsed by a clock on the wall
+
+**SYNOPSIS**
+
+`gxadmin query history-runtime-wallclock <history_id>`
 
 
 ### query job-history

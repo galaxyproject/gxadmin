@@ -156,6 +156,9 @@ Command | Description
 [`query hdca-datasets`](docs/README.query.md#query-hdca-datasets) | List of files in a dataset collection
 [`query hdca-info`](docs/README.query.md#query-hdca-info) | Information on a dataset collection
 [`query history-contents`](docs/README.query.md#query-history-contents) | List datasets and/or collections in a history
+[`query history-runtime-system-by-tool`](docs/README.query.md#query-history-runtime-system-by-tool) | Sum of runtimes by all jobs in a history, split by tool
+[`query history-runtime-system`](docs/README.query.md#query-history-runtime-system) | Sum of runtimes by all jobs in a history
+[`query history-runtime-wallclock`](docs/README.query.md#query-history-runtime-wallclock) | Time as elapsed by a clock on the wall
 [`query job-history`](docs/README.query.md#query-job-history) | Job state history for a specific job
 [`query job-inputs`](docs/README.query.md#query-job-inputs) | Input datasets to a specific job
 [`query job-outputs`](docs/README.query.md#query-job-outputs) | Output datasets from a specific job
