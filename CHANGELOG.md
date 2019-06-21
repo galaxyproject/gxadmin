@@ -10,6 +10,10 @@
 		- query history-runtime-system-by-tool
 		- query history-runtime-system
 		- query history-runtime-wallclock
+	- Three new queries for checking potentially broken tools, thanks [@jmchilton](https://github.com/jmchilton)
+		- query tool-new-errors
+		- query tool-errors
+		- query tool-likely-broken
 - Fixed:
 	- Correct bug in queue-detail and a couple other functions which did not
 	  correctly include data from anonymous users.
