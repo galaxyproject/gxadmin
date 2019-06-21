@@ -39,8 +39,11 @@ Command | Description
 [`query recent-jobs`](#query-recent-jobs) | Jobs run in the past <hours> (in any state)
 [`query runtime-per-user`](#query-runtime-per-user) | computation time of user (by email)
 [`query tool-available-metrics`](#query-tool-available-metrics) | list all available metrics for a given tool
+[`query tool-errors`](#query-tool-errors) | Summarize percent of tool runs in error over the past weeks for all tools that have failed (most popular tools first)
 [`query tool-last-used-date`](#query-tool-last-used-date) | When was the most recent invocation of every tool
+[`query tool-likely-broken`](#query-tool-likely-broken) | Find tools that have been executed in recent weeks that are (or were due to job running) likely substantially broken
 [`query tool-metrics`](#query-tool-metrics) | See values of a specific metric
+[`query tool-new-errors`](#query-tool-new-errors) | Summarize percent of tool runs in error over the past weeks for "new tools"
 [`query tool-popularity`](#query-tool-popularity) | Most run tools by month
 [`query tool-usage`](#query-tool-usage) | Counts of tool runs in the past weeks (default = all)
 [`query training-list`](#query-training-list) | List known trainings
@@ -767,6 +770,33 @@ Gives a list of available metrics, which can then be used to query.
      ...
 
 
+### query tool-errors
+
+**NAME**
+
+query tool-errors -  Summarize percent of tool runs in error over the past weeks for all tools that have failed (most popular tools first)
+
+**SYNOPSIS**
+
+`gxadmin query tool-errors [--short-tool-id] [weeks|4]`
+
+**NOTES**
+
+See jobs-in-error summary for recently executed tools that have failed at least 10% of the time.
+
+    $ gxadmin query tool-errors --short-tool-id 1
+        tool_id                        | tool_runs |  percent_errored  | percent_failed | count_errored | count_failed |     handler
+    -----------------------------------+-----------+-------------------+----------------+---------------+--------------+-----------------
+     rnateam/graphclust_align_cluster/ |        55 | 0.145454545454545 |              0 |             8 |            0 | handler_main_10
+     iuc/rgrnastar/rna_star/2.6.0b-2   |        46 | 0.347826086956522 |              0 |            16 |            0 | handler_main_3
+     iuc/rgrnastar/rna_star/2.6.0b-2   |        43 | 0.186046511627907 |              0 |             8 |            0 | handler_main_0
+     iuc/rgrnastar/rna_star/2.6.0b-2   |        41 | 0.390243902439024 |              0 |            16 |            0 | handler_main_4
+     iuc/rgrnastar/rna_star/2.6.0b-2   |        40 |             0.325 |              0 |            13 |            0 | handler_main_6
+     Filter1                           |        40 |             0.125 |              0 |             5 |            0 | handler_main_0
+     devteam/bowtie2/bowtie2/2.3.4.3   |        40 |             0.125 |              0 |             5 |            0 | handler_main_7
+     iuc/rgrnastar/rna_star/2.6.0b-2   |        40 |               0.3 |              0 |            12 |            0 | handler_main_2
+
+
 ### query tool-last-used-date
 
 **NAME**
@@ -792,6 +822,33 @@ Example invocation:
 **WARNING**
 
 It is not truly every tool, there is no easy way to find the tools which have never been run.
+
+
+### query tool-likely-broken
+
+**NAME**
+
+query tool-likely-broken -  Find tools that have been executed in recent weeks that are (or were due to job running) likely substantially broken
+
+**SYNOPSIS**
+
+`gxadmin query tool-likely-broken [--short-tool-id] [weeks|4]`
+
+**NOTES**
+
+This runs an identical query to tool-errors, except filtering for tools
+which were run more than 4 times, and have a failure rate over 95%.
+
+                             tool_id                       | tool_runs | percent_errored | percent_failed | count_errored | count_failed |     handler
+    -------------------------------------------------------+-----------+-----------------+----------------+---------------+--------------+-----------------
+     simon-gladman/velvetoptimiser/velvetoptimiser/2.2.6   |        14 |               1 |              0 |            14 |            0 | handler_main_7
+     bgruening/hicexplorer_hicplottads/hicexplorer_hicplott|         9 |               1 |              0 |             9 |            0 | handler_main_0
+     bgruening/text_processing/tp_replace_in_column/1.1.3  |         8 |               1 |              0 |             8 |            0 | handler_main_3
+     bgruening/text_processing/tp_awk_tool/1.1.1           |         7 |               1 |              0 |             7 |            0 | handler_main_5
+     rnateam/dorina/dorina_search/1.0.0                    |         7 |               1 |              0 |             7 |            0 | handler_main_2
+     bgruening/text_processing/tp_replace_in_column/1.1.3  |         6 |               1 |              0 |             6 |            0 | handler_main_9
+     rnateam/dorina/dorina_search/1.0.0                    |         6 |               1 |              0 |             6 |            0 | handler_main_11
+     rnateam/dorina/dorina_search/1.0.0                    |         6 |               1 |              0 |             6 |            0 | handler_main_8
 
 
 ### query tool-metrics
@@ -825,6 +882,33 @@ do some aggregations. The following requires [data_hacks](https://github.com/bit
        74.9608 -    85.2655 [    11]: ∎∎∎∎∎∎∎∎∎∎∎ (2.49%)
        85.2655 -    95.5703 [     3]: ∎∎∎ (0.68%)
        95.5703 -   105.8750 [     1]: ∎ (0.23%)
+
+
+### query tool-new-errors
+
+**NAME**
+
+query tool-new-errors -  Summarize percent of tool runs in error over the past weeks for "new tools"
+
+**SYNOPSIS**
+
+`gxadmin query tool-new-errors [weeks|4]`
+
+**NOTES**
+
+See jobs-in-error summary for recent tools (tools whose first execution is in recent weeks).
+
+    $ gxadmin query tool-errors --short-tool-id 1
+        tool_id                        | tool_runs |  percent_errored  | percent_failed | count_errored | count_failed |     handler
+    -----------------------------------+-----------+-------------------+----------------+---------------+--------------+-----------------
+     rnateam/graphclust_align_cluster/ |        55 | 0.145454545454545 |              0 |             8 |            0 | handler_main_10
+     iuc/rgrnastar/rna_star/2.6.0b-2   |        46 | 0.347826086956522 |              0 |            16 |            0 | handler_main_3
+     iuc/rgrnastar/rna_star/2.6.0b-2   |        43 | 0.186046511627907 |              0 |             8 |            0 | handler_main_0
+     iuc/rgrnastar/rna_star/2.6.0b-2   |        41 | 0.390243902439024 |              0 |            16 |            0 | handler_main_4
+     iuc/rgrnastar/rna_star/2.6.0b-2   |        40 |             0.325 |              0 |            13 |            0 | handler_main_6
+     Filter1                           |        40 |             0.125 |              0 |             5 |            0 | handler_main_0
+     devteam/bowtie2/bowtie2/2.3.4.3   |        40 |             0.125 |              0 |             5 |            0 | handler_main_7
+     iuc/rgrnastar/rna_star/2.6.0b-2   |        40 |               0.3 |              0 |            12 |            0 | handler_main_2
 
 
 ### query tool-popularity
