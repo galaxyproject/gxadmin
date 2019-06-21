@@ -32,6 +32,7 @@ chmod +x /usr/bin/gxadmin
 - Nate Coraor ([@natefoo](https://github.com/natefoo))
 - Simon Gladman ([@slugger70](https://github.com/slugger70))
 - Anthony Bretaudeau ([@abretaud](https://github.com/abretaud))
+- John Chilten ([@jmchilton](https://github.com/jmchilton))
 - Manuel Messner (mm@skellet.io)
 
 ## License
