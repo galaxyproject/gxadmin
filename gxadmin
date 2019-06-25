@@ -3718,6 +3718,7 @@ report_user-info(){ ## <user_id|username|email>: Quick overview of a Galaxy user
 	# Recent workflows
 	read -r -d '' qstr <<-EOF
 		SELECT
+			workflow_invocation.id,
 			workflow_invocation.create_time,
 			state,
 			scheduler,
@@ -3736,7 +3737,7 @@ report_user-info(){ ## <user_id|username|email>: Quick overview of a Galaxy user
 			5
 	EOF
 	recent_wf=$(query_tsv "$qstr")
-	recent_wf=$(printf "Created\tState\tScheduler\tHandler\tWorkflow\tHistory\n----\t----\t----\t----\t----\t----\n%s" "$recent_wf" | sed 's/\t/\t | \t/g' | column -t -s'	')
+	recent_wf=$(printf "ID\tCreated\tState\tScheduler\tHandler\tWorkflow\tHistory\n----\t----\t----\t----\t----\t----\t----\n%s" "$recent_wf" | sed 's/\t/\t | \t/g' | column -t -s'	')
 
 	# Largest Histories
 	read -r -d '' qstr <<-EOF
