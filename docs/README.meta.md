@@ -2,6 +2,7 @@
 
 Command | Description
 ------- | -----------
+[`meta export-grafana-dashboards`](#meta-export-grafana-dashboards) | Export all dashboards from a Grafana database to CWD and commit them to git.
 [`meta influx-post`](#meta-influx-post) | Post contents of file (in influx line protocol) to influx
 [`meta influx-query`](#meta-influx-query) | Query an influx DB
 [`meta iquery-grt-export`](#meta-iquery-grt-export) | Export data from a GRT database for sending to influx
@@ -10,6 +11,28 @@ Command | Description
 [`meta slurp-upto`](#meta-slurp-upto) | Slurps data up to a specific date.
 [`meta update`](#meta-update) | Update the script
 [`meta whatsnew`](#meta-whatsnew) | What's new in this version of gxadmin
+
+### meta export-grafana-dashboards
+
+**NAME**
+
+meta export-grafana-dashboards -  Export all dashboards from a Grafana database to CWD and commit them to git.
+
+**SYNOPSIS**
+
+`gxadmin meta export-grafana-dashboards [grafana_db|/var/lib/grafana/grafana.db]`
+
+**NOTES**
+
+Given a grafana database, use sqlite3 to access all of the dashboards within, and then write them out to the current working directly. Next, commit them and update a README.
+
+This script forms the basis of https://github.com/usegalaxy-eu/grafana-dashboards
+
+**WARNING**: this script will silently remove all json files from CWD
+as a first step. Additionally it will commit and push at the end, so it
+should be run in a directory that has a git repo initialised, where you
+are not concerned about accidentally pushing to wrong remote.
+
 
 ### meta influx-post
 

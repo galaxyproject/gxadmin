@@ -1180,7 +1180,6 @@ query_job-outputs() { ## <id>: Output datasets from a specific job
 				JOIN dataset d
 					ON hda.dataset_id = d.id
 			WHERE j.id = $1
-		"
 	EOF
 }
 
@@ -1915,7 +1914,7 @@ query_users-with-oidc() { ## : How many users logged in with OIDC
 	tags="provider=0"
 
 	read -r -d '' QUERY <<-EOF
-		SELECT provider, count(*) FROM oidc_user_authnz_tokens GROUP BY provider
+		SELECT provider, count(distinct user_id) FROM oidc_user_authnz_tokens GROUP BY provider
 	EOF
 }
 

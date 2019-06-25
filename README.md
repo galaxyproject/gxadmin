@@ -126,6 +126,7 @@ Command | Description
 
 Command | Description
 ------- | -----------
+[`meta export-grafana-dashboards`](docs/README.meta.md#meta-export-grafana-dashboards) | Export all dashboards from a Grafana database to CWD and commit them to git.
 [`meta influx-post`](docs/README.meta.md#meta-influx-post) | Post contents of file (in influx line protocol) to influx
 [`meta influx-query`](docs/README.meta.md#meta-influx-query) | Query an influx DB
 [`meta iquery-grt-export`](docs/README.meta.md#meta-iquery-grt-export) | Export data from a GRT database for sending to influx

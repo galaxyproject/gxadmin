@@ -313,3 +313,51 @@ meta_whatsnew() { ## : What's new in this version of gxadmin
 	#sed -n '1,/^# 12/d;/^# 11/q;p'
 	echo "$CHANGELOG" | sed -n "/^# ${prev_version}/q;p"
 }
+
+meta_export-grafana-dashboards() { ## [grafana_db|/var/lib/grafana/grafana.db]: Export all dashboards from a Grafana database to CWD and commit them to git.
+	handle_help "$@" <<-EOF
+		Given a grafana database, use sqlite3 to access all of the dashboards within, and then write them out to the current working directly. Next, commit them and update a README.
+
+		This script forms the basis of https://github.com/usegalaxy-eu/grafana-dashboards
+
+		**WARNING**: this script will silently remove all json files from CWD
+		as a first step. Additionally it will commit and push at the end, so it
+		should be run in a directory that has a git repo initialised, where you
+		are not concerned about accidentally pushing to wrong remote.
+	EOF
+
+	db_path=${1:-/var/lib/grafana/grafana.db}
+
+	rm -f *.json
+	sqlite3 --csv -separator "$(printf '\t')" $db_path \
+		'select title,data from dashboard;' | \
+		awk -F'\t' '{gsub("\"", "", $1); print $2 > $1".json" }'
+
+	for i in *.json; do
+		q=$(mktemp)
+		cat "$i" | sed 's/^"//;s/"$//g;s/""/"/g' | jq -S . > "$q"
+		mv "$q" "$i";
+
+		lines=$(wc -l "$i" | awk '{print $1}')
+		if (( lines < 10 )); then
+			rm "$i"
+		fi
+	done;
+
+
+	cat > README.md <<-EOF
+	# Grafana Dashbaords
+
+	Name | Tags | Version | Live | JSON
+	--- | --- | --- | --- | ---
+	EOF
+
+	sqlite3 --csv -separator "$(printf '\t')" $db_path \
+		'SELECT title,uid,title,version,GROUP_CONCAT(dashboard_tag.term) FROM dashboard left outer join dashboard_tag on dashboard.id = dashboard_tag.dashboard_id WHERE dashboard.is_folder = 0 GROUP BY title, uid, title order by title asc' | \
+		awk -F'\t' '{gsub("\"", "", $1); gsub("\"", "", $3); gsub(" ", "%20", $3); print $1" | "$5" | "$4" | [Live](https://stats.galaxyproject.eu/d/"$2") | [File](./"$3".json)"}' \
+		>> README.md
+
+	git add *.json README.md
+	git commit -a -m "Automated commit for $(date)"
+	git push --quiet
+}
