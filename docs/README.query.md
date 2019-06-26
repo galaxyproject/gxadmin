@@ -51,6 +51,7 @@ Command | Description
 [`query training-members`](#query-training-members) | List users in a specific training
 [`query training-queue`](#query-training-queue) | Jobs currently being run by people in a given training
 [`query ts-repos`](#query-ts-repos) | Counts of toolshed repositories by toolshed and owner.
+[`query upload-gb-in-past-hour`](#query-upload-gb-in-past-hour) | Sum in bytes of files uploaded in the past hour
 [`query user-cpu-years`](#query-user-cpu-years) | CPU years allocated to tools by user
 [`query user-recent-aggregate-jobs`](#query-user-recent-aggregate-jobs) | Show aggregate information for jobs in past N days for user
 [`query users-count`](#query-users-count) | Shows sums of active/external/deleted/purged accounts
@@ -1043,6 +1044,21 @@ query ts-repos -  Counts of toolshed repositories by toolshed and owner.
 **SYNOPSIS**
 
 `gxadmin query ts-repos`
+
+
+### query upload-gb-in-past-hour
+
+**NAME**
+
+query upload-gb-in-past-hour -  Sum in bytes of files uploaded in the past hour
+
+**SYNOPSIS**
+
+`gxadmin query upload-gb-in-past-hour [hours|1]`
+
+**NOTES**
+
+Quick output, mostly useful for graphing, to produce a nice graph of how heavily are people uploading currently.
 
 
 ### query user-cpu-years

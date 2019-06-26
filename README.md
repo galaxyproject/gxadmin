@@ -198,6 +198,7 @@ Command | Description
 [`query training-members`](docs/README.query.md#query-training-members) | List users in a specific training
 [`query training-queue`](docs/README.query.md#query-training-queue) | Jobs currently being run by people in a given training
 [`query ts-repos`](docs/README.query.md#query-ts-repos) | Counts of toolshed repositories by toolshed and owner.
+[`query upload-gb-in-past-hour`](docs/README.query.md#query-upload-gb-in-past-hour) | Sum in bytes of files uploaded in the past hour
 [`query user-cpu-years`](docs/README.query.md#query-user-cpu-years) | CPU years allocated to tools by user
 [`query user-recent-aggregate-jobs`](docs/README.query.md#query-user-recent-aggregate-jobs) | Show aggregate information for jobs in past N days for user
 [`query users-count`](docs/README.query.md#query-users-count) | Shows sums of active/external/deleted/purged accounts

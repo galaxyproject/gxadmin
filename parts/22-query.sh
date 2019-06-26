@@ -1969,3 +1969,25 @@ query_history-runtime-system-by-tool() { ## <history_id>: Sum of runtimes by all
 			"interval" DESC
 	EOF
 }
+
+query_upload-gb-in-past-hour() { ## [hours|1]: Sum in bytes of files uploaded in the past hour
+	handle_help "$@" <<-EOF
+		Quick output, mostly useful for graphing, to produce a nice graph of how heavily are people uploading currently.
+	EOF
+
+	hours=${1:-1}
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			sum(dataset.total_size)
+		FROM
+			job
+			LEFT JOIN job_to_output_dataset ON job.id = job_to_output_dataset.job_id
+			LEFT JOIN history_dataset_association ON
+					job_to_output_dataset.dataset_id = history_dataset_association.id
+			LEFT JOIN dataset ON history_dataset_association.dataset_id = dataset.id
+		WHERE
+			job.tool_id = 'upload1'
+			AND job.create_time AT TIME ZONE 'UTC' > (now() - '$hours hours'::INTERVAL)
+EOF
+}
