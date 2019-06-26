@@ -1977,10 +1977,12 @@ query_upload-gb-in-past-hour() { ## [hours|1]: Sum in bytes of files uploaded in
 
 	hours=${1:-1}
 	fields="count=0"
+	tags="hours=1"
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			sum(dataset.total_size)
+			sum(dataset.total_size),
+			$hours as hours
 		FROM
 			job
 			LEFT JOIN job_to_output_dataset ON job.id = job_to_output_dataset.job_id
