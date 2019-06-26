@@ -1976,6 +1976,7 @@ query_upload-gb-in-past-hour() { ## [hours|1]: Sum in bytes of files uploaded in
 	EOF
 
 	hours=${1:-1}
+	fields="count=0"
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
