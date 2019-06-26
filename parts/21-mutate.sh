@@ -187,3 +187,19 @@ mutate_delete-group-role() { ## <group_name> [--commit]: Remove the group, role,
 	commit=$(should_commit "$2")
 	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
 }
+
+mutate_approve-user() { ## <username|email|user_id>: Approve a user in the database
+	handle_help "$@" <<-EOF
+		There is no --commit flag on this because it is relatively safe
+	EOF
+
+	assert_count_ge $# 1 "Must supply a username/email/user-id"
+
+	user_filter="(galaxy_user.email = '$1' or galaxy_user.username = '$1' or galaxy_user.id = CAST(REGEXP_REPLACE(COALESCE('$1','0'), '[^0-9]+', '0', 'g') AS INTEGER))"
+
+	read -r -d '' QUERY <<-EOF
+		UPDATE galaxy_user
+		SET active = true
+		WHERE $user_filter
+	EOF
+}

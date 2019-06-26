@@ -2,10 +2,26 @@
 
 Command | Description
 ------- | -----------
+[`mutate approve-user`](#mutate-approve-user) | Approve a user in the database
 [`mutate delete-group-role`](#mutate-delete-group-role) | Remove the group, role, and any user-group + user-role associations
 [`mutate fail-history`](#mutate-fail-history) | Mark all jobs within a history to state error
 [`mutate fail-job`](#mutate-fail-job) | Sets a job state to error
 [`mutate fail-terminal-datasets`](#mutate-fail-terminal-datasets) | Causes the output datasets of jobs which were manually failed, to be marked as failed
+
+### mutate approve-user
+
+**NAME**
+
+mutate approve-user -  Approve a user in the database
+
+**SYNOPSIS**
+
+`gxadmin mutate approve-user <username|email|user_id>`
+
+**NOTES**
+
+There is no --commit flag on this because it is relatively safe
+
 
 ### mutate delete-group-role
 

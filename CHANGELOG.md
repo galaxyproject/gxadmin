@@ -16,6 +16,7 @@
 		- query tool-likely-broken
 	- Import script from https://github.com/usegalaxy-eu/grafana-dashboards
 	- query for datasets uploaded in last N hours
+	- mutate to approve users
 - Fixed:
 	- Correct bug in queue-detail and a couple other functions which did not
 	  correctly include data from anonymous users.

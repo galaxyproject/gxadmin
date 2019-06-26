@@ -140,6 +140,7 @@ Command | Description
 
 Command | Description
 ------- | -----------
+[`mutate approve-user`](docs/README.mutate.md#mutate-approve-user) | Approve a user in the database
 [`mutate delete-group-role`](docs/README.mutate.md#mutate-delete-group-role) | Remove the group, role, and any user-group + user-role associations
 [`mutate fail-history`](docs/README.mutate.md#mutate-fail-history) | Mark all jobs within a history to state error
 [`mutate fail-job`](docs/README.mutate.md#mutate-fail-job) | Sets a job state to error
