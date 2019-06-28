@@ -24,5 +24,9 @@ mutate() {
 		usage mutate
 	fi
 
-	query_tbl "$QUERY";
+	if [[ "$FLAVOR" == "tsv" ]]; then
+		query_tsv "$QUERY";
+	else
+		query_tbl "$QUERY";
+	fi
 }

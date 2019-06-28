@@ -1,4 +1,6 @@
 uwsgi_stats_influx() { ## : Deprecated, use uwsgi stats-influx
+	handle_help "$@" <<-EOF
+	EOF
 	uwsgi_stats-influx
 }
 
@@ -107,6 +109,9 @@ uwsgi_pids() { ## : Galaxy process PIDs
 }
 
 uwsgi_stats() { ## : uwsgi stats
+	handle_help "$@" <<-EOF
+	EOF
+
 	uwsgi_stats-influx 127.0.0.1:4010 2>/dev/null || true
 	uwsgi_stats-influx 127.0.0.1:4011 2>/dev/null || true
 	uwsgi_stats-influx 127.0.0.1:4012 2>/dev/null || true

@@ -188,6 +188,31 @@ mutate_delete-group-role() { ## <group_name> [--commit]: Remove the group, role,
 	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
 }
 
+mutate_assign-unassigned-workflows() { ## <handler_prefix> <handler_count> [--commit]: Randomly assigns unassigned workflows to handlers. Workaround for galaxyproject/galaxy#8209
+	handle_help "$@" <<-EOF
+		Workaround for https://github.com/galaxyproject/galaxy/issues/8209
+
+		Handler names should have number as postfix, so "some_string_##". In
+		this case handler_prefix is "some_string_" and count is however many
+		handlers you want to schedule workflows across.
+	EOF
+
+	assert_count_ge $# 1 "Must supply a handler_prefix"
+	assert_count_ge $# 2 "Must supply a count"
+
+	prefix=$1
+	count=$2
+
+	read -r -d '' QUERY <<-EOF
+		UPDATE workflow_invocation
+		SET handler = '$prefix' || (random() * $count)::integer
+		WHERE state = 'new' AND handler = '_default_'
+	EOF
+
+	commit=$(should_commit "$2")
+	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
+}
+
 mutate_approve-user() { ## <username|email|user_id>: Approve a user in the database
 	handle_help "$@" <<-EOF
 		There is no --commit flag on this because it is relatively safe
@@ -201,5 +226,125 @@ mutate_approve-user() { ## <username|email|user_id>: Approve a user in the datab
 		UPDATE galaxy_user
 		SET active = true
 		WHERE $user_filter
+	EOF
+}
+
+mutate_oidc-role-find-affected() { ## : Find users affected by galaxyproject/galaxy#8244
+	handle_help "$@" <<-EOF
+		Workaround for https://github.com/galaxyproject/galaxy/issues/8244
+
+		This finds all of the OIDC authenticated users which do not have any
+		roles associated to them. (Should be sufficient?)
+	EOF
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			user_id
+		FROM
+			oidc_user_authnz_tokens AS ouat
+		WHERE
+			ouat.user_id NOT IN (SELECT user_id FROM user_role_association)
+	EOF
+
+	# Not proud of this.
+	FLAVOR='tsv'
+}
+
+mutate_oidc-role-fix() { ## <username|email|user_id>: Fix permissions for users logged in via OIDC. Workaround for galaxyproject/galaxy#8244
+	handle_help "$@" <<-EOF
+		Workaround for https://github.com/galaxyproject/galaxy/issues/8244
+	EOF
+
+	# Coerce to user ID
+	read -r -d '' qstr <<-EOF
+		SELECT id, email FROM galaxy_user WHERE (galaxy_user.email = '$1' or galaxy_user.username = '$1' or galaxy_user.id = CAST(REGEXP_REPLACE(COALESCE('$1','0'), '[^0-9]+', '0', 'g') AS INTEGER))
+	EOF
+	echo "QUERY: $qstr"
+	results="$(query_tsv "$qstr")"
+	echo "RESULTS: $results"
+	user_id=$(echo "$results" | awk '{print $1}')
+	email=$(echo "$results" | awk '{print $2}')
+
+
+	# check if there is an existing role.
+	read -r -d '' qstr <<-EOF
+		select count(*) from user_role_association left join role on user_role_association.role_id = role.id where user_id = $user_id and role.type = 'private'
+	EOF
+	echo "QUERY: $qstr"
+	results="$(query_tsv "$qstr")"
+	echo "RESULTS: $results"
+
+	# Some (mild) sanity checking. Should probably wrap this up in some nice.
+	if (( results != 0 )); then
+		error "A default private role already exists for this account."
+		exit 1
+	fi
+
+
+	# Create the role since it does not exist
+	read -r -d '' qstr <<-EOF
+		INSERT INTO role (create_time, update_time, name, description, type, deleted)
+		VALUES (now(), now(), '$email', 'Private Role for $email', 'private', false)
+		RETURNING id
+	EOF
+	echo "QUERY: $qstr"
+	role_id="$(query_tsv "$qstr")"
+	echo "RESULTS: $results"
+
+	# Associate with the user
+	read -r -d '' qstr <<-EOF
+		INSERT INTO user_role_association (user_id, role_id, create_time, update_time)
+		VALUES ($user_id, $role_id, now(), now())
+	EOF
+	echo "QUERY: $qstr"
+	query_tbl "$qstr"
+
+	# Insert into their personal default user permissions
+	read -r -d '' qstr <<-EOF
+		INSERT INTO default_user_permissions (user_id, action, role_id)
+		VALUES ($user_id, 'manage permissions', $role_id), ($user_id, 'access', $role_id)
+	EOF
+	echo "QUERY: $qstr"
+	results="$(query_tbl "$qstr")"
+	echo "RESULTS: $results"
+
+	# Fix dataset_permissions. Manage rows are created but have a null entry in their role_id
+	read -r -d '' qstr <<-EOF
+		UPDATE dataset_permissions
+		SET role_id = $role_id
+		WHERE
+			id
+			IN (
+					SELECT
+						id
+					FROM
+						dataset_permissions
+					WHERE
+						dataset_id
+						IN (
+								SELECT
+									ds.id
+								FROM
+									history AS h
+									LEFT JOIN history_dataset_association AS hda ON
+											h.id = hda.history_id
+									LEFT JOIN dataset AS ds ON hda.dataset_id = ds.id
+								WHERE
+									h.user_id = $user_id
+							)
+						AND role_id IS NULL
+						AND action = 'manage permissions'
+				)
+	EOF
+	echo "QUERY: $qstr"
+	results="$(query_tbl "$qstr")"
+	echo "RESULTS: $results"
+
+	# We could update history permissions but this would make those histories
+	# private and the current behaviour is that they're public, if the user has
+	# tried to share, then we'd be changing permissions and going against user
+	# expectations.
+	read -r -d '' QUERY <<-EOF
+		select 'done'
 	EOF
 }

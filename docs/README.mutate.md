@@ -3,10 +3,13 @@
 Command | Description
 ------- | -----------
 [`mutate approve-user`](#mutate-approve-user) | Approve a user in the database
+[`mutate assign-unassigned-workflows`](#mutate-assign-unassigned-workflows) | Randomly assigns unassigned workflows to handlers. Workaround for galaxyproject/galaxy#8209
 [`mutate delete-group-role`](#mutate-delete-group-role) | Remove the group, role, and any user-group + user-role associations
 [`mutate fail-history`](#mutate-fail-history) | Mark all jobs within a history to state error
 [`mutate fail-job`](#mutate-fail-job) | Sets a job state to error
 [`mutate fail-terminal-datasets`](#mutate-fail-terminal-datasets) | Causes the output datasets of jobs which were manually failed, to be marked as failed
+[`mutate oidc-role-find-affected`](#mutate-oidc-role-find-affected) | Find users affected by galaxyproject/galaxy#8244
+[`mutate oidc-role-fix`](#mutate-oidc-role-fix) | Fix permissions for users logged in via OIDC. Workaround for galaxyproject/galaxy#8244
 
 ### mutate approve-user
 
@@ -21,6 +24,25 @@ mutate approve-user -  Approve a user in the database
 **NOTES**
 
 There is no --commit flag on this because it is relatively safe
+
+
+### mutate assign-unassigned-workflows
+
+**NAME**
+
+mutate assign-unassigned-workflows -  Randomly assigns unassigned workflows to handlers. Workaround for galaxyproject/galaxy#8209
+
+**SYNOPSIS**
+
+`gxadmin mutate assign-unassigned-workflows <handler_prefix> <handler_count> [--commit]`
+
+**NOTES**
+
+Workaround for https://github.com/galaxyproject/galaxy/issues/8209
+
+Handler names should have number as postfix, so "some_string_##". In
+this case handler_prefix is "some_string_" and count is however many
+handlers you want to schedule workflows across.
 
 
 ### mutate delete-group-role
@@ -128,4 +150,37 @@ Then to run with the --commit flag to commit the changes
     UPDATE 1
     UPDATE 1
     COMMIT
+
+
+### mutate oidc-role-find-affected
+
+**NAME**
+
+mutate oidc-role-find-affected -  Find users affected by galaxyproject/galaxy#8244
+
+**SYNOPSIS**
+
+`gxadmin mutate oidc-role-find-affected`
+
+**NOTES**
+
+Workaround for https://github.com/galaxyproject/galaxy/issues/8244
+
+This finds all of the OIDC authenticated users which do not have any
+roles associated to them. (Should be sufficient?)
+
+
+### mutate oidc-role-fix
+
+**NAME**
+
+mutate oidc-role-fix -  Fix permissions for users logged in via OIDC. Workaround for galaxyproject/galaxy#8244
+
+**SYNOPSIS**
+
+`gxadmin mutate oidc-role-fix <username|email|user_id>`
+
+**NOTES**
+
+Workaround for https://github.com/galaxyproject/galaxy/issues/8244
 
