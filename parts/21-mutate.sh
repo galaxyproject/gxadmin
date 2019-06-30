@@ -209,7 +209,7 @@ mutate_assign-unassigned-workflows() { ## <handler_prefix> <handler_count> [--co
 		WHERE state = 'new' AND handler = '_default_'
 	EOF
 
-	commit=$(should_commit "$2")
+	commit=$(should_commit "$3")
 	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
 }
 
