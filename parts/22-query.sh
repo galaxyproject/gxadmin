@@ -879,30 +879,30 @@ query_monthly-cpu-years() { ## : CPU years allocated to tools by month
 		actually consumed by your jobs, you should use cgroups.
 
 		    $ gxadmin query monthly-cpu-years
-		         date_trunc      | cpu_years
-		    ---------------------+-----------
-		     2019-04-01 00:00:00 |      2.95
-		     2019-03-01 00:00:00 |     12.38
-		     2019-02-01 00:00:00 |     11.47
-		     2019-01-01 00:00:00 |      8.27
-		     2018-12-01 00:00:00 |     11.42
-		     2018-11-01 00:00:00 |     16.99
-		     2018-10-01 00:00:00 |     12.09
-		     2018-09-01 00:00:00 |      6.27
-		     2018-08-01 00:00:00 |      9.06
-		     2018-07-01 00:00:00 |      6.17
-		     2018-06-01 00:00:00 |      5.73
-		     2018-05-01 00:00:00 |      7.36
-		     2018-04-01 00:00:00 |     10.21
-		     2018-03-01 00:00:00 |      5.20
-		     2018-02-01 00:00:00 |      4.53
-		     2018-01-01 00:00:00 |      4.05
-		     2017-12-01 00:00:00 |      2.44
+		        month   | cpu_years
+		    ------------+-----------
+		     2019-04-01 |      2.95
+		     2019-03-01 |     12.38
+		     2019-02-01 |     11.47
+		     2019-01-01 |      8.27
+		     2018-12-01 |     11.42
+		     2018-11-01 |     16.99
+		     2018-10-01 |     12.09
+		     2018-09-01 |      6.27
+		     2018-08-01 |      9.06
+		     2018-07-01 |      6.17
+		     2018-06-01 |      5.73
+		     2018-05-01 |      7.36
+		     2018-04-01 |     10.21
+		     2018-03-01 |      5.20
+		     2018-02-01 |      4.53
+		     2018-01-01 |      4.05
+		     2017-12-01 |      2.44
 	EOF
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			date_trunc('month', job.create_time),
+			date_trunc('month', job.create_time)::date as month,
 			round(sum((a.metric_value * b.metric_value) / 3600 / 24 / 365), 2) as cpu_years
 		FROM
 			job_metric_numeric a,
@@ -924,20 +924,20 @@ query_monthly-data(){ ## [year]: Number of active users per month, running jobs
 		Find out how much data was ingested or created by Galaxy during the past months.
 
 		    $ gxadmin query monthly-data 2018
-		     pg_size_pretty |        month
-		    ----------------+---------------------
-		     62 TB          | 2018-12-01 00:00:00
-		     50 TB          | 2018-11-01 00:00:00
-		     59 TB          | 2018-10-01 00:00:00
-		     32 TB          | 2018-09-01 00:00:00
-		     26 TB          | 2018-08-01 00:00:00
-		     42 TB          | 2018-07-01 00:00:00
-		     34 TB          | 2018-06-01 00:00:00
-		     33 TB          | 2018-05-01 00:00:00
-		     27 TB          | 2018-04-01 00:00:00
-		     32 TB          | 2018-03-01 00:00:00
-		     18 TB          | 2018-02-01 00:00:00
-		     16 TB          | 2018-01-01 00:00:00
+		        month   | pg_size_pretty
+		    ------------+----------------
+		     2018-12-01 | 62 TB
+		     2018-11-01 | 50 TB
+		     2018-10-01 | 59 TB
+		     2018-09-01 | 32 TB
+		     2018-08-01 | 26 TB
+		     2018-07-01 | 42 TB
+		     2018-06-01 | 34 TB
+		     2018-05-01 | 33 TB
+		     2018-04-01 | 27 TB
+		     2018-03-01 | 32 TB
+		     2018-02-01 | 18 TB
+		     2018-01-01 | 16 TB
 	EOF
 
 	if (( $# > 0 )); then
@@ -946,8 +946,8 @@ query_monthly-data(){ ## [year]: Number of active users per month, running jobs
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			pg_size_pretty(sum(total_size)),
-			date_trunc('month', dataset.create_time AT TIME ZONE 'UTC') AS month
+			date_trunc('month', dataset.create_time AT TIME ZONE 'UTC')::date AS month,
+			pg_size_pretty(sum(total_size))
 		FROM
 			dataset
 		$where
