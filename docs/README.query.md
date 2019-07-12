@@ -7,6 +7,7 @@ Command | Description
 [`query datasets-created-daily`](#query-datasets-created-daily) | The min/max/average/p95/p99 of total size of datasets created in a single day.
 [`query disk-usage`](#query-disk-usage) | Disk usage per object store.
 [`query errored-jobs`](#query-errored-jobs) | Lists jobs that errored in the last N hours.
+[`query group-cpu-seconds`](#query-group-cpu-seconds) | Retrieve an approximation of the CPU time in seconds for group(s)
 [`query groups-list`](#query-groups-list) | List all groups known to Galaxy
 [`query hdca-datasets`](#query-hdca-datasets) | List of files in a dataset collection
 [`query hdca-info`](#query-hdca-info) | Information on a dataset collection
@@ -138,6 +139,35 @@ Lists details of jobs that have status = 'error' for the specified number of hou
 
      query errored-jobs 24
     TO_DO: Add output of query here!
+
+
+### query group-cpu-seconds
+
+**NAME**
+
+query group-cpu-seconds -  Retrieve an approximation of the CPU time in seconds for group(s)
+
+**SYNOPSIS**
+
+`gxadmin query group-cpu-seconds [group]`
+
+**NOTES**
+
+This uses the galaxy_slots and runtime_seconds metrics in order to
+calculate allocated CPU time in seconds. This will not be the value of
+what is actually consumed by jobs of the group, you should use cgroups instead.
+rank  | group_id |  group_name | cpu_seconds
+----- | -------- | ----------- | -----------
+1     |          | 123f911b5f1 |      20.35
+2     |          | cb0fabc0002 |      14.93
+3     |          | 7e9e9b00b89 |      14.24
+4     |          | 42f211e5e87 |      14.06
+5     |          | 26cdba62c93 |      12.97
+6     |          | fa87cddfcae |       7.01
+7     |          | 44d2a648aac |       6.70
+8     |          | 66c57b41194 |       6.43
+9     |          | 6b1467ac118 |       5.45
+10    |          | d755361b59a |       5.19
 
 
 ### query groups-list
