@@ -1008,6 +1008,7 @@ query_group-cpu-seconds() { ## [group]: Retrieve an approximation of the CPU tim
 		This uses the galaxy_slots and runtime_seconds metrics in order to
 		calculate allocated CPU time in seconds. This will not be the value of
 		what is actually consumed by jobs of the group, you should use cgroups instead.
+
 		rank  | group_id |  group_name  | cpu_seconds
 		----- | -------- | ------------ | ------------
 		1     |          | 123f911b5f1  |       20.35
