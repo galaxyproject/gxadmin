@@ -158,6 +158,7 @@ Command | Description
 [`query datasets-created-daily`](docs/README.query.md#query-datasets-created-daily) | The min/max/average/p95/p99 of total size of datasets created in a single day.
 [`query disk-usage`](docs/README.query.md#query-disk-usage) | Disk usage per object store.
 [`query errored-jobs`](docs/README.query.md#query-errored-jobs) | Lists jobs that errored in the last N hours.
+[`query group-cpu-seconds`](docs/README.query.md#query-group-cpu-seconds) | Retrieve an approximation of the CPU time in seconds for group(s)
 [`query groups-list`](docs/README.query.md#query-groups-list) | List all groups known to Galaxy
 [`query hdca-datasets`](docs/README.query.md#query-hdca-datasets) | List of files in a dataset collection
 [`query hdca-info`](docs/README.query.md#query-hdca-info) | Information on a dataset collection

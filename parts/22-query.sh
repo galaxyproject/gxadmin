@@ -1003,6 +1003,59 @@ query_user-cpu-years() { ## : CPU years allocated to tools by user
 	EOF
 }
 
+query_group-cpu-seconds() { ## [group]: Retrieve an approximation of the CPU time in seconds for group(s)
+	handle_help "$@" <<-EOF
+		This uses the galaxy_slots and runtime_seconds metrics in order to
+		calculate allocated CPU time in seconds. This will not be the value of
+		what is actually consumed by jobs of the group, you should use cgroups instead.
+
+		rank  | group_id |  group_name  | cpu_seconds
+		----- | -------- | ------------ | ------------
+		1     |          | 123f911b5f1  |       20.35
+		2     |          | cb0fabc0002  |       14.93
+		3     |          | 7e9e9b00b89  |       14.24
+		4     |          | 42f211e5e87  |       14.06
+		5     |          | 26cdba62c93  |       12.97
+		6     |          | fa87cddfcae  |        7.01
+		7     |          | 44d2a648aac  |        6.70
+		8     |          | 66c57b41194  |        6.43
+		9     |          | 6b1467ac118  |        5.45
+		10    |          | d755361b59a  |        5.19
+	EOF
+
+	where=""
+
+	if (( $# > 0 )); then
+		where="AND galaxy_group.name = '$1'"
+	fi
+
+	groupname=$(gdpr_safe galaxy_group.name group_name 'Anonymous')
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			row_number() OVER (ORDER BY round(sum(a.metric_value * b.metric_value), 0) DESC) as rank,
+			galaxy_group.id as group_id,
+			$groupname,
+			round(sum(a.metric_value * b.metric_value), 0) as cpu_seconds
+		FROM
+			job_metric_numeric a,
+			job_metric_numeric b,
+			galaxy_group,
+			job
+			FULL OUTER JOIN user_group_association ON job.user_id = user_group_association.id
+		WHERE
+			b.job_id = a.job_id
+			AND a.job_id = job.id
+			AND a.metric_name = 'runtime_seconds'
+			AND b.metric_name = 'galaxy_slots'
+			AND galaxy_group.id = user_group_association.group_id
+			$where
+		GROUP BY galaxy_group.id, galaxy_group.name
+		ORDER BY round(sum(a.metric_value * b.metric_value), 0) DESC
+		LIMIT 50
+	EOF
+}
+
 query_monthly-users-registered(){ ## [year]: Number of users registered each month
 	handle_help "$@" <<-EOF
 	EOF
