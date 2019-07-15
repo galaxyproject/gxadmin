@@ -1136,7 +1136,8 @@ query user-disk-usage -  Retrieve an approximation of the disk usage for users
 **NOTES**
 
 This uses the dataset size and the history association in order to
-calculate total disk usage for a user.
+calculate total disk usage for a user. This is currently limited
+to the 50 users with the highest storage usage.
 
 rank  | user id  |  username   |  email      | storage usage
 ----- | -------- | ----------- | ----------- | -------------
