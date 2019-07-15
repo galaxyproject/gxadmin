@@ -54,6 +54,7 @@ Command | Description
 [`query ts-repos`](#query-ts-repos) | Counts of toolshed repositories by toolshed and owner.
 [`query upload-gb-in-past-hour`](#query-upload-gb-in-past-hour) | Sum in bytes of files uploaded in the past hour
 [`query user-cpu-years`](#query-user-cpu-years) | CPU years allocated to tools by user
+[`query user-disk-usage`](#query-user-disk-usage) | Retrieve an approximation of the disk usage for users
 [`query user-recent-aggregate-jobs`](#query-user-recent-aggregate-jobs) | Show aggregate information for jobs in past N days for user
 [`query users-count`](#query-users-count) | Shows sums of active/external/deleted/purged accounts
 [`query users-total`](#query-users-total) | Total number of Galaxy users (incl deleted, purged, inactive)
@@ -1120,6 +1121,35 @@ rank  | user_id |  username   | cpu_years
 8     |         | 66c57b41194 |      6.43
 9     |         | 6b1467ac118 |      5.45
 10    |         | d755361b59a |      5.19
+
+
+### query user-disk-usage
+
+**NAME**
+
+query user-disk-usage -  Retrieve an approximation of the disk usage for users
+
+**SYNOPSIS**
+
+`gxadmin query user-disk-usage`
+
+**NOTES**
+
+This uses the dataset size and the history association in order to
+calculate total disk usage for a user.
+
+rank  | user id  |  username   |  email      | storage usage
+----- | -------- | ----------- | ----------- | -------------
+1     |  5       | 123f911b5f1 | 123@911.5f1 |      20.35 TB
+2     |  6       | cb0fabc0002 | cb0@abc.002 |      14.93 TB
+3     |  9       | 7e9e9b00b89 | 7e9@9b0.b89 |      14.24 TB
+4     |  11      | 42f211e5e87 | 42f@11e.e87 |      14.06 GB
+5     |  2       | 26cdba62c93 | 26c@ba6.c93 |      12.97 GB
+6     |  1005    | fa87cddfcae | fa8@cdd.cae |       7.01 GB
+7     |  2009    | 44d2a648aac | 44d@a64.aac |       6.70 GB
+8     |  432     | 66c57b41194 | 66c@7b4.194 |       6.43 GB
+9     |  58945   | 6b1467ac118 | 6b1@67a.118 |       5.45 MB
+10    |  10      | d755361b59a | d75@361.59a |       5.19 KB
 
 
 ### query user-recent-aggregate-jobs
