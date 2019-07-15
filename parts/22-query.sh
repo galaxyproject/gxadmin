@@ -1003,6 +1003,54 @@ query_user-cpu-years() { ## : CPU years allocated to tools by user
 	EOF
 }
 
+query_user-disk-usage() { ## : Retrieve an approximation of the disk usage for users
+	handle_help "$@" <<-EOF
+		This uses the dataset size and the history association in order to
+		calculate total disk usage for a user. This is currently limited
+		to the 50 users with the highest storage usage.
+
+		rank  | user id  |  username   |  email      | storage usage
+		----- | -------- | ----------- | ----------- | -------------
+		1     |  5       | 123f911b5f1 | 123@911.5f1 |      20.35 TB
+		2     |  6       | cb0fabc0002 | cb0@abc.002 |      14.93 TB
+		3     |  9       | 7e9e9b00b89 | 7e9@9b0.b89 |      14.24 TB
+		4     |  11      | 42f211e5e87 | 42f@11e.e87 |      14.06 GB
+		5     |  2       | 26cdba62c93 | 26c@ba6.c93 |      12.97 GB
+		6     |  1005    | fa87cddfcae | fa8@cdd.cae |       7.01 GB
+		7     |  2009    | 44d2a648aac | 44d@a64.aac |       6.70 GB
+		8     |  432     | 66c57b41194 | 66c@7b4.194 |       6.43 GB
+		9     |  58945   | 6b1467ac118 | 6b1@67a.118 |       5.45 MB
+		10    |  10      | d755361b59a | d75@361.59a |       5.19 KB
+	EOF
+
+	username=$(gdpr_safe galaxy_user.username user_name 'Anonymous')
+	useremail=$(gdpr_safe galaxy_user.email user_email 'Anonymous')
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			row_number() OVER (ORDER BY sum(total_size) DESC) as rank,
+			galaxy_user.id as "user id",
+			$username,
+			$useremail,
+			pg_size_pretty(sum(total_size)) as "storage usage"
+		FROM
+			dataset,
+			galaxy_user,
+			history_dataset_association,
+			history
+		WHERE
+			NOT dataset.purged
+			AND dataset.id = history_dataset_association.dataset_id
+			AND dataset.total_size > 0
+			AND history_dataset_association.history_id = history.id
+			AND history.user_id = galaxy_user.id
+		GROUP BY galaxy_user.id
+		ORDER BY 1
+		LIMIT 50
+	EOF
+}
+
+
 query_group-cpu-seconds() { ## [group]: Retrieve an approximation of the CPU time in seconds for group(s)
 	handle_help "$@" <<-EOF
 		This uses the galaxy_slots and runtime_seconds metrics in order to
