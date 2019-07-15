@@ -1040,6 +1040,7 @@ query_user-disk-usage() { ## : Retrieve an approximation of the disk usage for u
 		WHERE
 			NOT dataset.purged
 			AND dataset.id = history_dataset_association.dataset_id
+			AND dataset.total_size > 0
 			AND history_dataset_association.history_id = history.id
 			AND history.user_id = galaxy_user.id
 		GROUP BY galaxy_user.id
