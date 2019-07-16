@@ -194,6 +194,7 @@ Command | Description
 [`query queue-time`](docs/README.query.md#query-queue-time) | The average/95%/99% a specific tool spends in queue state.
 [`query recent-jobs`](docs/README.query.md#query-recent-jobs) | Jobs run in the past <hours> (in any state)
 [`query runtime-per-user`](docs/README.query.md#query-runtime-per-user) | computation time of user (by email)
+[`query server-groups-allocated-cpu`](docs/README.query.md#query-server-groups-allocated-cpu) | Retrieve an approximation of the CPU allocation for groups
 [`query server-groups-disk-usage`](docs/README.query.md#query-server-groups-disk-usage) | Retrieve an approximation of the disk usage for groups
 [`query tool-available-metrics`](docs/README.query.md#query-tool-available-metrics) | list all available metrics for a given tool
 [`query tool-errors`](docs/README.query.md#query-tool-errors) | Summarize percent of tool runs in error over the past weeks for all tools that have failed (most popular tools first)

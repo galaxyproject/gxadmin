@@ -1730,6 +1730,43 @@ query_server-groups-disk-usage() { ## [YYYY-MM-DD] [=, <=, >= operators]: Retrie
 	EOF
 }
 
+query_server-groups-allocated-cpu() { ## [YYYY-MM-DD] [=, <=, >= operators]: Retrieve an approximation of the CPU allocation for groups
+	handle_help "$@" <<-EOF
+	EOF
+
+	op="="
+	if (( $# > 1 )); then
+		op="$2"
+	fi
+
+	date_filter=""
+	if (( $# > 0 )); then
+		date_filter="AND date_trunc('day', dataset.create_time AT TIME ZONE 'UTC') $op '$1'::date"
+	fi
+
+	groupname=$(gdpr_safe galaxy_group.name group_name 'Anonymous')
+
+	fields="cpu_seconds=1"
+	tags="group_name=0"
+
+	read -r -d '' QUERY <<-EOF
+		SELECT $groupname,
+			round(sum(a.metric_value * b.metric_value), 2) AS cpu_seconds
+		FROM job_metric_numeric AS a,
+			job_metric_numeric AS b,
+			job,
+			galaxy_group,
+			user_group_association
+		WHERE b.job_id = a.job_id
+			AND a.metric_name = 'runtime_seconds'
+			AND b.metric_name = 'galaxy_slots'
+			AND job.user_id = user_group_association.id
+			AND user_group_association.group_id = galaxy_group.id
+			$date_filter
+		GROUP BY galaxy_group.name
+	EOF
+}
+
 query_workflow-invocation-status() { ## : Report on how many workflows are in new state by handler
 	handle_help "$@" <<-EOF
 		Really only intended to be used in influx queries.
