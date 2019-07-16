@@ -2,16 +2,27 @@ PARTS=$(sort $(wildcard parts/*.sh))
 
 all: test README.md
 
-README.md: gxadmin
+release:
+	$(MAKE) test
+	$(MAKE) README.md
+	$(MAKE) gxadmin
+
+README.md:
+	@cat $(PARTS) > gxadmin
+	@chmod +x gxadmin
 	sed -n -i '/^## Commands$$/q;p' README.md
 	./gxadmin meta cmdlist >> README.md
+	@rm -f gxadmin
 
 gxadmin: $(PARTS)
 	cat $(PARTS) > gxadmin
 	chmod +x gxadmin
 
-test: gxadmin
+test:
+	@cat $(PARTS) > gxadmin
+	@chmod +x gxadmin
 	./test.sh
+	@rm -f gxadmin
 
 shellcheck: gxadmin
 	@# SC2001 - stylistic, no thank you!
@@ -30,4 +41,4 @@ shellcheck-parts:
 	@# SC2034 - unnecessary due to split
 	shellcheck -s bash -f gcc --exclude SC2001,SC2120,SC2119,SC2129,SC2044,SC2154,SC2034 parts/[023456789]*
 
-.PHONY = test shellcheck shellcheck-parts
+.PHONY: test shellcheck shellcheck-parts README.md
