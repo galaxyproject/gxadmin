@@ -1,28 +1,24 @@
 PARTS=$(sort $(wildcard parts/*.sh))
+TMP := $(shell mktemp)
 
 all: test README.md
 
-release:
-	$(MAKE) test
-	$(MAKE) README.md
-	$(MAKE) gxadmin
-
 README.md:
-	@cat $(PARTS) > gxadmin
-	@chmod +x gxadmin
+	@cat $(PARTS) > .tmpgxadmin
+	@chmod +x .tmpgxadmin
 	sed -n -i '/^## Commands$$/q;p' README.md
-	./gxadmin meta cmdlist >> README.md
-	@rm -f gxadmin
+	./.tmpgxadmin meta cmdlist >> README.md
+	@rm -f .tmpgxadmin
 
 gxadmin: $(PARTS)
 	cat $(PARTS) > gxadmin
 	chmod +x gxadmin
 
 test:
-	@cat $(PARTS) > gxadmin
-	@chmod +x gxadmin
+	@cat $(PARTS) > .tmpgxadmin
+	@chmod +x .tmpgxadmin
 	./test.sh
-	@rm -f gxadmin
+	@rm -f .tmpgxadmin
 
 shellcheck: gxadmin
 	@# SC2001 - stylistic, no thank you!

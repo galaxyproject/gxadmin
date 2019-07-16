@@ -1,18 +1,19 @@
 #!/usr/bin/env bats
+GXADMIN=./.tmpgxadmin
 
 @test "Ensure gxadmin exits with zero" {
-	run ./gxadmin
+	run ${GXADMIN}
 	[ "$status" -eq 0 ]
 	[ "${lines[0]}" = "gxadmin usage:" ]
 }
 
 @test "Ensure help is not too long" {
-	out_lines=$(./gxadmin | wc -l)
+	out_lines=$(${GXADMIN} | wc -l)
 	[ "$out_lines" -lt 100 ]
 }
 
 @test "Version should be returned" {
-	out_lines=$(./gxadmin version)
+	out_lines=$(${GXADMIN} version)
 	[ "$out_lines" -gt 0 ]
 }
 
