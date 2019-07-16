@@ -22,6 +22,10 @@ curl https://raw.githubusercontent.com/usegalaxy-eu/gxadmin/master/gxadmin > /us
 chmod +x /usr/bin/gxadmin
 ```
 
+## Contributing
+
+Please make PRs to the `dev` branch. The master branch will only contain releases.
+
 ## Changelog
 
 [Changelog](CHANGELOG.md)
