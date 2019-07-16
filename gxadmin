@@ -7,7 +7,7 @@
 # Thanks to everyone for their contributions
 # https://github.com/usegalaxy-eu/gxadmin/graphs/contributors
 version() {
-	echo 13
+	echo 15
 }
 GXADMIN_SITE_SPECIFIC=${GXADMIN_SITE_SPECIFIC:-~/.config/gxadmin-local.sh}
 
