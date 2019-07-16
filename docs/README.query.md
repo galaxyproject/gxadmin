@@ -39,6 +39,7 @@ Command | Description
 [`query queue-time`](#query-queue-time) | The average/95%/99% a specific tool spends in queue state.
 [`query recent-jobs`](#query-recent-jobs) | Jobs run in the past <hours> (in any state)
 [`query runtime-per-user`](#query-runtime-per-user) | computation time of user (by email)
+[`query server-groups-disk-usage`](#query-server-groups-disk-usage) | Retrieve an approximation of the disk usage for groups
 [`query tool-available-metrics`](#query-tool-available-metrics) | list all available metrics for a given tool
 [`query tool-errors`](#query-tool-errors) | Summarize percent of tool runs in error over the past weeks for all tools that have failed (most popular tools first)
 [`query tool-last-used-date`](#query-tool-last-used-date) | When was the most recent invocation of every tool
@@ -777,6 +778,17 @@ query runtime-per-user -  computation time of user (by email)
        sum
     ----------
      14:07:39
+
+
+### query server-groups-disk-usage
+
+**NAME**
+
+query server-groups-disk-usage -  Retrieve an approximation of the disk usage for groups
+
+**SYNOPSIS**
+
+`gxadmin query server-groups-disk-usage [YYYY-MM-DD] [=, <=, >= operators]`
 
 
 ### query tool-available-metrics

@@ -2179,7 +2179,7 @@ query_group-cpu-seconds() { ## [group]: Retrieve an approximation of the CPU tim
 			job_metric_numeric b,
 			galaxy_group,
 			job
-			FULL OUTER JOIN user_group_association ON job.user_id = user_group_association.id
+			FULL OUTER JOIN user_group_association ON job.user_id = user_group_association.user_id
 		WHERE
 			b.job_id = a.job_id
 			AND a.job_id = job.id
@@ -2778,6 +2778,44 @@ query_server-workflow-invocations() {
 		${date_filter}
 		GROUP BY
 			scheduler, handler
+	EOF
+}
+
+query_server-groups-disk-usage() { ## [YYYY-MM-DD] [=, <=, >= operators]: Retrieve an approximation of the disk usage for groups
+	handle_help "$@" <<-EOF
+	EOF
+
+	op="="
+	if (( $# > 1 )); then
+		op="$2"
+	fi
+
+	date_filter=""
+	if (( $# > 0 )); then
+		date_filter="AND date_trunc('day', dataset.create_time AT TIME ZONE 'UTC') $op '$1'::date"
+	fi
+
+	groupname=$(gdpr_safe galaxy_group.name group_name 'Anonymous')
+
+	fields="storage_usage=1"
+	tags="group_name=0"
+
+	read -r -d '' QUERY <<-EOF
+		SELECT $groupname,
+			sum(total_size) as "storage_usage"
+		FROM dataset,
+			galaxy_group,
+			user_group_association,
+			history_dataset_association,
+			history
+		WHERE NOT dataset.purged
+			AND dataset.id = history_dataset_association.dataset_id
+			AND dataset.total_size > 0
+			AND history_dataset_association.history_id = history.id
+			AND history.user_id = user_group_association.id
+			AND user_group_association.group_id = galaxy_group.id
+			$date_filter
+		GROUP BY galaxy_group.name
 	EOF
 }
 
