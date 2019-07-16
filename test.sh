@@ -26,12 +26,12 @@ GXADMIN=./.tmpgxadmin
 }
 
 @test "Ensure that changes were made to BOTH parts/* and gxadmin (fix: run make)" {
-	run diff <(cat gxadmin) <(cat parts/*.sh)
+	run diff <(cat ${GXADMIN}) <(cat parts/*.sh)
 	[ "$status" -eq 0 ]
 }
 
 @test "Ensure only using tabs" {
-	out_lines=$(egrep '^ +[^\t]' gxadmin | grep -v '%s' | wc -l)
+	out_lines=$(egrep '^ +[^\t]' ${GXADMIN} | grep -v '%s' | wc -l)
 	if (( $out_lines > 2 )); then
 		echo "Lines with potential issues. Either fix these or increase the exclusion in the test.sh if it is valid (e.g. inside printf)"
 		egrep '^ +[^\t]' parts/* | grep -v %s
