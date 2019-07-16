@@ -22,8 +22,8 @@
 	- mutate assign-unassigned-workflow: workaround for galaxyproject/galaxy#8209
 	- mutate oidc-role-find-affected: workaround for galaxyproject/galaxy#8244
 	- mutate oidc-role-fix: workaround for galaxyproject/galaxy#8244
-	- query user-disk-usage, thanks [@selten](https://github.com/selten)
-	- query group-cpu-seconds, thanks [@selten](https://github.com/selten)
+	- query user-disk-usage, thanks @selten
+	- query group-cpu-seconds, thanks @selten
 - Fixed:
 	- Correct bug in queue-detail and a couple other functions which did not
 	  correctly include data from anonymous users.
