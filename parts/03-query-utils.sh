@@ -63,6 +63,32 @@ EOF
 	psql -c "COPY ($1) to STDOUT with CSV DELIMITER E'\t'"| python -c "$arr2py" "$2" "$3" "$4" "$5"
 }
 
+elem_in_array() {
+	elem_in_arr=$(cat <<EOF
+import sys
+elem = sys.argv[1]
+
+if elem in sys.argv[2:]:
+	sys.exit(0)
+else:
+	sys.exit(1)
+EOF
+)
+
+	# remove the first element as that's what we search for
+	arr_elems=${@:2}
+
+	# Call Python as it's easier
+	python -c "$elem_in_arr" "$1" ${arr_elems[@]}
+
+	# Returnt he correct value for use in if statements
+	if [ $? -eq 0 ]; then
+		return 0
+	else
+		return 1
+	fi
+}
+
 gdpr_safe() {
 	local coalesce_to
 	if (( $# > 2 )); then

@@ -398,6 +398,32 @@ EOF
 	psql -c "COPY ($1) to STDOUT with CSV DELIMITER E'\t'"| python -c "$arr2py" "$2" "$3" "$4" "$5"
 }
 
+elem_in_array() {
+	elem_in_arr=$(cat <<EOF
+import sys
+elem = sys.argv[1]
+
+if elem in sys.argv[2:]:
+	sys.exit(0)
+else:
+	sys.exit(1)
+EOF
+)
+
+	# remove the first element as that's what we search for
+	arr_elems=${@:2}
+
+	# Call Python as it's easier
+	python -c "$elem_in_arr" "$1" ${arr_elems[@]}
+
+	# Returnt he correct value for use in if statements
+	if [ $? -eq 0 ]; then
+		return 0
+	else
+		return 1
+	fi
+}
+
 gdpr_safe() {
 	local coalesce_to
 	if (( $# > 2 )); then
@@ -4432,7 +4458,7 @@ meta_cmdlist() {
 	done
 }
 
-meta_slurp-current() { ## [--date]: Executes what used to be "Galaxy Slurp"
+meta_slurp-current() { ## [--date] [slurp-name [2nd-slurp-name [...]]]: Executes what used to be "Galaxy Slurp"
 	handle_help "$@" <<-EOF
 		Obtain influx compatible metrics regarding the current state of the
 		server. UseGalaxy.EU uses this to display things like "Current user
@@ -4486,14 +4512,25 @@ meta_slurp-current() { ## [--date]: Executes what used to be "Galaxy Slurp"
 		append=" "$(date +%s%N)
 	fi
 
+	specific_slurp=()
+	if [[ $# > 1 ]]; then
+		specific_slurp=(${@:2})
+	fi
+
 	# shellcheck disable=SC2013
 	for func in $(grep -s -h -o '^query_server-[a-z-]*' "$0" "$GXADMIN_SITE_SPECIFIC" | sort | sed 's/query_//g'); do
+		if [[ ${#specific_slurp[@]} > 0 ]]; then
+			if ! elem_in_array $func ${specific_slurp[@]}; then
+				continue;
+			fi
+		fi
+
 		obtain_query "$func"
 		$wrapper query_influx "$QUERY" "$query_name" "$fields" "$tags" | sed "s/$/$append/"
 	done
 }
 
-meta_slurp-upto() { ## <yyyy-mm-dd>: Slurps data up to a specific date.
+meta_slurp-upto() { ## <yyyy-mm-dd> [slurp-name [2nd-slurp-name [...]]]: Slurps data up to a specific date.
 	handle_help "$@" <<-EOF
 		Obtain influx compatible metrics regarding the summed state of the
 		server up to a specific date. UseGalaxy.EU uses this to display things
@@ -4503,15 +4540,26 @@ meta_slurp-upto() { ## <yyyy-mm-dd>: Slurps data up to a specific date.
 		but with date filters for the entries' creation times.
 	EOF
 
+	specific_slurp=()
+	if [[ $# > 1 ]]; then
+		specific_slurp=(${@:2})
+	fi
+
 	# shellcheck disable=SC2013
 	for func in $(grep -s -h -o '^query_server-[a-z-]*' "$0" "$GXADMIN_SITE_SPECIFIC" | sort | sed 's/query_//g'); do
+		if [[ ${#specific_slurp[@]} > 0 ]]; then
+			if ! elem_in_array $func ${specific_slurp[@]}; then
+				continue;
+			fi
+		fi
+
 		obtain_query "$func" "$1" "<="
 		$wrapper query_influx "$QUERY" "$query_name.upto" "$fields" "$tags" | \
 			sed "s/$/ $(date -d "$1" +%s%N)/"
 	done
 }
 
-meta_slurp-day() { ## <yyyy-mm-dd>: Slurps data on a specific date.
+meta_slurp-day() { ## <yyyy-mm-dd> [slurp-name [2nd-slurp-name [...]]]: Slurps data on a specific date.
 	handle_help "$@" <<-EOF
 		Obtain influx compatible metrics regarding the state of the
 		server on a specific date. UseGalaxy.EU uses this to display things
@@ -4555,8 +4603,19 @@ meta_slurp-day() { ## <yyyy-mm-dd>: Slurps data on a specific date.
 
 	EOF
 
+	specific_slurp=()
+	if [[ $# > 1 ]]; then
+		specific_slurp=(${@:2})
+	fi
+
 	# shellcheck disable=SC2013
 	for func in $(grep -s -h -o '^query_server-[a-z-]*' "$0" "$GXADMIN_SITE_SPECIFIC" | sort | sed 's/query_//g'); do
+		if [[ ${#specific_slurp[@]} > 0 ]]; then
+			if ! elem_in_array $func ${specific_slurp[@]}; then
+				continue;
+			fi
+		fi
+
 		obtain_query "$func" "$1"
 		$wrapper query_influx "$QUERY" "$query_name.daily" "$fields" "$tags" | \
 			sed "s/$/ $(date -d "$1" +%s%N)/"
