@@ -6,7 +6,7 @@ Command | Description
 [`report job-info`](#report-job-info) | Information about a specific job
 [`report user-info`](#report-user-info) | Quick overview of a Galaxy user in your system
 
-### report assigned-to-handler
+## report assigned-to-handler
 
 **NAME**
 
@@ -17,7 +17,7 @@ report assigned-to-handler -  Report what items are assigned to a handler curren
 `gxadmin report assigned-to-handler <handler>`
 
 
-### report job-info
+## report job-info
 
 **NAME**
 
@@ -35,7 +35,7 @@ report job-info -  Information about a specific job
      upload1 | ok    | admin    | 2012-12-06 16:34:27.492711 | local:///       | 9347
 
 
-### report user-info
+## report user-info
 
 **NAME**
 

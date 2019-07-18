@@ -4420,7 +4420,7 @@ meta_cmdlist() {
 
 				# Subsec documentation
 				echo                          >> "docs/README.${section}.md"
-				echo "### $cmd_part"          >> "docs/README.${section}.md"
+				echo "## $cmd_part"           >> "docs/README.${section}.md"
 				echo                          >> "docs/README.${section}.md"
 				bash -c "$0 $cmd_part --help" >> "docs/README.${section}.md"
 			else

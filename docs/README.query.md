@@ -62,7 +62,7 @@ Command | Description
 [`query workflow-connections`](#query-workflow-connections) | The connections of tools, from output to input, in the latest (or all) versions of user workflows
 [`query workflow-invocation-status`](#query-workflow-invocation-status) | Report on how many workflows are in new state by handler
 
-### query collection-usage
+## query collection-usage
 
 **NAME**
 
@@ -73,7 +73,7 @@ query collection-usage -  Information about how many collections of various type
 `gxadmin query collection-usage`
 
 
-### query datasets-created-daily
+## query datasets-created-daily
 
 **NAME**
 
@@ -91,7 +91,7 @@ query datasets-created-daily -  The min/max/average/p95/p99 of total size of dat
      0 bytes | 338 GB | 1355 GB | 2384 GB | 42 TB
 
 
-### query disk-usage
+## query disk-usage
 
 **NAME**
 
@@ -124,7 +124,7 @@ Or you can supply the --nice flag, but this should not be used with iquery/Influ
      files6          | 17 TB
 
 
-### query errored-jobs
+## query errored-jobs
 
 **NAME**
 
@@ -142,7 +142,7 @@ Lists details of jobs that have status = 'error' for the specified number of hou
     TO_DO: Add output of query here!
 
 
-### query group-cpu-seconds
+## query group-cpu-seconds
 
 **NAME**
 
@@ -172,7 +172,7 @@ rank  | group_id |  group_name  | cpu_seconds
 10    |          | d755361b59a  |        5.19
 
 
-### query groups-list
+## query groups-list
 
 **NAME**
 
@@ -183,7 +183,7 @@ query groups-list -  List all groups known to Galaxy
 `gxadmin query groups-list`
 
 
-### query hdca-datasets
+## query hdca-datasets
 
 **NAME**
 
@@ -194,7 +194,7 @@ query hdca-datasets -  List of files in a dataset collection
 `gxadmin query hdca-datasets <hdca_id>`
 
 
-### query hdca-info
+## query hdca-info
 
 **NAME**
 
@@ -205,7 +205,7 @@ query hdca-info -  Information on a dataset collection
 `gxadmin query hdca-info <hdca_id>`
 
 
-### query history-contents
+## query history-contents
 
 **NAME**
 
@@ -220,7 +220,7 @@ query history-contents -  List datasets and/or collections in a history
 Obtain an overview of tools that a user has run in the past N days
 
 
-### query history-runtime-system-by-tool
+## query history-runtime-system-by-tool
 
 **NAME**
 
@@ -231,7 +231,7 @@ query history-runtime-system-by-tool -  Sum of runtimes by all jobs in a history
 `gxadmin query history-runtime-system-by-tool <history_id>`
 
 
-### query history-runtime-system
+## query history-runtime-system
 
 **NAME**
 
@@ -242,7 +242,7 @@ query history-runtime-system -  Sum of runtimes by all jobs in a history
 `gxadmin query history-runtime-system <history_id>`
 
 
-### query history-runtime-wallclock
+## query history-runtime-wallclock
 
 **NAME**
 
@@ -253,7 +253,7 @@ query history-runtime-wallclock -  Time as elapsed by a clock on the wall
 `gxadmin query history-runtime-wallclock <history_id>`
 
 
-### query job-history
+## query job-history
 
 **NAME**
 
@@ -275,7 +275,7 @@ query job-history -  Job state history for a specific job
     (4 rows)
 
 
-### query job-inputs
+## query job-inputs
 
 **NAME**
 
@@ -286,7 +286,7 @@ query job-inputs -  Input datasets to a specific job
 `gxadmin query job-inputs <id>`
 
 
-### query job-outputs
+## query job-outputs
 
 **NAME**
 
@@ -297,7 +297,7 @@ query job-outputs -  Output datasets from a specific job
 `gxadmin query job-outputs <id>`
 
 
-### query jobs-max-by-cpu-hours
+## query jobs-max-by-cpu-hours
 
 **NAME**
 
@@ -308,7 +308,7 @@ query jobs-max-by-cpu-hours -  Top 10 jobs by CPU hours consumed (requires CGrou
 `gxadmin query jobs-max-by-cpu-hours`
 
 
-### query jobs-nonterminal
+## query jobs-nonterminal
 
 **NAME**
 
@@ -350,7 +350,7 @@ You can also query all non-terminal jobs by all users
      4760590 | featurecounts/1.6.3 | new     | 2019-01-18 14:11:07.328533 |        |        | handler_main_2  |      11
 
 
-### query jobs-per-user
+## query jobs-per-user
 
 **NAME**
 
@@ -368,7 +368,7 @@ query jobs-per-user -  Number of jobs run by a specific user
       1460
 
 
-### query jobs-queued
+## query jobs-queued
 
 **NAME**
 
@@ -389,7 +389,7 @@ unprocessed  |   118
 processed    |    37
 
 
-### query jobs-queued-internal-by-handler
+## query jobs-queued-internal-by-handler
 
 **NAME**
 
@@ -419,7 +419,7 @@ handler_main_8   |     9
 handler_main_9   |    14
 
 
-### query largest-collection
+## query largest-collection
 
 **NAME**
 
@@ -430,7 +430,7 @@ query largest-collection -  Returns the size of the single largest collection
 `gxadmin query largest-collection`
 
 
-### query largest-histories
+## query largest-histories
 
 **NAME**
 
@@ -456,7 +456,7 @@ Finds all jobs by people in that queue (including things they are executing that
      413 bytes  | 45 | Unnamed hi | alice
 
 
-### query latest-users
+## query latest-users
 
 **NAME**
 
@@ -476,7 +476,7 @@ Returns 40 most recently registered users
       1 | 2018-10-05 11:40:42.90119 |                | helena-rasche | hxr@informatik.uni-freiburg.de
 
 
-### query monthly-cpu-years
+## query monthly-cpu-years
 
 **NAME**
 
@@ -514,7 +514,7 @@ actually consumed by your jobs, you should use cgroups.
      2017-12-01 |      2.44
 
 
-### query monthly-data
+## query monthly-data
 
 **NAME**
 
@@ -545,7 +545,7 @@ Find out how much data was ingested or created by Galaxy during the past months.
      2018-01-01 | 16 TB
 
 
-### query monthly-jobs
+## query monthly-jobs
 
 **NAME**
 
@@ -576,7 +576,7 @@ Count jobs run each month
      2018-01-01 |  25378
 
 
-### query monthly-users-active
+## query monthly-users-active
 
 **NAME**
 
@@ -607,7 +607,7 @@ Number of unique users each month who ran jobs. **NOTE**: does not include anony
      2018-01-01 |          122
 
 
-### query monthly-users-registered
+## query monthly-users-registered
 
 **NAME**
 
@@ -618,7 +618,7 @@ query monthly-users-registered -  Number of users registered each month
 `gxadmin query monthly-users-registered [year]`
 
 
-### query old-histories
+## query old-histories
 
 **NAME**
 
@@ -646,7 +646,7 @@ Histories and their users who haven't been updated for a specified number of wee
      39523 | 2017-06-21 01:34:52.226653 |       9 | xxx@xxx | OSCC Cell Lines    | f         | f       | f      |         139
 
 
-### query queue
+## query queue
 
 **NAME**
 
@@ -673,7 +673,7 @@ query queue -  Brief overview of currently running jobs
      upload1                                                           | running |     2
 
 
-### query queue-detail
+## query queue-detail
 
 **NAME**
 
@@ -701,7 +701,7 @@ query queue-detail -  Detailed overview of running and queued jobs
      queued  | 4361941 | 229731  | toolshed.g2.bx.psu.edu/repos/nml/spades/spades/1.2                        | xxxx     | 4 days 21:00:00
 
 
-### query queue-overview
+## query queue-overview
 
 **NAME**
 
@@ -719,7 +719,7 @@ Primarily for monitoring of queue. Optimally used with 'iquery' and passed to Te
     queue-overview,tool_id=upload1,tool_version=0.0.1,state=running,handler=main.web.1,destination_id=condor,job_runner_name=condor,user=1 count=1
 
 
-### query queue-time
+## query queue-time
 
 **NAME**
 
@@ -737,7 +737,7 @@ query queue-time -  The average/95%/99% a specific tool spends in queue state.
      00:00:15.421457 | 00:00:55.022874 | 00:00:59.974171 | 00:01:01.211995
 
 
-### query recent-jobs
+## query recent-jobs
 
 **NAME**
 
@@ -761,7 +761,7 @@ query recent-jobs -  Jobs run in the past <hours> (in any state)
      4383981 | 2018-10-05 16:04:00 | echo_main_handler0    | ok    |
 
 
-### query runtime-per-user
+## query runtime-per-user
 
 **NAME**
 
@@ -779,7 +779,7 @@ query runtime-per-user -  computation time of user (by email)
      14:07:39
 
 
-### query tool-available-metrics
+## query tool-available-metrics
 
 **NAME**
 
@@ -803,7 +803,7 @@ Gives a list of available metrics, which can then be used to query.
      ...
 
 
-### query tool-errors
+## query tool-errors
 
 **NAME**
 
@@ -830,7 +830,7 @@ See jobs-in-error summary for recently executed tools that have failed at least 
      iuc/rgrnastar/rna_star/2.6.0b-2   |        40 |               0.3 |              0 |            12 |            0 | handler_main_2
 
 
-### query tool-last-used-date
+## query tool-last-used-date
 
 **NAME**
 
@@ -854,10 +854,10 @@ Example invocation:
 
 **WARNING**
 
-It is not truly every tool, there is no easy way to find the tools which have never been run.
+!> It is not truly every tool, there is no easy way to find the tools which have never been run.
 
 
-### query tool-likely-broken
+## query tool-likely-broken
 
 **NAME**
 
@@ -884,7 +884,7 @@ which were run more than 4 times, and have a failure rate over 95%.
      rnateam/dorina/dorina_search/1.0.0                    |         6 |               1 |              0 |             6 |            0 | handler_main_8
 
 
-### query tool-metrics
+## query tool-metrics
 
 **NAME**
 
@@ -917,7 +917,7 @@ do some aggregations. The following requires [data_hacks](https://github.com/bit
        95.5703 -   105.8750 [     1]: ∎ (0.23%)
 
 
-### query tool-new-errors
+## query tool-new-errors
 
 **NAME**
 
@@ -944,7 +944,7 @@ See jobs-in-error summary for recent tools (tools whose first execution is in re
      iuc/rgrnastar/rna_star/2.6.0b-2   |        40 |               0.3 |              0 |            12 |            0 | handler_main_2
 
 
-### query tool-popularity
+## query tool-popularity
 
 **NAME**
 
@@ -972,7 +972,7 @@ See most popular tools by month
     (8 rows)
 
 
-### query tool-usage
+## query tool-usage
 
 **NAME**
 
@@ -998,7 +998,7 @@ query tool-usage -  Counts of tool runs in the past weeks (default = all)
      Filter1                                                                |  43253
 
 
-### query training-list
+## query training-list
 
 **NAME**
 
@@ -1018,7 +1018,7 @@ This module is specific to EU's implementation of Training Infrastructure as a S
      hts2018          | 2018-09-19
 
 
-### query training-members-remove
+## query training-members-remove
 
 **NAME**
 
@@ -1029,7 +1029,7 @@ query training-members-remove -  Remove a user from a training
 `gxadmin query training-members-remove <training> <username> [YESDOIT]`
 
 
-### query training-members
+## query training-members
 
 **NAME**
 
@@ -1047,7 +1047,7 @@ query training-members -  List users in a specific training
      helena-rasche      | 2018-09-21 21:42:01
 
 
-### query training-queue
+## query training-queue
 
 **NAME**
 
@@ -1067,7 +1067,7 @@ Finds all jobs by people in that queue (including things they are executing that
      queued | 4350274 | 225743 | upload1 |               | 2018-09-26 10:00:00
 
 
-### query ts-repos
+## query ts-repos
 
 **NAME**
 
@@ -1078,7 +1078,7 @@ query ts-repos -  Counts of toolshed repositories by toolshed and owner.
 `gxadmin query ts-repos`
 
 
-### query upload-gb-in-past-hour
+## query upload-gb-in-past-hour
 
 **NAME**
 
@@ -1093,7 +1093,7 @@ query upload-gb-in-past-hour -  Sum in bytes of files uploaded in the past hour
 Quick output, mostly useful for graphing, to produce a nice graph of how heavily are people uploading currently.
 
 
-### query user-cpu-years
+## query user-cpu-years
 
 **NAME**
 
@@ -1123,7 +1123,7 @@ rank  | user_id |  username   | cpu_years
 10    |         | d755361b59a |      5.19
 
 
-### query user-disk-usage
+## query user-disk-usage
 
 **NAME**
 
@@ -1153,7 +1153,7 @@ rank  | user id  |  username   |  email      | storage usage
 10    |  10      | d755361b59a | d75@361.59a |       5.19 KB
 
 
-### query user-recent-aggregate-jobs
+## query user-recent-aggregate-jobs
 
 **NAME**
 
@@ -1168,7 +1168,7 @@ query user-recent-aggregate-jobs -  Show aggregate information for jobs in past 
 Obtain an overview of tools that a user has run in the past N days
 
 
-### query users-count
+## query users-count
 
 **NAME**
 
@@ -1189,7 +1189,7 @@ query users-count -  Shows sums of active/external/deleted/purged accounts
      f      | f        | t       | t      |    36
 
 
-### query users-total
+## query users-total
 
 **NAME**
 
@@ -1200,7 +1200,7 @@ query users-total -  Total number of Galaxy users (incl deleted, purged, inactiv
 `gxadmin query users-total`
 
 
-### query users-with-oidc
+## query users-with-oidc
 
 **NAME**
 
@@ -1217,7 +1217,7 @@ provider | count
 elixir   |     5
 
 
-### query workflow-connections
+## query workflow-connections
 
 **NAME**
 
@@ -1246,7 +1246,7 @@ This is used by the usegalaxy.eu tool prediction workflow, allowing for building
          4 | 2013-02-07 16:48:00 |    13 | cat1              | 1.0.0     |     20 | Count1            | 1.0.0
 
 
-### query workflow-invocation-status
+## query workflow-invocation-status
 
 **NAME**
 

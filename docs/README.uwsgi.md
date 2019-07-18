@@ -15,7 +15,7 @@ Command | Description
 [`uwsgi zerg-strace`](#uwsgi-zerg-strace) | Strace a zergling
 [`uwsgi zerg-swap`](#uwsgi-zerg-swap) | Swap zerglings in order (unintelligent version)
 
-### uwsgi handler-restart
+## uwsgi handler-restart
 
 **NAME**
 
@@ -26,7 +26,7 @@ uwsgi handler-restart -  Restart all handlers
 `gxadmin uwsgi handler-restart`
 
 
-### uwsgi handler-strace
+## uwsgi handler-strace
 
 **NAME**
 
@@ -37,7 +37,7 @@ uwsgi handler-strace -  Strace a handler
 `gxadmin uwsgi handler-strace [number]`
 
 
-### uwsgi lastlog
+## uwsgi lastlog
 
 **NAME**
 
@@ -69,7 +69,7 @@ Lets you know if any of your workers or handlers have maybe stopped processing j
     journalctl.lastlog,service=galaxy-zergling@2 seconds=2866
 
 
-### uwsgi memory
+## uwsgi memory
 
 **NAME**
 
@@ -86,7 +86,7 @@ Obtain memory usage of the various Galaxy processes
 Also consider using systemd-cgtop
 
 
-### uwsgi pids
+## uwsgi pids
 
 **NAME**
 
@@ -101,7 +101,7 @@ uwsgi pids -  Galaxy process PIDs
 Obtain memory usage of the various Galaxy processes
 
 
-### uwsgi stats-influx
+## uwsgi stats-influx
 
 **NAME**
 
@@ -148,7 +148,7 @@ For multiple zerglings you can run this for each and just 2>/dev/null
 And it will fetch only data for responding uwsgis.
 
 
-### uwsgi stats
+## uwsgi stats
 
 **NAME**
 
@@ -159,7 +159,7 @@ uwsgi stats -  uwsgi stats
 `gxadmin uwsgi stats`
 
 
-### uwsgi status
+## uwsgi status
 
 **NAME**
 
@@ -174,7 +174,7 @@ uwsgi status -  Current system status
 Current status of all uwsgi processes
 
 
-### uwsgi zerg-scale-up
+## uwsgi zerg-scale-up
 
 **NAME**
 
@@ -185,7 +185,7 @@ uwsgi zerg-scale-up -  Add another zergling to deal with high load
 `gxadmin uwsgi zerg-scale-up`
 
 
-### uwsgi zerg-strace
+## uwsgi zerg-strace
 
 **NAME**
 
@@ -196,7 +196,7 @@ uwsgi zerg-strace -  Strace a zergling
 `gxadmin uwsgi zerg-strace [number]`
 
 
-### uwsgi zerg-swap
+## uwsgi zerg-swap
 
 **NAME**
 

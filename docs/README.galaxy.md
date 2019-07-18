@@ -8,7 +8,7 @@ Command | Description
 [`galaxy migrate-tool-install-from-sqlite`](#galaxy-migrate-tool-install-from-sqlite) | Converts SQLite version into normal potsgres toolshed repository tables
 [`galaxy migrate-tool-install-to-sqlite`](#galaxy-migrate-tool-install-to-sqlite) | Converts normal potsgres toolshed repository tables into the SQLite version
 
-### galaxy amqp-test
+## galaxy amqp-test
 
 **NAME**
 
@@ -51,7 +51,7 @@ Basically any error results in a hang forever. It is recommended you run it with
     $
 
 
-### galaxy cleanup
+## galaxy cleanup
 
 **NAME**
 
@@ -66,7 +66,7 @@ galaxy cleanup -  Cleanup histories/hdas/etc for past N days (default=30)
 Cleanup histories/hdas/etc for past N days using the python objects-based method
 
 
-### galaxy cleanup-jwd
+## galaxy cleanup-jwd
 
 **NAME**
 
@@ -87,7 +87,7 @@ of a hack to handle the fact that the list produced by find is really
 long, and the for loop hangs until it's done generating the list.
 
 
-### galaxy migrate-tool-install-from-sqlite
+## galaxy migrate-tool-install-from-sqlite
 
 **NAME**
 
@@ -109,7 +109,7 @@ galaxy migrate-tool-install-from-sqlite -  Converts SQLite version into normal p
     Complete
 
 
-### galaxy migrate-tool-install-to-sqlite
+## galaxy migrate-tool-install-to-sqlite
 
 **NAME**
 

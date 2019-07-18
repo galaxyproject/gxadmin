@@ -11,7 +11,7 @@ Command | Description
 [`mutate oidc-role-find-affected`](#mutate-oidc-role-find-affected) | Find users affected by galaxyproject/galaxy#8244
 [`mutate oidc-role-fix`](#mutate-oidc-role-fix) | Fix permissions for users logged in via OIDC. Workaround for galaxyproject/galaxy#8244
 
-### mutate approve-user
+## mutate approve-user
 
 **NAME**
 
@@ -26,7 +26,7 @@ mutate approve-user -  Approve a user in the database
 There is no --commit flag on this because it is relatively safe
 
 
-### mutate assign-unassigned-workflows
+## mutate assign-unassigned-workflows
 
 **NAME**
 
@@ -45,7 +45,7 @@ this case handler_prefix is "some_string_" and count is however many
 handlers you want to schedule workflows across.
 
 
-### mutate delete-group-role
+## mutate delete-group-role
 
 **NAME**
 
@@ -60,7 +60,7 @@ mutate delete-group-role -  Remove the group, role, and any user-group + user-ro
 Wipe out a group+role, and user associations.
 
 
-### mutate fail-history
+## mutate fail-history
 
 **NAME**
 
@@ -75,7 +75,7 @@ mutate fail-history -  Mark all jobs within a history to state error
 Set all jobs within a history to error
 
 
-### mutate fail-job
+## mutate fail-job
 
 **NAME**
 
@@ -90,7 +90,7 @@ mutate fail-job -  Sets a job state to error
 Sets a job's state to "error"
 
 
-### mutate fail-terminal-datasets
+## mutate fail-terminal-datasets
 
 **NAME**
 
@@ -152,7 +152,7 @@ Then to run with the --commit flag to commit the changes
     COMMIT
 
 
-### mutate oidc-role-find-affected
+## mutate oidc-role-find-affected
 
 **NAME**
 
@@ -170,7 +170,7 @@ This finds all of the OIDC authenticated users which do not have any
 roles associated to them. (Should be sufficient?)
 
 
-### mutate oidc-role-fix
+## mutate oidc-role-fix
 
 **NAME**
 

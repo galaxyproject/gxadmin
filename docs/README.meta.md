@@ -12,7 +12,7 @@ Command | Description
 [`meta update`](#meta-update) | Update the script
 [`meta whatsnew`](#meta-whatsnew) | What's new in this version of gxadmin
 
-### meta export-grafana-dashboards
+## meta export-grafana-dashboards
 
 **NAME**
 
@@ -34,7 +34,7 @@ should be run in a directory that has a git repo initialised, where you
 are not concerned about accidentally pushing to wrong remote.
 
 
-### meta influx-post
+## meta influx-post
 
 **NAME**
 
@@ -67,7 +67,7 @@ them. Influx recommends 5-10k lines:
     $ for file in PREFIX*; do gxadmin meta influx-post galaxy ; done
 
 
-### meta influx-query
+## meta influx-query
 
 **NAME**
 
@@ -94,7 +94,7 @@ Query percentage of memory used over last hour.
     2019-04-26T10:30:00Z    65.06069941790024
 
 
-### meta iquery-grt-export
+## meta iquery-grt-export
 
 **NAME**
 
@@ -109,7 +109,7 @@ meta iquery-grt-export -  Export data from a GRT database for sending to influx
 **WARNING**: GRT database specific query, will not work with a galaxy database!
 
 
-### meta slurp-current
+## meta slurp-current
 
 **NAME**
 
@@ -168,7 +168,7 @@ the $GXADMIN_SITE_SPECIFIC file. They must start with the prefix
     server-workflows,deleted=f,importable=f,published=f count=3
 
 
-### meta slurp-day
+## meta slurp-day
 
 **NAME**
 
@@ -221,7 +221,7 @@ date filter as well, or the metrics reported here will be less useful.
     server-workflows.daily,deleted=f,importable=f,published=f count=1
 
 
-### meta slurp-upto
+## meta slurp-upto
 
 **NAME**
 
@@ -241,7 +241,7 @@ This calls all of the same functions as 'gxadmin meta slurp-current',
 but with date filters for the entries' creation times.
 
 
-### meta update
+## meta update
 
 **NAME**
 
@@ -252,7 +252,7 @@ meta update -  Update the script
 `gxadmin meta update`
 
 
-### meta whatsnew
+## meta whatsnew
 
 **NAME**
 

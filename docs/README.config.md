@@ -5,7 +5,7 @@ Command | Description
 [`config dump`](#config-dump) | Dump Galaxy configuration as JSON
 [`config validate`](#config-validate) | validate config files
 
-### config dump
+## config dump
 
 **NAME**
 
@@ -32,7 +32,7 @@ This function was added with the intention to use it internally, but it may be u
       "allow_user_dataset_purge": true,
 
 
-### config validate
+## config validate
 
 **NAME**
 

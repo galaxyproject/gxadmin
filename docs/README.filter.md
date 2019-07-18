@@ -7,7 +7,7 @@ Command | Description
 [`filter identicon`](#filter-identicon) | Convert an input data stream into an identicon (e.g. with hostname)
 [`filter pg2md`](#filter-pg2md) | Convert postgres table format outputs to something that can be pasted as markdown
 
-### filter digest-color
+## filter digest-color
 
 **NAME**
 
@@ -32,7 +32,7 @@ Mostly useful for colouring a hostname or some similar value.
     export TERM=screen-256color
 
 
-### filter hexdecode
+## filter hexdecode
 
 **NAME**
 
@@ -92,7 +92,7 @@ Or to query for the dbkeys uesd by datasets:
           1 ce10
 
 
-### filter identicon
+## filter identicon
 
 **NAME**
 
@@ -116,7 +116,7 @@ Given an input data stream, digest it, and colour it using the same logic as dig
 (Imagine that it is a nice pink/blue colour scheme)
 
 
-### filter pg2md
+## filter pg2md
 
 **NAME**
 
