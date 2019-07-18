@@ -1,5 +1,7 @@
 # 15-pre
 
+- Fancy [new docs site](https://usegalaxy-eu.github.io/gxadmin/#/)
+
 # 14
 
 - Added:
