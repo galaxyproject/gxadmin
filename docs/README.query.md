@@ -778,7 +778,7 @@ Example invocation:
 
 **WARNING**
 
-It is not truly every tool, there is no easy way to find the tools which have never been run.
+!> It is not truly every tool, there is no easy way to find the tools which have never been run.
 
 
 ## query tool-likely-broken

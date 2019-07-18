@@ -26,10 +26,12 @@ Given a grafana database, use sqlite3 to access all of the dashboards within, an
 
 This script forms the basis of https://github.com/usegalaxy-eu/grafana-dashboards
 
-**WARNING**: this script will silently remove all json files from CWD
-as a first step. Additionally it will commit and push at the end, so it
-should be run in a directory that has a git repo initialised, where you
-are not concerned about accidentally pushing to wrong remote.
+**WARNING**
+
+!> This script will silently remove all json files from CWD
+!> as a first step. Additionally it will commit and push at the end, so it
+!> should be run in a directory that has a git repo initialised, where you
+!> are not concerned about accidentally pushing to wrong remote.
 
 
 ## meta influx-post
@@ -56,11 +58,13 @@ Posting data from the output of a gxadmin command
 
     $ gxadmin meta influx-post galaxy <(gxadmin meta slurp-current --date)
 
-**WARNING** If you are sending a LOT of data points, consider splitting
-them. Influx recommends 5-10k lines:
+**WARNING**
 
-    $ split --lines=5000 data.iflx PREFIX
-    $ for file in PREFIX*; do gxadmin meta influx-post galaxy ; done
+!> If you are sending a LOT of data points, consider splitting
+!> them. Influx recommends 5-10k lines:
+!>
+!>     $ split --lines=5000 data.iflx PREFIX
+!>     $ for file in PREFIX*; do gxadmin meta influx-post galaxy ; done
 
 
 ## meta influx-query
@@ -98,7 +102,9 @@ meta iquery-grt-export -  Export data from a GRT database for sending to influx
 
 **NOTES**
 
-**WARNING**: GRT database specific query, will not work with a galaxy database!
+**WARNING**:
+
+!> GRT database specific query, will not work with a galaxy database!
 
 
 ## meta slurp-current

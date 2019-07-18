@@ -107,7 +107,7 @@ and giving you an idea if it is doing the right thing.
 
 **WARNINGS**
 
-This does NOT currently work on collections
+!> This does NOT currently work on collections
 
 **EXAMPLES**
 

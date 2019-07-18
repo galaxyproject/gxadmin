@@ -722,7 +722,7 @@ query_tool-last-used-date() { ## : When was the most recent invocation of every 
 
 		**WARNING**
 
-		It is not truly every tool, there is no easy way to find the tools which have never been run.
+		!> It is not truly every tool, there is no easy way to find the tools which have never been run.
 	EOF
 
 	read -r -d '' QUERY <<-EOF
