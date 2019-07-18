@@ -19,9 +19,9 @@
 	- Import script from https://github.com/usegalaxy-eu/grafana-dashboards
 	- query for datasets uploaded in last N hours
 	- mutate to approve users
-	- mutate assign-unassigned-workflow: workaround for galaxyproject/galaxy#8209
-	- mutate oidc-role-find-affected: workaround for galaxyproject/galaxy#8244
-	- mutate oidc-role-fix: workaround for galaxyproject/galaxy#8244
+	- mutate assign-unassigned-workflow: workaround for [galaxyproject/galaxy#8209](https://github.com/galaxyproject/galaxy#8209)
+	- mutate oidc-role-find-affected: workaround for [galaxyproject/galaxy#8244](https://github.com/galaxyproject/galaxy#8244)
+	- mutate oidc-role-fix: workaround for [galaxyproject/galaxy#8244](https://github.com/galaxyproject/galaxy#8244)
 	- query user-disk-usage, thanks @selten
 	- query group-cpu-seconds, thanks @selten
 - Fixed:
