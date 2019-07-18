@@ -14,13 +14,11 @@ Command | Description
 
 ## meta export-grafana-dashboards
 
-**NAME**
-
 meta export-grafana-dashboards -  Export all dashboards from a Grafana database to CWD and commit them to git.
 
 **SYNOPSIS**
 
-`gxadmin meta export-grafana-dashboards [grafana_db|/var/lib/grafana/grafana.db]`
+    gxadmin meta export-grafana-dashboards [grafana_db|/var/lib/grafana/grafana.db]
 
 **NOTES**
 
@@ -36,13 +34,11 @@ are not concerned about accidentally pushing to wrong remote.
 
 ## meta influx-post
 
-**NAME**
-
 meta influx-post -  Post contents of file (in influx line protocol) to influx
 
 **SYNOPSIS**
 
-`gxadmin meta influx-post <db> <file>`
+    gxadmin meta influx-post <db> <file>
 
 **NOTES**
 
@@ -69,13 +65,11 @@ them. Influx recommends 5-10k lines:
 
 ## meta influx-query
 
-**NAME**
-
 meta influx-query -  Query an influx DB
 
 **SYNOPSIS**
 
-`gxadmin meta influx-query <db> "<query>"`
+    gxadmin meta influx-query <db> "<query>"
 
 **NOTES**
 
@@ -96,13 +90,11 @@ Query percentage of memory used over last hour.
 
 ## meta iquery-grt-export
 
-**NAME**
-
 meta iquery-grt-export -  Export data from a GRT database for sending to influx
 
 **SYNOPSIS**
 
-`gxadmin meta iquery-grt-export`
+    gxadmin meta iquery-grt-export
 
 **NOTES**
 
@@ -111,13 +103,11 @@ meta iquery-grt-export -  Export data from a GRT database for sending to influx
 
 ## meta slurp-current
 
-**NAME**
-
 meta slurp-current -  Executes what used to be "Galaxy Slurp"
 
 **SYNOPSIS**
 
-`gxadmin meta slurp-current [--date]`
+    gxadmin meta slurp-current [--date]
 
 **NOTES**
 
@@ -170,13 +160,11 @@ the $GXADMIN_SITE_SPECIFIC file. They must start with the prefix
 
 ## meta slurp-day
 
-**NAME**
-
 meta slurp-day -  Slurps data on a specific date.
 
 **SYNOPSIS**
 
-`gxadmin meta slurp-day <yyyy-mm-dd>`
+    gxadmin meta slurp-day <yyyy-mm-dd>
 
 **NOTES**
 
@@ -223,13 +211,11 @@ date filter as well, or the metrics reported here will be less useful.
 
 ## meta slurp-upto
 
-**NAME**
-
 meta slurp-upto -  Slurps data up to a specific date.
 
 **SYNOPSIS**
 
-`gxadmin meta slurp-upto <yyyy-mm-dd>`
+    gxadmin meta slurp-upto <yyyy-mm-dd>
 
 **NOTES**
 
@@ -243,24 +229,20 @@ but with date filters for the entries' creation times.
 
 ## meta update
 
-**NAME**
-
 meta update -  Update the script
 
 **SYNOPSIS**
 
-`gxadmin meta update`
+    gxadmin meta update
 
 
 ## meta whatsnew
-
-**NAME**
 
 meta whatsnew -  What's new in this version of gxadmin
 
 **SYNOPSIS**
 
-`gxadmin meta whatsnew`
+    gxadmin meta whatsnew
 
 **NOTES**
 

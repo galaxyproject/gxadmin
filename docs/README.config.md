@@ -7,13 +7,11 @@ Command | Description
 
 ## config dump
 
-**NAME**
-
 config dump -  Dump Galaxy configuration as JSON
 
 **SYNOPSIS**
 
-`gxadmin config dump`
+    gxadmin config dump
 
 **NOTES**
 
@@ -34,13 +32,11 @@ This function was added with the intention to use it internally, but it may be u
 
 ## config validate
 
-**NAME**
-
 config validate -  validate config files
 
 **SYNOPSIS**
 
-`gxadmin config validate`
+    gxadmin config validate
 
 **NOTES**
 

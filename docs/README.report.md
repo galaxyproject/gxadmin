@@ -8,24 +8,20 @@ Command | Description
 
 ## report assigned-to-handler
 
-**NAME**
-
 report assigned-to-handler -  Report what items are assigned to a handler currently.
 
 **SYNOPSIS**
 
-`gxadmin report assigned-to-handler <handler>`
+    gxadmin report assigned-to-handler <handler>
 
 
 ## report job-info
-
-**NAME**
 
 report job-info -  Information about a specific job
 
 **SYNOPSIS**
 
-`gxadmin report job-info <id>`
+    gxadmin report job-info <id>
 
 **NOTES**
 
@@ -37,13 +33,11 @@ report job-info -  Information about a specific job
 
 ## report user-info
 
-**NAME**
-
 report user-info -  Quick overview of a Galaxy user in your system
 
 **SYNOPSIS**
 
-`gxadmin report user-info <user_id|username|email>`
+    gxadmin report user-info <user_id|username|email>
 
 **NOTES**
 

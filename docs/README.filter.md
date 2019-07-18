@@ -9,13 +9,11 @@ Command | Description
 
 ## filter digest-color
 
-**NAME**
-
 filter digest-color -  Color an input stream based on the contents (e.g. hostname)
 
 **SYNOPSIS**
 
-`gxadmin filter digest-color`
+    gxadmin filter digest-color
 
 **NOTES**
 
@@ -34,13 +32,11 @@ Mostly useful for colouring a hostname or some similar value.
 
 ## filter hexdecode
 
-**NAME**
-
 filter hexdecode -  Decodes any hex blobs from postgres outputs
 
 **SYNOPSIS**
 
-`gxadmin filter hexdecode`
+    gxadmin filter hexdecode
 
 **NOTES**
 
@@ -94,13 +90,11 @@ Or to query for the dbkeys uesd by datasets:
 
 ## filter identicon
 
-**NAME**
-
 filter identicon -  Convert an input data stream into an identicon (e.g. with hostname)
 
 **SYNOPSIS**
 
-`gxadmin filter identicon`
+    gxadmin filter identicon
 
 **NOTES**
 
@@ -118,13 +112,11 @@ Given an input data stream, digest it, and colour it using the same logic as dig
 
 ## filter pg2md
 
-**NAME**
-
 filter pg2md -  Convert postgres table format outputs to something that can be pasted as markdown
 
 **SYNOPSIS**
 
-`gxadmin filter pg2md`
+    gxadmin filter pg2md
 
 **NOTES**
 
