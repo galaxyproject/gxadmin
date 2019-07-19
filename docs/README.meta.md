@@ -113,7 +113,7 @@ meta slurp-current -  Executes what used to be "Galaxy Slurp"
 
 **SYNOPSIS**
 
-    gxadmin meta slurp-current [--date]
+    gxadmin meta slurp-current [--date] [slurp-name [2nd-slurp-name [...]]]
 
 **NOTES**
 
@@ -170,7 +170,7 @@ meta slurp-day -  Slurps data on a specific date.
 
 **SYNOPSIS**
 
-    gxadmin meta slurp-day <yyyy-mm-dd>
+    gxadmin meta slurp-day <yyyy-mm-dd> [slurp-name [2nd-slurp-name [...]]]
 
 **NOTES**
 
@@ -221,7 +221,7 @@ meta slurp-upto -  Slurps data up to a specific date.
 
 **SYNOPSIS**
 
-    gxadmin meta slurp-upto <yyyy-mm-dd>
+    gxadmin meta slurp-upto <yyyy-mm-dd> [slurp-name [2nd-slurp-name [...]]]
 
 **NOTES**
 
