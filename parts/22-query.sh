@@ -1050,6 +1050,200 @@ query_user-disk-usage() { ## : Retrieve an approximation of the disk usage for u
 	EOF
 }
 
+query_user-disk-quota() { ##: Retrieves the 50 users with the largest quotas
+	handle_help "$@" <<-EOF
+		This calculates the total assigned disk quota to users.
+		It only displays the top 50 quotas.
+
+		rank  | user_id  |  username    |    quota
+		----- | -------- | ------------ | ------------
+		1     |          | 123f911b5f1  |       20.35
+		2     |          | cb0fabc0002  |       14.93
+		3     |          | 7e9e9b00b89  |       14.24
+		4     |          | 42f211e5e87  |       14.06
+		5     |          | 26cdba62c93  |       12.97
+		6     |          | fa87cddfcae  |        7.01
+		7     |          | 44d2a648aac  |        6.70
+		8     |          | 66c57b41194  |        6.43
+		9     |          | 6b1467ac118  |        5.45
+		10    |          | d755361b59a  |        5.19
+	EOF
+
+	username=$(gdpr_safe galaxy_user.username username 'Anonymous')
+
+	read -r -d '' QUERY <<-EOF
+		WITH user_basequota_list AS (
+			SELECT galaxy_user.id as "user_id",
+				basequota.bytes as "quota"
+			FROM galaxy_user,
+				quota basequota,
+				user_quota_association
+			WHERE galaxy_user.id = user_quota_association.user_id
+				AND basequota.id = user_quota_association.quota_id
+				AND basequota.operation = '='
+				AND NOT basequota.deleted
+			GROUP BY galaxy_user.id, basequota.bytes
+		),
+		user_basequota AS (
+			SELECT user_basequota_list.user_id,
+				MAX(user_basequota_list.quota) as "quota"
+			FROM user_basequota_list
+			GROUP BY user_basequota_list.user_id
+		),
+		user_addquota_list AS (
+			SELECT galaxy_user.id as "user_id",
+				addquota.bytes as "quota"
+			FROM galaxy_user,
+				quota addquota,
+				user_quota_association
+			WHERE galaxy_user.id = user_quota_association.user_id
+				AND addquota.id = user_quota_association.quota_id
+				AND addquota.operation = '+'
+				AND NOT addquota.deleted
+			GROUP BY galaxy_user.id, addquota.bytes
+		),
+		user_addquota AS (
+			SELECT user_addquota_list.user_id,
+				sum(user_addquota_list.quota) AS "quota"
+			FROM user_addquota_list
+			GROUP BY user_addquota_list.user_id
+		),
+		user_minquota_list AS (
+			SELECT galaxy_user.id as "user_id",
+				minquota.bytes as "quota"
+			FROM galaxy_user,
+				quota minquota,
+				user_quota_association
+			WHERE galaxy_user.id = user_quota_association.user_id
+				AND minquota.id = user_quota_association.quota_id
+				AND minquota.operation = '-'
+				AND NOT minquota.deleted
+			GROUP BY galaxy_user.id, minquota.bytes
+		),
+		user_minquota AS (
+			SELECT user_minquota_list.user_id,
+				sum(user_minquota_list.quota) AS "quota"
+			FROM user_minquota_list
+			GROUP BY user_minquota_list.user_id
+		),
+		group_basequota_list AS (
+			SELECT galaxy_user.id as "user_id",
+				galaxy_group.id as "group_id",
+				basequota.bytes as "quota"
+			FROM galaxy_user,
+				galaxy_group,
+				quota basequota,
+				group_quota_association,
+				user_group_association
+			WHERE galaxy_user.id = user_group_association.user_id
+				AND galaxy_group.id = user_group_association.group_id
+				AND basequota.id = group_quota_association.quota_id
+				AND galaxy_group.id = group_quota_association.group_id
+				AND basequota.operation = '='
+				AND NOT basequota.deleted
+			GROUP BY galaxy_user.id, galaxy_group.id, basequota.bytes
+		),
+		group_basequota AS (
+			SELECT group_basequota_list.user_id,
+				group_basequota_list.group_id,
+				MAX(group_basequota_list.quota) as "quota"
+			FROM group_basequota_list
+			GROUP BY group_basequota_list.user_id, group_basequota_list.group_id
+		),
+		group_addquota_list AS (
+			SELECT galaxy_user.id as "user_id",
+				addquota.bytes as "quota"
+			FROM galaxy_user,
+				galaxy_group,
+				quota addquota,
+				group_quota_association,
+				user_group_association
+			WHERE galaxy_user.id = user_group_association.user_id
+				AND galaxy_group.id = user_group_association.group_id
+				AND addquota.id = group_quota_association.quota_id
+				AND galaxy_group.id = group_quota_association.group_id
+				AND addquota.operation = '+'
+				AND NOT addquota.deleted
+			GROUP BY galaxy_user.id, addquota.bytes
+		),
+		group_addquota AS (
+			SELECT group_addquota_list.user_id,
+				sum(group_addquota_list.quota) AS "quota"
+			FROM group_addquota_list
+			GROUP BY group_addquota_list.user_id
+		),
+		group_minquota_list AS (
+			SELECT galaxy_user.id as "user_id",
+				minquota.bytes as "quota"
+			FROM galaxy_user,
+				galaxy_group,
+				quota minquota,
+				group_quota_association,
+				user_group_association
+			WHERE galaxy_user.id = user_group_association.user_id
+				AND galaxy_group.id = user_group_association.group_id
+				AND minquota.id = group_quota_association.quota_id
+				AND galaxy_group.id = group_quota_association.group_id
+				AND minquota.operation = '-'
+				AND NOT minquota.deleted
+			GROUP BY galaxy_user.id, galaxy_group.id, galaxy_group.name, minquota.bytes
+		),
+		group_minquota AS (
+			SELECT group_minquota_list.user_id,
+				sum(group_minquota_list.quota) AS "quota"
+			FROM group_minquota_list
+			GROUP BY group_minquota_list.user_id
+		),
+		all_user_default_quota AS (
+			SELECT galaxy_user.id as "user_id",
+				quota.bytes
+			FROM galaxy_user,
+				quota
+			WHERE quota.id = (SELECT quota_id FROM default_quota_association)
+		),
+		quotas AS (
+			SELECT all_user_default_quota.user_id as "aud_uid",
+				all_user_default_quota.bytes as "aud_quota",
+				user_basequota.user_id as "ubq_uid",
+				user_basequota.quota as "ubq_quota",
+				user_addquota.user_id as "uaq_uid",
+				user_addquota.quota as "uaq_quota",
+				user_minquota.user_id as "umq_uid",
+				user_minquota.quota as "umq_quota",
+				group_basequota.user_id as "gbq_uid",
+				group_basequota.quota as "gbq_quota",
+				group_addquota.user_id as "gaq_uid",
+				group_addquota.quota as "gaq_quota",
+				group_minquota.user_id as "gmq_uid",
+				group_minquota.quota as "gmq_quota"
+			FROM all_user_default_quota
+			FULL OUTER JOIN user_basequota ON all_user_default_quota.user_id = user_basequota.user_id
+			FULL OUTER JOIN user_addquota ON all_user_default_quota.user_id = user_addquota.user_id
+			FULL OUTER JOIN user_minquota ON all_user_default_quota.user_id = user_minquota.user_id
+			FULL OUTER JOIN group_basequota ON all_user_default_quota.user_id = group_basequota.user_id
+			FULL OUTER JOIN group_addquota ON all_user_default_quota.user_id = group_addquota.user_id
+			FULL OUTER JOIN group_minquota ON all_user_default_quota.user_id = group_minquota.user_id
+		),
+		computed_quotas AS (
+			SELECT aud_uid as "user_id",
+				COALESCE(GREATEST(ubq_quota, gbq_quota), aud_quota) as "base_quota",
+				(COALESCE(uaq_quota, 0) + COALESCE(gaq_quota, 0)) as "add_quota",
+				(COALESCE(umq_quota, 0) + COALESCE(gmq_quota, 0)) as "min_quota"
+			FROM quotas
+		)
+
+		SELECT row_number() OVER (ORDER BY (computed_quotas.base_quota + computed_quotas.add_quota - computed_quotas.min_quota) DESC) as rank,
+			galaxy_user.id as "user_id",
+			$username,
+			pg_size_pretty(computed_quotas.base_quota + computed_quotas.add_quota - computed_quotas.min_quota) as "quota"
+		FROM computed_quotas,
+			galaxy_user
+		WHERE computed_quotas.user_id = galaxy_user.id
+		GROUP BY galaxy_user.id, galaxy_user.username, computed_quotas.base_quota, computed_quotas.add_quota, computed_quotas.min_quota
+		ORDER BY (computed_quotas.base_quota + computed_quotas.add_quota - computed_quotas.min_quota) DESC
+		LIMIT 50
+	EOF
+}
 
 query_group-cpu-seconds() { ## [group]: Retrieve an approximation of the CPU time in seconds for group(s)
 	handle_help "$@" <<-EOF
