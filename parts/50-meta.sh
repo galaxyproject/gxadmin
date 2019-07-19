@@ -114,19 +114,17 @@ meta_slurp-current() { ## [--date] [slurp-name [2nd-slurp-name [...]]]: Executes
 	append=""
 	if [[ $1 == "--date" ]]; then
 		append=" "$(date +%s%N)
+		shift;
 	fi
 
-	specific_slurp=()
-	if [[ $# > 1 ]]; then
-		specific_slurp=(${@:2})
-	fi
+	specific_slurp=($@)
 
 	# shellcheck disable=SC2013
 	for func in $(grep -s -h -o '^query_server-[a-z-]*' "$0" "$GXADMIN_SITE_SPECIFIC" | sort | sed 's/query_//g'); do
 		# To allow only slurping the one that was requested, if this was done.
-		if [[ ${#specific_slurp[@]} > 0 ]]; then
-			if ! elem_in_array $func ${specific_slurp[@]}; then
-				continue;
+		if (( ${#specific_slurp[@]} > 0 )); then
+			if [[ ! "${specific_slurp[*]}" =~ "${func}"  ]]; then
+				continue
 			fi
 		fi
 
@@ -145,23 +143,21 @@ meta_slurp-upto() { ## <yyyy-mm-dd> [slurp-name [2nd-slurp-name [...]]]: Slurps 
 		but with date filters for the entries' creation times.
 	EOF
 
-	specific_slurp=()
-	if [[ $# > 1 ]]; then
-		specific_slurp=(${@:2})
-	fi
+	date=$1; shift
+	specific_slurp=($@)
 
 	# shellcheck disable=SC2013
 	for func in $(grep -s -h -o '^query_server-[a-z-]*' "$0" "$GXADMIN_SITE_SPECIFIC" | sort | sed 's/query_//g'); do
 		# To allow only slurping the one that was requested, if this was done.
-		if [[ ${#specific_slurp[@]} > 0 ]]; then
-			if ! elem_in_array $func ${specific_slurp[@]}; then
-				continue;
+		if (( ${#specific_slurp[@]} > 0 )); then
+			if [[ ! "${specific_slurp[*]}" =~ "${func}"  ]]; then
+				continue
 			fi
 		fi
 
-		obtain_query "$func" "$1" "<="
+		obtain_query "$func" "$date" "<="
 		$wrapper query_influx "$QUERY" "$query_name.upto" "$fields" "$tags" | \
-			sed "s/$/ $(date -d "$1" +%s%N)/"
+			sed "s/$/ $(date -d "$date" +%s%N)/"
 	done
 }
 
@@ -209,23 +205,21 @@ meta_slurp-day() { ## <yyyy-mm-dd> [slurp-name [2nd-slurp-name [...]]]: Slurps d
 
 	EOF
 
-	specific_slurp=()
-	if [[ $# > 1 ]]; then
-		specific_slurp=(${@:2})
-	fi
+	date=$1; shift;
+	specific_slurp=($@)
 
 	# shellcheck disable=SC2013
 	for func in $(grep -s -h -o '^query_server-[a-z-]*' "$0" "$GXADMIN_SITE_SPECIFIC" | sort | sed 's/query_//g'); do
 		# To allow only slurping the one that was requested, if this was done.
-		if [[ ${#specific_slurp[@]} > 0 ]]; then
-			if ! elem_in_array $func ${specific_slurp[@]}; then
-				continue;
+		if (( ${#specific_slurp[@]} > 0 )); then
+			if [[ ! "${specific_slurp[*]}" =~ "${func}"  ]]; then
+				continue
 			fi
 		fi
 
-		obtain_query "$func" "$1"
+		obtain_query "$func" "$date"
 		$wrapper query_influx "$QUERY" "$query_name.daily" "$fields" "$tags" | \
-			sed "s/$/ $(date -d "$1" +%s%N)/"
+			sed "s/$/ $(date -d "$date" +%s%N)/"
 	done
 }
 
