@@ -2141,7 +2141,7 @@ query_user-disk-usage() { ## : Retrieve an approximation of the disk usage for u
 	EOF
 }
 
-query_user-disk-quota() { ##: Retrieves the 50 users with the largest quotas
+query_user-disk-quota() { ## : Retrieves the 50 users with the largest quotas
 	handle_help "$@" <<-EOF
 		This calculates the total assigned disk quota to users.
 		It only displays the top 50 quotas.
