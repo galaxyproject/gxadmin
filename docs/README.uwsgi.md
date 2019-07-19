@@ -8,44 +8,37 @@ Command | Description
 [`uwsgi memory`](#uwsgi-memory) | Current system memory usage
 [`uwsgi pids`](#uwsgi-pids) | Galaxy process PIDs
 [`uwsgi stats-influx`](#uwsgi-stats-influx) | InfluxDB formatted output for the current stats
-`uwsgi stats_influx` | Deprecated, use uwsgi stats-influx
 [`uwsgi stats`](#uwsgi-stats) | uwsgi stats
 [`uwsgi status`](#uwsgi-status) | Current system status
 [`uwsgi zerg-scale-up`](#uwsgi-zerg-scale-up) | Add another zergling to deal with high load
 [`uwsgi zerg-strace`](#uwsgi-zerg-strace) | Strace a zergling
 [`uwsgi zerg-swap`](#uwsgi-zerg-swap) | Swap zerglings in order (unintelligent version)
 
-### uwsgi handler-restart
-
-**NAME**
+## uwsgi handler-restart
 
 uwsgi handler-restart -  Restart all handlers
 
 **SYNOPSIS**
 
-`gxadmin uwsgi handler-restart`
+    gxadmin uwsgi handler-restart
 
 
-### uwsgi handler-strace
-
-**NAME**
+## uwsgi handler-strace
 
 uwsgi handler-strace -  Strace a handler
 
 **SYNOPSIS**
 
-`gxadmin uwsgi handler-strace [number]`
+    gxadmin uwsgi handler-strace [number]
 
 
-### uwsgi lastlog
-
-**NAME**
+## uwsgi lastlog
 
 uwsgi lastlog -  Fetch the number of seconds since the last log message was written
 
 **SYNOPSIS**
 
-`gxadmin uwsgi lastlog`
+    gxadmin uwsgi lastlog
 
 **NOTES**
 
@@ -69,15 +62,13 @@ Lets you know if any of your workers or handlers have maybe stopped processing j
     journalctl.lastlog,service=galaxy-zergling@2 seconds=2866
 
 
-### uwsgi memory
-
-**NAME**
+## uwsgi memory
 
 uwsgi memory -  Current system memory usage
 
 **SYNOPSIS**
 
-`gxadmin uwsgi memory`
+    gxadmin uwsgi memory
 
 **NOTES**
 
@@ -86,30 +77,26 @@ Obtain memory usage of the various Galaxy processes
 Also consider using systemd-cgtop
 
 
-### uwsgi pids
-
-**NAME**
+## uwsgi pids
 
 uwsgi pids -  Galaxy process PIDs
 
 **SYNOPSIS**
 
-`gxadmin uwsgi pids`
+    gxadmin uwsgi pids
 
 **NOTES**
 
 Obtain memory usage of the various Galaxy processes
 
 
-### uwsgi stats-influx
-
-**NAME**
+## uwsgi stats-influx
 
 uwsgi stats-influx -  InfluxDB formatted output for the current stats
 
 **SYNOPSIS**
 
-`gxadmin uwsgi stats-influx <addr>`
+    gxadmin uwsgi stats-influx <addr>
 
 **NOTES**
 
@@ -148,63 +135,53 @@ For multiple zerglings you can run this for each and just 2>/dev/null
 And it will fetch only data for responding uwsgis.
 
 
-### uwsgi stats
-
-**NAME**
+## uwsgi stats
 
 uwsgi stats -  uwsgi stats
 
 **SYNOPSIS**
 
-`gxadmin uwsgi stats`
+    gxadmin uwsgi stats
 
 
-### uwsgi status
-
-**NAME**
+## uwsgi status
 
 uwsgi status -  Current system status
 
 **SYNOPSIS**
 
-`gxadmin uwsgi status`
+    gxadmin uwsgi status
 
 **NOTES**
 
 Current status of all uwsgi processes
 
 
-### uwsgi zerg-scale-up
-
-**NAME**
+## uwsgi zerg-scale-up
 
 uwsgi zerg-scale-up -  Add another zergling to deal with high load
 
 **SYNOPSIS**
 
-`gxadmin uwsgi zerg-scale-up`
+    gxadmin uwsgi zerg-scale-up
 
 
-### uwsgi zerg-strace
-
-**NAME**
+## uwsgi zerg-strace
 
 uwsgi zerg-strace -  Strace a zergling
 
 **SYNOPSIS**
 
-`gxadmin uwsgi zerg-strace [number]`
+    gxadmin uwsgi zerg-strace [number]
 
 
-### uwsgi zerg-swap
-
-**NAME**
+## uwsgi zerg-swap
 
 uwsgi zerg-swap -  Swap zerglings in order (unintelligent version)
 
 **SYNOPSIS**
 
-`gxadmin uwsgi zerg-swap`
+    gxadmin uwsgi zerg-swap
 
 **NOTES**
 

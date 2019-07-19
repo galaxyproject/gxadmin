@@ -157,7 +157,6 @@ Command | Description
 
 Command | Description
 ------- | -----------
-`query active-users` | Deprecated, use monthly-users-active
 [`query collection-usage`](docs/README.query.md#query-collection-usage) | Information about how many collections of various types are used
 [`query datasets-created-daily`](docs/README.query.md#query-datasets-created-daily) | The min/max/average/p95/p99 of total size of datasets created in a single day.
 [`query disk-usage`](docs/README.query.md#query-disk-usage) | Disk usage per object store.
@@ -185,7 +184,6 @@ Command | Description
 [`query monthly-data`](docs/README.query.md#query-monthly-data) | Number of active users per month, running jobs
 [`query monthly-jobs`](docs/README.query.md#query-monthly-jobs) | Number of jobs run each month
 [`query monthly-users-active`](docs/README.query.md#query-monthly-users-active) | Number of active users per month, running jobs
-`query monthly-users` | Deprecated, use monthly-users-active
 [`query monthly-users-registered`](docs/README.query.md#query-monthly-users-registered) | Number of users registered each month
 [`query old-histories`](docs/README.query.md#query-old-histories) | Lists histories that haven't been updated (used) for <weeks>
 [`query queue`](docs/README.query.md#query-queue) | Brief overview of currently running jobs
@@ -194,6 +192,8 @@ Command | Description
 [`query queue-time`](docs/README.query.md#query-queue-time) | The average/95%/99% a specific tool spends in queue state.
 [`query recent-jobs`](docs/README.query.md#query-recent-jobs) | Jobs run in the past <hours> (in any state)
 [`query runtime-per-user`](docs/README.query.md#query-runtime-per-user) | computation time of user (by email)
+[`query server-groups-allocated-cpu`](docs/README.query.md#query-server-groups-allocated-cpu) | Retrieve an approximation of the CPU allocation for groups
+[`query server-groups-disk-usage`](docs/README.query.md#query-server-groups-disk-usage) | Retrieve an approximation of the disk usage for groups
 [`query tool-available-metrics`](docs/README.query.md#query-tool-available-metrics) | list all available metrics for a given tool
 [`query tool-errors`](docs/README.query.md#query-tool-errors) | Summarize percent of tool runs in error over the past weeks for all tools that have failed (most popular tools first)
 [`query tool-last-used-date`](docs/README.query.md#query-tool-last-used-date) | When was the most recent invocation of every tool
@@ -209,6 +209,7 @@ Command | Description
 [`query ts-repos`](docs/README.query.md#query-ts-repos) | Counts of toolshed repositories by toolshed and owner.
 [`query upload-gb-in-past-hour`](docs/README.query.md#query-upload-gb-in-past-hour) | Sum in bytes of files uploaded in the past hour
 [`query user-cpu-years`](docs/README.query.md#query-user-cpu-years) | CPU years allocated to tools by user
+[`query user-disk-quota`](docs/README.query.md#query-user-disk-quota) | Retrieves the 50 users with the largest quotas
 [`query user-disk-usage`](docs/README.query.md#query-user-disk-usage) | Retrieve an approximation of the disk usage for users
 [`query user-recent-aggregate-jobs`](docs/README.query.md#query-user-recent-aggregate-jobs) | Show aggregate information for jobs in past N days for user
 [`query users-count`](docs/README.query.md#query-users-count) | Shows sums of active/external/deleted/purged accounts
@@ -235,7 +236,6 @@ Command | Description
 [`uwsgi memory`](docs/README.uwsgi.md#uwsgi-memory) | Current system memory usage
 [`uwsgi pids`](docs/README.uwsgi.md#uwsgi-pids) | Galaxy process PIDs
 [`uwsgi stats-influx`](docs/README.uwsgi.md#uwsgi-stats-influx) | InfluxDB formatted output for the current stats
-`uwsgi stats_influx` | Deprecated, use uwsgi stats-influx
 [`uwsgi stats`](docs/README.uwsgi.md#uwsgi-stats) | uwsgi stats
 [`uwsgi status`](docs/README.uwsgi.md#uwsgi-status) | Current system status
 [`uwsgi zerg-scale-up`](docs/README.uwsgi.md#uwsgi-zerg-scale-up) | Add another zergling to deal with high load
