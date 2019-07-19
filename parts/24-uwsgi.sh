@@ -1,9 +1,3 @@
-uwsgi_stats_influx() { ## : Deprecated, use uwsgi stats-influx
-	handle_help "$@" <<-EOF
-	EOF
-	uwsgi_stats-influx
-}
-
 uwsgi_stats-influx(){ ## <addr>: InfluxDB formatted output for the current stats
 	handle_help "$@" <<-EOF
 		Contact a specific uWSGI stats address (requires uwsgi binary on path)

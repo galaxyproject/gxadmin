@@ -8,7 +8,6 @@ Command | Description
 [`uwsgi memory`](#uwsgi-memory) | Current system memory usage
 [`uwsgi pids`](#uwsgi-pids) | Galaxy process PIDs
 [`uwsgi stats-influx`](#uwsgi-stats-influx) | InfluxDB formatted output for the current stats
-`uwsgi stats_influx` | Deprecated, use uwsgi stats-influx
 [`uwsgi stats`](#uwsgi-stats) | uwsgi stats
 [`uwsgi status`](#uwsgi-status) | Current system status
 [`uwsgi zerg-scale-up`](#uwsgi-zerg-scale-up) | Add another zergling to deal with high load

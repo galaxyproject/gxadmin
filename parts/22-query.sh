@@ -797,10 +797,6 @@ query_ts-repos() { ## : Counts of toolshed repositories by toolshed and owner.
 	EOF
 }
 
-query_active-users() { ## [weeks]: Deprecated, use monthly-users-active
-	error "Deprecated, use monthly-users-active"
-}
-
 query_tool-metrics() { ## <tool_id> <metric_id> [--like]: See values of a specific metric
 	handle_help "$@" <<-EOF
 		A good way to use this is to fetch the memory usage of a tool and then
@@ -1318,10 +1314,6 @@ query_monthly-users-registered(){ ## [year]: Number of users registered each mon
 		ORDER BY
 			month DESC
 	EOF
-}
-
-query_monthly-users() { ## : Deprecated, use monthly-users-active
-	error "Deprecated, use monthly-users-active"
 }
 
 query_monthly-users-active(){ ## [year]: Number of active users per month, running jobs

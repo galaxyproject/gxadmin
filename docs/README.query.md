@@ -2,7 +2,6 @@
 
 Command | Description
 ------- | -----------
-`query active-users` | Deprecated, use monthly-users-active
 [`query collection-usage`](#query-collection-usage) | Information about how many collections of various types are used
 [`query datasets-created-daily`](#query-datasets-created-daily) | The min/max/average/p95/p99 of total size of datasets created in a single day.
 [`query disk-usage`](#query-disk-usage) | Disk usage per object store.
@@ -30,7 +29,6 @@ Command | Description
 [`query monthly-data`](#query-monthly-data) | Number of active users per month, running jobs
 [`query monthly-jobs`](#query-monthly-jobs) | Number of jobs run each month
 [`query monthly-users-active`](#query-monthly-users-active) | Number of active users per month, running jobs
-`query monthly-users` | Deprecated, use monthly-users-active
 [`query monthly-users-registered`](#query-monthly-users-registered) | Number of users registered each month
 [`query old-histories`](#query-old-histories) | Lists histories that haven't been updated (used) for <weeks>
 [`query queue`](#query-queue) | Brief overview of currently running jobs

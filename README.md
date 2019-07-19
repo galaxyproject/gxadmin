@@ -157,7 +157,6 @@ Command | Description
 
 Command | Description
 ------- | -----------
-`query active-users` | Deprecated, use monthly-users-active
 [`query collection-usage`](docs/README.query.md#query-collection-usage) | Information about how many collections of various types are used
 [`query datasets-created-daily`](docs/README.query.md#query-datasets-created-daily) | The min/max/average/p95/p99 of total size of datasets created in a single day.
 [`query disk-usage`](docs/README.query.md#query-disk-usage) | Disk usage per object store.
@@ -185,7 +184,6 @@ Command | Description
 [`query monthly-data`](docs/README.query.md#query-monthly-data) | Number of active users per month, running jobs
 [`query monthly-jobs`](docs/README.query.md#query-monthly-jobs) | Number of jobs run each month
 [`query monthly-users-active`](docs/README.query.md#query-monthly-users-active) | Number of active users per month, running jobs
-`query monthly-users` | Deprecated, use monthly-users-active
 [`query monthly-users-registered`](docs/README.query.md#query-monthly-users-registered) | Number of users registered each month
 [`query old-histories`](docs/README.query.md#query-old-histories) | Lists histories that haven't been updated (used) for <weeks>
 [`query queue`](docs/README.query.md#query-queue) | Brief overview of currently running jobs
@@ -237,7 +235,6 @@ Command | Description
 [`uwsgi memory`](docs/README.uwsgi.md#uwsgi-memory) | Current system memory usage
 [`uwsgi pids`](docs/README.uwsgi.md#uwsgi-pids) | Galaxy process PIDs
 [`uwsgi stats-influx`](docs/README.uwsgi.md#uwsgi-stats-influx) | InfluxDB formatted output for the current stats
-`uwsgi stats_influx` | Deprecated, use uwsgi stats-influx
 [`uwsgi stats`](docs/README.uwsgi.md#uwsgi-stats) | uwsgi stats
 [`uwsgi status`](docs/README.uwsgi.md#uwsgi-status) | Current system status
 [`uwsgi zerg-scale-up`](docs/README.uwsgi.md#uwsgi-zerg-scale-up) | Add another zergling to deal with high load

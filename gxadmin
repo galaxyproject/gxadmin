@@ -426,6 +426,12 @@ success() {
 CHANGELOG=$(cat <<EOF
 # 15-pre
 
+- Fancy [new docs site](https://usegalaxy-eu.github.io/gxadmin/#/)
+- Added:
+	- query server-groups-allocated-cpu, thanks @selten
+	- query server-groups-disk-usage, thanks @selten
+	- query user-disk-quota, thanks @selten
+
 # 14
 
 - Added:
@@ -1886,10 +1892,6 @@ query_ts-repos() { ## : Counts of toolshed repositories by toolshed and owner.
 	EOF
 }
 
-query_active-users() { ## [weeks]: Deprecated, use monthly-users-active
-	error "Deprecated, use monthly-users-active"
-}
-
 query_tool-metrics() { ## <tool_id> <metric_id> [--like]: See values of a specific metric
 	handle_help "$@" <<-EOF
 		A good way to use this is to fetch the memory usage of a tool and then
@@ -2407,10 +2409,6 @@ query_monthly-users-registered(){ ## [year]: Number of users registered each mon
 		ORDER BY
 			month DESC
 	EOF
-}
-
-query_monthly-users() { ## : Deprecated, use monthly-users-active
-	error "Deprecated, use monthly-users-active"
 }
 
 query_monthly-users-active(){ ## [year]: Number of active users per month, running jobs
@@ -3569,12 +3567,6 @@ filter_hexdecode() { ## : Decodes any hex blobs from postgres outputs
 
 	cat | python -c "$hexdecodelines"
 }
-uwsgi_stats_influx() { ## : Deprecated, use uwsgi stats-influx
-	handle_help "$@" <<-EOF
-	EOF
-	uwsgi_stats-influx
-}
-
 uwsgi_stats-influx(){ ## <addr>: InfluxDB formatted output for the current stats
 	handle_help "$@" <<-EOF
 		Contact a specific uWSGI stats address (requires uwsgi binary on path)
