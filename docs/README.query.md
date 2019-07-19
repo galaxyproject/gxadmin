@@ -55,6 +55,7 @@ Command | Description
 [`query upload-gb-in-past-hour`](#query-upload-gb-in-past-hour) | Sum in bytes of files uploaded in the past hour
 [`query user-cpu-years`](#query-user-cpu-years) | CPU years allocated to tools by user
 [`query user-disk-usage`](#query-user-disk-usage) | Retrieve an approximation of the disk usage for users
+[`query user-disk-quota`](#query-user-disk-quota) | Retrieve the disk quota for users
 [`query user-recent-aggregate-jobs`](#query-user-recent-aggregate-jobs) | Show aggregate information for jobs in past N days for user
 [`query users-count`](#query-users-count) | Shows sums of active/external/deleted/purged accounts
 [`query users-total`](#query-users-total) | Total number of Galaxy users (incl deleted, purged, inactive)
@@ -1151,6 +1152,35 @@ rank  | user id  |  username   |  email      | storage usage
 8     |  432     | 66c57b41194 | 66c@7b4.194 |       6.43 GB
 9     |  58945   | 6b1467ac118 | 6b1@67a.118 |       5.45 MB
 10    |  10      | d755361b59a | d75@361.59a |       5.19 KB
+
+
+### query user-disk-quota
+
+**NAME**
+
+query user-disk-usage -  Retrieves the 50 users with the largest quotas
+
+**SYNOPSIS**
+
+`gxadmin query user-disk-quota`
+
+**NOTES**
+
+This calculates the total assigned disk quota to users.
+It only displays the top 50 quotas.
+
+rank  | user_id  |  username    |    quota
+----- | -------- | ------------ | ------------
+1     |          | 123f911b5f1  |       20.35
+2     |          | cb0fabc0002  |       14.93
+3     |          | 7e9e9b00b89  |       14.24
+4     |          | 42f211e5e87  |       14.06
+5     |          | 26cdba62c93  |       12.97
+6     |          | fa87cddfcae  |        7.01
+7     |          | 44d2a648aac  |        6.70
+8     |          | 66c57b41194  |        6.43
+9     |          | 6b1467ac118  |        5.45
+10    |          | d755361b59a  |        5.19
 
 
 ### query user-recent-aggregate-jobs
