@@ -1,5 +1,10 @@
 # 15-pre
 
+- Added:
+	- query server-groups-allocated-cpu, thanks @selten
+	- query server-groups-disk-usage, thanks @selten
+	- query user-disk-quota, thanks @selten
+
 # 14
 
 - Added:
