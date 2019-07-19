@@ -5,15 +5,13 @@ Command | Description
 [`config dump`](#config-dump) | Dump Galaxy configuration as JSON
 [`config validate`](#config-validate) | validate config files
 
-### config dump
-
-**NAME**
+## config dump
 
 config dump -  Dump Galaxy configuration as JSON
 
 **SYNOPSIS**
 
-`gxadmin config dump`
+    gxadmin config dump
 
 **NOTES**
 
@@ -32,27 +30,27 @@ This function was added with the intention to use it internally, but it may be u
       "allow_user_dataset_purge": true,
 
 
-### config validate
-
-**NAME**
+## config validate
 
 config validate -  validate config files
 
 **SYNOPSIS**
 
-`gxadmin config validate`
+    gxadmin config validate
 
 **NOTES**
 
 Validate the configuration files
-**Warning**:
-- This requires you to have `$GALAXY_DIST` set and to have config under `$GALAXY_DIST/config`.
-- This only validates that it is well formed XML, and does **not** validate against any schemas.
 
-    $ gxadmin validate
-      OK: galaxy-dist/data_manager_conf.xml
-      ...
-      OK: galaxy-dist/config/tool_data_table_conf.xml
-      OK: galaxy-dist/config/tool_sheds_conf.xml
-    All XML files validated
+**Warning**:
+
+!> - This requires you to have `$GALAXY_DIST` set and to have config under `$GALAXY_DIST/config`.
+!> - This only validates that it is well formed XML, and does **not** validate against any schemas.
+!>
+!>     $ gxadmin validate
+!>       OK: galaxy-dist/data_manager_conf.xml
+!>       ...
+!>       OK: galaxy-dist/config/tool_data_table_conf.xml
+!>       OK: galaxy-dist/config/tool_sheds_conf.xml
+!>     All XML files validated
 

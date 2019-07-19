@@ -175,8 +175,6 @@ handle_help() {
 				key="${key}_${query_name}"
 			fi
 
-			echo "**NAME**"
-			echo
 			invoke_desc=$(grep -s -h "${key}()\s*{" "$0" "$GXADMIN_SITE_SPECIFIC" | correct_cmd | sed "s/^/gxadmin /g")
 			short_desc=$(echo "$invoke_desc" | sed 's/.*://g')
 			short_parm=$(echo "$invoke_desc" | sed 's/:.*//g')
@@ -184,7 +182,7 @@ handle_help() {
 			echo
 			echo "**SYNOPSIS**"
 			echo
-			echo '`'"$short_parm"'`'
+			echo "    $short_parm"
 			echo
 			manual="$(cat -)"
 			manual_wc="${#manual}"

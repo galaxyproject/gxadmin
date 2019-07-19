@@ -12,15 +12,13 @@ Command | Description
 [`meta update`](#meta-update) | Update the script
 [`meta whatsnew`](#meta-whatsnew) | What's new in this version of gxadmin
 
-### meta export-grafana-dashboards
-
-**NAME**
+## meta export-grafana-dashboards
 
 meta export-grafana-dashboards -  Export all dashboards from a Grafana database to CWD and commit them to git.
 
 **SYNOPSIS**
 
-`gxadmin meta export-grafana-dashboards [grafana_db|/var/lib/grafana/grafana.db]`
+    gxadmin meta export-grafana-dashboards [grafana_db|/var/lib/grafana/grafana.db]
 
 **NOTES**
 
@@ -28,21 +26,21 @@ Given a grafana database, use sqlite3 to access all of the dashboards within, an
 
 This script forms the basis of https://github.com/usegalaxy-eu/grafana-dashboards
 
-**WARNING**: this script will silently remove all json files from CWD
-as a first step. Additionally it will commit and push at the end, so it
-should be run in a directory that has a git repo initialised, where you
-are not concerned about accidentally pushing to wrong remote.
+**WARNING**
+
+!> This script will silently remove all json files from CWD
+!> as a first step. Additionally it will commit and push at the end, so it
+!> should be run in a directory that has a git repo initialised, where you
+!> are not concerned about accidentally pushing to wrong remote.
 
 
-### meta influx-post
-
-**NAME**
+## meta influx-post
 
 meta influx-post -  Post contents of file (in influx line protocol) to influx
 
 **SYNOPSIS**
 
-`gxadmin meta influx-post <db> <file>`
+    gxadmin meta influx-post <db> <file>
 
 **NOTES**
 
@@ -60,22 +58,22 @@ Posting data from the output of a gxadmin command
 
     $ gxadmin meta influx-post galaxy <(gxadmin meta slurp-current --date)
 
-**WARNING** If you are sending a LOT of data points, consider splitting
-them. Influx recommends 5-10k lines:
+**WARNING**
 
-    $ split --lines=5000 data.iflx PREFIX
-    $ for file in PREFIX*; do gxadmin meta influx-post galaxy ; done
+!> If you are sending a LOT of data points, consider splitting
+!> them. Influx recommends 5-10k lines:
+!>
+!>     $ split --lines=5000 data.iflx PREFIX
+!>     $ for file in PREFIX*; do gxadmin meta influx-post galaxy ; done
 
 
-### meta influx-query
-
-**NAME**
+## meta influx-query
 
 meta influx-query -  Query an influx DB
 
 **SYNOPSIS**
 
-`gxadmin meta influx-query <db> "<query>"`
+    gxadmin meta influx-query <db> "<query>"
 
 **NOTES**
 
@@ -94,30 +92,28 @@ Query percentage of memory used over last hour.
     2019-04-26T10:30:00Z    65.06069941790024
 
 
-### meta iquery-grt-export
-
-**NAME**
+## meta iquery-grt-export
 
 meta iquery-grt-export -  Export data from a GRT database for sending to influx
 
 **SYNOPSIS**
 
-`gxadmin meta iquery-grt-export`
+    gxadmin meta iquery-grt-export
 
 **NOTES**
 
-**WARNING**: GRT database specific query, will not work with a galaxy database!
+**WARNING**:
+
+!> GRT database specific query, will not work with a galaxy database!
 
 
-### meta slurp-current
-
-**NAME**
+## meta slurp-current
 
 meta slurp-current -  Executes what used to be "Galaxy Slurp"
 
 **SYNOPSIS**
 
-`gxadmin meta slurp-current [--date]`
+    gxadmin meta slurp-current [--date]
 
 **NOTES**
 
@@ -168,15 +164,13 @@ the $GXADMIN_SITE_SPECIFIC file. They must start with the prefix
     server-workflows,deleted=f,importable=f,published=f count=3
 
 
-### meta slurp-day
-
-**NAME**
+## meta slurp-day
 
 meta slurp-day -  Slurps data on a specific date.
 
 **SYNOPSIS**
 
-`gxadmin meta slurp-day <yyyy-mm-dd>`
+    gxadmin meta slurp-day <yyyy-mm-dd>
 
 **NOTES**
 
@@ -221,15 +215,13 @@ date filter as well, or the metrics reported here will be less useful.
     server-workflows.daily,deleted=f,importable=f,published=f count=1
 
 
-### meta slurp-upto
-
-**NAME**
+## meta slurp-upto
 
 meta slurp-upto -  Slurps data up to a specific date.
 
 **SYNOPSIS**
 
-`gxadmin meta slurp-upto <yyyy-mm-dd>`
+    gxadmin meta slurp-upto <yyyy-mm-dd>
 
 **NOTES**
 
@@ -241,26 +233,22 @@ This calls all of the same functions as 'gxadmin meta slurp-current',
 but with date filters for the entries' creation times.
 
 
-### meta update
-
-**NAME**
+## meta update
 
 meta update -  Update the script
 
 **SYNOPSIS**
 
-`gxadmin meta update`
+    gxadmin meta update
 
 
-### meta whatsnew
-
-**NAME**
+## meta whatsnew
 
 meta whatsnew -  What's new in this version of gxadmin
 
 **SYNOPSIS**
 
-`gxadmin meta whatsnew`
+    gxadmin meta whatsnew
 
 **NOTES**
 

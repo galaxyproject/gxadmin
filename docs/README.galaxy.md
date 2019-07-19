@@ -8,15 +8,13 @@ Command | Description
 [`galaxy migrate-tool-install-from-sqlite`](#galaxy-migrate-tool-install-from-sqlite) | Converts SQLite version into normal potsgres toolshed repository tables
 [`galaxy migrate-tool-install-to-sqlite`](#galaxy-migrate-tool-install-to-sqlite) | Converts normal potsgres toolshed repository tables into the SQLite version
 
-### galaxy amqp-test
-
-**NAME**
+## galaxy amqp-test
 
 galaxy amqp-test -  Test a given AMQP URL for connectivity
 
 **SYNOPSIS**
 
-`gxadmin galaxy amqp-test <amqp_url>`
+    gxadmin galaxy amqp-test <amqp_url>
 
 **NOTES**
 
@@ -51,30 +49,26 @@ Basically any error results in a hang forever. It is recommended you run it with
     $
 
 
-### galaxy cleanup
-
-**NAME**
+## galaxy cleanup
 
 galaxy cleanup -  Cleanup histories/hdas/etc for past N days (default=30)
 
 **SYNOPSIS**
 
-`gxadmin galaxy cleanup [days]`
+    gxadmin galaxy cleanup [days]
 
 **NOTES**
 
 Cleanup histories/hdas/etc for past N days using the python objects-based method
 
 
-### galaxy cleanup-jwd
-
-**NAME**
+## galaxy cleanup-jwd
 
 galaxy cleanup-jwd -  (NEW) Cleanup job working directories
 
 **SYNOPSIS**
 
-`gxadmin galaxy cleanup-jwd <working_dir> [1|months ago]`
+    gxadmin galaxy cleanup-jwd <working_dir> [1|months ago]
 
 **NOTES**
 
@@ -87,15 +81,13 @@ of a hack to handle the fact that the list produced by find is really
 long, and the for loop hangs until it's done generating the list.
 
 
-### galaxy migrate-tool-install-from-sqlite
-
-**NAME**
+## galaxy migrate-tool-install-from-sqlite
 
 galaxy migrate-tool-install-from-sqlite -  Converts SQLite version into normal potsgres toolshed repository tables
 
 **SYNOPSIS**
 
-`gxadmin galaxy migrate-tool-install-from-sqlite [sqlite-db]`
+    gxadmin galaxy migrate-tool-install-from-sqlite [sqlite-db]
 
 **NOTES**
 
@@ -109,15 +101,13 @@ galaxy migrate-tool-install-from-sqlite -  Converts SQLite version into normal p
     Complete
 
 
-### galaxy migrate-tool-install-to-sqlite
-
-**NAME**
+## galaxy migrate-tool-install-to-sqlite
 
 galaxy migrate-tool-install-to-sqlite -  Converts normal potsgres toolshed repository tables into the SQLite version
 
 **SYNOPSIS**
 
-`gxadmin galaxy migrate-tool-install-to-sqlite`
+    gxadmin galaxy migrate-tool-install-to-sqlite
 
 **NOTES**
 

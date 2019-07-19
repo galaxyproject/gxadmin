@@ -25,7 +25,7 @@ mutate_fail-terminal-datasets() { ## [--commit]: Causes the output datasets of j
 
 		**WARNINGS**
 
-		This does NOT currently work on collections
+		!> This does NOT currently work on collections
 
 		**EXAMPLES**
 

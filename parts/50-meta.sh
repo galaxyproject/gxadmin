@@ -50,7 +50,7 @@ meta_cmdlist() {
 
 				# Subsec documentation
 				echo                          >> "docs/README.${section}.md"
-				echo "### $cmd_part"          >> "docs/README.${section}.md"
+				echo "## $cmd_part"           >> "docs/README.${section}.md"
 				echo                          >> "docs/README.${section}.md"
 				bash -c "$0 $cmd_part --help" >> "docs/README.${section}.md"
 			else
@@ -222,11 +222,13 @@ meta_influx-post() { ## <db> <file>: Post contents of file (in influx line proto
 
 		    $ gxadmin meta influx-post galaxy <(gxadmin meta slurp-current --date)
 
-		**WARNING** If you are sending a LOT of data points, consider splitting
-		them. Influx recommends 5-10k lines:
+		**WARNING**
 
-		    $ split --lines=5000 data.iflx PREFIX
-		    $ for file in PREFIX*; do gxadmin meta influx-post galaxy $file; done
+		!> If you are sending a LOT of data points, consider splitting
+		!> them. Influx recommends 5-10k lines:
+		!>
+		!>     $ split --lines=5000 data.iflx PREFIX
+		!>     $ for file in PREFIX*; do gxadmin meta influx-post galaxy $file; done
 	EOF
 
 	assert_set_env INFLUX_URL
@@ -277,7 +279,9 @@ meta_influx-query() { ## <db> "<query>": Query an influx DB
 
 meta_iquery-grt-export() { ## : Export data from a GRT database for sending to influx
 	handle_help "$@" <<-EOF
-		**WARNING**: GRT database specific query, will not work with a galaxy database!
+		**WARNING**:
+
+		!> GRT database specific query, will not work with a galaxy database!
 	EOF
 
 	fields="count=4"
@@ -320,10 +324,12 @@ meta_export-grafana-dashboards() { ## [grafana_db|/var/lib/grafana/grafana.db]: 
 
 		This script forms the basis of https://github.com/usegalaxy-eu/grafana-dashboards
 
-		**WARNING**: this script will silently remove all json files from CWD
-		as a first step. Additionally it will commit and push at the end, so it
-		should be run in a directory that has a git repo initialised, where you
-		are not concerned about accidentally pushing to wrong remote.
+		**WARNING**
+
+		!> This script will silently remove all json files from CWD
+		!> as a first step. Additionally it will commit and push at the end, so it
+		!> should be run in a directory that has a git repo initialised, where you
+		!> are not concerned about accidentally pushing to wrong remote.
 	EOF
 
 	db_path=${1:-/var/lib/grafana/grafana.db}

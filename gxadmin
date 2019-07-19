@@ -259,8 +259,6 @@ handle_help() {
 				key="${key}_${query_name}"
 			fi
 
-			echo "**NAME**"
-			echo
 			invoke_desc=$(grep -s -h "${key}()\s*{" "$0" "$GXADMIN_SITE_SPECIFIC" | correct_cmd | sed "s/^/gxadmin /g")
 			short_desc=$(echo "$invoke_desc" | sed 's/.*://g')
 			short_parm=$(echo "$invoke_desc" | sed 's/:.*//g')
@@ -268,7 +266,7 @@ handle_help() {
 			echo
 			echo "**SYNOPSIS**"
 			echo
-			echo '`'"$short_parm"'`'
+			echo "    $short_parm"
 			echo
 			manual="$(cat -)"
 			manual_wc="${#manual}"
@@ -447,9 +445,9 @@ CHANGELOG=$(cat <<EOF
 	- Import script from https://github.com/usegalaxy-eu/grafana-dashboards
 	- query for datasets uploaded in last N hours
 	- mutate to approve users
-	- mutate assign-unassigned-workflow: workaround for galaxyproject/galaxy#8209
-	- mutate oidc-role-find-affected: workaround for galaxyproject/galaxy#8244
-	- mutate oidc-role-fix: workaround for galaxyproject/galaxy#8244
+	- mutate assign-unassigned-workflow: workaround for [galaxyproject/galaxy#8209](https://github.com/galaxyproject/galaxy#8209)
+	- mutate oidc-role-find-affected: workaround for [galaxyproject/galaxy#8244](https://github.com/galaxyproject/galaxy#8244)
+	- mutate oidc-role-fix: workaround for [galaxyproject/galaxy#8244](https://github.com/galaxyproject/galaxy#8244)
 	- query user-disk-usage, thanks @selten
 	- query group-cpu-seconds, thanks @selten
 - Fixed:
@@ -646,16 +644,18 @@ EOF
 config_validate() { ## : validate config files
 	handle_help "$@" <<-EOF
 		Validate the configuration files
-		**Warning**:
-		- This requires you to have \`\$GALAXY_DIST\` set and to have config under \`\$GALAXY_DIST/config\`.
-		- This only validates that it is well formed XML, and does **not** validate against any schemas.
 
-		    $ gxadmin validate
-		      OK: galaxy-dist/data_manager_conf.xml
-		      ...
-		      OK: galaxy-dist/config/tool_data_table_conf.xml
-		      OK: galaxy-dist/config/tool_sheds_conf.xml
-		    All XML files validated
+		**Warning**:
+
+		!> - This requires you to have \`\$GALAXY_DIST\` set and to have config under \`\$GALAXY_DIST/config\`.
+		!> - This only validates that it is well formed XML, and does **not** validate against any schemas.
+		!>
+		!>     $ gxadmin validate
+		!>       OK: galaxy-dist/data_manager_conf.xml
+		!>       ...
+		!>       OK: galaxy-dist/config/tool_data_table_conf.xml
+		!>       OK: galaxy-dist/config/tool_sheds_conf.xml
+		!>     All XML files validated
 	EOF
 
 	assert_set_env GALAXY_CONFIG_DIR
@@ -764,7 +764,7 @@ mutate_fail-terminal-datasets() { ## [--commit]: Causes the output datasets of j
 
 		**WARNINGS**
 
-		This does NOT currently work on collections
+		!> This does NOT currently work on collections
 
 		**EXAMPLES**
 
@@ -1811,7 +1811,7 @@ query_tool-last-used-date() { ## : When was the most recent invocation of every 
 
 		**WARNING**
 
-		It is not truly every tool, there is no easy way to find the tools which have never been run.
+		!> It is not truly every tool, there is no easy way to find the tools which have never been run.
 	EOF
 
 	read -r -d '' QUERY <<-EOF
@@ -4689,7 +4689,7 @@ meta_cmdlist() {
 
 				# Subsec documentation
 				echo                          >> "docs/README.${section}.md"
-				echo "### $cmd_part"          >> "docs/README.${section}.md"
+				echo "## $cmd_part"           >> "docs/README.${section}.md"
 				echo                          >> "docs/README.${section}.md"
 				bash -c "$0 $cmd_part --help" >> "docs/README.${section}.md"
 			else
@@ -4861,11 +4861,13 @@ meta_influx-post() { ## <db> <file>: Post contents of file (in influx line proto
 
 		    $ gxadmin meta influx-post galaxy <(gxadmin meta slurp-current --date)
 
-		**WARNING** If you are sending a LOT of data points, consider splitting
-		them. Influx recommends 5-10k lines:
+		**WARNING**
 
-		    $ split --lines=5000 data.iflx PREFIX
-		    $ for file in PREFIX*; do gxadmin meta influx-post galaxy $file; done
+		!> If you are sending a LOT of data points, consider splitting
+		!> them. Influx recommends 5-10k lines:
+		!>
+		!>     $ split --lines=5000 data.iflx PREFIX
+		!>     $ for file in PREFIX*; do gxadmin meta influx-post galaxy $file; done
 	EOF
 
 	assert_set_env INFLUX_URL
@@ -4916,7 +4918,9 @@ meta_influx-query() { ## <db> "<query>": Query an influx DB
 
 meta_iquery-grt-export() { ## : Export data from a GRT database for sending to influx
 	handle_help "$@" <<-EOF
-		**WARNING**: GRT database specific query, will not work with a galaxy database!
+		**WARNING**:
+
+		!> GRT database specific query, will not work with a galaxy database!
 	EOF
 
 	fields="count=4"
@@ -4959,10 +4963,12 @@ meta_export-grafana-dashboards() { ## [grafana_db|/var/lib/grafana/grafana.db]: 
 
 		This script forms the basis of https://github.com/usegalaxy-eu/grafana-dashboards
 
-		**WARNING**: this script will silently remove all json files from CWD
-		as a first step. Additionally it will commit and push at the end, so it
-		should be run in a directory that has a git repo initialised, where you
-		are not concerned about accidentally pushing to wrong remote.
+		**WARNING**
+
+		!> This script will silently remove all json files from CWD
+		!> as a first step. Additionally it will commit and push at the end, so it
+		!> should be run in a directory that has a git repo initialised, where you
+		!> are not concerned about accidentally pushing to wrong remote.
 	EOF
 
 	db_path=${1:-/var/lib/grafana/grafana.db}

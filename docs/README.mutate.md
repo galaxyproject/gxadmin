@@ -11,30 +11,26 @@ Command | Description
 [`mutate oidc-role-find-affected`](#mutate-oidc-role-find-affected) | Find users affected by galaxyproject/galaxy#8244
 [`mutate oidc-role-fix`](#mutate-oidc-role-fix) | Fix permissions for users logged in via OIDC. Workaround for galaxyproject/galaxy#8244
 
-### mutate approve-user
-
-**NAME**
+## mutate approve-user
 
 mutate approve-user -  Approve a user in the database
 
 **SYNOPSIS**
 
-`gxadmin mutate approve-user <username|email|user_id>`
+    gxadmin mutate approve-user <username|email|user_id>
 
 **NOTES**
 
 There is no --commit flag on this because it is relatively safe
 
 
-### mutate assign-unassigned-workflows
-
-**NAME**
+## mutate assign-unassigned-workflows
 
 mutate assign-unassigned-workflows -  Randomly assigns unassigned workflows to handlers. Workaround for galaxyproject/galaxy#8209
 
 **SYNOPSIS**
 
-`gxadmin mutate assign-unassigned-workflows <handler_prefix> <handler_count> [--commit]`
+    gxadmin mutate assign-unassigned-workflows <handler_prefix> <handler_count> [--commit]
 
 **NOTES**
 
@@ -45,60 +41,52 @@ this case handler_prefix is "some_string_" and count is however many
 handlers you want to schedule workflows across.
 
 
-### mutate delete-group-role
-
-**NAME**
+## mutate delete-group-role
 
 mutate delete-group-role -  Remove the group, role, and any user-group + user-role associations
 
 **SYNOPSIS**
 
-`gxadmin mutate delete-group-role <group_name> [--commit]`
+    gxadmin mutate delete-group-role <group_name> [--commit]
 
 **NOTES**
 
 Wipe out a group+role, and user associations.
 
 
-### mutate fail-history
-
-**NAME**
+## mutate fail-history
 
 mutate fail-history -  Mark all jobs within a history to state error
 
 **SYNOPSIS**
 
-`gxadmin mutate fail-history <history_id> [--commit]`
+    gxadmin mutate fail-history <history_id> [--commit]
 
 **NOTES**
 
 Set all jobs within a history to error
 
 
-### mutate fail-job
-
-**NAME**
+## mutate fail-job
 
 mutate fail-job -  Sets a job state to error
 
 **SYNOPSIS**
 
-`gxadmin mutate fail-job <job_id> [--commit]`
+    gxadmin mutate fail-job <job_id> [--commit]
 
 **NOTES**
 
 Sets a job's state to "error"
 
 
-### mutate fail-terminal-datasets
-
-**NAME**
+## mutate fail-terminal-datasets
 
 mutate fail-terminal-datasets -  Causes the output datasets of jobs which were manually failed, to be marked as failed
 
 **SYNOPSIS**
 
-`gxadmin mutate fail-terminal-datasets [--commit]`
+    gxadmin mutate fail-terminal-datasets [--commit]
 
 **NOTES**
 
@@ -119,7 +107,7 @@ and giving you an idea if it is doing the right thing.
 
 **WARNINGS**
 
-This does NOT currently work on collections
+!> This does NOT currently work on collections
 
 **EXAMPLES**
 
@@ -152,15 +140,13 @@ Then to run with the --commit flag to commit the changes
     COMMIT
 
 
-### mutate oidc-role-find-affected
-
-**NAME**
+## mutate oidc-role-find-affected
 
 mutate oidc-role-find-affected -  Find users affected by galaxyproject/galaxy#8244
 
 **SYNOPSIS**
 
-`gxadmin mutate oidc-role-find-affected`
+    gxadmin mutate oidc-role-find-affected
 
 **NOTES**
 
@@ -170,15 +156,13 @@ This finds all of the OIDC authenticated users which do not have any
 roles associated to them. (Should be sufficient?)
 
 
-### mutate oidc-role-fix
-
-**NAME**
+## mutate oidc-role-fix
 
 mutate oidc-role-fix -  Fix permissions for users logged in via OIDC. Workaround for galaxyproject/galaxy#8244
 
 **SYNOPSIS**
 
-`gxadmin mutate oidc-role-fix <username|email|user_id>`
+    gxadmin mutate oidc-role-fix <username|email|user_id>
 
 **NOTES**
 
