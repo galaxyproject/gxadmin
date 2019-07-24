@@ -79,3 +79,11 @@ gdpr_safe() {
 		echo "substring(md5(COALESCE($1, '$coalesce_to') || now()::date), 0, 12) as ${2:-$1}"
 	fi
 }
+
+# Borrowed from https://stackoverflow.com/questions/1527049/how-can-i-join-elements-of-an-array-in-bash
+function join_by {
+	local d=$1; shift;
+	echo -n "$1";
+	shift;
+	printf "%s" "${@/#/$d}";
+}

@@ -1470,6 +1470,65 @@ query_job-outputs() { ## <id>: Output datasets from a specific job
 	EOF
 }
 
+query_job-info-by-file() { ## <file with job IDs> : Retrieve information about jobs specified by input.
+	handle_help "$@" <<-EOF
+		Retrieves information on a job, like the host it ran on,
+		how long it ran for and the total memory.
+
+		id    | create_time  | update_time |  tool_id     |   hostname   | runtime_seconds | memtotal
+		----- | ------------ | ----------- | ------------ | ------------ | --------------- | --------
+		1     |              |             | 123f911b5f1  | 123f911b5f1  |          20.35  | 20.35 GB
+		2     |              |             | cb0fabc0002  | cb0fabc0002  |          14.93  |  5.96 GB
+		3     |              |             | 7e9e9b00b89  | 7e9e9b00b89  |          14.24  |  3.53 GB
+		4     |              |             | 42f211e5e87  | 42f211e5e87  |          14.06  |  1.79 GB
+		5     |              |             | 26cdba62c93  | 26cdba62c93  |          12.97  |  1.21 GB
+		6     |              |             | fa87cddfcae  | fa87cddfcae  |           7.01  |   987 MB
+		7     |              |             | 44d2a648aac  | 44d2a648aac  |           6.70  |   900 MB
+		8     |              |             | 66c57b41194  | 66c57b41194  |           6.43  |   500 MB
+		9     |              |             | 6b1467ac118  | 6b1467ac118  |           5.45  |   250 MB
+		10    |              |             | d755361b59a  | d755361b59a  |           5.19  |   100 MB
+	EOF
+
+	job_ids=()
+
+	while IFS= read -r line; do
+		job_ids+=("$line")
+	done < "$1"
+
+	job_ids_string=`join_by ',' ${job_ids[@]}`
+
+	read -r -d '' QUERY <<-EOF
+		WITH hostname_query AS (
+			SELECT job_id,
+				metric_value as hostname
+			FROM job_metric_text
+			WHERE job_id IN ($job_ids_string)
+				AND metric_name='HOSTNAME'
+		),
+		metric_num_query AS (
+			SELECT job_id,
+				SUM(CASE WHEN metric_name='runtime_seconds' THEN metric_value END) runtime_seconds,
+				pg_size_pretty(SUM(CASE WHEN metric_name='memtotal' THEN metric_value END)) memtotal
+			FROM job_metric_numeric
+			WHERE job_id IN ($job_ids_string)
+				AND metric_name IN ('runtime_seconds', 'memtotal')
+			GROUP BY job_id
+		)
+
+		SELECT job.id,
+			job.create_time,
+			job.update_time,
+			job.tool_id,
+			hostname_query.hostname,
+			metric_num_query.runtime_seconds,
+			metric_num_query.memtotal
+		FROM job
+			FULL OUTER JOIN hostname_query ON hostname_query.job_id = job.id
+			FULL OUTER JOIN metric_num_query ON metric_num_query.job_id = job.id
+		WHERE job.id IN ($job_ids_string)
+	EOF
+}
+
 query_old-histories(){ ## <weeks>: Lists histories that haven't been updated (used) for <weeks>
 	handle_help "$@" <<-EOF
 		Histories and their users who haven't been updated for a specified number of weeks. Default number of weeks is 15.
