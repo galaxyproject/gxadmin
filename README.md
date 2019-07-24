@@ -162,6 +162,7 @@ Command | Description
 [`query disk-usage`](docs/README.query.md#query-disk-usage) | Disk usage per object store.
 [`query errored-jobs`](docs/README.query.md#query-errored-jobs) | Lists jobs that errored in the last N hours.
 [`query group-cpu-seconds`](docs/README.query.md#query-group-cpu-seconds) | Retrieve an approximation of the CPU time in seconds for group(s)
+[`query group-gpu-time`](docs/README.query.md#query-group-gpu-time) | Retrieve an approximation of the GPU time for users
 [`query groups-list`](docs/README.query.md#query-groups-list) | List all groups known to Galaxy
 [`query hdca-datasets`](docs/README.query.md#query-hdca-datasets) | List of files in a dataset collection
 [`query hdca-info`](docs/README.query.md#query-hdca-info) | Information on a dataset collection
@@ -182,6 +183,7 @@ Command | Description
 [`query latest-users`](docs/README.query.md#query-latest-users) | 40 recently registered users
 [`query monthly-cpu-years`](docs/README.query.md#query-monthly-cpu-years) | CPU years allocated to tools by month
 [`query monthly-data`](docs/README.query.md#query-monthly-data) | Number of active users per month, running jobs
+[`query monthly-gpu-years`](docs/README.query.md#query-monthly-gpu-years) | GPU years allocated to tools by month
 [`query monthly-jobs`](docs/README.query.md#query-monthly-jobs) | Number of jobs run each month
 [`query monthly-users-active`](docs/README.query.md#query-monthly-users-active) | Number of active users per month, running jobs
 [`query monthly-users-registered`](docs/README.query.md#query-monthly-users-registered) | Number of users registered each month
@@ -193,6 +195,7 @@ Command | Description
 [`query recent-jobs`](docs/README.query.md#query-recent-jobs) | Jobs run in the past <hours> (in any state)
 [`query runtime-per-user`](docs/README.query.md#query-runtime-per-user) | computation time of user (by email)
 [`query server-groups-allocated-cpu`](docs/README.query.md#query-server-groups-allocated-cpu) | Retrieve an approximation of the CPU allocation for groups
+[`query server-groups-allocated-gpu`](docs/README.query.md#query-server-groups-allocated-gpu) | Retrieve an approximation of the GPU allocation for groups
 [`query server-groups-disk-usage`](docs/README.query.md#query-server-groups-disk-usage) | Retrieve an approximation of the disk usage for groups
 [`query tool-available-metrics`](docs/README.query.md#query-tool-available-metrics) | list all available metrics for a given tool
 [`query tool-errors`](docs/README.query.md#query-tool-errors) | Summarize percent of tool runs in error over the past weeks for all tools that have failed (most popular tools first)
@@ -211,6 +214,7 @@ Command | Description
 [`query user-cpu-years`](docs/README.query.md#query-user-cpu-years) | CPU years allocated to tools by user
 [`query user-disk-quota`](docs/README.query.md#query-user-disk-quota) | Retrieves the 50 users with the largest quotas
 [`query user-disk-usage`](docs/README.query.md#query-user-disk-usage) | Retrieve an approximation of the disk usage for users
+[`query user-gpu-years`](docs/README.query.md#query-user-gpu-years) | GPU years allocated to tools by user
 [`query user-recent-aggregate-jobs`](docs/README.query.md#query-user-recent-aggregate-jobs) | Show aggregate information for jobs in past N days for user
 [`query users-count`](docs/README.query.md#query-users-count) | Shows sums of active/external/deleted/purged accounts
 [`query users-total`](docs/README.query.md#query-users-total) | Total number of Galaxy users (incl deleted, purged, inactive)

@@ -7,6 +7,7 @@ Command | Description
 [`query disk-usage`](#query-disk-usage) | Disk usage per object store.
 [`query errored-jobs`](#query-errored-jobs) | Lists jobs that errored in the last N hours.
 [`query group-cpu-seconds`](#query-group-cpu-seconds) | Retrieve an approximation of the CPU time in seconds for group(s)
+[`query group-gpu-time`](#query-group-gpu-time) | Retrieve an approximation of the GPU time for users
 [`query groups-list`](#query-groups-list) | List all groups known to Galaxy
 [`query hdca-datasets`](#query-hdca-datasets) | List of files in a dataset collection
 [`query hdca-info`](#query-hdca-info) | Information on a dataset collection
@@ -27,6 +28,7 @@ Command | Description
 [`query latest-users`](#query-latest-users) | 40 recently registered users
 [`query monthly-cpu-years`](#query-monthly-cpu-years) | CPU years allocated to tools by month
 [`query monthly-data`](#query-monthly-data) | Number of active users per month, running jobs
+[`query monthly-gpu-years`](#query-monthly-gpu-years) | GPU years allocated to tools by month
 [`query monthly-jobs`](#query-monthly-jobs) | Number of jobs run each month
 [`query monthly-users-active`](#query-monthly-users-active) | Number of active users per month, running jobs
 [`query monthly-users-registered`](#query-monthly-users-registered) | Number of users registered each month
@@ -38,6 +40,7 @@ Command | Description
 [`query recent-jobs`](#query-recent-jobs) | Jobs run in the past <hours> (in any state)
 [`query runtime-per-user`](#query-runtime-per-user) | computation time of user (by email)
 [`query server-groups-allocated-cpu`](#query-server-groups-allocated-cpu) | Retrieve an approximation of the CPU allocation for groups
+[`query server-groups-allocated-gpu`](#query-server-groups-allocated-gpu) | Retrieve an approximation of the GPU allocation for groups
 [`query server-groups-disk-usage`](#query-server-groups-disk-usage) | Retrieve an approximation of the disk usage for groups
 [`query tool-available-metrics`](#query-tool-available-metrics) | list all available metrics for a given tool
 [`query tool-errors`](#query-tool-errors) | Summarize percent of tool runs in error over the past weeks for all tools that have failed (most popular tools first)
@@ -56,6 +59,7 @@ Command | Description
 [`query user-cpu-years`](#query-user-cpu-years) | CPU years allocated to tools by user
 [`query user-disk-quota`](#query-user-disk-quota) | Retrieves the 50 users with the largest quotas
 [`query user-disk-usage`](#query-user-disk-usage) | Retrieve an approximation of the disk usage for users
+[`query user-gpu-years`](#query-user-gpu-years) | GPU years allocated to tools by user
 [`query user-recent-aggregate-jobs`](#query-user-recent-aggregate-jobs) | Show aggregate information for jobs in past N days for user
 [`query users-count`](#query-users-count) | Shows sums of active/external/deleted/purged accounts
 [`query users-total`](#query-users-total) | Total number of Galaxy users (incl deleted, purged, inactive)
@@ -161,6 +165,34 @@ rank  | group_id |  group_name  | cpu_seconds
 8     |          | 66c57b41194  |        6.43
 9     |          | 6b1467ac118  |        5.45
 10    |          | d755361b59a  |        5.19
+
+
+## query group-gpu-time
+
+query group-gpu-time -  Retrieve an approximation of the GPU time for users
+
+**SYNOPSIS**
+
+    gxadmin query group-gpu-time [group]
+
+**NOTES**
+
+This uses the galaxy_slots and runtime_seconds metrics in order to
+calculate allocated GPU time. This will not be the value of what is
+actually consumed by jobs of the group, you should use cgroups instead.
+
+rank  | group_id |  group_name | gpu_seconds
+----- | -------- | ----------- | -----------
+1     |          | 123f911b5f1 |      20.35
+2     |          | cb0fabc0002 |      14.93
+3     |          | 7e9e9b00b89 |      14.24
+4     |          | 42f211e5e87 |      14.06
+5     |          | 26cdba62c93 |      12.97
+6     |          | fa87cddfcae |       7.01
+7     |          | 44d2a648aac |       6.70
+8     |          | 66c57b41194 |       6.43
+9     |          | 6b1467ac118 |       5.45
+10    |          | d755361b59a |       5.19
 
 
 ## query groups-list
@@ -496,6 +528,42 @@ Find out how much data was ingested or created by Galaxy during the past months.
      2018-01-01 | 16 TB
 
 
+## query monthly-gpu-years
+
+query monthly-gpu-years -  GPU years allocated to tools by month
+
+**SYNOPSIS**
+
+    gxadmin query monthly-gpu-years
+
+**NOTES**
+
+This uses the CUDA_VISIBLE_DEVICES and runtime_seconds metrics in order to
+calculate allocated GPU years. This will not be the value of what is
+actually consumed by your jobs, you should use cgroups.
+
+    $ gxadmin query monthly-gpu-years
+        month   | gpu_years
+    ------------+-----------
+     2019-04-01 |      2.95
+     2019-03-01 |     12.38
+     2019-02-01 |     11.47
+     2019-01-01 |      8.27
+     2018-12-01 |     11.42
+     2018-11-01 |     16.99
+     2018-10-01 |     12.09
+     2018-09-01 |      6.27
+     2018-08-01 |      9.06
+     2018-07-01 |      6.17
+     2018-06-01 |      5.73
+     2018-05-01 |      7.36
+     2018-04-01 |     10.21
+     2018-03-01 |      5.20
+     2018-02-01 |      4.53
+     2018-01-01 |      4.05
+     2017-12-01 |      2.44
+
+
 ## query monthly-jobs
 
 query monthly-jobs -  Number of jobs run each month
@@ -717,6 +785,15 @@ query server-groups-allocated-cpu -  Retrieve an approximation of the CPU alloca
 **SYNOPSIS**
 
     gxadmin query server-groups-allocated-cpu [YYYY-MM-DD] [=, <=, >= operators]
+
+
+## query server-groups-allocated-gpu
+
+query server-groups-allocated-gpu -  Retrieve an approximation of the GPU allocation for groups
+
+**SYNOPSIS**
+
+    gxadmin query server-groups-allocated-gpu [YYYY-MM-DD] [=, <=, >= operators]
 
 
 ## query server-groups-disk-usage
@@ -1095,6 +1172,34 @@ rank  | user id  |  username   |  email      | storage usage
 8     |  432     | 66c57b41194 | 66c@7b4.194 |       6.43 GB
 9     |  58945   | 6b1467ac118 | 6b1@67a.118 |       5.45 MB
 10    |  10      | d755361b59a | d75@361.59a |       5.19 KB
+
+
+## query user-gpu-years
+
+query user-gpu-years -  GPU years allocated to tools by user
+
+**SYNOPSIS**
+
+    gxadmin query user-gpu-years
+
+**NOTES**
+
+This uses the CUDA_VISIBLE_DEVICES and runtime_seconds metrics in order to
+calculate allocated GPU years. This will not be the value of what is
+actually consumed by your jobs, you should use cgroups.
+
+rank  | user_id |  username   | gpu_years
+----- | ------- | ----------- | ----------
+1     |         | 123f911b5f1 |     20.35
+2     |         | cb0fabc0002 |     14.93
+3     |         | 7e9e9b00b89 |     14.24
+4     |         | 42f211e5e87 |     14.06
+5     |         | 26cdba62c93 |     12.97
+6     |         | fa87cddfcae |      7.01
+7     |         | 44d2a648aac |      6.70
+8     |         | 66c57b41194 |      6.43
+9     |         | 6b1467ac118 |      5.45
+10    |         | d755361b59a |      5.19
 
 
 ## query user-recent-aggregate-jobs
