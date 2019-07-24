@@ -954,6 +954,54 @@ query_monthly-data(){ ## [year]: Number of active users per month, running jobs
 	EOF
 }
 
+query_monthly-gpu-years() { ## : GPU years allocated to tools by month
+	handle_help "$@" <<-EOF
+		This uses the CUDA_VISIBLE_DEVICES and runtime_seconds metrics in order to
+		calculate allocated GPU years. This will not be the value of what is
+		actually consumed by your jobs, you should use cgroups. Only works if the
+		environment variable 'CUDA_VISIBLE_DEVICES' is recorded as job metric by Galaxy.
+		Requires Nvidia GPUs.
+
+		    $ gxadmin query monthly-gpu-years
+		        month   | gpu_years
+		    ------------+-----------
+		     2019-04-01 |      2.95
+		     2019-03-01 |     12.38
+		     2019-02-01 |     11.47
+		     2019-01-01 |      8.27
+		     2018-12-01 |     11.42
+		     2018-11-01 |     16.99
+		     2018-10-01 |     12.09
+		     2018-09-01 |      6.27
+		     2018-08-01 |      9.06
+		     2018-07-01 |      6.17
+		     2018-06-01 |      5.73
+		     2018-05-01 |      7.36
+		     2018-04-01 |     10.21
+		     2018-03-01 |      5.20
+		     2018-02-01 |      4.53
+		     2018-01-01 |      4.05
+		     2017-12-01 |      2.44
+	EOF
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			date_trunc('month', job.create_time)::date as month,
+			round(sum((a.metric_value * length(replace(b.metric_value, ',', ''))) / 3600 / 24 / 365), 2) as gpu_years
+		FROM
+			job_metric_numeric a,
+			job_metric_text b,
+			job
+		WHERE
+			b.job_id = a.job_id
+			AND a.job_id = job.id
+			AND a.metric_name = 'runtime_seconds'
+			AND b.metric_name = 'CUDA_VISIBLE_DEVICES'
+		GROUP BY date_trunc('month', job.create_time)
+		ORDER BY date_trunc('month', job.create_time) DESC
+	EOF
+}
+
 query_user-cpu-years() { ## : CPU years allocated to tools by user
 	handle_help "$@" <<-EOF
 		This uses the galaxy_slots and runtime_seconds metrics in order to
@@ -995,6 +1043,53 @@ query_user-cpu-years() { ## : CPU years allocated to tools by user
 			AND b.metric_name = 'galaxy_slots'
 		GROUP BY job.user_id, galaxy_user.username
 		ORDER BY round(sum((a.metric_value * b.metric_value) / 3600 / 24 / 365), 2) DESC
+		LIMIT 50
+	EOF
+}
+
+query_user-gpu-years() { ## : GPU years allocated to tools by user
+	handle_help "$@" <<-EOF
+		This uses the CUDA_VISIBLE_DEVICES and runtime_seconds metrics in order to
+		calculate allocated GPU years. This will not be the value of what is
+		actually consumed by your jobs, you should use cgroups. Only works if the
+		environment variable 'CUDA_VISIBLE_DEVICES' is recorded as job metric by Galaxy.
+		Requires Nvidia GPUs.
+
+		rank  | user_id |  username   | gpu_years
+		----- | ------- | ----------- | ----------
+		1     |         | 123f911b5f1 |     20.35
+		2     |         | cb0fabc0002 |     14.93
+		3     |         | 7e9e9b00b89 |     14.24
+		4     |         | 42f211e5e87 |     14.06
+		5     |         | 26cdba62c93 |     12.97
+		6     |         | fa87cddfcae |      7.01
+		7     |         | 44d2a648aac |      6.70
+		8     |         | 66c57b41194 |      6.43
+		9     |         | 6b1467ac118 |      5.45
+		10    |         | d755361b59a |      5.19
+
+	EOF
+
+	username=$(gdpr_safe galaxy_user.username username 'Anonymous')
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			row_number() OVER (ORDER BY round(sum((a.metric_value * length(replace(b.metric_value, ',', ''))) / 3600 / 24 / 365), 2) DESC) as rank,
+			job.user_id,
+			$username,
+			round(sum((a.metric_value * length(replace(b.metric_value, ',', ''))) / 3600 / 24 / 365), 2) as gpu_years
+		FROM
+			job_metric_numeric a,
+			job_metric_text b,
+			job
+			FULL OUTER JOIN galaxy_user ON job.user_id = galaxy_user.id
+		WHERE
+			b.job_id = a.job_id
+			AND a.job_id = job.id
+			AND a.metric_name = 'runtime_seconds'
+			AND b.metric_name = 'CUDA_VISIBLE_DEVICES'
+		GROUP BY job.user_id, galaxy_user.username
+		ORDER BY round(sum((a.metric_value * length(replace(b.metric_value, ',', ''))) / 3600 / 24 / 365), 2) DESC
 		LIMIT 50
 	EOF
 }
@@ -1290,6 +1385,61 @@ query_group-cpu-seconds() { ## [group]: Retrieve an approximation of the CPU tim
 			$where
 		GROUP BY galaxy_group.id, galaxy_group.name
 		ORDER BY round(sum(a.metric_value * b.metric_value), 0) DESC
+		LIMIT 50
+	EOF
+}
+
+query_group-gpu-time() { ## [group]: Retrieve an approximation of the GPU time for users
+	handle_help "$@" <<-EOF
+		This uses the galaxy_slots and runtime_seconds metrics in order to
+		calculate allocated GPU time. This will not be the value of what is
+		actually consumed by jobs of the group, you should use cgroups instead.
+		Only works if the  environment variable 'CUDA_VISIBLE_DEVICES' is
+		recorded as job metric by Galaxy. Requires Nvidia GPUs.
+
+		rank  | group_id |  group_name | gpu_seconds
+		----- | -------- | ----------- | -----------
+		1     |          | 123f911b5f1 |      20.35
+		2     |          | cb0fabc0002 |      14.93
+		3     |          | 7e9e9b00b89 |      14.24
+		4     |          | 42f211e5e87 |      14.06
+		5     |          | 26cdba62c93 |      12.97
+		6     |          | fa87cddfcae |       7.01
+		7     |          | 44d2a648aac |       6.70
+		8     |          | 66c57b41194 |       6.43
+		9     |          | 6b1467ac118 |       5.45
+		10    |          | d755361b59a |       5.19
+	EOF
+
+	where=""
+
+	if (( $# > 0 )); then
+		where="AND galaxy_group.name = '$1'"
+	fi
+
+	groupname=$(gdpr_safe galaxy_group.name group_name 'Anonymous')
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			row_number() OVER (ORDER BY sum(a.metric_value * length(replace(b.metric_value, ',', ''))) DESC) as rank,
+			galaxy_group.id as group_id,
+			$groupname,
+			sum(a.metric_value * length(replace(b.metric_value, ',', ''))) as gpu_seconds
+		FROM
+			job_metric_numeric a,
+			job_metric_text b,
+			galaxy_group,
+			job
+			FULL OUTER JOIN user_group_association ON job.user_id = user_group_association.id
+		WHERE
+			b.job_id = a.job_id
+			AND a.job_id = job.id
+			AND a.metric_name = 'runtime_seconds'
+			AND b.metric_name = 'CUDA_VISIBLE_DEVICES'
+			AND galaxy_group.id = user_group_association.group_id
+			$where
+		GROUP BY galaxy_group.id, galaxy_group.name
+		ORDER BY sum(a.metric_value * length(replace(b.metric_value, ',', ''))) DESC
 		LIMIT 50
 	EOF
 }
@@ -1820,6 +1970,42 @@ query_server-allocated-cpu() {
 	EOF
 }
 
+query_server-allocated-gpu() {
+	handle_help "$@" <<-EOF
+	EOF
+
+	op="="
+	if (( $# > 1 )); then
+		op="$2"
+	fi
+
+	date_filter=""
+	if (( $# > 0 )); then
+		date_filter="AND date_trunc('day', job.create_time AT TIME ZONE 'UTC') $op '$1'::date"
+	fi
+
+	fields="gpu_seconds=1"
+	tags="job_runner_name=0"
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			job.job_runner_name,
+			round(sum(a.metric_value * length(replace(b.metric_value, ',', ''))), 2) AS gpu_seconds
+		FROM
+			job_metric_numeric AS a,
+			job_metric_text AS b,
+			job
+		WHERE
+			b.job_id = a.job_id
+			AND a.job_id = job.id
+			AND a.metric_name = 'runtime_seconds'
+			AND b.metric_name = 'CUDA_VISIBLE_DEVICES'
+			${date_filter}
+		GROUP BY
+			job.job_runner_name
+	EOF
+}
+
 query_server-workflows() {
 	handle_help "$@" <<-EOF
 	EOF
@@ -1946,6 +2132,43 @@ query_server-groups-allocated-cpu() { ## [YYYY-MM-DD] [=, <=, >= operators]: Ret
 		WHERE b.job_id = a.job_id
 			AND a.metric_name = 'runtime_seconds'
 			AND b.metric_name = 'galaxy_slots'
+			AND job.user_id = user_group_association.id
+			AND user_group_association.group_id = galaxy_group.id
+			$date_filter
+		GROUP BY galaxy_group.name
+	EOF
+}
+
+query_server-groups-allocated-gpu() { ## [YYYY-MM-DD] [=, <=, >= operators]: Retrieve an approximation of the GPU allocation for groups
+	handle_help "$@" <<-EOF
+	EOF
+
+	op="="
+	if (( $# > 1 )); then
+		op="$2"
+	fi
+
+	date_filter=""
+	if (( $# > 0 )); then
+		date_filter="AND date_trunc('day', dataset.create_time AT TIME ZONE 'UTC') $op '$1'::date"
+	fi
+
+	groupname=$(gdpr_safe galaxy_group.name group_name 'Anonymous')
+
+	fields="gpu_seconds=1"
+	tags="group_name=0"
+
+	read -r -d '' QUERY <<-EOF
+		SELECT $groupname,
+			round(sum(a.metric_value * length(replace(b.metric_value, ',', ''))), 2) AS gpu_seconds
+		FROM job_metric_numeric AS a,
+			job_metric_text AS b,
+			job,
+			galaxy_group,
+			user_group_association
+		WHERE b.job_id = a.job_id
+			AND a.metric_name = 'runtime_seconds'
+			AND b.metric_name = 'CUDA_VISIBLE_DEVICES'
 			AND job.user_id = user_group_association.id
 			AND user_group_association.group_id = galaxy_group.id
 			$date_filter
