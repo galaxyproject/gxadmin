@@ -15,7 +15,7 @@ Command | Description
 [`query history-runtime-system`](#query-history-runtime-system) | Sum of runtimes by all jobs in a history
 [`query history-runtime-wallclock`](#query-history-runtime-wallclock) | Time as elapsed by a clock on the wall
 [`query job-history`](#query-job-history) | Job state history for a specific job
-[`query job-info-by-file`](#query-job-info-by-file) | Retrieve information about jobs specified by input.
+[`query job-info`](#query-job-info) | Retrieve information about jobs given some job IDs
 [`query job-inputs`](#query-job-inputs) | Input datasets to a specific job
 [`query job-outputs`](#query-job-outputs) | Output datasets from a specific job
 [`query jobs-max-by-cpu-hours`](#query-jobs-max-by-cpu-hours) | Top 10 jobs by CPU hours consumed (requires CGroups metrics)
@@ -251,13 +251,13 @@ query job-history -  Job state history for a specific job
     (4 rows)
 
 
-## query job-info-by-file
+## query job-info
 
-query job-info-by-file -  Retrieve information about jobs specified by input.
+query job-info -  Retrieve information about jobs given some job IDs
 
 **SYNOPSIS**
 
-    gxadmin query job-info-by-file <file with job IDs>
+    gxadmin query job-info <-|job_id> [job_id [job_id [...]]]
 
 **NOTES**
 

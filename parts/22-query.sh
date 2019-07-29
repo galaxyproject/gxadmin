@@ -1470,7 +1470,7 @@ query_job-outputs() { ## <id>: Output datasets from a specific job
 	EOF
 }
 
-query_job-info-by-file() { ## <file with job IDs> : Retrieve information about jobs specified by input.
+query_job-info() { ## <-|job_id> [job_id [job_id [...]]] : Retrieve information about jobs given some job IDs
 	handle_help "$@" <<-EOF
 		Retrieves information on a job, like the host it ran on,
 		how long it ran for and the total memory.
@@ -1489,13 +1489,17 @@ query_job-info-by-file() { ## <file with job IDs> : Retrieve information about j
 		10    |              |             | d755361b59a  | d755361b59a  |           5.19  |   100 MB
 	EOF
 
-	job_ids=()
+	assert_count_ge $# 1 "Missing job IDs"
 
-	while IFS= read -r line; do
-		job_ids+=("$line")
-	done < "$1"
+	if [[ "$1" == "-" ]]; then
+		# read jobs from stdin
+		job_ids=$(cat | paste -s -d' ')
+	else
+		# read from $@
+		job_ids=$@;
+	fi
 
-	job_ids_string=`join_by ',' ${job_ids[@]}`
+	job_ids_string=$(join_by ',' ${job_ids[@]})
 
 	read -r -d '' QUERY <<-EOF
 		WITH hostname_query AS (
