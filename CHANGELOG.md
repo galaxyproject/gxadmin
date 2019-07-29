@@ -5,6 +5,7 @@
 	- query server-groups-allocated-cpu, thanks @selten
 	- query server-groups-disk-usage, thanks @selten
 	- query user-disk-quota, thanks @selten
+	- query job-info, thanks @selten
 
 # 14
 

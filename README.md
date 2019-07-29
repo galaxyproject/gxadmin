@@ -171,6 +171,7 @@ Command | Description
 [`query history-runtime-system`](docs/README.query.md#query-history-runtime-system) | Sum of runtimes by all jobs in a history
 [`query history-runtime-wallclock`](docs/README.query.md#query-history-runtime-wallclock) | Time as elapsed by a clock on the wall
 [`query job-history`](docs/README.query.md#query-job-history) | Job state history for a specific job
+[`query job-info`](docs/README.query.md#query-job-info) | Retrieve information about jobs given some job IDs
 [`query job-inputs`](docs/README.query.md#query-job-inputs) | Input datasets to a specific job
 [`query job-outputs`](docs/README.query.md#query-job-outputs) | Output datasets from a specific job
 [`query jobs-max-by-cpu-hours`](docs/README.query.md#query-jobs-max-by-cpu-hours) | Top 10 jobs by CPU hours consumed (requires CGroups metrics)
