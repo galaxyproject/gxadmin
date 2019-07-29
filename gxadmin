@@ -439,6 +439,7 @@ CHANGELOG=$(cat <<EOF
 	- query server-groups-allocated-cpu, thanks @selten
 	- query server-groups-disk-usage, thanks @selten
 	- query user-disk-quota, thanks @selten
+	- query job-info, thanks @selten
 
 # 14
 
@@ -2604,8 +2605,6 @@ query_job-info() { ## <-|job_id> [job_id [job_id [...]]] : Retrieve information 
 
 	job_ids_string=$(join_by ',' ${job_ids[@]})
 
-	echo "JIDS: $job_ids_string"
-	exit
 	read -r -d '' QUERY <<-EOF
 		WITH hostname_query AS (
 			SELECT job_id,
