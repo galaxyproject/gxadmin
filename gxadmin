@@ -1102,6 +1102,27 @@ mutate_oidc-role-fix() { ## <username|email|user_id>: Fix permissions for users 
 		select 'done'
 	EOF
 }
+
+mutate_reassign-job-to-handler() { ## <job_id> <handler_id>: Reassign a job to a different handler
+	handle_help "$@" <<-EOF
+	EOF
+
+	assert_count $# 2 "Must supply a job and handler ID"
+	job_id=$1
+	handler_id=$2
+
+	read -r -d '' QUERY <<-EOF
+		UPDATE
+			job
+		SET
+			job.handler = $handler_id
+		WHERE
+			job.id = $job_id
+	EOF
+
+	commit=$(should_commit "$2")
+	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
+}
 query_latest-users() { ## : 40 recently registered users
 	handle_help "$@" <<-EOF
 		Returns 40 most recently registered users
@@ -2062,7 +2083,9 @@ query_monthly-gpu-years() { ## : GPU years allocated to tools by month
 	handle_help "$@" <<-EOF
 		This uses the CUDA_VISIBLE_DEVICES and runtime_seconds metrics in order to
 		calculate allocated GPU years. This will not be the value of what is
-		actually consumed by your jobs, you should use cgroups.
+		actually consumed by your jobs, you should use cgroups. Only works if the
+		environment variable 'CUDA_VISIBLE_DEVICES' is recorded as job metric by Galaxy.
+		Requires Nvidia GPUs.
 
 		    $ gxadmin query monthly-gpu-years
 		        month   | gpu_years
@@ -2153,7 +2176,9 @@ query_user-gpu-years() { ## : GPU years allocated to tools by user
 	handle_help "$@" <<-EOF
 		This uses the CUDA_VISIBLE_DEVICES and runtime_seconds metrics in order to
 		calculate allocated GPU years. This will not be the value of what is
-		actually consumed by your jobs, you should use cgroups.
+		actually consumed by your jobs, you should use cgroups. Only works if the
+		environment variable 'CUDA_VISIBLE_DEVICES' is recorded as job metric by Galaxy.
+		Requires Nvidia GPUs.
 
 		rank  | user_id |  username   | gpu_years
 		----- | ------- | ----------- | ----------
@@ -2494,6 +2519,8 @@ query_group-gpu-time() { ## [group]: Retrieve an approximation of the GPU time f
 		This uses the galaxy_slots and runtime_seconds metrics in order to
 		calculate allocated GPU time. This will not be the value of what is
 		actually consumed by jobs of the group, you should use cgroups instead.
+		Only works if the  environment variable 'CUDA_VISIBLE_DEVICES' is
+		recorded as job metric by Galaxy. Requires Nvidia GPUs.
 
 		rank  | group_id |  group_name | gpu_seconds
 		----- | -------- | ----------- | -----------
@@ -3738,6 +3765,31 @@ query_upload-gb-in-past-hour() { ## [hours|1]: Sum in bytes of files uploaded in
 		WHERE
 			job.tool_id = 'upload1'
 			AND job.create_time AT TIME ZONE 'UTC' > (now() - '$hours hours'::INTERVAL)
+EOF
+}
+
+query_queue-detail-by-handler() { ## <handler_id>: List jobs for a specific handler
+	handle_help "$@" <<-EOF
+		List the jobs currently being processed by a specific handler
+	EOF
+
+	assert_count_ge $# 1 "Missing handler ID"
+
+	handler_id=$1
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			id,
+			create_time,
+			state,
+			regexp_replace(tool_id, '.*toolshed.*/repos/', ''),
+			job_runner_name,
+			job_runner_external_id,
+			destination_id
+		FROM
+			job
+		WHERE
+			handler = '$handler_id' AND state IN ('new', 'queued', 'running')
 EOF
 }
 filter_pg2md() { ## : Convert postgres table format outputs to something that can be pasted as markdown

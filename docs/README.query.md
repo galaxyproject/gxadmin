@@ -36,6 +36,7 @@ Command | Description
 [`query old-histories`](#query-old-histories) | Lists histories that haven't been updated (used) for <weeks>
 [`query queue`](#query-queue) | Brief overview of currently running jobs
 [`query queue-detail`](#query-queue-detail) | Detailed overview of running and queued jobs
+[`query queue-detail-by-handler`](#query-queue-detail-by-handler) | List jobs for a specific handler
 [`query queue-overview`](#query-queue-overview) | View used mostly for monitoring
 [`query queue-time`](#query-queue-time) | The average/95%/99% a specific tool spends in queue state.
 [`query recent-jobs`](#query-recent-jobs) | Jobs run in the past <hours> (in any state)
@@ -181,6 +182,8 @@ query group-gpu-time -  Retrieve an approximation of the GPU time for users
 This uses the galaxy_slots and runtime_seconds metrics in order to
 calculate allocated GPU time. This will not be the value of what is
 actually consumed by jobs of the group, you should use cgroups instead.
+Only works if the  environment variable 'CUDA_VISIBLE_DEVICES' is
+recorded as job metric by Galaxy. Requires Nvidia GPUs.
 
 rank  | group_id |  group_name | gpu_seconds
 ----- | -------- | ----------- | -----------
@@ -568,7 +571,9 @@ query monthly-gpu-years -  GPU years allocated to tools by month
 
 This uses the CUDA_VISIBLE_DEVICES and runtime_seconds metrics in order to
 calculate allocated GPU years. This will not be the value of what is
-actually consumed by your jobs, you should use cgroups.
+actually consumed by your jobs, you should use cgroups. Only works if the
+environment variable 'CUDA_VISIBLE_DEVICES' is recorded as job metric by Galaxy.
+Requires Nvidia GPUs.
 
     $ gxadmin query monthly-gpu-years
         month   | gpu_years
@@ -734,6 +739,19 @@ query queue-detail -  Detailed overview of running and queued jobs
      queued  | 4361812 | 229696  | toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.6.0              | xxxx     | 5 days -01:00:00
      queued  | 4361939 | 229728  | toolshed.g2.bx.psu.edu/repos/nml/spades/spades/1.2                        | xxxx     | 4 days 21:00:00
      queued  | 4361941 | 229731  | toolshed.g2.bx.psu.edu/repos/nml/spades/spades/1.2                        | xxxx     | 4 days 21:00:00
+
+
+## query queue-detail-by-handler
+
+query queue-detail-by-handler -  List jobs for a specific handler
+
+**SYNOPSIS**
+
+    gxadmin query queue-detail-by-handler <handler_id>
+
+**NOTES**
+
+List the jobs currently being processed by a specific handler
 
 
 ## query queue-overview
@@ -1214,7 +1232,9 @@ query user-gpu-years -  GPU years allocated to tools by user
 
 This uses the CUDA_VISIBLE_DEVICES and runtime_seconds metrics in order to
 calculate allocated GPU years. This will not be the value of what is
-actually consumed by your jobs, you should use cgroups.
+actually consumed by your jobs, you should use cgroups. Only works if the
+environment variable 'CUDA_VISIBLE_DEVICES' is recorded as job metric by Galaxy.
+Requires Nvidia GPUs.
 
 rank  | user_id |  username   | gpu_years
 ----- | ------- | ----------- | ----------

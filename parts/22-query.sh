@@ -2642,3 +2642,28 @@ query_upload-gb-in-past-hour() { ## [hours|1]: Sum in bytes of files uploaded in
 			AND job.create_time AT TIME ZONE 'UTC' > (now() - '$hours hours'::INTERVAL)
 EOF
 }
+
+query_queue-detail-by-handler() { ## <handler_id>: List jobs for a specific handler
+	handle_help "$@" <<-EOF
+		List the jobs currently being processed by a specific handler
+	EOF
+
+	assert_count_ge $# 1 "Missing handler ID"
+
+	handler_id=$1
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			id,
+			create_time,
+			state,
+			regexp_replace(tool_id, '.*toolshed.*/repos/', ''),
+			job_runner_name,
+			job_runner_external_id,
+			destination_id
+		FROM
+			job
+		WHERE
+			handler = '$handler_id' AND state IN ('new', 'queued', 'running')
+EOF
+}

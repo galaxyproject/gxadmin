@@ -6,6 +6,8 @@
 	- query server-groups-disk-usage, thanks @selten
 	- query user-disk-quota, thanks @selten
 	- query job-info, thanks @selten
+	- query queue-detail-by-handler
+	- mutate reassign-job-to-handler
 
 # 14
 

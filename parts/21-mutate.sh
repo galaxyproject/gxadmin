@@ -348,3 +348,24 @@ mutate_oidc-role-fix() { ## <username|email|user_id>: Fix permissions for users 
 		select 'done'
 	EOF
 }
+
+mutate_reassign-job-to-handler() { ## <job_id> <handler_id>: Reassign a job to a different handler
+	handle_help "$@" <<-EOF
+	EOF
+
+	assert_count $# 2 "Must supply a job and handler ID"
+	job_id=$1
+	handler_id=$2
+
+	read -r -d '' QUERY <<-EOF
+		UPDATE
+			job
+		SET
+			job.handler = $handler_id
+		WHERE
+			job.id = $job_id
+	EOF
+
+	commit=$(should_commit "$2")
+	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
+}

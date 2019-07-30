@@ -152,6 +152,7 @@ Command | Description
 [`mutate fail-terminal-datasets`](docs/README.mutate.md#mutate-fail-terminal-datasets) | Causes the output datasets of jobs which were manually failed, to be marked as failed
 [`mutate oidc-role-find-affected`](docs/README.mutate.md#mutate-oidc-role-find-affected) | Find users affected by galaxyproject/galaxy#8244
 [`mutate oidc-role-fix`](docs/README.mutate.md#mutate-oidc-role-fix) | Fix permissions for users logged in via OIDC. Workaround for galaxyproject/galaxy#8244
+[`mutate reassign-job-to-handler`](docs/README.mutate.md#mutate-reassign-job-to-handler) | Reassign a job to a different handler
 
 ### query
 
@@ -191,6 +192,7 @@ Command | Description
 [`query old-histories`](docs/README.query.md#query-old-histories) | Lists histories that haven't been updated (used) for <weeks>
 [`query queue`](docs/README.query.md#query-queue) | Brief overview of currently running jobs
 [`query queue-detail`](docs/README.query.md#query-queue-detail) | Detailed overview of running and queued jobs
+[`query queue-detail-by-handler`](docs/README.query.md#query-queue-detail-by-handler) | List jobs for a specific handler
 [`query queue-overview`](docs/README.query.md#query-queue-overview) | View used mostly for monitoring
 [`query queue-time`](docs/README.query.md#query-queue-time) | The average/95%/99% a specific tool spends in queue state.
 [`query recent-jobs`](docs/README.query.md#query-recent-jobs) | Jobs run in the past <hours> (in any state)
