@@ -366,6 +366,6 @@ mutate_reassign-job-to-handler() { ## <job_id> <handler_id> [--commit]: Reassign
 			job.id = $job_id
 	EOF
 
-	commit=$(should_commit "$2")
+	commit=$(should_commit "$3")
 	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
 }
