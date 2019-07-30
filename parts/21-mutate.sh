@@ -349,11 +349,11 @@ mutate_oidc-role-fix() { ## <username|email|user_id>: Fix permissions for users 
 	EOF
 }
 
-mutate_reassign-job-to-handler() { ## <job_id> <handler_id>: Reassign a job to a different handler
+mutate_reassign-job-to-handler() { ## <job_id> <handler_id> [--commit]: Reassign a job to a different handler
 	handle_help "$@" <<-EOF
 	EOF
 
-	assert_count $# 2 "Must supply a job and handler ID"
+	assert_count_ge $# 2 "Must supply a job and handler ID"
 	job_id=$1
 	handler_id=$2
 

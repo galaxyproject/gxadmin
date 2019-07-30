@@ -176,5 +176,5 @@ mutate reassign-job-to-handler -  Reassign a job to a different handler
 
 **SYNOPSIS**
 
-    gxadmin mutate reassign-job-to-handler <job_id> <handler_id>
+    gxadmin mutate reassign-job-to-handler <job_id> <handler_id> [--commit]
 
