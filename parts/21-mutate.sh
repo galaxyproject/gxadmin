@@ -361,7 +361,7 @@ mutate_reassign-job-to-handler() { ## <job_id> <handler_id>: Reassign a job to a
 		UPDATE
 			job
 		SET
-			job.handler = $handler_id
+			job.handler = '$handler_id'
 		WHERE
 			job.id = $job_id
 	EOF

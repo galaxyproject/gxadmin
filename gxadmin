@@ -440,6 +440,8 @@ CHANGELOG=$(cat <<EOF
 	- query server-groups-disk-usage, thanks @selten
 	- query user-disk-quota, thanks @selten
 	- query job-info, thanks @selten
+	- query queue-detail-by-handler
+	- mutate reassign-job-to-handler
 
 # 14
 
@@ -1115,7 +1117,7 @@ mutate_reassign-job-to-handler() { ## <job_id> <handler_id>: Reassign a job to a
 		UPDATE
 			job
 		SET
-			job.handler = $handler_id
+			job.handler = '$handler_id'
 		WHERE
 			job.id = $job_id
 	EOF
