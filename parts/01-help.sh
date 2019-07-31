@@ -105,12 +105,6 @@ usage(){
 		EOF
 	fi
 
-	if (( $# == 0  )) || [[ "$1" == "search" ]]; then
-		cat <<-EOF
-		    search <term>: Search gxadmin for functions with specific terms
-		EOF
-	fi
-
 	if (( $# == 0  )) || [[ "$1" == "uwsgi" ]]; then
 		cat <<-EOF
 		    uwsgi:  Galaxy Handler/Zergling management (SystemD only)
@@ -127,6 +121,13 @@ usage(){
 		cat <<-EOF
 			Local-only commands can be configured in $GXADMIN_SITE_SPECIFIC
 
+		EOF
+	fi
+
+	if (( $# == 0  )) || [[ "$1" == "search" ]]; then
+		cat <<-EOF
+
+		    search <term>: Search gxadmin for functions with specific terms
 		EOF
 	fi
 

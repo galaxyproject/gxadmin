@@ -191,6 +191,14 @@ Command | Description
 [`query monthly-users-registered`](docs/README.query.md#query-monthly-users-registered) | Number of users registered each month
 [`query old-histories`](docs/README.query.md#query-old-histories) | Lists histories that haven't been updated (used) for <weeks>
 [`query pg-cache-hit`](docs/README.query.md#query-pg-cache-hit) | Check postgres in-memory cache hit ratio
+[`query pg-index-size`](docs/README.query.md#query-pg-index-size) | show table and index bloat in your database ordered by most wasteful
+[`query pg-index-usage`](docs/README.query.md#query-pg-index-usage) | calculates your index hit rate (effective databases are at 99% and up)
+[`query pg-long-running-queries`](docs/README.query.md#query-pg-long-running-queries) | show all queries longer than five minutes by descending duration
+[`query pg-mandelbrot`](docs/README.query.md#query-pg-mandelbrot) | show the mandlebrot set
+[`query pg-table-bloat`](docs/README.query.md#query-pg-table-bloat) | show table and index bloat in your database ordered by most wasteful
+[`query pg-table-size`](docs/README.query.md#query-pg-table-size) | show the size of the tables (excluding indexes), descending by size
+[`query pg-unused-indexes`](docs/README.query.md#query-pg-unused-indexes) | show unused and almost unused indexes
+[`query pg-vacuum-stats`](docs/README.query.md#query-pg-vacuum-stats) | show dead rows and whether an automatic vacuum is expected to be triggered
 [`query queue`](docs/README.query.md#query-queue) | Brief overview of currently running jobs
 [`query queue-detail`](docs/README.query.md#query-queue-detail) | Detailed overview of running and queued jobs
 [`query queue-detail-by-handler`](docs/README.query.md#query-queue-detail-by-handler) | List jobs for a specific handler

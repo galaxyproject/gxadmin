@@ -35,6 +35,14 @@ Command | Description
 [`query monthly-users-registered`](#query-monthly-users-registered) | Number of users registered each month
 [`query old-histories`](#query-old-histories) | Lists histories that haven't been updated (used) for <weeks>
 [`query pg-cache-hit`](#query-pg-cache-hit) | Check postgres in-memory cache hit ratio
+[`query pg-index-size`](#query-pg-index-size) | show table and index bloat in your database ordered by most wasteful
+[`query pg-index-usage`](#query-pg-index-usage) | calculates your index hit rate (effective databases are at 99% and up)
+[`query pg-long-running-queries`](#query-pg-long-running-queries) | show all queries longer than five minutes by descending duration
+[`query pg-mandelbrot`](#query-pg-mandelbrot) | show the mandlebrot set
+[`query pg-table-bloat`](#query-pg-table-bloat) | show table and index bloat in your database ordered by most wasteful
+[`query pg-table-size`](#query-pg-table-size) | show the size of the tables (excluding indexes), descending by size
+[`query pg-unused-indexes`](#query-pg-unused-indexes) | show unused and almost unused indexes
+[`query pg-vacuum-stats`](#query-pg-vacuum-stats) | show dead rows and whether an automatic vacuum is expected to be triggered
 [`query queue`](#query-queue) | Brief overview of currently running jobs
 [`query queue-detail`](#query-queue-detail) | Detailed overview of running and queued jobs
 [`query queue-detail-by-handler`](#query-queue-detail-by-handler) | List jobs for a specific handler
@@ -698,6 +706,132 @@ query pg-cache-hit -  Check postgres in-memory cache hit ratio
 **SYNOPSIS**
 
     gxadmin query pg-cache-hit
+
+**NOTES**
+
+Query from: https://www.citusdata.com/blog/2019/03/29/health-checks-for-your-postgres-database/
+
+Tells you about the cache hit ratio, is Postgres managing to store
+commonly requested objects in memory or are they being loaded every
+time?
+
+heap_read  | heap_hit |         ratio
+----------- ---------- ------------------------
+29         |    64445 | 0.99955020628470391165
+
+
+## query pg-index-size
+
+query pg-index-size -  show table and index bloat in your database ordered by most wasteful
+
+**SYNOPSIS**
+
+    gxadmin query pg-index-size [--human]
+
+**NOTES**
+
+Originally from: https://github.com/heroku/heroku-pg-extras/tree/master/commands
+
+
+## query pg-index-usage
+
+query pg-index-usage -  calculates your index hit rate (effective databases are at 99% and up)
+
+**SYNOPSIS**
+
+    gxadmin query pg-index-usage
+
+**NOTES**
+
+Originally from: https://github.com/heroku/heroku-pg-extras/tree/master/commands
+
+-1 means "Insufficient Data", this was changed to a numeric value to be acceptable to InfluxDB
+
+
+## query pg-long-running-queries
+
+query pg-long-running-queries -  show all queries longer than five minutes by descending duration
+
+**SYNOPSIS**
+
+    gxadmin query pg-long-running-queries
+
+**NOTES**
+
+Originally from: https://github.com/heroku/heroku-pg-extras/tree/master/commands
+
+
+## query pg-mandelbrot
+
+query pg-mandelbrot -  show the mandlebrot set
+
+**SYNOPSIS**
+
+    gxadmin query pg-mandelbrot
+
+**NOTES**
+
+Copied from: https://github.com/heroku/heroku-pg-extras/tree/master/commands
+
+
+## query pg-table-bloat
+
+query pg-table-bloat -  show table and index bloat in your database ordered by most wasteful
+
+**SYNOPSIS**
+
+    gxadmin query pg-table-bloat [--human]
+
+**NOTES**
+
+Query from: https://www.citusdata.com/blog/2019/03/29/health-checks-for-your-postgres-database/
+Originally from: https://github.com/heroku/heroku-pg-extras/tree/master/commands
+
+
+## query pg-table-size
+
+query pg-table-size -  show the size of the tables (excluding indexes), descending by size
+
+**SYNOPSIS**
+
+    gxadmin query pg-table-size [--human]
+
+**NOTES**
+
+Originally from: https://github.com/heroku/heroku-pg-extras/tree/master/commands
+
+
+## query pg-unused-indexes
+
+query pg-unused-indexes -  show unused and almost unused indexes
+
+**SYNOPSIS**
+
+    gxadmin query pg-unused-indexes [--human]
+
+**NOTES**
+
+Originally from: https://github.com/heroku/heroku-pg-extras/tree/master/commands
+
+From their documentation:
+
+> "Ordered by their size relative to the number of index scans.
+> Exclude indexes of very small tables (less than 5 pages),
+> where the planner will almost invariably select a sequential scan,
+> but may not in the future as the table grows"
+
+
+## query pg-vacuum-stats
+
+query pg-vacuum-stats -  show dead rows and whether an automatic vacuum is expected to be triggered
+
+**SYNOPSIS**
+
+    gxadmin query pg-vacuum-stats
+
+**NOTES**
+
+Originally from: https://github.com/heroku/heroku-pg-extras/tree/master/commands
 
 
 ## query queue
