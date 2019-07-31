@@ -2665,5 +2665,24 @@ query_queue-detail-by-handler() { ## <handler_id>: List jobs for a specific hand
 			job
 		WHERE
 			handler = '$handler_id' AND state IN ('new', 'queued', 'running')
-EOF
+	EOF
+}
+
+# https://www.citusdata.com/blog/2019/03/29/health-checks-for-your-postgres-database/
+query_pg-cache-hit() { ## : Check postgres in-memory cache hit ratio
+	handle_help "$@" <<-EOF
+	EOF
+
+	fields="read=0;hit=1;ratio=2"
+	tags=""
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			sum(heap_blks_read) as heap_read,
+			sum(heap_blks_hit)  as heap_hit,
+			sum(heap_blks_hit) / (sum(heap_blks_hit) + sum(heap_blks_read)) as ratio
+		FROM
+			pg_statio_user_tables
+	EOF
+
 }
