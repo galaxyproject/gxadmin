@@ -34,6 +34,7 @@ Command | Description
 [`query monthly-users-active`](#query-monthly-users-active) | Number of active users per month, running jobs
 [`query monthly-users-registered`](#query-monthly-users-registered) | Number of users registered each month
 [`query old-histories`](#query-old-histories) | Lists histories that haven't been updated (used) for <weeks>
+[`query pg-cache-hit`](#query-pg-cache-hit) | Check postgres in-memory cache hit ratio
 [`query queue`](#query-queue) | Brief overview of currently running jobs
 [`query queue-detail`](#query-queue-detail) | Detailed overview of running and queued jobs
 [`query queue-detail-by-handler`](#query-queue-detail-by-handler) | List jobs for a specific handler
@@ -688,6 +689,15 @@ Histories and their users who haven't been updated for a specified number of wee
      40050 | 2017-06-19 00:46:29.032462 |     193 | xxx@xxx | Telmatactis        | f         | f       | f      |          74
      12212 | 2017-06-20 14:41:03.762881 |     169 | xxx@xxx | Unnamed history    | f         | f       | f      |          24
      39523 | 2017-06-21 01:34:52.226653 |       9 | xxx@xxx | OSCC Cell Lines    | f         | f       | f      |         139
+
+
+## query pg-cache-hit
+
+query pg-cache-hit -  Check postgres in-memory cache hit ratio
+
+**SYNOPSIS**
+
+    gxadmin query pg-cache-hit
 
 
 ## query queue

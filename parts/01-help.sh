@@ -55,88 +55,65 @@ usage(){
 
 	if (( $# == 0  )) || [[ "$1" == "config" ]]; then
 		cat <<-EOF
-			Configuration:
-
-			$(echo "$cmds" | filter_commands config "$1")
-
+		    config: Access Galaxy configuration and other assorted things
 		EOF
 	fi
 
 	if (( $# == 0  )) || [[ "$1" == "filter" ]]; then
 		cat <<-EOF
-			Filters:
-
-			$(echo "$cmds" | filter_commands filter "$1")
-
+		    filter: Some text filtering and processing commands
 		EOF
 	fi
 
 	if (( $# == 0  )) || [[ "$1" == "galaxy" ]]; then
 		cat <<-EOF
-			Galaxy Administration:
-
-			$(echo "$cmds" | filter_commands galaxy "$1")
-
+		    galaxy: Galaxy Administration
 		EOF
 	fi
 
 	if (( $# == 0  )) || [[ "$1" == "uwsgi" ]]; then
 		cat <<-EOF
-			uwsgi:
-
-			$(echo "$cmds" | filter_commands uwsgi "$1")
-
+		    uwsgi:  Galaxy Handler/Zergling management (SystemD only)
 		EOF
 	fi
 
 
 	if (( $# == 0  )) || [[ "$1" == "query" ]]; then
-		cat <<-EOF
-			DB Queries:
-			  'query' can be exchanged with 'tsvquery' or 'csvquery' for tab- and comma-separated variants.
-			  In some cases 'iquery' is supported for InfluxDB compatible output.
-			  In all cases 'explainquery' will show you the query plan, in case you need to optimise or index data. 'explainjsonquery' is useful with PEV: http://tatiyants.com/pev/
-
-			$(echo "$cmds" | filter_commands query "$1")
-
-		EOF
+		if [[ "$1" == "query" ]]; then
+			cat <<-EOF
+				DB Queries:
+				  'query' can be exchanged with 'tsvquery' or 'csvquery' for tab- and comma-separated variants.
+				  In some cases 'iquery' is supported for InfluxDB compatible output.
+				  In all cases 'explainquery' will show you the query plan, in case you need to optimise or index data. 'explainjsonquery' is useful with PEV: http://tatiyants.com/pev/
+			EOF
+		else
+			cat <<-EOF
+			    query:  DB Queries
+			EOF
+		fi
 	fi
 
 	if (( $# == 0  )) || [[ "$1" == "report" ]]; then
 		cat <<-EOF
-			Report:
-			  Consider https://github.com/ttscoff/mdless for easier reading in the terminal
-
-			$(echo "$cmds" | filter_commands report "$1")
-
+		    report: Various (rich) reports.  Consider https://github.com/ttscoff/mdless for easier reading in the terminal
 		EOF
 	fi
-
 	if (( $# == 0  )) || [[ "$1" == "mutate" ]]; then
 		cat <<-EOF
-			DB Mutations: (csv/tsv queries are NOT available)
-
-			$(echo "$cmds" | filter_commands mutate "$1")
-
+		    mutate: DB Mutations, CSV/TSV queries are NOT available
 		EOF
 	fi
 
 	if (( $# == 0  )) || [[ "$1" == "meta" ]]; then
 		cat <<-EOF
-			Meta:
-
-			$(echo "$cmds" | filter_commands meta "$1")
-
+		    meta:   Miscellaneous
 		EOF
 	fi
 
 	if [[ -f "$GXADMIN_SITE_SPECIFIC" ]]; then
 		if (( $# == 0  )) || [[ "$1" == "local" ]]; then
 			cat <<-EOF
-				Local: (These can be configured in "$GXADMIN_SITE_SPECIFIC")
-
-				$(echo "$cmds" | filter_commands local "$1")
-
+			    local:  (These can be configured in "$GXADMIN_SITE_SPECIFIC")
 			EOF
 		fi
 	else
@@ -146,7 +123,13 @@ usage(){
 		EOF
 	fi
 
+	if (( $# == 1 )); then
+		echo
+		echo "$cmds" | filter_commands $1 "$1"
+	fi
+
 	cat <<-EOF
+
 		All commands can be prefixed with "time" to print execution time to stderr
 
 	EOF

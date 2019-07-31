@@ -190,6 +190,7 @@ Command | Description
 [`query monthly-users-active`](docs/README.query.md#query-monthly-users-active) | Number of active users per month, running jobs
 [`query monthly-users-registered`](docs/README.query.md#query-monthly-users-registered) | Number of users registered each month
 [`query old-histories`](docs/README.query.md#query-old-histories) | Lists histories that haven't been updated (used) for <weeks>
+[`query pg-cache-hit`](docs/README.query.md#query-pg-cache-hit) | Check postgres in-memory cache hit ratio
 [`query queue`](docs/README.query.md#query-queue) | Brief overview of currently running jobs
 [`query queue-detail`](docs/README.query.md#query-queue-detail) | Detailed overview of running and queued jobs
 [`query queue-detail-by-handler`](docs/README.query.md#query-queue-detail-by-handler) | List jobs for a specific handler
