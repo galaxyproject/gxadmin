@@ -2,6 +2,7 @@
 
 - Fancy [new docs site](https://usegalaxy-eu.github.io/gxadmin/#/)
 - Added:
+	- search :(
 	- query server-groups-allocated-cpu, thanks @selten
 	- query server-groups-disk-usage, thanks @selten
 	- query user-disk-quota, thanks @selten

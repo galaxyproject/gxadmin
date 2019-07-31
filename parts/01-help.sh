@@ -71,12 +71,18 @@ usage(){
 		EOF
 	fi
 
-	if (( $# == 0  )) || [[ "$1" == "uwsgi" ]]; then
+
+	if (( $# == 0  )) || [[ "$1" == "meta" ]]; then
 		cat <<-EOF
-		    uwsgi:  Galaxy Handler/Zergling management (SystemD only)
+		    meta:   Miscellaneous
 		EOF
 	fi
 
+	if (( $# == 0  )) || [[ "$1" == "mutate" ]]; then
+		cat <<-EOF
+		    mutate: DB Mutations, CSV/TSV queries are NOT available
+		EOF
+	fi
 
 	if (( $# == 0  )) || [[ "$1" == "query" ]]; then
 		if [[ "$1" == "query" ]]; then
@@ -98,15 +104,16 @@ usage(){
 		    report: Various (rich) reports.  Consider https://github.com/ttscoff/mdless for easier reading in the terminal
 		EOF
 	fi
-	if (( $# == 0  )) || [[ "$1" == "mutate" ]]; then
+
+	if (( $# == 0  )) || [[ "$1" == "search" ]]; then
 		cat <<-EOF
-		    mutate: DB Mutations, CSV/TSV queries are NOT available
+		    search <term>: Search gxadmin for functions with specific terms
 		EOF
 	fi
 
-	if (( $# == 0  )) || [[ "$1" == "meta" ]]; then
+	if (( $# == 0  )) || [[ "$1" == "uwsgi" ]]; then
 		cat <<-EOF
-		    meta:   Miscellaneous
+		    uwsgi:  Galaxy Handler/Zergling management (SystemD only)
 		EOF
 	fi
 

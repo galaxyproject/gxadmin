@@ -1,3 +1,7 @@
+search() { # <term>: Search for a specific command
+	locate_cmds | correct_cmd | grep $1 | colour_word $1 orange
+}
+
 if (( $# == 0 )); then
 	usage
 fi
@@ -14,11 +18,14 @@ case "$mode" in
 	config ) $wrapper look_for config "$@" ;;
 	filter ) $wrapper look_for filter "$@" ;;
 	galaxy ) $wrapper look_for galaxy "$@" ;;
-	report ) $wrapper look_for report "$@" ;;
 	local  ) $wrapper local_funcs     "$@" ;;
-	mutate ) $wrapper mutate "$mode"  "$@" ;;
-	uwsgi  ) $wrapper look_for uwsgi  "$@" ;;
 	meta   ) $wrapper look_for meta   "$@" ;;
+	mutate ) $wrapper mutate "$mode"  "$@" ;;
+	report ) $wrapper look_for report "$@" ;;
+	uwsgi  ) $wrapper look_for uwsgi  "$@" ;;
+	s      ) search "$@" ;;
+	find   ) search "$@" ;;
+	search ) search "$@" ;;
 
 	# version commands
 	version   ) version ;;
