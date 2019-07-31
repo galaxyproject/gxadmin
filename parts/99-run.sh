@@ -1,5 +1,9 @@
 search() { # <term>: Search for a specific command
-	locate_cmds | correct_cmd | grep $1 | colour_word $1 orange
+	if (( $# > 0 )); then
+		locate_cmds | correct_cmd | grep $1 | colour_word $1 orange
+	else
+		locate_cmds | correct_cmd
+	fi
 }
 
 if (( $# == 0 )); then
