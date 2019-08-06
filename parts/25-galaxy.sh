@@ -15,6 +15,7 @@ galaxy_cleanup() { ## [days]: Cleanup histories/hdas/etc for past N days (defaul
 	run_date=$(date --rfc-3339=seconds)
 
 	for action in {delete_userless_histories,delete_exported_histories,purge_deleted_histories,purge_deleted_hdas,delete_datasets,purge_datasets}; do
+		start_time=$(date +%s)
 		python "$GALAXY_ROOT/scripts/cleanup_datasets/pgcleanup.py" \
 			-c "$GALAXY_CONFIG_FILE" \
 			-o "$days" \
@@ -23,13 +24,15 @@ galaxy_cleanup() { ## [days]: Cleanup histories/hdas/etc for past N days (defaul
 			-w 128MB \
 			 >> "$GALAXY_LOG_DIR/cleanup-${run_date}-${action}.log" \
 			2>> "$GALAXY_LOG_DIR/cleanup-${run_date}-${action}.err";
+		finish_time=$(date +%s)
+		runtime=$(( start_time - finish_time ))
 
 		# Something that telegraf can consume
 		ec=$?
 		if (( ec == 0 )); then
-			echo "cleanup_datasets,group=$action success=1"
+			echo "cleanup_datasets,group=$action success=1,runtime=$runtime"
 		else
-			echo "cleanup_datasets,group=$action success=0"
+			echo "cleanup_datasets,group=$action success=0,runtime=$runtime"
 		fi
 	done
 }
