@@ -347,7 +347,7 @@ galaxy_cleanup-jwd() { ## <working_dir> [1|months ago]: (NEW) Cleanup job workin
 	months=${2:-1}
 
 	# scan a given directory for jwds.
-	for possible_dir in $(find "$jwd" -maxdepth 3 -mindepth 3  -not -newermt "$months month ago" | head -n 1000); do
+	for possible_dir in $(find "$jwd" -maxdepth 3 -mindepth 3  -not -newermt "$months month ago" | grep -v _cleared_contents | head -n 1000); do
 			job_id=$(basename "$possible_dir")
 			if [[ "$job_id" =~ ^[0-9]{3,}$ ]]; then
 					state=$(psql -c "COPY (select state from job where id = $job_id) to STDOUT with CSV")
