@@ -25,7 +25,7 @@ galaxy_cleanup() { ## [days]: Cleanup histories/hdas/etc for past N days (defaul
 			 >> "$GALAXY_LOG_DIR/cleanup-${run_date}-${action}.log" \
 			2>> "$GALAXY_LOG_DIR/cleanup-${run_date}-${action}.err";
 		finish_time=$(date +%s)
-		runtime=$(( start_time - finish_time ))
+		runtime=$(( finish_time - start_time ))
 
 		# Something that telegraf can consume
 		ec=$?
