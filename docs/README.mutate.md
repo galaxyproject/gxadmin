@@ -192,3 +192,5 @@ mutate reassign-workflows-to-handler -  Reassign workflows in 'new' state to a d
 
 Another workaround for https://github.com/galaxyproject/galaxy/issues/8209
 
+Need to use the full handler names e.g. handler_main_0
+

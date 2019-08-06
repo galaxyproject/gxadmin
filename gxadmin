@@ -966,6 +966,8 @@ mutate_assign-unassigned-workflows() { ## <handler_prefix> <handler_count> [--co
 mutate_reassign-workflows-to-handler() { ## <handler_from> <handler_to> [--commit]: Reassign workflows in 'new' state to a different handler.
 	handle_help "$@" <<-EOF
 		Another workaround for https://github.com/galaxyproject/galaxy/issues/8209
+
+		Need to use the full handler names e.g. handler_main_0
 	EOF
 
 	assert_count_ge $# 1 "Must supply a handler_from"
