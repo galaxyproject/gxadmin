@@ -333,10 +333,10 @@ EOF
 galaxy_cleanup-jwd() { ## <working_dir> [1|months ago]: (NEW) Cleanup job working directories
 	handle_help "$@" <<-EOF
 		Scans through a provided job working directory subfolder, e.g.
-		job_working_directory/005/ to find all folders which were changed less
-		recently than N months.
+		job_working_directory/ without the 005 subdir to find all folders which
+		were changed less recently than N months.
 
-		Then it takes the first 1000 entries and cleans them up. This was more
+		 Then it takes the first 1000 entries and cleans them up. This was more
 		of a hack to handle the fact that the list produced by find is really
 		long, and the for loop hangs until it's done generating the list.
 	EOF
@@ -347,7 +347,7 @@ galaxy_cleanup-jwd() { ## <working_dir> [1|months ago]: (NEW) Cleanup job workin
 	months=${2:-1}
 
 	# scan a given directory for jwds.
-	for possible_dir in $(find "$jwd" -maxdepth 2 -mindepth 2  -not -newermt "$months month ago" | head -n 1000); do
+	for possible_dir in $(find "$jwd" -maxdepth 3 -mindepth 3  -not -newermt "$months month ago" | head -n 1000); do
 			job_id=$(basename "$possible_dir")
 			if [[ "$job_id" =~ ^[0-9]{3,}$ ]]; then
 					state=$(psql -c "COPY (select state from job where id = $job_id) to STDOUT with CSV")

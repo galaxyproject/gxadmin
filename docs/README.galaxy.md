@@ -73,10 +73,10 @@ galaxy cleanup-jwd -  (NEW) Cleanup job working directories
 **NOTES**
 
 Scans through a provided job working directory subfolder, e.g.
-job_working_directory/005/ to find all folders which were changed less
-recently than N months.
+job_working_directory/ without the 005 subdir to find all folders which
+were changed less recently than N months.
 
-Then it takes the first 1000 entries and cleans them up. This was more
+ Then it takes the first 1000 entries and cleans them up. This was more
 of a hack to handle the fact that the list produced by find is really
 long, and the for loop hangs until it's done generating the list.
 
