@@ -153,6 +153,7 @@ Command | Description
 [`mutate oidc-role-find-affected`](docs/README.mutate.md#mutate-oidc-role-find-affected) | Find users affected by galaxyproject/galaxy#8244
 [`mutate oidc-role-fix`](docs/README.mutate.md#mutate-oidc-role-fix) | Fix permissions for users logged in via OIDC. Workaround for galaxyproject/galaxy#8244
 [`mutate reassign-job-to-handler`](docs/README.mutate.md#mutate-reassign-job-to-handler) | Reassign a job to a different handler
+[`mutate reassign-workflows-to-handler`](docs/README.mutate.md#mutate-reassign-workflows-to-handler) | Reassign workflows in 'new' state to a different handler.
 
 ### query
 

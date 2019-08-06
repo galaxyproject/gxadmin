@@ -206,7 +206,27 @@ mutate_assign-unassigned-workflows() { ## <handler_prefix> <handler_count> [--co
 	read -r -d '' QUERY <<-EOF
 		UPDATE workflow_invocation
 		SET handler = '$prefix' || (random() * $count)::integer
-		WHERE state = 'new' AND handler = '_default_'
+		WHERE state = 'new' and handler = '_default_'
+		RETURNING workflow_invocation.id
+	EOF
+
+	commit=$(should_commit "$3")
+	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
+}
+
+mutate_reassign-workflows-to-handler() { ## <handler_from> <handler_to> [--commit]: Reassign workflows in 'new' state to a different handler.
+	handle_help "$@" <<-EOF
+		Another workaround for https://github.com/galaxyproject/galaxy/issues/8209
+	EOF
+
+	assert_count_ge $# 1 "Must supply a handler_from"
+	assert_count_ge $# 2 "Must supply a handler_to"
+
+	read -r -d '' QUERY <<-EOF
+		UPDATE workflow_invocation
+		SET handler = '$2'
+		WHERE state = 'new' and handler = '$1'
+		RETURNING workflow_invocation.id
 	EOF
 
 	commit=$(should_commit "$3")

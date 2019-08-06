@@ -11,6 +11,7 @@ Command | Description
 [`mutate oidc-role-find-affected`](#mutate-oidc-role-find-affected) | Find users affected by galaxyproject/galaxy#8244
 [`mutate oidc-role-fix`](#mutate-oidc-role-fix) | Fix permissions for users logged in via OIDC. Workaround for galaxyproject/galaxy#8244
 [`mutate reassign-job-to-handler`](#mutate-reassign-job-to-handler) | Reassign a job to a different handler
+[`mutate reassign-workflows-to-handler`](#mutate-reassign-workflows-to-handler) | Reassign workflows in 'new' state to a different handler.
 
 ## mutate approve-user
 
@@ -177,4 +178,17 @@ mutate reassign-job-to-handler -  Reassign a job to a different handler
 **SYNOPSIS**
 
     gxadmin mutate reassign-job-to-handler <job_id> <handler_id> [--commit]
+
+
+## mutate reassign-workflows-to-handler
+
+mutate reassign-workflows-to-handler -  Reassign workflows in 'new' state to a different handler.
+
+**SYNOPSIS**
+
+    gxadmin mutate reassign-workflows-to-handler <handler_from> <handler_to> [--commit]
+
+**NOTES**
+
+Another workaround for https://github.com/galaxyproject/galaxy/issues/8209
 
