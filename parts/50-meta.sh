@@ -223,6 +223,57 @@ meta_slurp-day() { ## <yyyy-mm-dd> [slurp-name [2nd-slurp-name [...]]]: Slurps d
 	done
 }
 
+meta_slurp-initial() { ## <yyyy-mm-dd> <yyyy-mm-dd> [slurp-name [2nd-slurp-name [...]]]: Slurps data starting at the first date until the second date.
+	handle_help "$@" <<-EOF
+		Obtains influx compatible metrics between dates and posts this to Influx.
+		This function calls 'gxadmin meta slurp-upto' and 'gxadmin meta slurp-day'.
+
+		It requires a start and end date. Allows to run specific slurp queries.
+	EOF
+
+	# Variables
+	begindate=$1; shift
+	enddate=$1; shift
+	specific_slurp=($@)
+	specific_slurp_string=""
+	if (( ${#specific_slurp[@]} > 0 )); then
+		for specificslurppiece in "${specific_slurp[@]}"; do
+			if (( ${#specific_slurp_string} == 0 )); then
+				specific_slurp_string="$specificslurppiece"
+			else
+				specific_slurp_string="$specific_slurp_string $specificslurppiece"
+			fi
+		done
+	fi
+
+	tmpfile=/tmp/gxadmin-meta-slurp-initial-$(date +%s)
+
+	# Create temporary file
+	echo "" > $tmpfile
+
+	# Validate environment
+	assert_set_env INFLUX_DB
+	assert_set_env INFLUX_URL
+	assert_set_env INFLUX_PASS
+	assert_set_env INFLUX_USER
+
+	# Loop for the data
+	d=$begindate
+	while [ "$d" != $enddate ]; do
+		echo "Slurping for $d"
+		# Slurp the data
+		meta_slurp-upto $d $specific_slurp_string > $tmpfile
+		meta_slurp-day $d $specific_slurp_string >> $tmpfile
+
+		# Post to influxdb
+		meta_influx-post $INFLUX_DB $tmpfile
+
+		d=$(date -I -d "$d + 1 day")
+	done
+
+	rm $tmpfile
+}
+
 meta_error() {
 	error "$@"
 }

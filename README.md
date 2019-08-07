@@ -62,6 +62,15 @@ Example .pgpass:
 <pg_host>:5432:*:<pg_user>:<pg_password>
 ```
 
+### InfluxDB
+
+In order to use functions like `gxadmin meta influx-post`, `gxadmin` requires 
+a few environment variables to be set. Namely
+*  `INFLUX_URL`
+*  `INFLUX_PASS`
+*  `INFLUX_USER`
+*  `INFLUX_DB`
+
 ### GDPR
 
 You may want to set `GDPR_MODE=1`. Please determine your own legal responsibilities, the authors take no responsibility for anything you may have done wrong.
@@ -136,6 +145,7 @@ Command | Description
 [`meta iquery-grt-export`](docs/README.meta.md#meta-iquery-grt-export) | Export data from a GRT database for sending to influx
 [`meta slurp-current`](docs/README.meta.md#meta-slurp-current) | Executes what used to be "Galaxy Slurp"
 [`meta slurp-day`](docs/README.meta.md#meta-slurp-day) | Slurps data on a specific date.
+[`meta slurp-initial`](docs/README.meta.md#meta-slurp-initial) | Slurps data starting at the first date until the second date.
 [`meta slurp-upto`](docs/README.meta.md#meta-slurp-upto) | Slurps data up to a specific date.
 [`meta update`](docs/README.meta.md#meta-update) | Update the script
 [`meta whatsnew`](docs/README.meta.md#meta-whatsnew) | What's new in this version of gxadmin
