@@ -2507,26 +2507,36 @@ query_group-cpu-seconds() { ## [group]: Retrieve an approximation of the CPU tim
 	groupname=$(gdpr_safe galaxy_group.name group_name 'Anonymous')
 
 	read -r -d '' QUERY <<-EOF
-		SELECT
-			row_number() OVER (ORDER BY round(sum(a.metric_value * b.metric_value), 0) DESC) as rank,
+		WITH jobs_info AS (
+			SELECT job.user_id,
+				round(sum(a.metric_value * b.metric_value), 2) AS cpu_seconds
+			FROM job_metric_numeric AS a,
+				job_metric_numeric AS b,
+				job
+			WHERE job.id = a.job_id
+				AND job.id = b.job_id
+				AND a.metric_name = 'runtime_seconds'
+				AND b.metric_name = 'galaxy_slots'
+			GROUP BY job.user_id
+		), user_job_info AS (
+			SELECT user_id,
+				sum(cpu_seconds) AS cpu_seconds
+			FROM jobs_info
+			GROUP BY user_id
+		)
+
+		SELECT row_number() OVER (ORDER BY round(sum(user_job_info.cpu_seconds), 0) DESC) as rank,
 			galaxy_group.id as group_id,
 			$groupname,
-			round(sum(a.metric_value * b.metric_value), 0) as cpu_seconds
-		FROM
-			job_metric_numeric a,
-			job_metric_numeric b,
+			round(sum(user_job_info.cpu_seconds), 0) as cpu_seconds
+		FROM user_job_info,
 			galaxy_group,
-			job
-			FULL OUTER JOIN user_group_association ON job.user_id = user_group_association.user_id
-		WHERE
-			b.job_id = a.job_id
-			AND a.job_id = job.id
-			AND a.metric_name = 'runtime_seconds'
-			AND b.metric_name = 'galaxy_slots'
-			AND galaxy_group.id = user_group_association.group_id
+			user_group_association
+		WHERE user_job_info.user_id = user_group_association.user_id
+			AND user_group_association.group_id = galaxy_group.id
 			$where
 		GROUP BY galaxy_group.id, galaxy_group.name
-		ORDER BY round(sum(a.metric_value * b.metric_value), 0) DESC
+		ORDER BY round(sum(user_job_info.cpu_seconds), 0) DESC
 		LIMIT 50
 	EOF
 }
@@ -2562,26 +2572,35 @@ query_group-gpu-time() { ## [group]: Retrieve an approximation of the GPU time f
 	groupname=$(gdpr_safe galaxy_group.name group_name 'Anonymous')
 
 	read -r -d '' QUERY <<-EOF
-		SELECT
-			row_number() OVER (ORDER BY sum(a.metric_value * length(replace(b.metric_value, ',', ''))) DESC) as rank,
+		WITH jobs_info AS (
+			SELECT job.user_id,
+				round(sum(a.metric_value * length(replace(b.metric_value, ',', ''))), 2) AS gpu_seconds
+			FROM job_metric_numeric AS a,
+				job_metric_text AS b,
+				job
+			WHERE job.id = a.job_id
+				AND job.id = b.job_id
+				AND a.metric_name = 'runtime_seconds'
+				AND b.metric_name = 'CUDA_VISIBLE_DEVICES'
+			GROUP BY job.user_id
+		), user_job_info AS (
+			SELECT user_id,
+				sum(gpu_seconds) AS gpu_seconds
+			FROM jobs_info
+			GROUP BY user_id
+		)
+		SELECT row_number() OVER (ORDER BY round(sum(user_job_info.gpu_seconds), 0) DESC) as rank,
 			galaxy_group.id as group_id,
 			$groupname,
-			sum(a.metric_value * length(replace(b.metric_value, ',', ''))) as gpu_seconds
-		FROM
-			job_metric_numeric a,
-			job_metric_text b,
+			round(sum(user_job_info.gpu_seconds), 0) as gpu_seconds
+		FROM user_job_info,
 			galaxy_group,
-			job
-			FULL OUTER JOIN user_group_association ON job.user_id = user_group_association.id
-		WHERE
-			b.job_id = a.job_id
-			AND a.job_id = job.id
-			AND a.metric_name = 'runtime_seconds'
-			AND b.metric_name = 'CUDA_VISIBLE_DEVICES'
-			AND galaxy_group.id = user_group_association.group_id
+			user_group_association
+		WHERE user_job_info.user_id = user_group_association.user_id
+			AND user_group_association.group_id = galaxy_group.id
 			$where
 		GROUP BY galaxy_group.id, galaxy_group.name
-		ORDER BY sum(a.metric_value * length(replace(b.metric_value, ',', ''))) DESC
+		ORDER BY round(sum(user_job_info.gpu_seconds), 0) DESC
 		LIMIT 50
 	EOF
 }
@@ -3318,7 +3337,7 @@ query_server-groups-allocated-cpu() { ## [YYYY-MM-DD] [=, <=, >= operators]: Ret
 
 	date_filter=""
 	if (( $# > 0 )); then
-		date_filter="AND date_trunc('day', dataset.create_time AT TIME ZONE 'UTC') $op '$1'::date"
+		date_filter="AND date_trunc('day', job.create_time AT TIME ZONE 'UTC') $op '$1'::date"
 	fi
 
 	groupname=$(gdpr_safe galaxy_group.name group_name 'Anonymous')
@@ -3327,20 +3346,33 @@ query_server-groups-allocated-cpu() { ## [YYYY-MM-DD] [=, <=, >= operators]: Ret
 	tags="group_name=0"
 
 	read -r -d '' QUERY <<-EOF
+		WITH jobs_info AS (
+			SELECT job.user_id,
+				round(sum(a.metric_value * b.metric_value), 2) AS cpu_seconds
+			FROM job_metric_numeric AS a,
+				job_metric_numeric AS b,
+				job
+			WHERE job.id = a.job_id
+				AND job.id = b.job_id
+				AND a.metric_name = 'runtime_seconds'
+				AND b.metric_name = 'galaxy_slots'
+				$date_filter
+			GROUP BY job.user_id
+		), user_job_info AS (
+			SELECT user_id,
+				sum(cpu_seconds) AS cpu_seconds
+			FROM jobs_info
+			GROUP BY user_id
+		)
 		SELECT $groupname,
-			round(sum(a.metric_value * b.metric_value), 2) AS cpu_seconds
-		FROM job_metric_numeric AS a,
-			job_metric_numeric AS b,
-			job,
+			round(sum(user_job_info.cpu_seconds), 2) as cpu_seconds
+		FROM user_job_info,
 			galaxy_group,
 			user_group_association
-		WHERE b.job_id = a.job_id
-			AND a.metric_name = 'runtime_seconds'
-			AND b.metric_name = 'galaxy_slots'
-			AND job.user_id = user_group_association.id
+		WHERE user_job_info.user_id = user_group_association.user_id
 			AND user_group_association.group_id = galaxy_group.id
-			$date_filter
 		GROUP BY galaxy_group.name
+
 	EOF
 }
 
@@ -3355,7 +3387,7 @@ query_server-groups-allocated-gpu() { ## [YYYY-MM-DD] [=, <=, >= operators]: Ret
 
 	date_filter=""
 	if (( $# > 0 )); then
-		date_filter="AND date_trunc('day', dataset.create_time AT TIME ZONE 'UTC') $op '$1'::date"
+		date_filter="AND date_trunc('day', job.create_time AT TIME ZONE 'UTC') $op '$1'::date"
 	fi
 
 	groupname=$(gdpr_safe galaxy_group.name group_name 'Anonymous')
@@ -3364,19 +3396,31 @@ query_server-groups-allocated-gpu() { ## [YYYY-MM-DD] [=, <=, >= operators]: Ret
 	tags="group_name=0"
 
 	read -r -d '' QUERY <<-EOF
+		WITH jobs_info AS (
+			SELECT job.user_id,
+				round(sum(a.metric_value * length(replace(b.metric_value, ',', ''))), 2) AS gpu_seconds
+			FROM job_metric_numeric AS a,
+				job_metric_text AS b,
+				job
+			WHERE job.id = a.job_id
+				AND job.id = b.job_id
+				AND a.metric_name = 'runtime_seconds'
+				AND b.metric_name = 'CUDA_VISIBLE_DEVICES'
+				$date_filter
+			GROUP BY job.user_id
+		), user_job_info AS (
+			SELECT user_id,
+				sum(gpu_seconds) AS gpu_seconds
+			FROM jobs_info
+			GROUP BY user_id
+		)
 		SELECT $groupname,
-			round(sum(a.metric_value * length(replace(b.metric_value, ',', ''))), 2) AS gpu_seconds
-		FROM job_metric_numeric AS a,
-			job_metric_text AS b,
-			job,
+			round(sum(user_job_info.gpu_seconds), 2) as gpu_seconds
+		FROM user_job_info,
 			galaxy_group,
 			user_group_association
-		WHERE b.job_id = a.job_id
-			AND a.metric_name = 'runtime_seconds'
-			AND b.metric_name = 'CUDA_VISIBLE_DEVICES'
-			AND job.user_id = user_group_association.id
+		WHERE user_job_info.user_id = user_group_association.user_id
 			AND user_group_association.group_id = galaxy_group.id
-			$date_filter
 		GROUP BY galaxy_group.name
 	EOF
 }
@@ -4529,7 +4573,7 @@ galaxy_cleanup() { ## [days]: Cleanup histories/hdas/etc for past N days (defaul
 			 >> "$GALAXY_LOG_DIR/cleanup-${run_date}-${action}.log" \
 			2>> "$GALAXY_LOG_DIR/cleanup-${run_date}-${action}.err";
 		finish_time=$(date +%s)
-		runtime=$(( start_time - finish_time ))
+		runtime=$(( finish_time - start_time ))
 
 		# Something that telegraf can consume
 		ec=$?
