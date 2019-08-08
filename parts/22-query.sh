@@ -2973,8 +2973,8 @@ query_pg-unused-indexes() { ## [--human]: show unused and almost unused indexes
 		human_after=""
 	fi
 
-	fields="index_size=2,index_scans=3"
-	tags="table=0,index=1"
+	fields="index_size=2;index_scans=3"
+	tags="table=0;index=1"
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
