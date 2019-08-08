@@ -4213,7 +4213,7 @@ query_pg-stat-bgwriter() { ## : Stats about the behaviour of the bgwriter, check
 	handle_help "$@" <<-EOF
 	EOF
 
-	fields="checkpoints_timed=1;checkpoints_req=2;checkpoint_write_time=3;checkpoint_sync_time=4;buffers_checkpoint=5;buffers_clean=6;maxwritten_clean=7;buffers_backend=8;buffers_backend_fsync=9;buffers_alloc=10"
+	fields="checkpoints_timed=0;checkpoints_req=1;checkpoint_write_time=2;checkpoint_sync_time=3;buffers_checkpoint=4;buffers_clean=5;maxwritten_clean=6;buffers_backend=7;buffers_backend_fsync=8;buffers_alloc=9"
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
@@ -4237,8 +4237,8 @@ query_pg-stat-user-tables() { ## : stats about tables (tuples, index scans, vacu
 	handle_help "$@" <<-EOF
 	EOF
 
-	tags="schemaname=1;relname=2"
-	fields="seq_scan=3;seq_tup_read=4;idx_scan=5;idx_tup_fetch=6;n_tup_ins=7;n_tup_upd=8;n_tup_del=9;n_tup_hot_upd=10;n_live_tup=11;n_dead_tup=12;vacuum_count=13;autovacuum_count=14;analyze_count=15;autoanalyze_count=16"
+	tags="schemaname=0;relname=1"
+	fields="seq_scan=2;seq_tup_read=3;idx_scan=4;idx_tup_fetch=5;n_tup_ins=6;n_tup_upd=7;n_tup_del=8;n_tup_hot_upd=9;n_live_tup=10;n_dead_tup=11;vacuum_count=12;autovacuum_count=13;analyze_count=14;autoanalyze_count=15"
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
