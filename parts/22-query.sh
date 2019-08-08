@@ -2441,6 +2441,62 @@ query_user-recent-aggregate-jobs() { ## <username|id|email> [days|7]: Show aggre
 	EOF
 }
 
+query_user-history-list() { ## <username|id|email> [--size]: Shows the ID of the history, it's size and when it was last updated.
+	handle_help "$@" <<-EOF
+		Obtain an overview of histories of a user. By default orders the histories by date.
+		When using '--size' it overrides the order to size.
+
+		$ gxadmin query user-history-list <username|id|email>
+		  ID   |                 Name                 |        Last Updated        |   Size
+		-------+--------------------------------------+----------------------------+-----------
+			52 | Unnamed history                      | 2019-08-08 15:15:32.284678 | 293 MB
+		 30906 | Unnamed history                      | 2019-07-23 16:25:36.084019 | 13 kB
+	EOF
+
+	# args
+	assert_count_ge $# 1 "Must supply <username|id|email>"
+	user_filter="(galaxy_user.email = '$1' or galaxy_user.username = '$1' or galaxy_user.id = CAST(REGEXP_REPLACE(COALESCE('$1','0'), '[^0-9]+', '0', 'g') AS INTEGER))"
+	order_col="uh.update_time"
+	if (( $# > 1 )); then
+		if [[ $2 == "--size" ]]; then
+			order_col="hs.hist_size"
+		fi
+	fi
+
+	read -r -d '' QUERY <<-EOF
+		WITH user_histories AS (
+			SELECT id,
+				name,
+				update_time
+			FROM history
+			WHERE user_id IN (
+				SELECT id
+				FROM galaxy_user
+				WHERE $user_filter
+			) AND NOT purged
+		), history_sizes AS (
+			SELECT history_id,
+				SUM(total_size) as "hist_size"
+			FROM history_dataset_association,
+				dataset
+			WHERE history_id IN (
+				SELECT id
+				FROM user_histories
+			) AND history_dataset_association.dataset_id = dataset.id
+				AND dataset.total_size > 0
+			GROUP BY history_id
+		)
+		SELECT uh.id as "ID",
+			uh.name as "Name",
+			uh.update_time as "Last Updated",
+			pg_size_pretty(hs.hist_size) as "Size"
+		FROM user_histories uh,
+			history_sizes hs
+		WHERE uh.id = hs.history_id
+		ORDER BY $order_col DESC
+	EOF
+}
+
 query_history-contents() { ## <history_id> [--dataset|--collection]: List datasets and/or collections in a history
 	handle_help "$@" <<-EOF
 		Obtain an overview of tools that a user has run in the past N days

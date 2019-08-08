@@ -71,6 +71,7 @@ Command | Description
 [`query user-disk-quota`](#query-user-disk-quota) | Retrieves the 50 users with the largest quotas
 [`query user-disk-usage`](#query-user-disk-usage) | Retrieve an approximation of the disk usage for users
 [`query user-gpu-years`](#query-user-gpu-years) | GPU years allocated to tools by user
+[`query user-history-list`](#query-user-history-list) | Shows the ID of the history, it's size and when it was last updated.
 [`query user-recent-aggregate-jobs`](#query-user-recent-aggregate-jobs) | Show aggregate information for jobs in past N days for user
 [`query users-count`](#query-users-count) | Shows sums of active/external/deleted/purged accounts
 [`query users-total`](#query-users-total) | Total number of Galaxy users (incl deleted, purged, inactive)
@@ -1392,6 +1393,26 @@ rank  | user_id |  username   | gpu_years
 8     |         | 66c57b41194 |      6.43
 9     |         | 6b1467ac118 |      5.45
 10    |         | d755361b59a |      5.19
+
+
+## query user-history-list
+
+query user-history-list -  Shows the ID of the history, it's size and when it was last updated.
+
+**SYNOPSIS**
+
+    gxadmin query user-history-list <username|id|email> [--size]
+
+**NOTES**
+
+Obtain an overview of histories of a user. By default orders the histories by date.
+When using '--size' it overrides the order to size.
+
+$ gxadmin query user-history-list <username|id|email>
+  ID   |                 Name                 |        Last Updated        |   Size
+-------+--------------------------------------+----------------------------+-----------
+52 | Unnamed history                      | 2019-08-08 15:15:32.284678 | 293 MB
+ 30906 | Unnamed history                      | 2019-07-23 16:25:36.084019 | 13 kB
 
 
 ## query user-recent-aggregate-jobs
