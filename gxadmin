@@ -4189,6 +4189,60 @@ query_pg-vacuum-stats() { ## : show dead rows and whether an automatic vacuum is
 		ORDER BY 1
 	EOF
 }
+
+query_pg-stat-bgwriter() { ## : Stats about the behaviour of the bgwriter, checkpoints, buffers, etc.
+	handle_help "$@" <<-EOF
+	EOF
+
+	fields="checkpoints_timed=1;checkpoints_req=2;checkpoint_write_time=3;checkpoint_sync_time=4;buffers_checkpoint=5;buffers_clean=6;maxwritten_clean=7;buffers_backend=8;buffers_backend_fsync=9;buffers_alloc=10"
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			checkpoints_timed,
+			checkpoints_req,
+			checkpoint_write_time,
+			checkpoint_sync_time,
+			buffers_checkpoint,
+			buffers_clean,
+			maxwritten_clean,
+			buffers_backend,
+			buffers_backend_fsync,
+			buffers_alloc
+		FROM
+			pg_stat_bgwriter
+	EOF
+}
+
+
+query_pg-stat-user-tables() { ## : stats about tables (tuples, index scans, vacuums, analyzes)
+	handle_help "$@" <<-EOF
+	EOF
+
+	tags="schemaname=1;relname=2"
+	fields="seq_scan=3;seq_tup_read=4;idx_scan=5;idx_tup_fetch=6;n_tup_ins=7;n_tup_upd=8;n_tup_del=9;n_tup_hot_upd=10;n_live_tup=11;n_dead_tup=12;vacuum_count=13;autovacuum_count=14;analyze_count=15;autoanalyze_count=16"
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			schemaname,
+			relname,
+			seq_scan,
+			seq_tup_read,
+			idx_scan,
+			idx_tup_fetch,
+			n_tup_ins,
+			n_tup_upd,
+			n_tup_del,
+			n_tup_hot_upd,
+			n_live_tup,
+			n_dead_tup,
+			vacuum_count,
+			autovacuum_count,
+			analyze_count,
+			autoanalyze_count
+		FROM
+			pg_stat_user_tables
+	EOF
+}
 filter_pg2md() { ## : Convert postgres table format outputs to something that can be pasted as markdown
 	handle_help "$@" <<-EOF
 		Imagine doing something like:

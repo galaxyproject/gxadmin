@@ -39,6 +39,8 @@ Command | Description
 [`query pg-index-usage`](#query-pg-index-usage) | calculates your index hit rate (effective databases are at 99% and up)
 [`query pg-long-running-queries`](#query-pg-long-running-queries) | show all queries longer than five minutes by descending duration
 [`query pg-mandelbrot`](#query-pg-mandelbrot) | show the mandlebrot set
+[`query pg-stat-bgwriter`](#query-pg-stat-bgwriter) | Stats about the behaviour of the bgwriter, checkpoints, buffers, etc.
+[`query pg-stat-user-tables`](#query-pg-stat-user-tables) | stats about tables (tuples, index scans, vacuums, analyzes)
 [`query pg-table-bloat`](#query-pg-table-bloat) | show table and index bloat in your database ordered by most wasteful
 [`query pg-table-size`](#query-pg-table-size) | show the size of the tables (excluding indexes), descending by size
 [`query pg-unused-indexes`](#query-pg-unused-indexes) | show unused and almost unused indexes
@@ -772,6 +774,24 @@ query pg-mandelbrot -  show the mandlebrot set
 **NOTES**
 
 Copied from: https://github.com/heroku/heroku-pg-extras/tree/master/commands
+
+
+## query pg-stat-bgwriter
+
+query pg-stat-bgwriter -  Stats about the behaviour of the bgwriter, checkpoints, buffers, etc.
+
+**SYNOPSIS**
+
+    gxadmin query pg-stat-bgwriter
+
+
+## query pg-stat-user-tables
+
+query pg-stat-user-tables -  stats about tables (tuples, index scans, vacuums, analyzes)
+
+**SYNOPSIS**
+
+    gxadmin query pg-stat-user-tables
 
 
 ## query pg-table-bloat

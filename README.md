@@ -206,6 +206,8 @@ Command | Description
 [`query pg-index-usage`](docs/README.query.md#query-pg-index-usage) | calculates your index hit rate (effective databases are at 99% and up)
 [`query pg-long-running-queries`](docs/README.query.md#query-pg-long-running-queries) | show all queries longer than five minutes by descending duration
 [`query pg-mandelbrot`](docs/README.query.md#query-pg-mandelbrot) | show the mandlebrot set
+[`query pg-stat-bgwriter`](docs/README.query.md#query-pg-stat-bgwriter) | Stats about the behaviour of the bgwriter, checkpoints, buffers, etc.
+[`query pg-stat-user-tables`](docs/README.query.md#query-pg-stat-user-tables) | stats about tables (tuples, index scans, vacuums, analyzes)
 [`query pg-table-bloat`](docs/README.query.md#query-pg-table-bloat) | show table and index bloat in your database ordered by most wasteful
 [`query pg-table-size`](docs/README.query.md#query-pg-table-size) | show the size of the tables (excluding indexes), descending by size
 [`query pg-unused-indexes`](docs/README.query.md#query-pg-unused-indexes) | show unused and almost unused indexes
