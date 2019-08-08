@@ -31,6 +31,16 @@ query_expj() {
 }
 
 query_influx() {
+	local query="$1"
+	local rename="$2"
+	local fields="$3"
+	local tags="$4"
+	local timestamp="$5"
+
+	if [[ -z "$fields" ]]; then
+		exit 0;
+	fi
+
 	arr2py=$(cat <<EOF
 import sys
 query_name = sys.argv[1]
@@ -60,7 +70,7 @@ for line in sys.stdin.read().split('\n'):
 EOF
 )
 
-	psql -c "COPY ($1) to STDOUT with CSV DELIMITER E'\t'"| python -c "$arr2py" "$2" "$3" "$4" "$5"
+	psql -c "COPY ($query) to STDOUT with CSV DELIMITER E'\t'"| python -c "$arr2py" "$rename" "$fields" "$tags" "$timestamp"
 }
 
 gdpr_safe() {
