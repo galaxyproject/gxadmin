@@ -8,6 +8,7 @@ Command | Description
 [`meta iquery-grt-export`](#meta-iquery-grt-export) | Export data from a GRT database for sending to influx
 [`meta slurp-current`](#meta-slurp-current) | Executes what used to be "Galaxy Slurp"
 [`meta slurp-day`](#meta-slurp-day) | Slurps data on a specific date.
+[`meta slurp-initial`](#meta-slurp-initial) | Slurps data starting at the first date until the second date.
 [`meta slurp-upto`](#meta-slurp-upto) | Slurps data up to a specific date.
 [`meta update`](#meta-update) | Update the script
 [`meta whatsnew`](#meta-whatsnew) | What's new in this version of gxadmin
@@ -213,6 +214,22 @@ date filter as well, or the metrics reported here will be less useful.
     server-jobs.daily,state=ok,destination_id=condor_a,job_runner_name=condor count=23
     server-users.daily,active=t,deleted=f,external=f,purged=f count=1
     server-workflows.daily,deleted=f,importable=f,published=f count=1
+
+
+## meta slurp-initial
+
+meta slurp-initial -  Slurps data starting at the first date until the second date.
+
+**SYNOPSIS**
+
+    gxadmin meta slurp-initial <yyyy-mm-dd> <yyyy-mm-dd> [slurp-name [2nd-slurp-name [...]]]
+
+**NOTES**
+
+Obtains influx compatible metrics between dates and posts this to Influx.
+This function calls 'gxadmin meta slurp-upto' and 'gxadmin meta slurp-day'.
+
+It requires a start and end date. Allows to run specific slurp queries.
 
 
 ## meta slurp-upto

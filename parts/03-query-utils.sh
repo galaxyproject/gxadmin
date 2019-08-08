@@ -49,7 +49,7 @@ for line in sys.stdin.read().split('\n'):
 	parsed = line.split('\t')
 	metric = query_name
 	if len(tags):
-		tag_data = ['%s=%s' % (k, parsed[v].replace(' ', '\\ ').replace(',', '\\,'))  for (k, v) in tags.items()]
+		tag_data = ['%s=%s' % (k, parsed[v].replace(' ', '\\ ').replace(',', '\\,').replace('=', '\\='))  for (k, v) in tags.items()]
 		metric += ',' + ','.join(tag_data)
 	field_data = ['%s=%s' % (k, parsed[v])  for (k, v) in fields.items()]
 	metric += ' ' + ','.join(field_data)
