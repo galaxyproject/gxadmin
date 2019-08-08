@@ -157,7 +157,8 @@ Command | Description
 [`mutate approve-user`](docs/README.mutate.md#mutate-approve-user) | Approve a user in the database
 [`mutate assign-unassigned-workflows`](docs/README.mutate.md#mutate-assign-unassigned-workflows) | Randomly assigns unassigned workflows to handlers. Workaround for galaxyproject/galaxy#8209
 [`mutate delete-group-role`](docs/README.mutate.md#mutate-delete-group-role) | Remove the group, role, and any user-group + user-role associations
-[`mutate drop-workflow-step-output-associations`](docs/README.mutate.md#mutate-drop-workflow-step-output-associations) | #8418, dropp extraneous connection
+[`mutate drop-workflow-step-output-associations2`](docs/README.mutate.md#mutate-drop-workflow-step-output-associations2) | #8418, drop extraneous connection, v2 for large sites
+[`mutate drop-workflow-step-output-associations`](docs/README.mutate.md#mutate-drop-workflow-step-output-associations) | #8418, drop extraneous connection
 [`mutate fail-history`](docs/README.mutate.md#mutate-fail-history) | Mark all jobs within a history to state error
 [`mutate fail-job`](docs/README.mutate.md#mutate-fail-job) | Sets a job state to error
 [`mutate fail-terminal-datasets`](docs/README.mutate.md#mutate-fail-terminal-datasets) | Causes the output datasets of jobs which were manually failed, to be marked as failed
