@@ -391,3 +391,46 @@ mutate_reassign-job-to-handler() { ## <job_id> <handler_id> [--commit]: Reassign
 	commit=$(should_commit "$3")
 	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
 }
+
+mutate_drop-workflow-step-output-associations() { ## : #8418, drop extraneous connection
+	handle_help "$@" <<-EOF
+		Per https://github.com/galaxyproject/galaxy/pull/8418, this drops the
+		workflow step output associations that are not necessary.
+	EOF
+
+	read -r -d '' QUERY <<-EOF
+		DELETE FROM
+			workflow_invocation_step_output_dataset_association
+		WHERE id NOT IN (
+			SELECT max(w.id) FROM
+			workflow_invocation_step_output_dataset_association as w GROUP BY workflow_invocation_step_id, dataset_id, output_name
+		)
+	EOF
+
+	commit=$(should_commit "$3")
+	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
+}
+
+mutate_drop-workflow-step-output-associations2() { ## : #8418, drop extraneous connection, v2 for large sites
+	handle_help "$@" <<-EOF
+		Per https://github.com/galaxyproject/galaxy/pull/8418, this drops the
+		workflow step output associations that are not necessary.
+
+		This version was rewritten to be a bit faster for large databases.
+	EOF
+
+	read -r -d '' QUERY <<-EOF
+		WITH exclude_list AS (
+			SELECT max(w.id) as id
+			FROM workflow_invocation_step_output_dataset_association as w
+			GROUP BY workflow_invocation_step_id, dataset_id, output_name
+		)
+
+		DELETE
+		FROM workflow_invocation_step_output_dataset_association wisoda
+		WHERE NOT EXISTS (SELECT 1 FROM exclude_list WHERE wisoda.id = exclude_list.id)
+	EOF
+
+	commit=$(should_commit "$3")
+	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
+}

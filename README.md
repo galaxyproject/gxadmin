@@ -62,6 +62,15 @@ Example .pgpass:
 <pg_host>:5432:*:<pg_user>:<pg_password>
 ```
 
+### InfluxDB
+
+In order to use functions like `gxadmin meta influx-post`, `gxadmin` requires 
+a few environment variables to be set. Namely
+*  `INFLUX_URL`
+*  `INFLUX_PASS`
+*  `INFLUX_USER`
+*  `INFLUX_DB`
+
 ### GDPR
 
 You may want to set `GDPR_MODE=1`. Please determine your own legal responsibilities, the authors take no responsibility for anything you may have done wrong.
@@ -136,6 +145,7 @@ Command | Description
 [`meta iquery-grt-export`](docs/README.meta.md#meta-iquery-grt-export) | Export data from a GRT database for sending to influx
 [`meta slurp-current`](docs/README.meta.md#meta-slurp-current) | Executes what used to be "Galaxy Slurp"
 [`meta slurp-day`](docs/README.meta.md#meta-slurp-day) | Slurps data on a specific date.
+[`meta slurp-initial`](docs/README.meta.md#meta-slurp-initial) | Slurps data starting at the first date until the second date.
 [`meta slurp-upto`](docs/README.meta.md#meta-slurp-upto) | Slurps data up to a specific date.
 [`meta update`](docs/README.meta.md#meta-update) | Update the script
 [`meta whatsnew`](docs/README.meta.md#meta-whatsnew) | What's new in this version of gxadmin
@@ -147,6 +157,8 @@ Command | Description
 [`mutate approve-user`](docs/README.mutate.md#mutate-approve-user) | Approve a user in the database
 [`mutate assign-unassigned-workflows`](docs/README.mutate.md#mutate-assign-unassigned-workflows) | Randomly assigns unassigned workflows to handlers. Workaround for galaxyproject/galaxy#8209
 [`mutate delete-group-role`](docs/README.mutate.md#mutate-delete-group-role) | Remove the group, role, and any user-group + user-role associations
+[`mutate drop-workflow-step-output-associations2`](docs/README.mutate.md#mutate-drop-workflow-step-output-associations2) | #8418, drop extraneous connection, v2 for large sites
+[`mutate drop-workflow-step-output-associations`](docs/README.mutate.md#mutate-drop-workflow-step-output-associations) | #8418, drop extraneous connection
 [`mutate fail-history`](docs/README.mutate.md#mutate-fail-history) | Mark all jobs within a history to state error
 [`mutate fail-job`](docs/README.mutate.md#mutate-fail-job) | Sets a job state to error
 [`mutate fail-terminal-datasets`](docs/README.mutate.md#mutate-fail-terminal-datasets) | Causes the output datasets of jobs which were manually failed, to be marked as failed
@@ -196,6 +208,8 @@ Command | Description
 [`query pg-index-usage`](docs/README.query.md#query-pg-index-usage) | calculates your index hit rate (effective databases are at 99% and up)
 [`query pg-long-running-queries`](docs/README.query.md#query-pg-long-running-queries) | show all queries longer than five minutes by descending duration
 [`query pg-mandelbrot`](docs/README.query.md#query-pg-mandelbrot) | show the mandlebrot set
+[`query pg-stat-bgwriter`](docs/README.query.md#query-pg-stat-bgwriter) | Stats about the behaviour of the bgwriter, checkpoints, buffers, etc.
+[`query pg-stat-user-tables`](docs/README.query.md#query-pg-stat-user-tables) | stats about tables (tuples, index scans, vacuums, analyzes)
 [`query pg-table-bloat`](docs/README.query.md#query-pg-table-bloat) | show table and index bloat in your database ordered by most wasteful
 [`query pg-table-size`](docs/README.query.md#query-pg-table-size) | show the size of the tables (excluding indexes), descending by size
 [`query pg-unused-indexes`](docs/README.query.md#query-pg-unused-indexes) | show unused and almost unused indexes

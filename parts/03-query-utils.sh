@@ -31,6 +31,16 @@ query_expj() {
 }
 
 query_influx() {
+	local query="$1"
+	local rename="$2"
+	local fields="$3"
+	local tags="$4"
+	local timestamp="$5"
+
+	if [[ -z "$fields" ]]; then
+		exit 0;
+	fi
+
 	arr2py=$(cat <<EOF
 import sys
 query_name = sys.argv[1]
@@ -49,7 +59,7 @@ for line in sys.stdin.read().split('\n'):
 	parsed = line.split('\t')
 	metric = query_name
 	if len(tags):
-		tag_data = ['%s=%s' % (k, parsed[v].replace(' ', '\\ ').replace(',', '\\,'))  for (k, v) in tags.items()]
+		tag_data = ['%s=%s' % (k, parsed[v].replace(' ', '\\ ').replace(',', '\\,').replace('=', '\\='))  for (k, v) in tags.items()]
 		metric += ',' + ','.join(tag_data)
 	field_data = ['%s=%s' % (k, parsed[v])  for (k, v) in fields.items()]
 	metric += ' ' + ','.join(field_data)
@@ -60,7 +70,7 @@ for line in sys.stdin.read().split('\n'):
 EOF
 )
 
-	psql -c "COPY ($1) to STDOUT with CSV DELIMITER E'\t'"| python -c "$arr2py" "$2" "$3" "$4" "$5"
+	psql -c "COPY ($query) to STDOUT with CSV DELIMITER E'\t'"| python -c "$arr2py" "$rename" "$fields" "$tags" "$timestamp"
 }
 
 gdpr_safe() {

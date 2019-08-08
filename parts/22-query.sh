@@ -1365,26 +1365,36 @@ query_group-cpu-seconds() { ## [group]: Retrieve an approximation of the CPU tim
 	groupname=$(gdpr_safe galaxy_group.name group_name 'Anonymous')
 
 	read -r -d '' QUERY <<-EOF
-		SELECT
-			row_number() OVER (ORDER BY round(sum(a.metric_value * b.metric_value), 0) DESC) as rank,
+		WITH jobs_info AS (
+			SELECT job.user_id,
+				round(sum(a.metric_value * b.metric_value), 2) AS cpu_seconds
+			FROM job_metric_numeric AS a,
+				job_metric_numeric AS b,
+				job
+			WHERE job.id = a.job_id
+				AND job.id = b.job_id
+				AND a.metric_name = 'runtime_seconds'
+				AND b.metric_name = 'galaxy_slots'
+			GROUP BY job.user_id
+		), user_job_info AS (
+			SELECT user_id,
+				sum(cpu_seconds) AS cpu_seconds
+			FROM jobs_info
+			GROUP BY user_id
+		)
+
+		SELECT row_number() OVER (ORDER BY round(sum(user_job_info.cpu_seconds), 0) DESC) as rank,
 			galaxy_group.id as group_id,
 			$groupname,
-			round(sum(a.metric_value * b.metric_value), 0) as cpu_seconds
-		FROM
-			job_metric_numeric a,
-			job_metric_numeric b,
+			round(sum(user_job_info.cpu_seconds), 0) as cpu_seconds
+		FROM user_job_info,
 			galaxy_group,
-			job
-			FULL OUTER JOIN user_group_association ON job.user_id = user_group_association.user_id
-		WHERE
-			b.job_id = a.job_id
-			AND a.job_id = job.id
-			AND a.metric_name = 'runtime_seconds'
-			AND b.metric_name = 'galaxy_slots'
-			AND galaxy_group.id = user_group_association.group_id
+			user_group_association
+		WHERE user_job_info.user_id = user_group_association.user_id
+			AND user_group_association.group_id = galaxy_group.id
 			$where
 		GROUP BY galaxy_group.id, galaxy_group.name
-		ORDER BY round(sum(a.metric_value * b.metric_value), 0) DESC
+		ORDER BY round(sum(user_job_info.cpu_seconds), 0) DESC
 		LIMIT 50
 	EOF
 }
@@ -1420,26 +1430,35 @@ query_group-gpu-time() { ## [group]: Retrieve an approximation of the GPU time f
 	groupname=$(gdpr_safe galaxy_group.name group_name 'Anonymous')
 
 	read -r -d '' QUERY <<-EOF
-		SELECT
-			row_number() OVER (ORDER BY sum(a.metric_value * length(replace(b.metric_value, ',', ''))) DESC) as rank,
+		WITH jobs_info AS (
+			SELECT job.user_id,
+				round(sum(a.metric_value * length(replace(b.metric_value, ',', ''))), 2) AS gpu_seconds
+			FROM job_metric_numeric AS a,
+				job_metric_text AS b,
+				job
+			WHERE job.id = a.job_id
+				AND job.id = b.job_id
+				AND a.metric_name = 'runtime_seconds'
+				AND b.metric_name = 'CUDA_VISIBLE_DEVICES'
+			GROUP BY job.user_id
+		), user_job_info AS (
+			SELECT user_id,
+				sum(gpu_seconds) AS gpu_seconds
+			FROM jobs_info
+			GROUP BY user_id
+		)
+		SELECT row_number() OVER (ORDER BY round(sum(user_job_info.gpu_seconds), 0) DESC) as rank,
 			galaxy_group.id as group_id,
 			$groupname,
-			sum(a.metric_value * length(replace(b.metric_value, ',', ''))) as gpu_seconds
-		FROM
-			job_metric_numeric a,
-			job_metric_text b,
+			round(sum(user_job_info.gpu_seconds), 0) as gpu_seconds
+		FROM user_job_info,
 			galaxy_group,
-			job
-			FULL OUTER JOIN user_group_association ON job.user_id = user_group_association.id
-		WHERE
-			b.job_id = a.job_id
-			AND a.job_id = job.id
-			AND a.metric_name = 'runtime_seconds'
-			AND b.metric_name = 'CUDA_VISIBLE_DEVICES'
-			AND galaxy_group.id = user_group_association.group_id
+			user_group_association
+		WHERE user_job_info.user_id = user_group_association.user_id
+			AND user_group_association.group_id = galaxy_group.id
 			$where
 		GROUP BY galaxy_group.id, galaxy_group.name
-		ORDER BY sum(a.metric_value * length(replace(b.metric_value, ',', ''))) DESC
+		ORDER BY round(sum(user_job_info.gpu_seconds), 0) DESC
 		LIMIT 50
 	EOF
 }
@@ -2176,7 +2195,7 @@ query_server-groups-allocated-cpu() { ## [YYYY-MM-DD] [=, <=, >= operators]: Ret
 
 	date_filter=""
 	if (( $# > 0 )); then
-		date_filter="AND date_trunc('day', dataset.create_time AT TIME ZONE 'UTC') $op '$1'::date"
+		date_filter="AND date_trunc('day', job.create_time AT TIME ZONE 'UTC') $op '$1'::date"
 	fi
 
 	groupname=$(gdpr_safe galaxy_group.name group_name 'Anonymous')
@@ -2185,20 +2204,33 @@ query_server-groups-allocated-cpu() { ## [YYYY-MM-DD] [=, <=, >= operators]: Ret
 	tags="group_name=0"
 
 	read -r -d '' QUERY <<-EOF
+		WITH jobs_info AS (
+			SELECT job.user_id,
+				round(sum(a.metric_value * b.metric_value), 2) AS cpu_seconds
+			FROM job_metric_numeric AS a,
+				job_metric_numeric AS b,
+				job
+			WHERE job.id = a.job_id
+				AND job.id = b.job_id
+				AND a.metric_name = 'runtime_seconds'
+				AND b.metric_name = 'galaxy_slots'
+				$date_filter
+			GROUP BY job.user_id
+		), user_job_info AS (
+			SELECT user_id,
+				sum(cpu_seconds) AS cpu_seconds
+			FROM jobs_info
+			GROUP BY user_id
+		)
 		SELECT $groupname,
-			round(sum(a.metric_value * b.metric_value), 2) AS cpu_seconds
-		FROM job_metric_numeric AS a,
-			job_metric_numeric AS b,
-			job,
+			round(sum(user_job_info.cpu_seconds), 2) as cpu_seconds
+		FROM user_job_info,
 			galaxy_group,
 			user_group_association
-		WHERE b.job_id = a.job_id
-			AND a.metric_name = 'runtime_seconds'
-			AND b.metric_name = 'galaxy_slots'
-			AND job.user_id = user_group_association.id
+		WHERE user_job_info.user_id = user_group_association.user_id
 			AND user_group_association.group_id = galaxy_group.id
-			$date_filter
 		GROUP BY galaxy_group.name
+
 	EOF
 }
 
@@ -2213,7 +2245,7 @@ query_server-groups-allocated-gpu() { ## [YYYY-MM-DD] [=, <=, >= operators]: Ret
 
 	date_filter=""
 	if (( $# > 0 )); then
-		date_filter="AND date_trunc('day', dataset.create_time AT TIME ZONE 'UTC') $op '$1'::date"
+		date_filter="AND date_trunc('day', job.create_time AT TIME ZONE 'UTC') $op '$1'::date"
 	fi
 
 	groupname=$(gdpr_safe galaxy_group.name group_name 'Anonymous')
@@ -2222,19 +2254,31 @@ query_server-groups-allocated-gpu() { ## [YYYY-MM-DD] [=, <=, >= operators]: Ret
 	tags="group_name=0"
 
 	read -r -d '' QUERY <<-EOF
+		WITH jobs_info AS (
+			SELECT job.user_id,
+				round(sum(a.metric_value * length(replace(b.metric_value, ',', ''))), 2) AS gpu_seconds
+			FROM job_metric_numeric AS a,
+				job_metric_text AS b,
+				job
+			WHERE job.id = a.job_id
+				AND job.id = b.job_id
+				AND a.metric_name = 'runtime_seconds'
+				AND b.metric_name = 'CUDA_VISIBLE_DEVICES'
+				$date_filter
+			GROUP BY job.user_id
+		), user_job_info AS (
+			SELECT user_id,
+				sum(gpu_seconds) AS gpu_seconds
+			FROM jobs_info
+			GROUP BY user_id
+		)
 		SELECT $groupname,
-			round(sum(a.metric_value * length(replace(b.metric_value, ',', ''))), 2) AS gpu_seconds
-		FROM job_metric_numeric AS a,
-			job_metric_text AS b,
-			job,
+			round(sum(user_job_info.gpu_seconds), 2) as gpu_seconds
+		FROM user_job_info,
 			galaxy_group,
 			user_group_association
-		WHERE b.job_id = a.job_id
-			AND a.metric_name = 'runtime_seconds'
-			AND b.metric_name = 'CUDA_VISIBLE_DEVICES'
-			AND job.user_id = user_group_association.id
+		WHERE user_job_info.user_id = user_group_association.user_id
 			AND user_group_association.group_id = galaxy_group.id
-			$date_filter
 		GROUP BY galaxy_group.name
 	EOF
 }
@@ -2871,8 +2915,8 @@ query_pg-index-usage() { ## : calculates your index hit rate (effective database
 
 	read -r -d '' QUERY <<-EOF
 		SELECT relname,
-				CASE idx_scan
-			WHEN 0 THEN '-1'
+			CASE COALESCE(idx_scan, 0)
+				WHEN 0 THEN -1
 				ELSE (100 * idx_scan / (seq_scan + idx_scan))
 			END percent_of_times_index_used,
 			n_live_tup rows_in_table
@@ -2985,15 +3029,15 @@ query_pg-unused-indexes() { ## [--human]: show unused and almost unused indexes
 		human_after=""
 	fi
 
-	fields="index_size=2,index_scans=3"
-	tags="table=0,index=1"
+	fields="index_size=2;index_scans=3"
+	tags="table=0;index=1"
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
 			schemaname || '.' || relname AS table,
 			indexrelname AS index,
 			${human_size}pg_relation_size(i.indexrelid)${human_after} AS index_size,
-			idx_scan as index_scans
+			COALESCE(idx_scan, 0) as index_scans
 		FROM pg_stat_user_indexes ui
 		JOIN pg_index i ON ui.indexrelid = i.indexrelid
 		WHERE NOT indisunique AND idx_scan < 50 AND pg_relation_size(relid) > 5 * 8192
@@ -3047,5 +3091,59 @@ query_pg-vacuum-stats() { ## : show dead rows and whether an automatic vacuum is
 			pg_stat_user_tables psut INNER JOIN pg_class ON psut.relid = pg_class.oid
 				INNER JOIN vacuum_settings ON pg_class.oid = vacuum_settings.oid
 		ORDER BY 1
+	EOF
+}
+
+query_pg-stat-bgwriter() { ## : Stats about the behaviour of the bgwriter, checkpoints, buffers, etc.
+	handle_help "$@" <<-EOF
+	EOF
+
+	fields="checkpoints_timed=0;checkpoints_req=1;checkpoint_write_time=2;checkpoint_sync_time=3;buffers_checkpoint=4;buffers_clean=5;maxwritten_clean=6;buffers_backend=7;buffers_backend_fsync=8;buffers_alloc=9"
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			checkpoints_timed,
+			checkpoints_req,
+			checkpoint_write_time,
+			checkpoint_sync_time,
+			buffers_checkpoint,
+			buffers_clean,
+			maxwritten_clean,
+			buffers_backend,
+			buffers_backend_fsync,
+			buffers_alloc
+		FROM
+			pg_stat_bgwriter
+	EOF
+}
+
+
+query_pg-stat-user-tables() { ## : stats about tables (tuples, index scans, vacuums, analyzes)
+	handle_help "$@" <<-EOF
+	EOF
+
+	tags="schemaname=0;relname=1"
+	fields="seq_scan=2;seq_tup_read=3;idx_scan=4;idx_tup_fetch=5;n_tup_ins=6;n_tup_upd=7;n_tup_del=8;n_tup_hot_upd=9;n_live_tup=10;n_dead_tup=11;vacuum_count=12;autovacuum_count=13;analyze_count=14;autoanalyze_count=15"
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			schemaname,
+			relname,
+			seq_scan,
+			seq_tup_read,
+			COALESCE(idx_scan, 0),
+			COALESCE(idx_tup_fetch, 0),
+			n_tup_ins,
+			n_tup_upd,
+			n_tup_del,
+			n_tup_hot_upd,
+			n_live_tup,
+			n_dead_tup,
+			vacuum_count,
+			autovacuum_count,
+			analyze_count,
+			autoanalyze_count
+		FROM
+			pg_stat_user_tables
 	EOF
 }
