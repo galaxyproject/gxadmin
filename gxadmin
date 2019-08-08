@@ -4030,8 +4030,8 @@ query_pg-index-usage() { ## : calculates your index hit rate (effective database
 
 	read -r -d '' QUERY <<-EOF
 		SELECT relname,
-				CASE idx_scan
-			WHEN 0 THEN '-1'
+			CASE COALESCE(idx_scan, 0)
+				WHEN 0 THEN -1
 				ELSE (100 * idx_scan / (seq_scan + idx_scan))
 			END percent_of_times_index_used,
 			n_live_tup rows_in_table
@@ -4152,7 +4152,7 @@ query_pg-unused-indexes() { ## [--human]: show unused and almost unused indexes
 			schemaname || '.' || relname AS table,
 			indexrelname AS index,
 			${human_size}pg_relation_size(i.indexrelid)${human_after} AS index_size,
-			idx_scan as index_scans
+			COALESCE(idx_scan, 0) as index_scans
 		FROM pg_stat_user_indexes ui
 		JOIN pg_index i ON ui.indexrelid = i.indexrelid
 		WHERE NOT indisunique AND idx_scan < 50 AND pg_relation_size(relid) > 5 * 8192
@@ -4246,8 +4246,8 @@ query_pg-stat-user-tables() { ## : stats about tables (tuples, index scans, vacu
 			relname,
 			seq_scan,
 			seq_tup_read,
-			idx_scan,
-			idx_tup_fetch,
+			COALESCE(idx_scan, 0),
+			COALESCE(idx_tup_fetch, 0),
 			n_tup_ins,
 			n_tup_upd,
 			n_tup_del,
