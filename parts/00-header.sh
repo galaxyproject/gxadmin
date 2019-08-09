@@ -7,5 +7,5 @@
 # Thanks to everyone for their contributions
 # https://github.com/usegalaxy-eu/gxadmin/graphs/contributors
 version() {
-	echo 14
+	echo 15
 }
