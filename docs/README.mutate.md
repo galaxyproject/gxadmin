@@ -5,7 +5,7 @@ Command | Description
 [`mutate approve-user`](#mutate-approve-user) | Approve a user in the database
 [`mutate assign-unassigned-workflows`](#mutate-assign-unassigned-workflows) | Randomly assigns unassigned workflows to handlers. Workaround for galaxyproject/galaxy#8209
 [`mutate delete-group-role`](#mutate-delete-group-role) | Remove the group, role, and any user-group + user-role associations
-[`mutate drop-workflow-step-output-associations2`](#mutate-drop-workflow-step-output-associations2) | #8418, drop extraneous connection
+[`mutate drop-extraneous-workflow-step-output-associations`](#mutate-drop-extraneous-workflow-step-output-associations) | #8418, drop extraneous connection
 [`mutate fail-history`](#mutate-fail-history) | Mark all jobs within a history to state error
 [`mutate fail-job`](#mutate-fail-job) | Sets a job state to error
 [`mutate fail-terminal-datasets`](#mutate-fail-terminal-datasets) | Causes the output datasets of jobs which were manually failed, to be marked as failed
@@ -57,18 +57,24 @@ mutate delete-group-role -  Remove the group, role, and any user-group + user-ro
 Wipe out a group+role, and user associations.
 
 
-## mutate drop-workflow-step-output-associations2
+## mutate drop-extraneous-workflow-step-output-associations
 
-mutate drop-workflow-step-output-associations2 -  #8418, drop extraneous connection
+mutate drop-extraneous-workflow-step-output-associations -  #8418, drop extraneous connection
 
 **SYNOPSIS**
 
-    gxadmin mutate drop-workflow-step-output-associations2
+    gxadmin mutate drop-extraneous-workflow-step-output-associations [--commit]
 
 **NOTES**
 
 Per https://github.com/galaxyproject/galaxy/pull/8418, this drops the
 workflow step output associations that are not necessary.
+
+This only needs to be run once, on servers which have run Galaxy<=19.05
+to remove duplicate entries in the following tables:
+
+- workflow_invocation_step_output_dataset_association
+- workflow_invocation_step_output_dataset_collection_association
 
 
 ## mutate fail-history
