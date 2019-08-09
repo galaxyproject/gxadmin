@@ -7,7 +7,7 @@
 # Thanks to everyone for their contributions
 # https://github.com/usegalaxy-eu/gxadmin/graphs/contributors
 version() {
-	echo 14
+	echo 15
 }
 GXADMIN_SITE_SPECIFIC=${GXADMIN_SITE_SPECIFIC:-~/.config/gxadmin-local.sh}
 
@@ -460,7 +460,9 @@ success() {
 	echo "$(tput setaf 40)$*$(tput sgr0)"
 }
 CHANGELOG=$(cat <<EOF
-# 15-pre
+# 16-pre
+
+# 15
 
 - Fancy [new docs site](https://usegalaxy-eu.github.io/gxadmin/#/)
 - Added:
