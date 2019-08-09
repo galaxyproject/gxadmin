@@ -50,3 +50,19 @@ GXADMIN=./.tmpgxadmin
 	num=$(cat docs/README.* | grep 'gxadmin usage' -c || true)
 	[ "$num" -eq 0 ]
 }
+
+@test "Ensure correct separator used in influx fields" {
+	result=$(grep -Pzl 'fields=".*,' parts/* | wc -l)
+	if (( result > 0 )); then
+		grep 'fields=".*,' parts/*
+	fi
+	[ "$result" -eq 0 ]
+}
+
+@test "Ensure correct separator used in influx tags" {
+	result=$(grep -Pzl 'tags=".*,' parts/* | wc -l)
+	if (( result > 0 )); then
+		grep 'tags=".*,' parts/*
+	fi
+	[ "$result" -eq 0 ]
+}

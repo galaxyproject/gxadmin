@@ -62,6 +62,15 @@ Example .pgpass:
 <pg_host>:5432:*:<pg_user>:<pg_password>
 ```
 
+### InfluxDB
+
+In order to use functions like `gxadmin meta influx-post`, `gxadmin` requires 
+a few environment variables to be set. Namely
+*  `INFLUX_URL`
+*  `INFLUX_PASS`
+*  `INFLUX_USER`
+*  `INFLUX_DB`
+
 ### GDPR
 
 You may want to set `GDPR_MODE=1`. Please determine your own legal responsibilities, the authors take no responsibility for anything you may have done wrong.

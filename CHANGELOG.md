@@ -1,6 +1,20 @@
 # 15-pre
 
 - Fancy [new docs site](https://usegalaxy-eu.github.io/gxadmin/#/)
+- Added:
+	- search :(
+	- query server-groups-allocated-cpu, thanks @selten
+	- query server-groups-disk-usage, thanks @selten
+	- query user-disk-quota, thanks @selten
+	- query job-info, thanks @selten
+	- query queue-detail-by-handler
+	- mutate reassign-job-to-handler
+	- a LOT of query pg-... commands from [heroku's pg-extras](https://github.com/heroku/heroku-pg-extras/tree/master/commands)
+	- mutate drop-extraneous-workflow-step-output-associations
+	- mutate reassign-workflows-to-handler
+	- query data-origin-distribution
+	- query data-origin-distribution-summary
+	- query user-history-list
 
 # 14
 

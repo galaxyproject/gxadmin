@@ -1,7 +1,7 @@
 PARTS=$(sort $(wildcard parts/*.sh))
 TMP := $(shell mktemp)
 
-all: test README.md
+all: gxadmin test README.md
 
 README.md:
 	@cat $(PARTS) > .tmpgxadmin

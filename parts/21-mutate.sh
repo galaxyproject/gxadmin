@@ -206,7 +206,29 @@ mutate_assign-unassigned-workflows() { ## <handler_prefix> <handler_count> [--co
 	read -r -d '' QUERY <<-EOF
 		UPDATE workflow_invocation
 		SET handler = '$prefix' || (random() * $count)::integer
-		WHERE state = 'new' AND handler = '_default_'
+		WHERE state = 'new' and handler = '_default_'
+		RETURNING workflow_invocation.id
+	EOF
+
+	commit=$(should_commit "$3")
+	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
+}
+
+mutate_reassign-workflows-to-handler() { ## <handler_from> <handler_to> [--commit]: Reassign workflows in 'new' state to a different handler.
+	handle_help "$@" <<-EOF
+		Another workaround for https://github.com/galaxyproject/galaxy/issues/8209
+
+		Need to use the full handler names e.g. handler_main_0
+	EOF
+
+	assert_count_ge $# 1 "Must supply a handler_from"
+	assert_count_ge $# 2 "Must supply a handler_to"
+
+	read -r -d '' QUERY <<-EOF
+		UPDATE workflow_invocation
+		SET handler = '$2'
+		WHERE state = 'new' and handler = '$1'
+		RETURNING workflow_invocation.id
 	EOF
 
 	commit=$(should_commit "$3")
@@ -347,4 +369,64 @@ mutate_oidc-role-fix() { ## <username|email|user_id>: Fix permissions for users 
 	read -r -d '' QUERY <<-EOF
 		select 'done'
 	EOF
+}
+
+mutate_reassign-job-to-handler() { ## <job_id> <handler_id> [--commit]: Reassign a job to a different handler
+	handle_help "$@" <<-EOF
+	EOF
+
+	assert_count_ge $# 2 "Must supply a job and handler ID"
+	job_id=$1
+	handler_id=$2
+
+	read -r -d '' QUERY <<-EOF
+		UPDATE
+			job
+		SET
+			handler = '$handler_id'
+		WHERE
+			job.id = $job_id
+	EOF
+
+	commit=$(should_commit "$3")
+	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
+}
+
+mutate_drop-extraneous-workflow-step-output-associations() { ## [--commit]: #8418, drop extraneous connection
+	handle_help "$@" <<-EOF
+		Per https://github.com/galaxyproject/galaxy/pull/8418, this drops the
+		workflow step output associations that are not necessary.
+
+		This only needs to be run once, on servers which have run Galaxy<=19.05
+		to remove duplicate entries in the following tables:
+
+		- workflow_invocation_step_output_dataset_association
+		- workflow_invocation_step_output_dataset_collection_association
+	EOF
+
+	read -r -d '' QUERY <<-EOF
+		WITH exclude_list AS (
+			SELECT max(w.id) as id
+			FROM workflow_invocation_step_output_dataset_association as w
+			GROUP BY workflow_invocation_step_id, dataset_id, output_name
+		)
+
+		DELETE
+		FROM workflow_invocation_step_output_dataset_association wisoda
+		WHERE NOT EXISTS (SELECT 1 FROM exclude_list WHERE wisoda.id = exclude_list.id);
+
+
+		WITH exclude_list AS (
+			SELECT max(w.id) as id
+			FROM workflow_invocation_step_output_dataset_collection_association as w
+			GROUP BY workflow_invocation_step_id, dataset_collection_id, output_name
+		)
+
+		DELETE
+		FROM workflow_invocation_step_output_dataset_collection_association wisodca
+		WHERE NOT EXISTS (SELECT 1 FROM exclude_list WHERE wisodca.id = exclude_list.id)
+	EOF
+
+	commit=$(should_commit "$1")
+	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
 }

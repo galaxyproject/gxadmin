@@ -5,11 +5,14 @@ Command | Description
 [`mutate approve-user`](#mutate-approve-user) | Approve a user in the database
 [`mutate assign-unassigned-workflows`](#mutate-assign-unassigned-workflows) | Randomly assigns unassigned workflows to handlers. Workaround for galaxyproject/galaxy#8209
 [`mutate delete-group-role`](#mutate-delete-group-role) | Remove the group, role, and any user-group + user-role associations
+[`mutate drop-extraneous-workflow-step-output-associations`](#mutate-drop-extraneous-workflow-step-output-associations) | #8418, drop extraneous connection
 [`mutate fail-history`](#mutate-fail-history) | Mark all jobs within a history to state error
 [`mutate fail-job`](#mutate-fail-job) | Sets a job state to error
 [`mutate fail-terminal-datasets`](#mutate-fail-terminal-datasets) | Causes the output datasets of jobs which were manually failed, to be marked as failed
 [`mutate oidc-role-find-affected`](#mutate-oidc-role-find-affected) | Find users affected by galaxyproject/galaxy#8244
 [`mutate oidc-role-fix`](#mutate-oidc-role-fix) | Fix permissions for users logged in via OIDC. Workaround for galaxyproject/galaxy#8244
+[`mutate reassign-job-to-handler`](#mutate-reassign-job-to-handler) | Reassign a job to a different handler
+[`mutate reassign-workflows-to-handler`](#mutate-reassign-workflows-to-handler) | Reassign workflows in 'new' state to a different handler.
 
 ## mutate approve-user
 
@@ -52,6 +55,26 @@ mutate delete-group-role -  Remove the group, role, and any user-group + user-ro
 **NOTES**
 
 Wipe out a group+role, and user associations.
+
+
+## mutate drop-extraneous-workflow-step-output-associations
+
+mutate drop-extraneous-workflow-step-output-associations -  #8418, drop extraneous connection
+
+**SYNOPSIS**
+
+    gxadmin mutate drop-extraneous-workflow-step-output-associations [--commit]
+
+**NOTES**
+
+Per https://github.com/galaxyproject/galaxy/pull/8418, this drops the
+workflow step output associations that are not necessary.
+
+This only needs to be run once, on servers which have run Galaxy<=19.05
+to remove duplicate entries in the following tables:
+
+- workflow_invocation_step_output_dataset_association
+- workflow_invocation_step_output_dataset_collection_association
 
 
 ## mutate fail-history
@@ -167,4 +190,28 @@ mutate oidc-role-fix -  Fix permissions for users logged in via OIDC. Workaround
 **NOTES**
 
 Workaround for https://github.com/galaxyproject/galaxy/issues/8244
+
+
+## mutate reassign-job-to-handler
+
+mutate reassign-job-to-handler -  Reassign a job to a different handler
+
+**SYNOPSIS**
+
+    gxadmin mutate reassign-job-to-handler <job_id> <handler_id> [--commit]
+
+
+## mutate reassign-workflows-to-handler
+
+mutate reassign-workflows-to-handler -  Reassign workflows in 'new' state to a different handler.
+
+**SYNOPSIS**
+
+    gxadmin mutate reassign-workflows-to-handler <handler_from> <handler_to> [--commit]
+
+**NOTES**
+
+Another workaround for https://github.com/galaxyproject/galaxy/issues/8209
+
+Need to use the full handler names e.g. handler_main_0
 

@@ -2,12 +2,14 @@
 
 Command | Description
 ------- | -----------
-`query active-users` | Deprecated, use monthly-users-active
 [`query collection-usage`](#query-collection-usage) | Information about how many collections of various types are used
+[`query data-origin-distribution`](#query-data-origin-distribution) | data sources (uploaded vs derived)
+[`query data-origin-distribution-summary`](#query-data-origin-distribution-summary) | breakdown of data sources (uploaded vs derived)
 [`query datasets-created-daily`](#query-datasets-created-daily) | The min/max/average/p95/p99 of total size of datasets created in a single day.
 [`query disk-usage`](#query-disk-usage) | Disk usage per object store.
 [`query errored-jobs`](#query-errored-jobs) | Lists jobs that errored in the last N hours.
 [`query group-cpu-seconds`](#query-group-cpu-seconds) | Retrieve an approximation of the CPU time in seconds for group(s)
+[`query group-gpu-time`](#query-group-gpu-time) | Retrieve an approximation of the GPU time for users
 [`query groups-list`](#query-groups-list) | List all groups known to Galaxy
 [`query hdca-datasets`](#query-hdca-datasets) | List of files in a dataset collection
 [`query hdca-info`](#query-hdca-info) | Information on a dataset collection
@@ -16,6 +18,7 @@ Command | Description
 [`query history-runtime-system`](#query-history-runtime-system) | Sum of runtimes by all jobs in a history
 [`query history-runtime-wallclock`](#query-history-runtime-wallclock) | Time as elapsed by a clock on the wall
 [`query job-history`](#query-job-history) | Job state history for a specific job
+[`query job-info`](#query-job-info) | Retrieve information about jobs given some job IDs
 [`query job-inputs`](#query-job-inputs) | Input datasets to a specific job
 [`query job-outputs`](#query-job-outputs) | Output datasets from a specific job
 [`query jobs-max-by-cpu-hours`](#query-jobs-max-by-cpu-hours) | Top 10 jobs by CPU hours consumed (requires CGroups metrics)
@@ -28,17 +31,32 @@ Command | Description
 [`query latest-users`](#query-latest-users) | 40 recently registered users
 [`query monthly-cpu-years`](#query-monthly-cpu-years) | CPU years allocated to tools by month
 [`query monthly-data`](#query-monthly-data) | Number of active users per month, running jobs
+[`query monthly-gpu-years`](#query-monthly-gpu-years) | GPU years allocated to tools by month
 [`query monthly-jobs`](#query-monthly-jobs) | Number of jobs run each month
 [`query monthly-users-active`](#query-monthly-users-active) | Number of active users per month, running jobs
-`query monthly-users` | Deprecated, use monthly-users-active
 [`query monthly-users-registered`](#query-monthly-users-registered) | Number of users registered each month
 [`query old-histories`](#query-old-histories) | Lists histories that haven't been updated (used) for <weeks>
+[`query pg-cache-hit`](#query-pg-cache-hit) | Check postgres in-memory cache hit ratio
+[`query pg-index-size`](#query-pg-index-size) | show table and index bloat in your database ordered by most wasteful
+[`query pg-index-usage`](#query-pg-index-usage) | calculates your index hit rate (effective databases are at 99% and up)
+[`query pg-long-running-queries`](#query-pg-long-running-queries) | show all queries longer than five minutes by descending duration
+[`query pg-mandelbrot`](#query-pg-mandelbrot) | show the mandlebrot set
+[`query pg-stat-bgwriter`](#query-pg-stat-bgwriter) | Stats about the behaviour of the bgwriter, checkpoints, buffers, etc.
+[`query pg-stat-user-tables`](#query-pg-stat-user-tables) | stats about tables (tuples, index scans, vacuums, analyzes)
+[`query pg-table-bloat`](#query-pg-table-bloat) | show table and index bloat in your database ordered by most wasteful
+[`query pg-table-size`](#query-pg-table-size) | show the size of the tables (excluding indexes), descending by size
+[`query pg-unused-indexes`](#query-pg-unused-indexes) | show unused and almost unused indexes
+[`query pg-vacuum-stats`](#query-pg-vacuum-stats) | show dead rows and whether an automatic vacuum is expected to be triggered
 [`query queue`](#query-queue) | Brief overview of currently running jobs
 [`query queue-detail`](#query-queue-detail) | Detailed overview of running and queued jobs
+[`query queue-detail-by-handler`](#query-queue-detail-by-handler) | List jobs for a specific handler
 [`query queue-overview`](#query-queue-overview) | View used mostly for monitoring
 [`query queue-time`](#query-queue-time) | The average/95%/99% a specific tool spends in queue state.
 [`query recent-jobs`](#query-recent-jobs) | Jobs run in the past <hours> (in any state)
 [`query runtime-per-user`](#query-runtime-per-user) | computation time of user (by email)
+[`query server-groups-allocated-cpu`](#query-server-groups-allocated-cpu) | Retrieve an approximation of the CPU allocation for groups
+[`query server-groups-allocated-gpu`](#query-server-groups-allocated-gpu) | Retrieve an approximation of the GPU allocation for groups
+[`query server-groups-disk-usage`](#query-server-groups-disk-usage) | Retrieve an approximation of the disk usage for groups
 [`query tool-available-metrics`](#query-tool-available-metrics) | list all available metrics for a given tool
 [`query tool-errors`](#query-tool-errors) | Summarize percent of tool runs in error over the past weeks for all tools that have failed (most popular tools first)
 [`query tool-last-used-date`](#query-tool-last-used-date) | When was the most recent invocation of every tool
@@ -54,7 +72,10 @@ Command | Description
 [`query ts-repos`](#query-ts-repos) | Counts of toolshed repositories by toolshed and owner.
 [`query upload-gb-in-past-hour`](#query-upload-gb-in-past-hour) | Sum in bytes of files uploaded in the past hour
 [`query user-cpu-years`](#query-user-cpu-years) | CPU years allocated to tools by user
+[`query user-disk-quota`](#query-user-disk-quota) | Retrieves the 50 users with the largest quotas
 [`query user-disk-usage`](#query-user-disk-usage) | Retrieve an approximation of the disk usage for users
+[`query user-gpu-years`](#query-user-gpu-years) | GPU years allocated to tools by user
+[`query user-history-list`](#query-user-history-list) | Shows the ID of the history, it's size and when it was last updated.
 [`query user-recent-aggregate-jobs`](#query-user-recent-aggregate-jobs) | Show aggregate information for jobs in past N days for user
 [`query users-count`](#query-users-count) | Shows sums of active/external/deleted/purged accounts
 [`query users-total`](#query-users-total) | Total number of Galaxy users (incl deleted, purged, inactive)
@@ -69,6 +90,39 @@ query collection-usage -  Information about how many collections of various type
 **SYNOPSIS**
 
     gxadmin query collection-usage
+
+
+## query data-origin-distribution
+
+query data-origin-distribution -  data sources (uploaded vs derived)
+
+**SYNOPSIS**
+
+    gxadmin query data-origin-distribution [--human]
+
+**NOTES**
+
+Break down the source of data in the server, uploaded data vs derived (created as output from a tool)
+
+
+## query data-origin-distribution-summary
+
+query data-origin-distribution-summary -  breakdown of data sources (uploaded vs derived)
+
+**SYNOPSIS**
+
+    gxadmin query data-origin-distribution-summary [--human]
+
+**NOTES**
+
+Break down the source of data in the server, uploaded data vs derived (created as output from a tool)
+
+This query builds a table with the volume of derivced and uploaded data per user, and then summarizes this:
+
+origin  |   min   | quant_1st | median  |  mean  | quant_3rd | perc_95 | perc_99 |  max  | stddev
+------- | ------- | --------- | ------- | ------ | --------- | ------- | ------- | ----- | --------
+created | 0 bytes | 17 MB     | 458 MB  | 36 GB  | 11 GB     | 130 GB  | 568 GB  | 11 TB | 257 GB
+derived | 0 bytes | 39 MB     | 1751 MB | 200 GB | 28 GB     | 478 GB  | 2699 GB | 90 TB | 2279 GB
 
 
 ## query datasets-created-daily
@@ -162,6 +216,36 @@ rank  | group_id |  group_name  | cpu_seconds
 10    |          | d755361b59a  |        5.19
 
 
+## query group-gpu-time
+
+query group-gpu-time -  Retrieve an approximation of the GPU time for users
+
+**SYNOPSIS**
+
+    gxadmin query group-gpu-time [group]
+
+**NOTES**
+
+This uses the galaxy_slots and runtime_seconds metrics in order to
+calculate allocated GPU time. This will not be the value of what is
+actually consumed by jobs of the group, you should use cgroups instead.
+Only works if the  environment variable 'CUDA_VISIBLE_DEVICES' is
+recorded as job metric by Galaxy. Requires Nvidia GPUs.
+
+rank  | group_id |  group_name | gpu_seconds
+----- | -------- | ----------- | -----------
+1     |          | 123f911b5f1 |      20.35
+2     |          | cb0fabc0002 |      14.93
+3     |          | 7e9e9b00b89 |      14.24
+4     |          | 42f211e5e87 |      14.06
+5     |          | 26cdba62c93 |      12.97
+6     |          | fa87cddfcae |       7.01
+7     |          | 44d2a648aac |       6.70
+8     |          | 66c57b41194 |       6.43
+9     |          | 6b1467ac118 |       5.45
+10    |          | d755361b59a |       5.19
+
+
 ## query groups-list
 
 query groups-list -  List all groups known to Galaxy
@@ -247,6 +331,33 @@ query job-history -  Job state history for a specific job
      2018-10-05 16:19:55 | queued
      2018-10-05 16:19:54 | new
     (4 rows)
+
+
+## query job-info
+
+query job-info -  Retrieve information about jobs given some job IDs
+
+**SYNOPSIS**
+
+    gxadmin query job-info <-|job_id> [job_id [job_id [...]]]
+
+**NOTES**
+
+Retrieves information on a job, like the host it ran on,
+how long it ran for and the total memory.
+
+id    | create_time  | update_time |  tool_id     |   hostname   | runtime_seconds | memtotal
+----- | ------------ | ----------- | ------------ | ------------ | --------------- | --------
+1     |              |             | 123f911b5f1  | 123f911b5f1  |          20.35  | 20.35 GB
+2     |              |             | cb0fabc0002  | cb0fabc0002  |          14.93  |  5.96 GB
+3     |              |             | 7e9e9b00b89  | 7e9e9b00b89  |          14.24  |  3.53 GB
+4     |              |             | 42f211e5e87  | 42f211e5e87  |          14.06  |  1.79 GB
+5     |              |             | 26cdba62c93  | 26cdba62c93  |          12.97  |  1.21 GB
+6     |              |             | fa87cddfcae  | fa87cddfcae  |           7.01  |   987 MB
+7     |              |             | 44d2a648aac  | 44d2a648aac  |           6.70  |   900 MB
+8     |              |             | 66c57b41194  | 66c57b41194  |           6.43  |   500 MB
+9     |              |             | 6b1467ac118  | 6b1467ac118  |           5.45  |   250 MB
+10    |              |             | d755361b59a  | d755361b59a  |           5.19  |   100 MB
 
 
 ## query job-inputs
@@ -495,6 +606,44 @@ Find out how much data was ingested or created by Galaxy during the past months.
      2018-01-01 | 16 TB
 
 
+## query monthly-gpu-years
+
+query monthly-gpu-years -  GPU years allocated to tools by month
+
+**SYNOPSIS**
+
+    gxadmin query monthly-gpu-years
+
+**NOTES**
+
+This uses the CUDA_VISIBLE_DEVICES and runtime_seconds metrics in order to
+calculate allocated GPU years. This will not be the value of what is
+actually consumed by your jobs, you should use cgroups. Only works if the
+environment variable 'CUDA_VISIBLE_DEVICES' is recorded as job metric by Galaxy.
+Requires Nvidia GPUs.
+
+    $ gxadmin query monthly-gpu-years
+        month   | gpu_years
+    ------------+-----------
+     2019-04-01 |      2.95
+     2019-03-01 |     12.38
+     2019-02-01 |     11.47
+     2019-01-01 |      8.27
+     2018-12-01 |     11.42
+     2018-11-01 |     16.99
+     2018-10-01 |     12.09
+     2018-09-01 |      6.27
+     2018-08-01 |      9.06
+     2018-07-01 |      6.17
+     2018-06-01 |      5.73
+     2018-05-01 |      7.36
+     2018-04-01 |     10.21
+     2018-03-01 |      5.20
+     2018-02-01 |      4.53
+     2018-01-01 |      4.05
+     2017-12-01 |      2.44
+
+
 ## query monthly-jobs
 
 query monthly-jobs -  Number of jobs run each month
@@ -588,6 +737,159 @@ Histories and their users who haven't been updated for a specified number of wee
      39523 | 2017-06-21 01:34:52.226653 |       9 | xxx@xxx | OSCC Cell Lines    | f         | f       | f      |         139
 
 
+## query pg-cache-hit
+
+query pg-cache-hit -  Check postgres in-memory cache hit ratio
+
+**SYNOPSIS**
+
+    gxadmin query pg-cache-hit
+
+**NOTES**
+
+Query from: https://www.citusdata.com/blog/2019/03/29/health-checks-for-your-postgres-database/
+
+Tells you about the cache hit ratio, is Postgres managing to store
+commonly requested objects in memory or are they being loaded every
+time?
+
+heap_read  | heap_hit |         ratio
+----------- ---------- ------------------------
+29         |    64445 | 0.99955020628470391165
+
+
+## query pg-index-size
+
+query pg-index-size -  show table and index bloat in your database ordered by most wasteful
+
+**SYNOPSIS**
+
+    gxadmin query pg-index-size [--human]
+
+**NOTES**
+
+Originally from: https://github.com/heroku/heroku-pg-extras/tree/master/commands
+
+
+## query pg-index-usage
+
+query pg-index-usage -  calculates your index hit rate (effective databases are at 99% and up)
+
+**SYNOPSIS**
+
+    gxadmin query pg-index-usage
+
+**NOTES**
+
+Originally from: https://github.com/heroku/heroku-pg-extras/tree/master/commands
+
+-1 means "Insufficient Data", this was changed to a numeric value to be acceptable to InfluxDB
+
+
+## query pg-long-running-queries
+
+query pg-long-running-queries -  show all queries longer than five minutes by descending duration
+
+**SYNOPSIS**
+
+    gxadmin query pg-long-running-queries
+
+**NOTES**
+
+Originally from: https://github.com/heroku/heroku-pg-extras/tree/master/commands
+
+
+## query pg-mandelbrot
+
+query pg-mandelbrot -  show the mandlebrot set
+
+**SYNOPSIS**
+
+    gxadmin query pg-mandelbrot
+
+**NOTES**
+
+Copied from: https://github.com/heroku/heroku-pg-extras/tree/master/commands
+
+
+## query pg-stat-bgwriter
+
+query pg-stat-bgwriter -  Stats about the behaviour of the bgwriter, checkpoints, buffers, etc.
+
+**SYNOPSIS**
+
+    gxadmin query pg-stat-bgwriter
+
+
+## query pg-stat-user-tables
+
+query pg-stat-user-tables -  stats about tables (tuples, index scans, vacuums, analyzes)
+
+**SYNOPSIS**
+
+    gxadmin query pg-stat-user-tables
+
+
+## query pg-table-bloat
+
+query pg-table-bloat -  show table and index bloat in your database ordered by most wasteful
+
+**SYNOPSIS**
+
+    gxadmin query pg-table-bloat [--human]
+
+**NOTES**
+
+Query from: https://www.citusdata.com/blog/2019/03/29/health-checks-for-your-postgres-database/
+Originally from: https://github.com/heroku/heroku-pg-extras/tree/master/commands
+
+
+## query pg-table-size
+
+query pg-table-size -  show the size of the tables (excluding indexes), descending by size
+
+**SYNOPSIS**
+
+    gxadmin query pg-table-size [--human]
+
+**NOTES**
+
+Originally from: https://github.com/heroku/heroku-pg-extras/tree/master/commands
+
+
+## query pg-unused-indexes
+
+query pg-unused-indexes -  show unused and almost unused indexes
+
+**SYNOPSIS**
+
+    gxadmin query pg-unused-indexes [--human]
+
+**NOTES**
+
+Originally from: https://github.com/heroku/heroku-pg-extras/tree/master/commands
+
+From their documentation:
+
+> "Ordered by their size relative to the number of index scans.
+> Exclude indexes of very small tables (less than 5 pages),
+> where the planner will almost invariably select a sequential scan,
+> but may not in the future as the table grows"
+
+
+## query pg-vacuum-stats
+
+query pg-vacuum-stats -  show dead rows and whether an automatic vacuum is expected to be triggered
+
+**SYNOPSIS**
+
+    gxadmin query pg-vacuum-stats
+
+**NOTES**
+
+Originally from: https://github.com/heroku/heroku-pg-extras/tree/master/commands
+
+
 ## query queue
 
 query queue -  Brief overview of currently running jobs
@@ -637,6 +939,19 @@ query queue-detail -  Detailed overview of running and queued jobs
      queued  | 4361812 | 229696  | toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.6.0              | xxxx     | 5 days -01:00:00
      queued  | 4361939 | 229728  | toolshed.g2.bx.psu.edu/repos/nml/spades/spades/1.2                        | xxxx     | 4 days 21:00:00
      queued  | 4361941 | 229731  | toolshed.g2.bx.psu.edu/repos/nml/spades/spades/1.2                        | xxxx     | 4 days 21:00:00
+
+
+## query queue-detail-by-handler
+
+query queue-detail-by-handler -  List jobs for a specific handler
+
+**SYNOPSIS**
+
+    gxadmin query queue-detail-by-handler <handler_id>
+
+**NOTES**
+
+List the jobs currently being processed by a specific handler
 
 
 ## query queue-overview
@@ -707,6 +1022,33 @@ query runtime-per-user -  computation time of user (by email)
        sum
     ----------
      14:07:39
+
+
+## query server-groups-allocated-cpu
+
+query server-groups-allocated-cpu -  Retrieve an approximation of the CPU allocation for groups
+
+**SYNOPSIS**
+
+    gxadmin query server-groups-allocated-cpu [YYYY-MM-DD] [=, <=, >= operators]
+
+
+## query server-groups-allocated-gpu
+
+query server-groups-allocated-gpu -  Retrieve an approximation of the GPU allocation for groups
+
+**SYNOPSIS**
+
+    gxadmin query server-groups-allocated-gpu [YYYY-MM-DD] [=, <=, >= operators]
+
+
+## query server-groups-disk-usage
+
+query server-groups-disk-usage -  Retrieve an approximation of the disk usage for groups
+
+**SYNOPSIS**
+
+    gxadmin query server-groups-disk-usage [YYYY-MM-DD] [=, <=, >= operators]
 
 
 ## query tool-available-metrics
@@ -1023,6 +1365,33 @@ rank  | user_id |  username   | cpu_years
 10    |         | d755361b59a |      5.19
 
 
+## query user-disk-quota
+
+query user-disk-quota -  Retrieves the 50 users with the largest quotas
+
+**SYNOPSIS**
+
+    gxadmin query user-disk-quota
+
+**NOTES**
+
+This calculates the total assigned disk quota to users.
+It only displays the top 50 quotas.
+
+rank  | user_id  |  username    |    quota
+----- | -------- | ------------ | ------------
+1     |          | 123f911b5f1  |       20.35
+2     |          | cb0fabc0002  |       14.93
+3     |          | 7e9e9b00b89  |       14.24
+4     |          | 42f211e5e87  |       14.06
+5     |          | 26cdba62c93  |       12.97
+6     |          | fa87cddfcae  |        7.01
+7     |          | 44d2a648aac  |        6.70
+8     |          | 66c57b41194  |        6.43
+9     |          | 6b1467ac118  |        5.45
+10    |          | d755361b59a  |        5.19
+
+
 ## query user-disk-usage
 
 query user-disk-usage -  Retrieve an approximation of the disk usage for users
@@ -1049,6 +1418,56 @@ rank  | user id  |  username   |  email      | storage usage
 8     |  432     | 66c57b41194 | 66c@7b4.194 |       6.43 GB
 9     |  58945   | 6b1467ac118 | 6b1@67a.118 |       5.45 MB
 10    |  10      | d755361b59a | d75@361.59a |       5.19 KB
+
+
+## query user-gpu-years
+
+query user-gpu-years -  GPU years allocated to tools by user
+
+**SYNOPSIS**
+
+    gxadmin query user-gpu-years
+
+**NOTES**
+
+This uses the CUDA_VISIBLE_DEVICES and runtime_seconds metrics in order to
+calculate allocated GPU years. This will not be the value of what is
+actually consumed by your jobs, you should use cgroups. Only works if the
+environment variable 'CUDA_VISIBLE_DEVICES' is recorded as job metric by Galaxy.
+Requires Nvidia GPUs.
+
+rank  | user_id |  username   | gpu_years
+----- | ------- | ----------- | ----------
+1     |         | 123f911b5f1 |     20.35
+2     |         | cb0fabc0002 |     14.93
+3     |         | 7e9e9b00b89 |     14.24
+4     |         | 42f211e5e87 |     14.06
+5     |         | 26cdba62c93 |     12.97
+6     |         | fa87cddfcae |      7.01
+7     |         | 44d2a648aac |      6.70
+8     |         | 66c57b41194 |      6.43
+9     |         | 6b1467ac118 |      5.45
+10    |         | d755361b59a |      5.19
+
+
+## query user-history-list
+
+query user-history-list -  Shows the ID of the history, it's size and when it was last updated.
+
+**SYNOPSIS**
+
+    gxadmin query user-history-list <username|id|email> [--size]
+
+**NOTES**
+
+Obtain an overview of histories of a user. By default orders the histories by date.
+When using '--size' it overrides the order to size.
+
+$ gxadmin query user-history-list <username|id|email>
+  ID   |                 Name                 |        Last Updated        |   Size
+-------+--------------------------------------+----------------------------+-----------
+52 | Unnamed history                      | 2019-08-08 15:15:32.284678 | 293 MB
+ 30906 | Unnamed history                      | 2019-07-23 16:25:36.084019 | 13 kB
 
 
 ## query user-recent-aggregate-jobs

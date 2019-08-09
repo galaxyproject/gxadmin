@@ -62,6 +62,15 @@ Example .pgpass:
 <pg_host>:5432:*:<pg_user>:<pg_password>
 ```
 
+### InfluxDB
+
+In order to use functions like `gxadmin meta influx-post`, `gxadmin` requires 
+a few environment variables to be set. Namely
+*  `INFLUX_URL`
+*  `INFLUX_PASS`
+*  `INFLUX_USER`
+*  `INFLUX_DB`
+
 ### GDPR
 
 You may want to set `GDPR_MODE=1`. Please determine your own legal responsibilities, the authors take no responsibility for anything you may have done wrong.
@@ -136,6 +145,7 @@ Command | Description
 [`meta iquery-grt-export`](docs/README.meta.md#meta-iquery-grt-export) | Export data from a GRT database for sending to influx
 [`meta slurp-current`](docs/README.meta.md#meta-slurp-current) | Executes what used to be "Galaxy Slurp"
 [`meta slurp-day`](docs/README.meta.md#meta-slurp-day) | Slurps data on a specific date.
+[`meta slurp-initial`](docs/README.meta.md#meta-slurp-initial) | Slurps data starting at the first date until the second date.
 [`meta slurp-upto`](docs/README.meta.md#meta-slurp-upto) | Slurps data up to a specific date.
 [`meta update`](docs/README.meta.md#meta-update) | Update the script
 [`meta whatsnew`](docs/README.meta.md#meta-whatsnew) | What's new in this version of gxadmin
@@ -147,22 +157,27 @@ Command | Description
 [`mutate approve-user`](docs/README.mutate.md#mutate-approve-user) | Approve a user in the database
 [`mutate assign-unassigned-workflows`](docs/README.mutate.md#mutate-assign-unassigned-workflows) | Randomly assigns unassigned workflows to handlers. Workaround for galaxyproject/galaxy#8209
 [`mutate delete-group-role`](docs/README.mutate.md#mutate-delete-group-role) | Remove the group, role, and any user-group + user-role associations
+[`mutate drop-extraneous-workflow-step-output-associations`](docs/README.mutate.md#mutate-drop-extraneous-workflow-step-output-associations) | #8418, drop extraneous connection
 [`mutate fail-history`](docs/README.mutate.md#mutate-fail-history) | Mark all jobs within a history to state error
 [`mutate fail-job`](docs/README.mutate.md#mutate-fail-job) | Sets a job state to error
 [`mutate fail-terminal-datasets`](docs/README.mutate.md#mutate-fail-terminal-datasets) | Causes the output datasets of jobs which were manually failed, to be marked as failed
 [`mutate oidc-role-find-affected`](docs/README.mutate.md#mutate-oidc-role-find-affected) | Find users affected by galaxyproject/galaxy#8244
 [`mutate oidc-role-fix`](docs/README.mutate.md#mutate-oidc-role-fix) | Fix permissions for users logged in via OIDC. Workaround for galaxyproject/galaxy#8244
+[`mutate reassign-job-to-handler`](docs/README.mutate.md#mutate-reassign-job-to-handler) | Reassign a job to a different handler
+[`mutate reassign-workflows-to-handler`](docs/README.mutate.md#mutate-reassign-workflows-to-handler) | Reassign workflows in 'new' state to a different handler.
 
 ### query
 
 Command | Description
 ------- | -----------
-`query active-users` | Deprecated, use monthly-users-active
 [`query collection-usage`](docs/README.query.md#query-collection-usage) | Information about how many collections of various types are used
+[`query data-origin-distribution`](docs/README.query.md#query-data-origin-distribution) | data sources (uploaded vs derived)
+[`query data-origin-distribution-summary`](docs/README.query.md#query-data-origin-distribution-summary) | breakdown of data sources (uploaded vs derived)
 [`query datasets-created-daily`](docs/README.query.md#query-datasets-created-daily) | The min/max/average/p95/p99 of total size of datasets created in a single day.
 [`query disk-usage`](docs/README.query.md#query-disk-usage) | Disk usage per object store.
 [`query errored-jobs`](docs/README.query.md#query-errored-jobs) | Lists jobs that errored in the last N hours.
 [`query group-cpu-seconds`](docs/README.query.md#query-group-cpu-seconds) | Retrieve an approximation of the CPU time in seconds for group(s)
+[`query group-gpu-time`](docs/README.query.md#query-group-gpu-time) | Retrieve an approximation of the GPU time for users
 [`query groups-list`](docs/README.query.md#query-groups-list) | List all groups known to Galaxy
 [`query hdca-datasets`](docs/README.query.md#query-hdca-datasets) | List of files in a dataset collection
 [`query hdca-info`](docs/README.query.md#query-hdca-info) | Information on a dataset collection
@@ -171,6 +186,7 @@ Command | Description
 [`query history-runtime-system`](docs/README.query.md#query-history-runtime-system) | Sum of runtimes by all jobs in a history
 [`query history-runtime-wallclock`](docs/README.query.md#query-history-runtime-wallclock) | Time as elapsed by a clock on the wall
 [`query job-history`](docs/README.query.md#query-job-history) | Job state history for a specific job
+[`query job-info`](docs/README.query.md#query-job-info) | Retrieve information about jobs given some job IDs
 [`query job-inputs`](docs/README.query.md#query-job-inputs) | Input datasets to a specific job
 [`query job-outputs`](docs/README.query.md#query-job-outputs) | Output datasets from a specific job
 [`query jobs-max-by-cpu-hours`](docs/README.query.md#query-jobs-max-by-cpu-hours) | Top 10 jobs by CPU hours consumed (requires CGroups metrics)
@@ -183,17 +199,32 @@ Command | Description
 [`query latest-users`](docs/README.query.md#query-latest-users) | 40 recently registered users
 [`query monthly-cpu-years`](docs/README.query.md#query-monthly-cpu-years) | CPU years allocated to tools by month
 [`query monthly-data`](docs/README.query.md#query-monthly-data) | Number of active users per month, running jobs
+[`query monthly-gpu-years`](docs/README.query.md#query-monthly-gpu-years) | GPU years allocated to tools by month
 [`query monthly-jobs`](docs/README.query.md#query-monthly-jobs) | Number of jobs run each month
 [`query monthly-users-active`](docs/README.query.md#query-monthly-users-active) | Number of active users per month, running jobs
-`query monthly-users` | Deprecated, use monthly-users-active
 [`query monthly-users-registered`](docs/README.query.md#query-monthly-users-registered) | Number of users registered each month
 [`query old-histories`](docs/README.query.md#query-old-histories) | Lists histories that haven't been updated (used) for <weeks>
+[`query pg-cache-hit`](docs/README.query.md#query-pg-cache-hit) | Check postgres in-memory cache hit ratio
+[`query pg-index-size`](docs/README.query.md#query-pg-index-size) | show table and index bloat in your database ordered by most wasteful
+[`query pg-index-usage`](docs/README.query.md#query-pg-index-usage) | calculates your index hit rate (effective databases are at 99% and up)
+[`query pg-long-running-queries`](docs/README.query.md#query-pg-long-running-queries) | show all queries longer than five minutes by descending duration
+[`query pg-mandelbrot`](docs/README.query.md#query-pg-mandelbrot) | show the mandlebrot set
+[`query pg-stat-bgwriter`](docs/README.query.md#query-pg-stat-bgwriter) | Stats about the behaviour of the bgwriter, checkpoints, buffers, etc.
+[`query pg-stat-user-tables`](docs/README.query.md#query-pg-stat-user-tables) | stats about tables (tuples, index scans, vacuums, analyzes)
+[`query pg-table-bloat`](docs/README.query.md#query-pg-table-bloat) | show table and index bloat in your database ordered by most wasteful
+[`query pg-table-size`](docs/README.query.md#query-pg-table-size) | show the size of the tables (excluding indexes), descending by size
+[`query pg-unused-indexes`](docs/README.query.md#query-pg-unused-indexes) | show unused and almost unused indexes
+[`query pg-vacuum-stats`](docs/README.query.md#query-pg-vacuum-stats) | show dead rows and whether an automatic vacuum is expected to be triggered
 [`query queue`](docs/README.query.md#query-queue) | Brief overview of currently running jobs
 [`query queue-detail`](docs/README.query.md#query-queue-detail) | Detailed overview of running and queued jobs
+[`query queue-detail-by-handler`](docs/README.query.md#query-queue-detail-by-handler) | List jobs for a specific handler
 [`query queue-overview`](docs/README.query.md#query-queue-overview) | View used mostly for monitoring
 [`query queue-time`](docs/README.query.md#query-queue-time) | The average/95%/99% a specific tool spends in queue state.
 [`query recent-jobs`](docs/README.query.md#query-recent-jobs) | Jobs run in the past <hours> (in any state)
 [`query runtime-per-user`](docs/README.query.md#query-runtime-per-user) | computation time of user (by email)
+[`query server-groups-allocated-cpu`](docs/README.query.md#query-server-groups-allocated-cpu) | Retrieve an approximation of the CPU allocation for groups
+[`query server-groups-allocated-gpu`](docs/README.query.md#query-server-groups-allocated-gpu) | Retrieve an approximation of the GPU allocation for groups
+[`query server-groups-disk-usage`](docs/README.query.md#query-server-groups-disk-usage) | Retrieve an approximation of the disk usage for groups
 [`query tool-available-metrics`](docs/README.query.md#query-tool-available-metrics) | list all available metrics for a given tool
 [`query tool-errors`](docs/README.query.md#query-tool-errors) | Summarize percent of tool runs in error over the past weeks for all tools that have failed (most popular tools first)
 [`query tool-last-used-date`](docs/README.query.md#query-tool-last-used-date) | When was the most recent invocation of every tool
@@ -209,7 +240,10 @@ Command | Description
 [`query ts-repos`](docs/README.query.md#query-ts-repos) | Counts of toolshed repositories by toolshed and owner.
 [`query upload-gb-in-past-hour`](docs/README.query.md#query-upload-gb-in-past-hour) | Sum in bytes of files uploaded in the past hour
 [`query user-cpu-years`](docs/README.query.md#query-user-cpu-years) | CPU years allocated to tools by user
+[`query user-disk-quota`](docs/README.query.md#query-user-disk-quota) | Retrieves the 50 users with the largest quotas
 [`query user-disk-usage`](docs/README.query.md#query-user-disk-usage) | Retrieve an approximation of the disk usage for users
+[`query user-gpu-years`](docs/README.query.md#query-user-gpu-years) | GPU years allocated to tools by user
+[`query user-history-list`](docs/README.query.md#query-user-history-list) | Shows the ID of the history, it's size and when it was last updated.
 [`query user-recent-aggregate-jobs`](docs/README.query.md#query-user-recent-aggregate-jobs) | Show aggregate information for jobs in past N days for user
 [`query users-count`](docs/README.query.md#query-users-count) | Shows sums of active/external/deleted/purged accounts
 [`query users-total`](docs/README.query.md#query-users-total) | Total number of Galaxy users (incl deleted, purged, inactive)
@@ -235,7 +269,6 @@ Command | Description
 [`uwsgi memory`](docs/README.uwsgi.md#uwsgi-memory) | Current system memory usage
 [`uwsgi pids`](docs/README.uwsgi.md#uwsgi-pids) | Galaxy process PIDs
 [`uwsgi stats-influx`](docs/README.uwsgi.md#uwsgi-stats-influx) | InfluxDB formatted output for the current stats
-`uwsgi stats_influx` | Deprecated, use uwsgi stats-influx
 [`uwsgi stats`](docs/README.uwsgi.md#uwsgi-stats) | uwsgi stats
 [`uwsgi status`](docs/README.uwsgi.md#uwsgi-status) | Current system status
 [`uwsgi zerg-scale-up`](docs/README.uwsgi.md#uwsgi-zerg-scale-up) | Add another zergling to deal with high load

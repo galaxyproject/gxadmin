@@ -62,7 +62,7 @@ meta_cmdlist() {
 	done
 }
 
-meta_slurp-current() { ## [--date]: Executes what used to be "Galaxy Slurp"
+meta_slurp-current() { ## [--date] [slurp-name [2nd-slurp-name [...]]]: Executes what used to be "Galaxy Slurp"
 	handle_help "$@" <<-EOF
 		Obtain influx compatible metrics regarding the current state of the
 		server. UseGalaxy.EU uses this to display things like "Current user
@@ -114,16 +114,26 @@ meta_slurp-current() { ## [--date]: Executes what used to be "Galaxy Slurp"
 	append=""
 	if [[ $1 == "--date" ]]; then
 		append=" "$(date +%s%N)
+		shift;
 	fi
+
+	specific_slurp=($@)
 
 	# shellcheck disable=SC2013
 	for func in $(grep -s -h -o '^query_server-[a-z-]*' "$0" "$GXADMIN_SITE_SPECIFIC" | sort | sed 's/query_//g'); do
+		# To allow only slurping the one that was requested, if this was done.
+		if (( ${#specific_slurp[@]} > 0 )); then
+			if [[ ! "${specific_slurp[*]}" =~ "${func}"  ]]; then
+				continue
+			fi
+		fi
+
 		obtain_query "$func"
 		$wrapper query_influx "$QUERY" "$query_name" "$fields" "$tags" | sed "s/$/$append/"
 	done
 }
 
-meta_slurp-upto() { ## <yyyy-mm-dd>: Slurps data up to a specific date.
+meta_slurp-upto() { ## <yyyy-mm-dd> [slurp-name [2nd-slurp-name [...]]]: Slurps data up to a specific date.
 	handle_help "$@" <<-EOF
 		Obtain influx compatible metrics regarding the summed state of the
 		server up to a specific date. UseGalaxy.EU uses this to display things
@@ -133,15 +143,25 @@ meta_slurp-upto() { ## <yyyy-mm-dd>: Slurps data up to a specific date.
 		but with date filters for the entries' creation times.
 	EOF
 
+	date=$1; shift
+	specific_slurp=($@)
+
 	# shellcheck disable=SC2013
 	for func in $(grep -s -h -o '^query_server-[a-z-]*' "$0" "$GXADMIN_SITE_SPECIFIC" | sort | sed 's/query_//g'); do
-		obtain_query "$func" "$1" "<="
+		# To allow only slurping the one that was requested, if this was done.
+		if (( ${#specific_slurp[@]} > 0 )); then
+			if [[ ! "${specific_slurp[*]}" =~ "${func}"  ]]; then
+				continue
+			fi
+		fi
+
+		obtain_query "$func" "$date" "<="
 		$wrapper query_influx "$QUERY" "$query_name.upto" "$fields" "$tags" | \
-			sed "s/$/ $(date -d "$1" +%s%N)/"
+			sed "s/$/ $(date -d "$date" +%s%N)/"
 	done
 }
 
-meta_slurp-day() { ## <yyyy-mm-dd>: Slurps data on a specific date.
+meta_slurp-day() { ## <yyyy-mm-dd> [slurp-name [2nd-slurp-name [...]]]: Slurps data on a specific date.
 	handle_help "$@" <<-EOF
 		Obtain influx compatible metrics regarding the state of the
 		server on a specific date. UseGalaxy.EU uses this to display things
@@ -185,12 +205,73 @@ meta_slurp-day() { ## <yyyy-mm-dd>: Slurps data on a specific date.
 
 	EOF
 
+	date=$1; shift;
+	specific_slurp=($@)
+
 	# shellcheck disable=SC2013
 	for func in $(grep -s -h -o '^query_server-[a-z-]*' "$0" "$GXADMIN_SITE_SPECIFIC" | sort | sed 's/query_//g'); do
-		obtain_query "$func" "$1"
+		# To allow only slurping the one that was requested, if this was done.
+		if (( ${#specific_slurp[@]} > 0 )); then
+			if [[ ! "${specific_slurp[*]}" =~ "${func}"  ]]; then
+				continue
+			fi
+		fi
+
+		obtain_query "$func" "$date"
 		$wrapper query_influx "$QUERY" "$query_name.daily" "$fields" "$tags" | \
-			sed "s/$/ $(date -d "$1" +%s%N)/"
+			sed "s/$/ $(date -d "$date" +%s%N)/"
 	done
+}
+
+meta_slurp-initial() { ## <yyyy-mm-dd> <yyyy-mm-dd> [slurp-name [2nd-slurp-name [...]]]: Slurps data starting at the first date until the second date.
+	handle_help "$@" <<-EOF
+		Obtains influx compatible metrics between dates and posts this to Influx.
+		This function calls 'gxadmin meta slurp-upto' and 'gxadmin meta slurp-day'.
+
+		It requires a start and end date. Allows to run specific slurp queries.
+	EOF
+
+	# Variables
+	begindate=$1; shift
+	enddate=$1; shift
+	specific_slurp=($@)
+	specific_slurp_string=""
+	if (( ${#specific_slurp[@]} > 0 )); then
+		for specificslurppiece in "${specific_slurp[@]}"; do
+			if (( ${#specific_slurp_string} == 0 )); then
+				specific_slurp_string="$specificslurppiece"
+			else
+				specific_slurp_string="$specific_slurp_string $specificslurppiece"
+			fi
+		done
+	fi
+
+	tmpfile=/tmp/gxadmin-meta-slurp-initial-$(date +%s)
+
+	# Create temporary file
+	echo "" > $tmpfile
+
+	# Validate environment
+	assert_set_env INFLUX_DB
+	assert_set_env INFLUX_URL
+	assert_set_env INFLUX_PASS
+	assert_set_env INFLUX_USER
+
+	# Loop for the data
+	d=$begindate
+	while [ "$d" != $enddate ]; do
+		echo "Slurping for $d"
+		# Slurp the data
+		meta_slurp-upto $d $specific_slurp_string > $tmpfile
+		meta_slurp-day $d $specific_slurp_string >> $tmpfile
+
+		# Post to influxdb
+		meta_influx-post $INFLUX_DB $tmpfile
+
+		d=$(date -I -d "$d + 1 day")
+	done
+
+	rm $tmpfile
 }
 
 meta_error() {

@@ -31,6 +31,16 @@ query_expj() {
 }
 
 query_influx() {
+	local query="$1"
+	local rename="$2"
+	local fields="$3"
+	local tags="$4"
+	local timestamp="$5"
+
+	if [[ -z "$fields" ]]; then
+		exit 0;
+	fi
+
 	arr2py=$(cat <<EOF
 import sys
 query_name = sys.argv[1]
@@ -49,7 +59,7 @@ for line in sys.stdin.read().split('\n'):
 	parsed = line.split('\t')
 	metric = query_name
 	if len(tags):
-		tag_data = ['%s=%s' % (k, parsed[v].replace(' ', '\\ ').replace(',', '\\,'))  for (k, v) in tags.items()]
+		tag_data = ['%s=%s' % (k, parsed[v].replace(' ', '\\ ').replace(',', '\\,').replace('=', '\\='))  for (k, v) in tags.items()]
 		metric += ',' + ','.join(tag_data)
 	field_data = ['%s=%s' % (k, parsed[v])  for (k, v) in fields.items()]
 	metric += ' ' + ','.join(field_data)
@@ -60,7 +70,7 @@ for line in sys.stdin.read().split('\n'):
 EOF
 )
 
-	psql -c "COPY ($1) to STDOUT with CSV DELIMITER E'\t'"| python -c "$arr2py" "$2" "$3" "$4" "$5"
+	psql -c "COPY ($query) to STDOUT with CSV DELIMITER E'\t'"| python -c "$arr2py" "$rename" "$fields" "$tags" "$timestamp"
 }
 
 gdpr_safe() {
@@ -78,4 +88,39 @@ gdpr_safe() {
 		# linking data across tables if need be?
 		echo "substring(md5(COALESCE($1, '$coalesce_to') || now()::date), 0, 12) as ${2:-$1}"
 	fi
+}
+
+# Borrowed from https://stackoverflow.com/questions/1527049/how-can-i-join-elements-of-an-array-in-bash
+function join_by {
+	local d=$1; shift;
+	echo -n "$1";
+	shift;
+	printf "%s" "${@/#/$d}";
+}
+
+summary_statistics() {
+	local v=$1
+	local ishuman=$2
+
+	# TODO: there has got to be a less ugly way to do this
+	if (( ishuman == 1 )); then
+		human_size="pg_size_pretty("
+		human_after=")"
+	else
+		human_size=""
+		human_after=""
+	fi
+
+	cat <<-EOF
+		${human_size}min($v)${human_after} AS min,
+		${human_size}percentile_cont(0.25) WITHIN GROUP (ORDER BY $v) ::bigint${human_after} AS quant_1st,
+		${human_size}percentile_cont(0.50) WITHIN GROUP (ORDER BY $v) ::bigint${human_after} AS median,
+		${human_size}avg($v)${human_after} AS mean,
+		${human_size}percentile_cont(0.75) WITHIN GROUP (ORDER BY $v) ::bigint${human_after} AS quant_3rd,
+		${human_size}percentile_cont(0.95) WITHIN GROUP (ORDER BY $v) ::bigint${human_after} AS perc_95,
+		${human_size}percentile_cont(0.99) WITHIN GROUP (ORDER BY $v) ::bigint${human_after} AS perc_99,
+		${human_size}max($v)${human_after} AS max,
+		${human_size}sum($v)${human_after} AS sum,
+		${human_size}stddev($v)${human_after} AS stddev
+	EOF
 }
