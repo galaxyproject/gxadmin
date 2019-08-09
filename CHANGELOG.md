@@ -10,6 +10,11 @@
 	- query queue-detail-by-handler
 	- mutate reassign-job-to-handler
 	- a LOT of query pg-... commands from [heroku's pg-extras](https://github.com/heroku/heroku-pg-extras/tree/master/commands)
+	- mutate drop-extraneous-workflow-step-output-associations
+	- mutate reassign-workflows-to-handler
+	- query data-origin-distribution
+	- query data-origin-distribution-summary
+	- query user-history-list
 
 # 14
 
