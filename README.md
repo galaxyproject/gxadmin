@@ -241,6 +241,7 @@ Command | Description
 [`query user-disk-quota`](docs/README.query.md#query-user-disk-quota) | Retrieves the 50 users with the largest quotas
 [`query user-disk-usage`](docs/README.query.md#query-user-disk-usage) | Retrieve an approximation of the disk usage for users
 [`query user-gpu-years`](docs/README.query.md#query-user-gpu-years) | GPU years allocated to tools by user
+[`query user-history-list`](docs/README.query.md#query-user-history-list) | Shows the ID of the history, it's size and when it was last updated.
 [`query user-recent-aggregate-jobs`](docs/README.query.md#query-user-recent-aggregate-jobs) | Show aggregate information for jobs in past N days for user
 [`query users-count`](docs/README.query.md#query-users-count) | Shows sums of active/external/deleted/purged accounts
 [`query users-total`](docs/README.query.md#query-users-total) | Total number of Galaxy users (incl deleted, purged, inactive)
