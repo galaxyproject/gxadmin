@@ -97,3 +97,29 @@ function join_by {
 	shift;
 	printf "%s" "${@/#/$d}";
 }
+
+summary_statistics() {
+	local v=$1
+	local ishuman=$2
+
+	# TODO: there has got to be a less ugly way to do this
+	if (( ishuman == 1 )); then
+		human_size="pg_size_pretty("
+		human_after=")"
+	else
+		human_size=""
+		human_after=""
+	fi
+
+	cat <<-EOF
+		${human_size}min($v)${human_after} AS min,
+		${human_size}percentile_cont(0.25) WITHIN GROUP (ORDER BY $v) ::bigint${human_after} AS quant_1st,
+		${human_size}percentile_cont(0.50) WITHIN GROUP (ORDER BY $v) ::bigint${human_after} AS median,
+		${human_size}avg($v)${human_after} AS mean,
+		${human_size}percentile_cont(0.75) WITHIN GROUP (ORDER BY $v) ::bigint${human_after} AS quant_3rd,
+		${human_size}percentile_cont(0.95) WITHIN GROUP (ORDER BY $v) ::bigint${human_after} AS perc_95,
+		${human_size}percentile_cont(0.99) WITHIN GROUP (ORDER BY $v) ::bigint${human_after} AS perc_99,
+		${human_size}max($v)${human_after} AS max,
+		${human_size}stddev($v)${human_after} AS stddev
+	EOF
+}

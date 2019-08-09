@@ -171,6 +171,8 @@ Command | Description
 Command | Description
 ------- | -----------
 [`query collection-usage`](docs/README.query.md#query-collection-usage) | Information about how many collections of various types are used
+[`query data-origin-distribution`](docs/README.query.md#query-data-origin-distribution) | data sources (uploaded vs derived)
+[`query data-origin-distribution-summary`](docs/README.query.md#query-data-origin-distribution-summary) | breakdown of data sources (uploaded vs derived)
 [`query datasets-created-daily`](docs/README.query.md#query-datasets-created-daily) | The min/max/average/p95/p99 of total size of datasets created in a single day.
 [`query disk-usage`](docs/README.query.md#query-disk-usage) | Disk usage per object store.
 [`query errored-jobs`](docs/README.query.md#query-errored-jobs) | Lists jobs that errored in the last N hours.

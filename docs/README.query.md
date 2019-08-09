@@ -3,6 +3,8 @@
 Command | Description
 ------- | -----------
 [`query collection-usage`](#query-collection-usage) | Information about how many collections of various types are used
+[`query data-origin-distribution`](#query-data-origin-distribution) | data sources (uploaded vs derived)
+[`query data-origin-distribution-summary`](#query-data-origin-distribution-summary) | breakdown of data sources (uploaded vs derived)
 [`query datasets-created-daily`](#query-datasets-created-daily) | The min/max/average/p95/p99 of total size of datasets created in a single day.
 [`query disk-usage`](#query-disk-usage) | Disk usage per object store.
 [`query errored-jobs`](#query-errored-jobs) | Lists jobs that errored in the last N hours.
@@ -88,6 +90,39 @@ query collection-usage -  Information about how many collections of various type
 **SYNOPSIS**
 
     gxadmin query collection-usage
+
+
+## query data-origin-distribution
+
+query data-origin-distribution -  data sources (uploaded vs derived)
+
+**SYNOPSIS**
+
+    gxadmin query data-origin-distribution [--human]
+
+**NOTES**
+
+Break down the source of data in the server, uploaded data vs derived (created as output from a tool)
+
+
+## query data-origin-distribution-summary
+
+query data-origin-distribution-summary -  breakdown of data sources (uploaded vs derived)
+
+**SYNOPSIS**
+
+    gxadmin query data-origin-distribution-summary [--human]
+
+**NOTES**
+
+Break down the source of data in the server, uploaded data vs derived (created as output from a tool)
+
+This query builds a table with the volume of derivced and uploaded data per user, and then summarizes this:
+
+origin  |   min   | quant_1st | median  |  mean  | quant_3rd | perc_95 | perc_99 |  max  | stddev
+------- | ------- | --------- | ------- | ------ | --------- | ------- | ------- | ----- | --------
+created | 0 bytes | 17 MB     | 458 MB  | 36 GB  | 11 GB     | 130 GB  | 568 GB  | 11 TB | 257 GB
+derived | 0 bytes | 39 MB     | 1751 MB | 200 GB | 28 GB     | 478 GB  | 2699 GB | 90 TB | 2279 GB
 
 
 ## query datasets-created-daily
