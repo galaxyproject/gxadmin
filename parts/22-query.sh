@@ -3183,7 +3183,7 @@ query_data-origin-distribution-summary() { ## [--human]: breakdown of data sourc
 	EOF
 
 	tags="dataorigin=0"
-	fields="min=1;q1=2;median=3;mean=4;q3=5;p95=6;p99=7;max=8;stddev=9"
+	fields="min=1;q1=2;median=3;mean=4;q3=5;p95=6;p99=7;max=8;sum=9;stddev=10"
 
 	if [[ $1 == "--human" ]]; then
 		human=1

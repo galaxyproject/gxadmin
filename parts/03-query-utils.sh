@@ -120,6 +120,7 @@ summary_statistics() {
 		${human_size}percentile_cont(0.95) WITHIN GROUP (ORDER BY $v) ::bigint${human_after} AS perc_95,
 		${human_size}percentile_cont(0.99) WITHIN GROUP (ORDER BY $v) ::bigint${human_after} AS perc_99,
 		${human_size}max($v)${human_after} AS max,
+		${human_size}sum($v)${human_after} AS sum,
 		${human_size}stddev($v)${human_after} AS stddev
 	EOF
 }
