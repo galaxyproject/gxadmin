@@ -132,6 +132,7 @@ Command | Description
 [`galaxy amqp-test`](docs/README.galaxy.md#galaxy-amqp-test) | Test a given AMQP URL for connectivity
 [`galaxy cleanup`](docs/README.galaxy.md#galaxy-cleanup) | Cleanup histories/hdas/etc for past N days (default=30)
 [`galaxy cleanup-jwd`](docs/README.galaxy.md#galaxy-cleanup-jwd) | (NEW) Cleanup job working directories
+[`galaxy fix-conda-env`](docs/README.galaxy.md#galaxy-fix-conda-env) | Fix broken conda environments
 [`galaxy migrate-tool-install-from-sqlite`](docs/README.galaxy.md#galaxy-migrate-tool-install-from-sqlite) | Converts SQLite version into normal potsgres toolshed repository tables
 [`galaxy migrate-tool-install-to-sqlite`](docs/README.galaxy.md#galaxy-migrate-tool-install-to-sqlite) | Converts normal potsgres toolshed repository tables into the SQLite version
 

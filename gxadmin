@@ -5168,6 +5168,23 @@ galaxy_cleanup-jwd() { ## <working_dir> [1|months ago]: (NEW) Cleanup job workin
 			fi
 	done
 }
+
+galaxy_fix-conda-env() { ## <conda_dir/envs/>: Fix broken conda environments
+	handle_help "$@" <<-EOF
+		Fixes any broken conda environments which are missing the activate scripts in their correct locations.
+
+		MUST end in /envs/
+	EOF
+
+	conda_dir=$(dirname $1)
+
+	for i in $(find ${conda_dir}/envs/ -mindepth 1 -maxdepth 1 -type d);
+	do
+		if [ ! -f $i/bin/conda ]; then
+			${conda_dir}/bin/conda ..checkenv bash $i
+		fi
+	done
+}
 report_user-info(){ ## <user_id|username|email>: Quick overview of a Galaxy user in your system
 	handle_help "$@" <<-EOF
 		This command lets you quickly find out information about a user. The output is formatted as markdown by default.

@@ -5,6 +5,7 @@ Command | Description
 [`galaxy amqp-test`](#galaxy-amqp-test) | Test a given AMQP URL for connectivity
 [`galaxy cleanup`](#galaxy-cleanup) | Cleanup histories/hdas/etc for past N days (default=30)
 [`galaxy cleanup-jwd`](#galaxy-cleanup-jwd) | (NEW) Cleanup job working directories
+[`galaxy fix-conda-env`](#galaxy-fix-conda-env) | Fix broken conda environments
 [`galaxy migrate-tool-install-from-sqlite`](#galaxy-migrate-tool-install-from-sqlite) | Converts SQLite version into normal potsgres toolshed repository tables
 [`galaxy migrate-tool-install-to-sqlite`](#galaxy-migrate-tool-install-to-sqlite) | Converts normal potsgres toolshed repository tables into the SQLite version
 
@@ -79,6 +80,21 @@ were changed less recently than N months.
  Then it takes the first 1000 entries and cleans them up. This was more
 of a hack to handle the fact that the list produced by find is really
 long, and the for loop hangs until it's done generating the list.
+
+
+## galaxy fix-conda-env
+
+galaxy fix-conda-env -  Fix broken conda environments
+
+**SYNOPSIS**
+
+    gxadmin galaxy fix-conda-env <conda_dir/envs/>
+
+**NOTES**
+
+Fixes any broken conda environments which are missing the activate scripts in their correct locations.
+
+MUST end in /envs/
 
 
 ## galaxy migrate-tool-install-from-sqlite
