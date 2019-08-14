@@ -3155,18 +3155,29 @@ query_data-origin-distribution() { ## [--human]: data sources (uploaded vs deriv
 	fi
 
 	summary="$(summary_statistics data $human)"
+	username=$(gdpr_safe job.user_id galaxy_user)
 
 	read -r -d '' QUERY <<-EOF
+		WITH asdf AS (
+			SELECT
+				case when job.tool_id = 'upload1' then 'created' else 'derived' end AS origin,
+				sum(coalesce(dataset.total_size, coalesce(dataset.file_size, 0))) AS data,
+				date_trunc('month', dataset.create_time) as created,
+				$username
+			FROM job
+			LEFT JOIN job_to_output_dataset ON job.id = job_to_output_dataset.job_id
+			LEFT JOIN history_dataset_association ON job_to_output_dataset.dataset_id = history_dataset_association.id
+			LEFT JOIN dataset ON history_dataset_association.dataset_id = dataset.id
+			GROUP BY
+				origin, job.user_id, created, galaxy_user
+		)
 		SELECT
-			case when job.tool_id = 'upload1' then 'created' else 'derived' end AS origin,
-			sum(coalesce(dataset.total_size, coalesce(dataset.file_size, 0))) AS data,
-			job.user_id
-		FROM job
-		LEFT JOIN job_to_output_dataset ON job.id = job_to_output_dataset.job_id
-		LEFT JOIN history_dataset_association ON job_to_output_dataset.dataset_id = history_dataset_association.id
-		LEFT JOIN dataset ON history_dataset_association.dataset_id = dataset.id
-		GROUP BY
-			origin, job.user_id
+			origin,
+			round(data, 2 - length(data::text)),
+			created,
+			galaxy_user
+		FROM asdf
+		ORDER BY galaxy_user desc
 	EOF
 }
 
