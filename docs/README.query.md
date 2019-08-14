@@ -104,6 +104,24 @@ query data-origin-distribution -  data sources (uploaded vs derived)
 
 Break down the source of data in the server, uploaded data vs derived (created as output from a tool)
 
+Recommendation is to run with GDPR_MODE so you can safely share this information:
+
+    GDPR_MODE=$(openssl rand -hex 24 2>/dev/null) gxadmin tsvquery data-origin-distribution | gzip > data-origin.tsv.gz
+
+Output looks like:
+
+    derived 130000000000    2019-07-01 00:00:00     fff4f423d06
+    derived 61000000000     2019-08-01 00:00:00     fff4f423d06
+    created 340000000       2019-08-01 00:00:00     fff4f423d06
+    created 19000000000     2019-07-01 00:00:00     fff4f423d06
+    derived 180000000000    2019-04-01 00:00:00     ffd28c0cf8c
+    created 21000000000     2019-04-01 00:00:00     ffd28c0cf8c
+    derived 1700000000      2019-06-01 00:00:00     ffd28c0cf8c
+    derived 120000000       2019-06-01 00:00:00     ffcb567a837
+    created 62000000        2019-05-01 00:00:00     ffcb567a837
+    created 52000000        2019-06-01 00:00:00     ffcb567a837
+    derived 34000000        2019-07-01 00:00:00     ffcb567a837
+
 
 ## query data-origin-distribution-summary
 
