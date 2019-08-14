@@ -1,5 +1,8 @@
 # 16-pre
 
+- Fixed:
+	- figured out how to decode hex blobs in postgres
+
 # 15
 
 - Fancy [new docs site](https://usegalaxy-eu.github.io/gxadmin/#/)
