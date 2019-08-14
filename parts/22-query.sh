@@ -2173,7 +2173,7 @@ query_server-groups-disk-usage() { ## [YYYY-MM-DD] [=, <=, >= operators]: Retrie
 		WHERE NOT dataset.purged
 			AND dataset.id = history_dataset_association.dataset_id
 			AND history_dataset_association.history_id = history.id
-			AND history.user_id = user_group_association.id
+			AND history.user_id = user_group_association.user_id
 			AND user_group_association.group_id = galaxy_group.id
 			$date_filter
 		GROUP BY galaxy_group.name
