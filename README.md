@@ -64,7 +64,7 @@ Example .pgpass:
 
 ### InfluxDB
 
-In order to use functions like `gxadmin meta influx-post`, `gxadmin` requires 
+In order to use functions like `gxadmin meta influx-post`, `gxadmin` requires
 a few environment variables to be set. Namely
 *  `INFLUX_URL`
 *  `INFLUX_PASS`
@@ -74,6 +74,8 @@ a few environment variables to be set. Namely
 ### GDPR
 
 You may want to set `GDPR_MODE=1`. Please determine your own legal responsibilities, the authors take no responsibility for anything you may have done wrong.
+
+If you want to publish data, first be careful! Second, the `GDPR_MODE` variable is part of the hash, so you can set it to something like `GDPR_MODE=$(openssl rand -hex 24 2>/dev/null) gxadmin query ...` for hashing and "throwing away the key"
 
 ### Local Functions
 

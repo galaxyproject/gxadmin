@@ -85,12 +85,12 @@ gdpr_safe() {
 		coalesce_to="__UNKNOWN__"
 	fi
 
-	if [ -z "$GDPR_MODE"  ]; then
+	if [ -z "$GDPR_MODE" ]; then
 		echo "COALESCE($1, '$coalesce_to')"
 	else
 		# Try and be privacy respecting while generating numbers that can allow
 		# linking data across tables if need be?
-		echo "substring(md5(COALESCE($1, '$coalesce_to') || now()::date), 0, 12) as ${2:-$1}"
+		echo "substring(md5(COALESCE($1::text, '$coalesce_to') || now()::date || '$GDPR_MODE'), 0, 12) as ${2:-$1}"
 	fi
 }
 
