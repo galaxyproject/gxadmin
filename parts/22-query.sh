@@ -3146,6 +3146,10 @@ query_pg-stat-user-tables() { ## : stats about tables (tuples, index scans, vacu
 query_data-origin-distribution() { ## [--human]: data sources (uploaded vs derived)
 	handle_help "$@" <<-EOF
 		Break down the source of data in the server, uploaded data vs derived (created as output from a tool)
+
+		Recommendation is to run with GDPR_MODE so you can safely share this information:
+
+		    GDPR_MODE=\$(openssl rand -hex 24 2>/dev/null) gxadmin query data-origin-distribution | gzip > data-origin.tsv.gz
 	EOF
 
 	if [[ $1 == "--human" ]]; then
