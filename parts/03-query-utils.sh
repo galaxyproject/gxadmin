@@ -30,6 +30,10 @@ query_expj() {
 	EOF
 }
 
+query_echo() {
+	echo "$1"
+}
+
 query_influx() {
 	local query="$1"
 	local rename="$2"

@@ -35,6 +35,7 @@ query() {
 		iquery           ) $wrapper query_influx "$QUERY" "$query_name" "$fields" "$tags" "$timestamp";;
 		explainquery     ) $wrapper query_exp "$QUERY";;
 		explainjsonquery ) $wrapper query_expj "$QUERY";;
+		echoquery        ) $wrapper query_echo "$QUERY";;
 		# default
 		*            )  usage "Error";;
 	esac
