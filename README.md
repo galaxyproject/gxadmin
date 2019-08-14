@@ -123,7 +123,7 @@ Command | Description
 Command | Description
 ------- | -----------
 [`filter digest-color`](docs/README.filter.md#filter-digest-color) | Color an input stream based on the contents (e.g. hostname)
-[`filter hexdecode`](docs/README.filter.md#filter-hexdecode) | Decodes any hex blobs from postgres outputs
+`filter hexdecode` | Deprecated, There is an easier built in postgres function for this same feature
 [`filter identicon`](docs/README.filter.md#filter-identicon) | Convert an input data stream into an identicon (e.g. with hostname)
 [`filter pg2md`](docs/README.filter.md#filter-pg2md) | Convert postgres table format outputs to something that can be pasted as markdown
 

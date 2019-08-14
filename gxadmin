@@ -3402,7 +3402,7 @@ query_server-groups-disk-usage() { ## [YYYY-MM-DD] [=, <=, >= operators]: Retrie
 		WHERE NOT dataset.purged
 			AND dataset.id = history_dataset_association.dataset_id
 			AND history_dataset_association.history_id = history.id
-			AND history.user_id = user_group_association.id
+			AND history.user_id = user_group_association.user_id
 			AND user_group_association.group_id = galaxy_group.id
 			$date_filter
 		GROUP BY galaxy_group.name
@@ -4518,7 +4518,7 @@ filter_digest-color() { ## : Color an input stream based on the contents (e.g. h
 	echo "$(tput setaf $fg_color)$(tput setab $bg_color)${data}$(tput sgr0)"
 }
 
-filter_hexdecode() { ## : Decodes any hex blobs from postgres outputs
+filter_hexdecode() { ## : Deprecated, There is an easier built in postgres function for this same feature
 	handle_help "$@" <<-EOF
 		This automatically replaces any hex strings (\\x[a-f0-9]+) with their decoded versions. This can allow you to query galaxy metadata, decode it, and start processing it with JQ. Just pipe your query to it and it will replace it wherever it is found.
 
@@ -4569,6 +4569,7 @@ filter_hexdecode() { ## : Decodes any hex blobs from postgres outputs
 	EOF
 
 	cat | python -c "$hexdecodelines"
+	warning "If you are still using this, consider updating your query to use: convert_from(your-column::bytea, 'UTF8')"
 }
 uwsgi_stats-influx(){ ## <addr>: InfluxDB formatted output for the current stats
 	handle_help "$@" <<-EOF
@@ -5446,14 +5447,14 @@ EOF
 	# DEST PARAMS #
 	###         ###
 	read -r -d '' qstr <<-EOF
-		SELECT destination_params
+		SELECT convert_from(destination_params::bytea, 'UTF8')
 		FROM job
 		WHERE job.id = $job_id
 	EOF
 	results=$(query_tsv "$qstr")
 	printf "## Destination Parameters\n\n"
 	# shellcheck disable=SC2016
-	tbl=$(echo "$results" | python -c "$hexdecodelines" | jq -S '. | to_entries[] | [.key, .value] | @tsv' -r | sed 's/\t/\t`/g;s/$/`/g')
+	tbl=$(echo "$results" | jq -S '. | to_entries[] | [.key, .value] | @tsv' -r | sed 's/\t/\t`/g;s/$/`/g')
 	# shellcheck disable=SC2059
 	printf "Key\tValue\n---\t---\n$tbl" | sed 's/\t/\t | \t/g' | column -t -s'	'
 
@@ -5461,13 +5462,13 @@ EOF
 	# DEPENDENCIES #
 	###          ###
 	read -r -d '' qstr <<-EOF
-		SELECT dependencies
+		SELECT convert_from(dependencies::bytea, 'UTF8')
 		FROM job
 		WHERE job.id = $job_id
 	EOF
 	results=$(query_tsv "$qstr")
 	printf "\n## Dependencies\n\n"
-	tbl=$(echo "$results" | python -c "$hexdecodelines" | jq -S '.[] | [.name, .version, .dependency_type, .cacheable, .exact, .environment_path, .model_class] | @tsv' -r)
+	tbl=$(echo "$results" | jq -S '.[] | [.name, .version, .dependency_type, .cacheable, .exact, .environment_path, .model_class] | @tsv' -r)
 	# shellcheck disable=SC2059
 	printf "Name\tVersion\tDependency Type\tCacheable\tExact\tEnvironment Path\tModel Class\n----\t-------\t---------------\t---------\t-----\t----------------\t-----------\n$tbl\n" | sed 's/\t/\t | \t/g'       #| column -t -s'	'
 

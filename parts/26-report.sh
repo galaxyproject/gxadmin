@@ -244,14 +244,14 @@ EOF
 	# DEST PARAMS #
 	###         ###
 	read -r -d '' qstr <<-EOF
-		SELECT destination_params
+		SELECT convert_from(destination_params::bytea, 'UTF8')
 		FROM job
 		WHERE job.id = $job_id
 	EOF
 	results=$(query_tsv "$qstr")
 	printf "## Destination Parameters\n\n"
 	# shellcheck disable=SC2016
-	tbl=$(echo "$results" | python -c "$hexdecodelines" | jq -S '. | to_entries[] | [.key, .value] | @tsv' -r | sed 's/\t/\t`/g;s/$/`/g')
+	tbl=$(echo "$results" | jq -S '. | to_entries[] | [.key, .value] | @tsv' -r | sed 's/\t/\t`/g;s/$/`/g')
 	# shellcheck disable=SC2059
 	printf "Key\tValue\n---\t---\n$tbl" | sed 's/\t/\t | \t/g' | column -t -s'	'
 
@@ -259,13 +259,13 @@ EOF
 	# DEPENDENCIES #
 	###          ###
 	read -r -d '' qstr <<-EOF
-		SELECT dependencies
+		SELECT convert_from(dependencies::bytea, 'UTF8')
 		FROM job
 		WHERE job.id = $job_id
 	EOF
 	results=$(query_tsv "$qstr")
 	printf "\n## Dependencies\n\n"
-	tbl=$(echo "$results" | python -c "$hexdecodelines" | jq -S '.[] | [.name, .version, .dependency_type, .cacheable, .exact, .environment_path, .model_class] | @tsv' -r)
+	tbl=$(echo "$results" | jq -S '.[] | [.name, .version, .dependency_type, .cacheable, .exact, .environment_path, .model_class] | @tsv' -r)
 	# shellcheck disable=SC2059
 	printf "Name\tVersion\tDependency Type\tCacheable\tExact\tEnvironment Path\tModel Class\n----\t-------\t---------------\t---------\t-----\t----------------\t-----------\n$tbl\n" | sed 's/\t/\t | \t/g'       #| column -t -s'	'
 

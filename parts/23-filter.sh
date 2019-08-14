@@ -62,7 +62,7 @@ filter_digest-color() { ## : Color an input stream based on the contents (e.g. h
 	echo "$(tput setaf $fg_color)$(tput setab $bg_color)${data}$(tput sgr0)"
 }
 
-filter_hexdecode() { ## : Decodes any hex blobs from postgres outputs
+filter_hexdecode() { ## : Deprecated, There is an easier built in postgres function for this same feature
 	handle_help "$@" <<-EOF
 		This automatically replaces any hex strings (\\x[a-f0-9]+) with their decoded versions. This can allow you to query galaxy metadata, decode it, and start processing it with JQ. Just pipe your query to it and it will replace it wherever it is found.
 
@@ -113,4 +113,5 @@ filter_hexdecode() { ## : Decodes any hex blobs from postgres outputs
 	EOF
 
 	cat | python -c "$hexdecodelines"
+	warning "If you are still using this, consider updating your query to use: convert_from(your-column::bytea, 'UTF8')"
 }
