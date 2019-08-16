@@ -1636,7 +1636,7 @@ query_job-outputs() { ## <id>: Output datasets from a specific job
 	EOF
 }
 
-query_job-info() { ## <-|job_id [job_id [job_id [...]]]> : Retrieve information about jobs given some job IDs
+query_job-info() { ## <-|job_id [job_id [...]]> : Retrieve information about jobs given some job IDs
 	handle_help "$@" <<-EOF
 		Retrieves information on a job, like the host it ran on,
 		how long it ran for and the total memory.

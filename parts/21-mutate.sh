@@ -431,7 +431,7 @@ mutate_drop-extraneous-workflow-step-output-associations() { ## [--commit]: #841
 	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
 }
 
-mutate_restart-jobs() { ## [--commit] <-|job_id [job_id [job_id [...]]]> : Restart some jobs
+mutate_restart-jobs() { ## [--commit] <-|job_id [job_id [...]]> : Restart some jobs
 	handle_help "$@" <<-EOF
 		Restart jobs
 	EOF

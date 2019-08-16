@@ -1231,7 +1231,7 @@ mutate_drop-extraneous-workflow-step-output-associations() { ## [--commit]: #841
 	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
 }
 
-mutate_restart-jobs() { ## [--commit] <-|job_id [job_id [job_id [...]]]> : Restart some jobs
+mutate_restart-jobs() { ## [--commit] <-|job_id [job_id [...]]> : Restart some jobs
 	handle_help "$@" <<-EOF
 		Restart jobs
 	EOF
@@ -2899,7 +2899,7 @@ query_job-outputs() { ## <id>: Output datasets from a specific job
 	EOF
 }
 
-query_job-info() { ## <-|job_id [job_id [job_id [...]]]> : Retrieve information about jobs given some job IDs
+query_job-info() { ## <-|job_id [job_id [...]]> : Retrieve information about jobs given some job IDs
 	handle_help "$@" <<-EOF
 		Retrieves information on a job, like the host it ran on,
 		how long it ran for and the total memory.
