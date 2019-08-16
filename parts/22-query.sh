@@ -1636,7 +1636,7 @@ query_job-outputs() { ## <id>: Output datasets from a specific job
 	EOF
 }
 
-query_job-info() { ## <-|job_id> [job_id [job_id [...]]] : Retrieve information about jobs given some job IDs
+query_job-info() { ## <-|job_id [job_id [job_id [...]]]> : Retrieve information about jobs given some job IDs
 	handle_help "$@" <<-EOF
 		Retrieves information on a job, like the host it ran on,
 		how long it ran for and the total memory.
@@ -3140,6 +3140,34 @@ query_pg-stat-user-tables() { ## : stats about tables (tuples, index scans, vacu
 			autoanalyze_count
 		FROM
 			pg_stat_user_tables
+	EOF
+}
+
+query_data-origin-distribution-merged() {
+	summary="$(summary_statistics data $human)"
+	username=$(gdpr_safe job.user_id galaxy_user)
+
+	read -r -d '' QUERY <<-EOF
+		WITH asdf AS (
+			SELECT
+				'total' as origin,
+				sum(coalesce(dataset.total_size, coalesce(dataset.file_size, 0))) AS data,
+				date_trunc('month', dataset.create_time) as created,
+				$username
+			FROM job
+			LEFT JOIN job_to_output_dataset ON job.id = job_to_output_dataset.job_id
+			LEFT JOIN history_dataset_association ON job_to_output_dataset.dataset_id = history_dataset_association.id
+			LEFT JOIN dataset ON history_dataset_association.dataset_id = dataset.id
+			GROUP BY
+				origin, job.user_id, created, galaxy_user
+		)
+		SELECT
+			origin,
+			round(data, 2 - length(data::text)),
+			created,
+			galaxy_user
+		FROM asdf
+		ORDER BY galaxy_user desc
 	EOF
 }
 

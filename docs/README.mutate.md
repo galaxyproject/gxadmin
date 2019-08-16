@@ -13,6 +13,7 @@ Command | Description
 [`mutate oidc-role-fix`](#mutate-oidc-role-fix) | Fix permissions for users logged in via OIDC. Workaround for galaxyproject/galaxy#8244
 [`mutate reassign-job-to-handler`](#mutate-reassign-job-to-handler) | Reassign a job to a different handler
 [`mutate reassign-workflows-to-handler`](#mutate-reassign-workflows-to-handler) | Reassign workflows in 'new' state to a different handler.
+[`mutate restart-jobs`](#mutate-restart-jobs) | Restart some jobs
 
 ## mutate approve-user
 
@@ -214,4 +215,17 @@ mutate reassign-workflows-to-handler -  Reassign workflows in 'new' state to a d
 Another workaround for https://github.com/galaxyproject/galaxy/issues/8209
 
 Need to use the full handler names e.g. handler_main_0
+
+
+## mutate restart-jobs
+
+mutate restart-jobs -  Restart some jobs
+
+**SYNOPSIS**
+
+    gxadmin mutate restart-jobs [--commit] <-|job_id [job_id [job_id [...]]]>
+
+**NOTES**
+
+Restart jobs
 

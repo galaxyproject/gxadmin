@@ -430,3 +430,34 @@ mutate_drop-extraneous-workflow-step-output-associations() { ## [--commit]: #841
 	commit=$(should_commit "$1")
 	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
 }
+
+mutate_restart-jobs() { ## [--commit] <-|job_id [job_id [job_id [...]]]> : Restart some jobs
+	handle_help "$@" <<-EOF
+		Restart jobs
+	EOF
+
+	commit_flag=""
+	if [[ $1 == "--commit" ]]; then
+		commit_flag="$1"
+		shift;
+	fi
+
+	if [[ "$1" == "-" ]]; then
+		# read jobs from stdin
+		job_ids=$(cat | paste -s -d' ')
+	else
+		# read from $@
+		job_ids=$@;
+	fi
+
+	job_ids_string=$(join_by ',' ${job_ids[@]})
+
+	read -r -d '' QUERY <<-EOF
+		UPDATE job
+		SET state = 'new'
+		WHERE job.id in ($job_ids_string)
+	EOF
+
+	commit=$(should_commit "$commit_flag")
+	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
+}

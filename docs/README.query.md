@@ -357,7 +357,7 @@ query job-info -  Retrieve information about jobs given some job IDs
 
 **SYNOPSIS**
 
-    gxadmin query job-info <-|job_id> [job_id [job_id [...]]]
+    gxadmin query job-info <-|job_id [job_id [job_id [...]]]>
 
 **NOTES**
 

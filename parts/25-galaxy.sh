@@ -377,3 +377,11 @@ galaxy_fix-conda-env() { ## <conda_dir/envs/>: Fix broken conda environments
 		fi
 	done
 }
+
+galaxy_fav_tools() { ## : Favourite tools in Galaxy DB
+	handle_help "$@" <<-EOF
+		What are people's fav tools
+	EOF
+
+	psql -qAt -c "select value::json->'tools' from user_preference where name = 'favorites'" | jq -s add | jq '. | @tsv' -r | sed 's/\t/\n/g' | sort | uniq -c | sort -n
+}

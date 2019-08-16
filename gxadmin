@@ -1230,6 +1230,37 @@ mutate_drop-extraneous-workflow-step-output-associations() { ## [--commit]: #841
 	commit=$(should_commit "$1")
 	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
 }
+
+mutate_restart-jobs() { ## [--commit] <-|job_id [job_id [job_id [...]]]> : Restart some jobs
+	handle_help "$@" <<-EOF
+		Restart jobs
+	EOF
+
+	commit_flag=""
+	if [[ $1 == "--commit" ]]; then
+		commit_flag="$1"
+		shift;
+	fi
+
+	if [[ "$1" == "-" ]]; then
+		# read jobs from stdin
+		job_ids=$(cat | paste -s -d' ')
+	else
+		# read from $@
+		job_ids=$@;
+	fi
+
+	job_ids_string=$(join_by ',' ${job_ids[@]})
+
+	read -r -d '' QUERY <<-EOF
+		UPDATE job
+		SET state = 'new'
+		WHERE job.id in ($job_ids_string)
+	EOF
+
+	commit=$(should_commit "$commit_flag")
+	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
+}
 query_latest-users() { ## : 40 recently registered users
 	handle_help "$@" <<-EOF
 		Returns 40 most recently registered users
@@ -2868,7 +2899,7 @@ query_job-outputs() { ## <id>: Output datasets from a specific job
 	EOF
 }
 
-query_job-info() { ## <-|job_id> [job_id [job_id [...]]] : Retrieve information about jobs given some job IDs
+query_job-info() { ## <-|job_id [job_id [job_id [...]]]> : Retrieve information about jobs given some job IDs
 	handle_help "$@" <<-EOF
 		Retrieves information on a job, like the host it ran on,
 		how long it ran for and the total memory.
@@ -4375,6 +4406,34 @@ query_pg-stat-user-tables() { ## : stats about tables (tuples, index scans, vacu
 	EOF
 }
 
+query_data-origin-distribution-merged() {
+	summary="$(summary_statistics data $human)"
+	username=$(gdpr_safe job.user_id galaxy_user)
+
+	read -r -d '' QUERY <<-EOF
+		WITH asdf AS (
+			SELECT
+				'total' as origin,
+				sum(coalesce(dataset.total_size, coalesce(dataset.file_size, 0))) AS data,
+				date_trunc('month', dataset.create_time) as created,
+				$username
+			FROM job
+			LEFT JOIN job_to_output_dataset ON job.id = job_to_output_dataset.job_id
+			LEFT JOIN history_dataset_association ON job_to_output_dataset.dataset_id = history_dataset_association.id
+			LEFT JOIN dataset ON history_dataset_association.dataset_id = dataset.id
+			GROUP BY
+				origin, job.user_id, created, galaxy_user
+		)
+		SELECT
+			origin,
+			round(data, 2 - length(data::text)),
+			created,
+			galaxy_user
+		FROM asdf
+		ORDER BY galaxy_user desc
+	EOF
+}
+
 query_data-origin-distribution() { ## [--human]: data sources (uploaded vs derived)
 	handle_help "$@" <<-EOF
 		Break down the source of data in the server, uploaded data vs derived (created as output from a tool)
@@ -5222,6 +5281,14 @@ galaxy_fix-conda-env() { ## <conda_dir/envs/>: Fix broken conda environments
 			${conda_dir}/bin/conda ..checkenv bash $i
 		fi
 	done
+}
+
+galaxy_fav_tools() { ## : Favourite tools in Galaxy DB
+	handle_help "$@" <<-EOF
+		What are people's fav tools
+	EOF
+
+	psql -qAt -c "select value::json->'tools' from user_preference where name = 'favorites'" | jq -s add | jq '. | @tsv' -r | sed 's/\t/\n/g' | sort | uniq -c | sort -n
 }
 report_user-info(){ ## <user_id|username|email>: Quick overview of a Galaxy user in your system
 	handle_help "$@" <<-EOF
