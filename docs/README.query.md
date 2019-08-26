@@ -2,6 +2,7 @@
 
 Command | Description
 ------- | -----------
+[`query aq`](#query-aq) | Given a list of IDs from a table (e.g. 'job'), access a specific column from that table
 [`query collection-usage`](#query-collection-usage) | Information about how many collections of various types are used
 [`query data-origin-distribution`](#query-data-origin-distribution) | data sources (uploaded vs derived)
 [`query data-origin-distribution-summary`](#query-data-origin-distribution-summary) | breakdown of data sources (uploaded vs derived)
@@ -82,6 +83,15 @@ Command | Description
 [`query users-with-oidc`](#query-users-with-oidc) | How many users logged in with OIDC
 [`query workflow-connections`](#query-workflow-connections) | The connections of tools, from output to input, in the latest (or all) versions of user workflows
 [`query workflow-invocation-status`](#query-workflow-invocation-status) | Report on how many workflows are in new state by handler
+
+## query aq
+
+query aq -  Given a list of IDs from a table (e.g. 'job'), access a specific column from that table
+
+**SYNOPSIS**
+
+    gxadmin query aq <table> <column> <-|job_id [job_id [...]]>
+
 
 ## query collection-usage
 

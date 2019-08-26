@@ -3272,3 +3272,28 @@ query_data-origin-distribution-summary() { ## [--human]: breakdown of data sourc
 		GROUP BY origin
 	EOF
 }
+
+query_aq() { ## <table> <column> <-|job_id [job_id [...]]>: Given a list of IDs from a table (e.g. 'job'), access a specific column from that table
+	handle_help "$@" <<-EOF
+	EOF
+
+	table=$1; shift
+	column=$1; shift
+
+	if [[ "$1" == "-" ]]; then
+		# read jobs from stdin
+		ids=$(cat | paste -s -d' ')
+	else
+		# read from $@
+		ids=$@;
+	fi
+
+	ids_string=$(join_by ',' ${ids[@]})
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			$column
+		FROM $table
+		WHERE id in ($ids_string)
+	EOF
+}

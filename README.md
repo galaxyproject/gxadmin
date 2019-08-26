@@ -175,6 +175,7 @@ Command | Description
 
 Command | Description
 ------- | -----------
+[`query aq`](docs/README.query.md#query-aq) | Given a list of IDs from a table (e.g. 'job'), access a specific column from that table
 [`query collection-usage`](docs/README.query.md#query-collection-usage) | Information about how many collections of various types are used
 [`query data-origin-distribution`](docs/README.query.md#query-data-origin-distribution) | data sources (uploaded vs derived)
 [`query data-origin-distribution-summary`](docs/README.query.md#query-data-origin-distribution-summary) | breakdown of data sources (uploaded vs derived)
