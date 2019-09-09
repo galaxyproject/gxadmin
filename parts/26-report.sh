@@ -206,7 +206,6 @@ report_job-info(){ ## <id>: Information about a specific job
 			job.state,
 			job.handler,
 			job.create_time AT TIME ZONE 'UTC' as create_time,
-			(now() AT TIME ZONE 'UTC' - job.create_time)::interval,
 			COALESCE(job.job_runner_name, '?'),
 			COALESCE(job.job_runner_external_id, '?')
 		FROM job
@@ -221,7 +220,7 @@ Property      | Value
          Tool | %s
         State | %s
       Handler | %s
-      Created | %s %s (%s %s %s ago)
+      Created | %s %s
 Job Runner/ID | %s / %s
 EOF
 	# shellcheck disable=SC2059
@@ -253,7 +252,7 @@ EOF
 		FROM job
 		WHERE job.id = $job_id
 	EOF
-	results=$(query_tsv "$qstr")
+	results=$(query_tsv_json "$qstr")
 	printf "## Destination Parameters\n\n"
 	# shellcheck disable=SC2016
 	tbl=$(echo "$results" | jq -S '. | to_entries[] | [.key, .value] | @tsv' -r | sed 's/\t/\t`/g;s/$/`/g')
@@ -268,7 +267,7 @@ EOF
 		FROM job
 		WHERE job.id = $job_id
 	EOF
-	results=$(query_tsv "$qstr")
+	results=$(query_tsv_json "$qstr")
 	printf "\n## Dependencies\n\n"
 	tbl=$(echo "$results" | jq -S '.[] | [.name, .version, .dependency_type, .cacheable, .exact, .environment_path, .model_class] | @tsv' -r)
 	# shellcheck disable=SC2059

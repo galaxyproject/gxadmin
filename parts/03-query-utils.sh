@@ -10,6 +10,12 @@ query_tsv() {
 	EOF
 }
 
+query_tsv_json() {
+	psql <<-EOF
+	COPY ($1) to STDOUT with (FORMAT CSV, QUOTE ' ')
+	EOF
+}
+
 query_csv() {
 	psql <<-EOF
 	COPY ($1) to STDOUT with CSV DELIMITER ','
