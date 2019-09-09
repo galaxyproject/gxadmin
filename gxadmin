@@ -1327,7 +1327,7 @@ query_tool-usage() { ## [weeks]: Counts of tool runs in the past weeks (default 
 	EOF
 }
 
-query_tool-popularity() { ## [months|24]: Most run tools by month
+query_tool-popularity() { ## [months|24]: Most run tools by month (tool_predictions)
 	handle_help "$@" <<-EOF
 		See most popular tools by month
 
@@ -1362,7 +1362,7 @@ query_tool-popularity() { ## [months|24]: Most run tools by month
 	EOF
 }
 
-query_workflow-connections() { ## [--all]: The connections of tools, from output to input, in the latest (or all) versions of user workflows
+query_workflow-connections() { ## [--all]: The connections of tools, from output to input, in the latest (or all) versions of user workflows (tool_predictions)
 	handle_help "$@" <<-EOF
 		This is used by the usegalaxy.eu tool prediction workflow, allowing for building models out of tool connections in workflows.
 
@@ -1399,19 +1399,44 @@ query_workflow-connections() { ## [--all]: The connections of tools, from output
 	read -r -d '' QUERY <<-EOF
 		SELECT
 			ws_in.workflow_id as wf_id,
-			workflow.update_time AT TIME ZONE 'UTC' as wf_updated,
+			workflow.update_time::DATE as wf_updated,
 			wfc.input_step_id as in_id,
 			ws_in.tool_id as in_tool,
 			ws_in.tool_version as in_tool_v,
 			wfc.output_step_id as out_id,
 			ws_out.tool_id as out_tool,
 			ws_out.tool_version as out_tool_v
-		FROM
-			workflow_step_connection wfc
+		FROM workflow_step_connection wfc
 		JOIN workflow_step ws_in  ON ws_in.id = wfc.input_step_id
 		JOIN workflow_step ws_out ON ws_out.id = wfc.output_step_id
 		JOIN workflow on ws_in.workflow_id = workflow.id
 		$wf_filter
+	EOF
+}
+
+query_history-connections() { ## : The connections of tools, from output to input, in histories (tool_predictions)
+	handle_help "$@" <<-EOF
+		This is used by the usegalaxy.eu tool prediction workflow, allowing for building models out of tool connections.
+	EOF
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			h.id AS h_id,
+			h.update_time::DATE AS h_update,
+			jtod.job_id AS in_id,
+			j.tool_id AS in_tool,
+			j.tool_version AS in_tool_v,
+			jtid.job_id AS out_id,
+			j2.tool_id AS out_tool,
+			j2.tool_version AS out_ver
+		FROM
+			job AS j
+			LEFT JOIN history AS h ON j.history_id = h.id
+			LEFT JOIN job_to_output_dataset AS jtod ON j.id = jtod.job_id
+			LEFT JOIN job_to_input_dataset AS jtid ON jtod.dataset_id = jtid.dataset_id
+			LEFT JOIN job AS j2 ON jtid.job_id = j2.id
+		WHERE
+			jtid.job_id IS NOT NULL
 	EOF
 }
 
@@ -4560,6 +4585,13 @@ query_aq() { ## <table> <column> <-|job_id [job_id [...]]>: Given a list of IDs 
 		WHERE id in ($ids_string)
 	EOF
 }
+
+query_q() { ## <query>: Passes a raw SQL query directly through to the database
+	handle_help "$@" <<-EOF
+	EOF
+
+	QUERY="$1"
+}
 filter_pg2md() { ## : Convert postgres table format outputs to something that can be pasted as markdown
 	handle_help "$@" <<-EOF
 		Imagine doing something like:
@@ -5315,6 +5347,11 @@ galaxy_fav_tools() { ## : Favourite tools in Galaxy DB
 
 	psql -qAt -c "select value::json->'tools' from user_preference where name = 'favorites'" | jq -s add | jq '. | @tsv' -r | sed 's/\t/\n/g' | sort | uniq -c | sort -n
 }
+align_cols() {
+	cat | sed 's/\t/\t | /g' | column -t -s'	'
+}
+
+
 report_user-info(){ ## <user_id|username|email>: Quick overview of a Galaxy user in your system
 	handle_help "$@" <<-EOF
 		This command lets you quickly find out information about a user. The output is formatted as markdown by default.
@@ -5401,7 +5438,7 @@ report_user-info(){ ## <user_id|username|email>: Quick overview of a Galaxy user
 			job.user_id = $user_id and job.id = job_metric_numeric.job_id and metric_name = 'runtime_seconds' order by job.id desc limit 10
 	EOF
 	recent_jobs=$(query_tsv "$qstr")
-	recent_jobs2=$(printf "ID\tTool ID\tStatus\tCreated\tExit Code\tRuntime\n----\t----\t----\t----\t---\t----\n%s" "$recent_jobs" | sed 's/\t/\t | \t/g' | column -t -s'	')
+	recent_jobs2=$(printf "ID\tTool ID\tStatus\tCreated\tExit Code\tRuntime\n----\t----\t----\t----\t---\t----\n%s" "$recent_jobs" | align_cols)
 
 	# running jobs
 	read -r -d '' qstr <<-EOF
@@ -5413,7 +5450,7 @@ report_user-info(){ ## <user_id|username|email>: Quick overview of a Galaxy user
 			job.user_id = $user_id and job.state in ('running', 'queued', 'new') order by job.id desc
 	EOF
 	running_jobs=$(query_tsv "$qstr")
-	running_jobs2=$(printf "Tool ID\tTool Version\tHandler\tDestination\tState\tCreated\tRuntime\n----\t----\t----\t----\t----\t---\t----\n%s" "$running_jobs" | sed 's/\t/\t | \t/g' | column -t -s'	')
+	running_jobs2=$(printf "Tool ID\tTool Version\tHandler\tDestination\tState\tCreated\tRuntime\n----\t----\t----\t----\t----\t---\t----\n%s" "$running_jobs" | align_cols)
 
 	# Recent workflows
 	read -r -d '' qstr <<-EOF
@@ -5437,7 +5474,7 @@ report_user-info(){ ## <user_id|username|email>: Quick overview of a Galaxy user
 			5
 	EOF
 	recent_wf=$(query_tsv "$qstr")
-	recent_wf=$(printf "ID\tCreated\tState\tScheduler\tHandler\tWorkflow\tHistory\n----\t----\t----\t----\t----\t----\t----\n%s" "$recent_wf" | sed 's/\t/\t | \t/g' | column -t -s'	')
+	recent_wf=$(printf "ID\tCreated\tState\tScheduler\tHandler\tWorkflow\tHistory\n----\t----\t----\t----\t----\t----\t----\n%s" "$recent_wf" | align_cols)
 
 	# Largest Histories
 	read -r -d '' qstr <<-EOF
@@ -5457,7 +5494,7 @@ report_user-info(){ ## <user_id|username|email>: Quick overview of a Galaxy user
 			10
 	EOF
 	largest_histories=$(query_tsv "$qstr")
-	largest_histories=$(printf "History ID\tName\tSize\tDeleted\tPurged\n----\t----\t----\t----\t----\n%s" "$largest_histories" | sed 's/\t/\t | \t/g' | column -t -s'	')
+	largest_histories=$(printf "History ID\tName\tSize\tDeleted\tPurged\n----\t----\t----\t----\t----\n%s" "$largest_histories" | align_cols)
 
 	read -r -d '' template <<EOF
 # Galaxy User $user_id
@@ -5570,7 +5607,7 @@ EOF
 	# shellcheck disable=SC2016
 	tbl=$(echo "$results" | jq -S '. | to_entries[] | [.key, .value] | @tsv' -r | sed 's/\t/\t`/g;s/$/`/g')
 	# shellcheck disable=SC2059
-	printf "Key\tValue\n---\t---\n$tbl" | sed 's/\t/\t | \t/g' | column -t -s'	'
+	printf "Key\tValue\n---\t---\n$tbl" | align_cols
 
 	###          ###
 	# DEPENDENCIES #
@@ -5584,7 +5621,7 @@ EOF
 	printf "\n## Dependencies\n\n"
 	tbl=$(echo "$results" | jq -S '.[] | [.name, .version, .dependency_type, .cacheable, .exact, .environment_path, .model_class] | @tsv' -r)
 	# shellcheck disable=SC2059
-	printf "Name\tVersion\tDependency Type\tCacheable\tExact\tEnvironment Path\tModel Class\n----\t-------\t---------------\t---------\t-----\t----------------\t-----------\n$tbl\n" | sed 's/\t/\t | \t/g'       #| column -t -s'	'
+	printf "Name\tVersion\tDependency Type\tCacheable\tExact\tEnvironment Path\tModel Class\n----\t-------\t---------------\t---------\t-----\t----------------\t-----------\n$tbl\n" | align_cols
 
 	###        ###
 	# JOB PARAMS #
@@ -5597,7 +5634,7 @@ EOF
 	results=$(query_tsv "$qstr")
 	printf "\n## Tool Parameters\n\n"
 	# shellcheck disable=SC2059
-	printf "Name\tSettings\n---------\t------------------------------------\n$results\n\n" | sed 's/\t/\t | \t/g' | sed 's/[\"\`]//g'
+	printf "Name\tSettings\n-----\t------------\n$results\n\n" | sed 's/[\"\`]//g' | align_cols
 
 	###      ###
 	#  INPUTS  #
@@ -5628,7 +5665,7 @@ EOF
 		AND jtod.dataset_id = ds.id
 	EOF
 	input_ds=$(query_tsv "$qstr")
-	input_ds_tbl=$(printf "Job ID\tName\tExtension\thda-id\thda-state\thda-deleted\thda-purged\tds-id\tds-state\tds-deleted\tds-purged\tSize\n----\t----\t----\t----\t----\t----\t----\t----\t----\t----\t----\t----\n%s" "$input_ds" | sed 's/\t/\t | \t/g' )      #| column -t -s'	')
+	input_ds_tbl=$(printf "\nJob ID\tName\tExtension\thda-id\thda-state\thda-deleted\thda-purged\tds-id\tds-state\tds-deleted\tds-purged\tSize\n----\t----\t----\t----\t----\t----\t----\t----\t----\t----\t----\t----\n%s" "$input_ds" | align_cols)
 
 	###       ###
 	#  OUTPUTS  #
@@ -5656,7 +5693,7 @@ EOF
 		AND hda.dataset_id = ds.id
 	EOF
 	output_ds=$(query_tsv "$qstr")
-	output_ds_tbl=$(printf "Name\tExtension\thda-id\thda-state\thda-deleted\thda-purged\tds-id\tds-state\tds-deleted\tds-purged\tSize\n----\t----\t----\t----\t----\t----\t----\t----\t----\t----\t----\n%s" "$output_ds" | sed 's/\t/\t | \t/g' )          #| column -t -s'	')
+	output_ds_tbl=$(printf "Name\tExtension\thda-id\thda-state\thda-deleted\thda-purged\tds-id\tds-state\tds-deleted\tds-purged\tSize\n----\t----\t----\t----\t----\t----\t----\t----\t----\t----\t----\n%s" "$output_ds" |  align_cols)
 
 
 	read -r -d '' template3 <<EOF
@@ -5693,7 +5730,7 @@ report_assigned-to-handler(){ ## <handler>: Report what items are assigned to a 
 		ORDER BY create_time DESC
 	EOF
 	output_ds=$(query_tsv "$qstr")
-	printf "ID\tCreate Time\tTool ID\tState\tObject Store\tUser ID\n----\t----\t----\t----\t----\t----\n%s" "$output_ds" | sed 's/\t/\t | \t/g' | column -t -s'	'
+	printf "ID\tCreate Time\tTool ID\tState\tObject Store\tUser ID\n----\t----\t----\t----\t----\t----\n%s" "$output_ds" | align_cols
 
 
 	# Workflows
@@ -5705,7 +5742,7 @@ report_assigned-to-handler(){ ## <handler>: Report what items are assigned to a 
 		WHERE handler = '$1' and state = 'new'
 	EOF
 	output_ds=$(query_tsv "$qstr")
-	printf "ID\tCreate Time\tWorkflow ID\tHistory ID\tState\tScheduler\tUUID\n----\t----\t----\t----\t----\t----\t----\n%s" "$output_ds" | sed 's/\t/\t | \t/g' | column -t -s'	'
+	printf "ID\tCreate Time\tWorkflow ID\tHistory ID\tState\tScheduler\tUUID\n----\t----\t----\t----\t----\t----\t----\n%s" "$output_ds" | align_cols
 }
 # Some unlisted functions that are probably not useful as things people might
 # want to query (and thus have cluttering their query menu), but should be

@@ -1,3 +1,8 @@
+align_cols() {
+	cat | sed 's/\t/\t | /g' | column -t -s'	'
+}
+
+
 report_user-info(){ ## <user_id|username|email>: Quick overview of a Galaxy user in your system
 	handle_help "$@" <<-EOF
 		This command lets you quickly find out information about a user. The output is formatted as markdown by default.
@@ -84,7 +89,7 @@ report_user-info(){ ## <user_id|username|email>: Quick overview of a Galaxy user
 			job.user_id = $user_id and job.id = job_metric_numeric.job_id and metric_name = 'runtime_seconds' order by job.id desc limit 10
 	EOF
 	recent_jobs=$(query_tsv "$qstr")
-	recent_jobs2=$(printf "ID\tTool ID\tStatus\tCreated\tExit Code\tRuntime\n----\t----\t----\t----\t---\t----\n%s" "$recent_jobs" | sed 's/\t/\t | \t/g' | column -t -s'	')
+	recent_jobs2=$(printf "ID\tTool ID\tStatus\tCreated\tExit Code\tRuntime\n----\t----\t----\t----\t---\t----\n%s" "$recent_jobs" | align_cols)
 
 	# running jobs
 	read -r -d '' qstr <<-EOF
@@ -96,7 +101,7 @@ report_user-info(){ ## <user_id|username|email>: Quick overview of a Galaxy user
 			job.user_id = $user_id and job.state in ('running', 'queued', 'new') order by job.id desc
 	EOF
 	running_jobs=$(query_tsv "$qstr")
-	running_jobs2=$(printf "Tool ID\tTool Version\tHandler\tDestination\tState\tCreated\tRuntime\n----\t----\t----\t----\t----\t---\t----\n%s" "$running_jobs" | sed 's/\t/\t | \t/g' | column -t -s'	')
+	running_jobs2=$(printf "Tool ID\tTool Version\tHandler\tDestination\tState\tCreated\tRuntime\n----\t----\t----\t----\t----\t---\t----\n%s" "$running_jobs" | align_cols)
 
 	# Recent workflows
 	read -r -d '' qstr <<-EOF
@@ -120,7 +125,7 @@ report_user-info(){ ## <user_id|username|email>: Quick overview of a Galaxy user
 			5
 	EOF
 	recent_wf=$(query_tsv "$qstr")
-	recent_wf=$(printf "ID\tCreated\tState\tScheduler\tHandler\tWorkflow\tHistory\n----\t----\t----\t----\t----\t----\t----\n%s" "$recent_wf" | sed 's/\t/\t | \t/g' | column -t -s'	')
+	recent_wf=$(printf "ID\tCreated\tState\tScheduler\tHandler\tWorkflow\tHistory\n----\t----\t----\t----\t----\t----\t----\n%s" "$recent_wf" | align_cols)
 
 	# Largest Histories
 	read -r -d '' qstr <<-EOF
@@ -140,7 +145,7 @@ report_user-info(){ ## <user_id|username|email>: Quick overview of a Galaxy user
 			10
 	EOF
 	largest_histories=$(query_tsv "$qstr")
-	largest_histories=$(printf "History ID\tName\tSize\tDeleted\tPurged\n----\t----\t----\t----\t----\n%s" "$largest_histories" | sed 's/\t/\t | \t/g' | column -t -s'	')
+	largest_histories=$(printf "History ID\tName\tSize\tDeleted\tPurged\n----\t----\t----\t----\t----\n%s" "$largest_histories" | align_cols)
 
 	read -r -d '' template <<EOF
 # Galaxy User $user_id
@@ -253,7 +258,7 @@ EOF
 	# shellcheck disable=SC2016
 	tbl=$(echo "$results" | jq -S '. | to_entries[] | [.key, .value] | @tsv' -r | sed 's/\t/\t`/g;s/$/`/g')
 	# shellcheck disable=SC2059
-	printf "Key\tValue\n---\t---\n$tbl" | sed 's/\t/\t | \t/g' | column -t -s'	'
+	printf "Key\tValue\n---\t---\n$tbl" | align_cols
 
 	###          ###
 	# DEPENDENCIES #
@@ -267,7 +272,7 @@ EOF
 	printf "\n## Dependencies\n\n"
 	tbl=$(echo "$results" | jq -S '.[] | [.name, .version, .dependency_type, .cacheable, .exact, .environment_path, .model_class] | @tsv' -r)
 	# shellcheck disable=SC2059
-	printf "Name\tVersion\tDependency Type\tCacheable\tExact\tEnvironment Path\tModel Class\n----\t-------\t---------------\t---------\t-----\t----------------\t-----------\n$tbl\n" | sed 's/\t/\t | \t/g'       #| column -t -s'	'
+	printf "Name\tVersion\tDependency Type\tCacheable\tExact\tEnvironment Path\tModel Class\n----\t-------\t---------------\t---------\t-----\t----------------\t-----------\n$tbl\n" | align_cols
 
 	###        ###
 	# JOB PARAMS #
@@ -280,7 +285,7 @@ EOF
 	results=$(query_tsv "$qstr")
 	printf "\n## Tool Parameters\n\n"
 	# shellcheck disable=SC2059
-	printf "Name\tSettings\n---------\t------------------------------------\n$results\n\n" | sed 's/\t/\t | \t/g' | sed 's/[\"\`]//g'
+	printf "Name\tSettings\n-----\t------------\n$results\n\n" | sed 's/[\"\`]//g' | align_cols
 
 	###      ###
 	#  INPUTS  #
@@ -311,7 +316,7 @@ EOF
 		AND jtod.dataset_id = ds.id
 	EOF
 	input_ds=$(query_tsv "$qstr")
-	input_ds_tbl=$(printf "Job ID\tName\tExtension\thda-id\thda-state\thda-deleted\thda-purged\tds-id\tds-state\tds-deleted\tds-purged\tSize\n----\t----\t----\t----\t----\t----\t----\t----\t----\t----\t----\t----\n%s" "$input_ds" | sed 's/\t/\t | \t/g' )      #| column -t -s'	')
+	input_ds_tbl=$(printf "\nJob ID\tName\tExtension\thda-id\thda-state\thda-deleted\thda-purged\tds-id\tds-state\tds-deleted\tds-purged\tSize\n----\t----\t----\t----\t----\t----\t----\t----\t----\t----\t----\t----\n%s" "$input_ds" | align_cols)
 
 	###       ###
 	#  OUTPUTS  #
@@ -339,7 +344,7 @@ EOF
 		AND hda.dataset_id = ds.id
 	EOF
 	output_ds=$(query_tsv "$qstr")
-	output_ds_tbl=$(printf "Name\tExtension\thda-id\thda-state\thda-deleted\thda-purged\tds-id\tds-state\tds-deleted\tds-purged\tSize\n----\t----\t----\t----\t----\t----\t----\t----\t----\t----\t----\n%s" "$output_ds" | sed 's/\t/\t | \t/g' )          #| column -t -s'	')
+	output_ds_tbl=$(printf "Name\tExtension\thda-id\thda-state\thda-deleted\thda-purged\tds-id\tds-state\tds-deleted\tds-purged\tSize\n----\t----\t----\t----\t----\t----\t----\t----\t----\t----\t----\n%s" "$output_ds" |  align_cols)
 
 
 	read -r -d '' template3 <<EOF
@@ -376,7 +381,7 @@ report_assigned-to-handler(){ ## <handler>: Report what items are assigned to a 
 		ORDER BY create_time DESC
 	EOF
 	output_ds=$(query_tsv "$qstr")
-	printf "ID\tCreate Time\tTool ID\tState\tObject Store\tUser ID\n----\t----\t----\t----\t----\t----\n%s" "$output_ds" | sed 's/\t/\t | \t/g' | column -t -s'	'
+	printf "ID\tCreate Time\tTool ID\tState\tObject Store\tUser ID\n----\t----\t----\t----\t----\t----\n%s" "$output_ds" | align_cols
 
 
 	# Workflows
@@ -388,5 +393,5 @@ report_assigned-to-handler(){ ## <handler>: Report what items are assigned to a 
 		WHERE handler = '$1' and state = 'new'
 	EOF
 	output_ds=$(query_tsv "$qstr")
-	printf "ID\tCreate Time\tWorkflow ID\tHistory ID\tState\tScheduler\tUUID\n----\t----\t----\t----\t----\t----\t----\n%s" "$output_ds" | sed 's/\t/\t | \t/g' | column -t -s'	'
+	printf "ID\tCreate Time\tWorkflow ID\tHistory ID\tState\tScheduler\tUUID\n----\t----\t----\t----\t----\t----\t----\n%s" "$output_ds" | align_cols
 }

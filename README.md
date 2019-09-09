@@ -187,6 +187,7 @@ Command | Description
 [`query groups-list`](docs/README.query.md#query-groups-list) | List all groups known to Galaxy
 [`query hdca-datasets`](docs/README.query.md#query-hdca-datasets) | List of files in a dataset collection
 [`query hdca-info`](docs/README.query.md#query-hdca-info) | Information on a dataset collection
+[`query history-connections`](docs/README.query.md#query-history-connections) | The connections of tools, from output to input, in histories (tool_predictions)
 [`query history-contents`](docs/README.query.md#query-history-contents) | List datasets and/or collections in a history
 [`query history-runtime-system-by-tool`](docs/README.query.md#query-history-runtime-system-by-tool) | Sum of runtimes by all jobs in a history, split by tool
 [`query history-runtime-system`](docs/README.query.md#query-history-runtime-system) | Sum of runtimes by all jobs in a history
@@ -221,6 +222,7 @@ Command | Description
 [`query pg-table-size`](docs/README.query.md#query-pg-table-size) | show the size of the tables (excluding indexes), descending by size
 [`query pg-unused-indexes`](docs/README.query.md#query-pg-unused-indexes) | show unused and almost unused indexes
 [`query pg-vacuum-stats`](docs/README.query.md#query-pg-vacuum-stats) | show dead rows and whether an automatic vacuum is expected to be triggered
+[`query q`](docs/README.query.md#query-q) | Passes a raw SQL query directly through to the database
 [`query queue`](docs/README.query.md#query-queue) | Brief overview of currently running jobs
 [`query queue-detail`](docs/README.query.md#query-queue-detail) | Detailed overview of running and queued jobs
 [`query queue-detail-by-handler`](docs/README.query.md#query-queue-detail-by-handler) | List jobs for a specific handler
@@ -237,7 +239,7 @@ Command | Description
 [`query tool-likely-broken`](docs/README.query.md#query-tool-likely-broken) | Find tools that have been executed in recent weeks that are (or were due to job running) likely substantially broken
 [`query tool-metrics`](docs/README.query.md#query-tool-metrics) | See values of a specific metric
 [`query tool-new-errors`](docs/README.query.md#query-tool-new-errors) | Summarize percent of tool runs in error over the past weeks for "new tools"
-[`query tool-popularity`](docs/README.query.md#query-tool-popularity) | Most run tools by month
+[`query tool-popularity`](docs/README.query.md#query-tool-popularity) | Most run tools by month (tool_predictions)
 [`query tool-usage`](docs/README.query.md#query-tool-usage) | Counts of tool runs in the past weeks (default = all)
 [`query training-list`](docs/README.query.md#query-training-list) | List known trainings
 [`query training-members-remove`](docs/README.query.md#query-training-members-remove) | Remove a user from a training
@@ -254,7 +256,7 @@ Command | Description
 [`query users-count`](docs/README.query.md#query-users-count) | Shows sums of active/external/deleted/purged accounts
 [`query users-total`](docs/README.query.md#query-users-total) | Total number of Galaxy users (incl deleted, purged, inactive)
 [`query users-with-oidc`](docs/README.query.md#query-users-with-oidc) | How many users logged in with OIDC
-[`query workflow-connections`](docs/README.query.md#query-workflow-connections) | The connections of tools, from output to input, in the latest (or all) versions of user workflows
+[`query workflow-connections`](docs/README.query.md#query-workflow-connections) | The connections of tools, from output to input, in the latest (or all) versions of user workflows (tool_predictions)
 [`query workflow-invocation-status`](docs/README.query.md#query-workflow-invocation-status) | Report on how many workflows are in new state by handler
 
 ### report

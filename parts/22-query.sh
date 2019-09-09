@@ -64,7 +64,7 @@ query_tool-usage() { ## [weeks]: Counts of tool runs in the past weeks (default 
 	EOF
 }
 
-query_tool-popularity() { ## [months|24]: Most run tools by month
+query_tool-popularity() { ## [months|24]: Most run tools by month (tool_predictions)
 	handle_help "$@" <<-EOF
 		See most popular tools by month
 
@@ -99,7 +99,7 @@ query_tool-popularity() { ## [months|24]: Most run tools by month
 	EOF
 }
 
-query_workflow-connections() { ## [--all]: The connections of tools, from output to input, in the latest (or all) versions of user workflows
+query_workflow-connections() { ## [--all]: The connections of tools, from output to input, in the latest (or all) versions of user workflows (tool_predictions)
 	handle_help "$@" <<-EOF
 		This is used by the usegalaxy.eu tool prediction workflow, allowing for building models out of tool connections in workflows.
 
@@ -136,19 +136,44 @@ query_workflow-connections() { ## [--all]: The connections of tools, from output
 	read -r -d '' QUERY <<-EOF
 		SELECT
 			ws_in.workflow_id as wf_id,
-			workflow.update_time AT TIME ZONE 'UTC' as wf_updated,
+			workflow.update_time::DATE as wf_updated,
 			wfc.input_step_id as in_id,
 			ws_in.tool_id as in_tool,
 			ws_in.tool_version as in_tool_v,
 			wfc.output_step_id as out_id,
 			ws_out.tool_id as out_tool,
 			ws_out.tool_version as out_tool_v
-		FROM
-			workflow_step_connection wfc
+		FROM workflow_step_connection wfc
 		JOIN workflow_step ws_in  ON ws_in.id = wfc.input_step_id
 		JOIN workflow_step ws_out ON ws_out.id = wfc.output_step_id
 		JOIN workflow on ws_in.workflow_id = workflow.id
 		$wf_filter
+	EOF
+}
+
+query_history-connections() { ## : The connections of tools, from output to input, in histories (tool_predictions)
+	handle_help "$@" <<-EOF
+		This is used by the usegalaxy.eu tool prediction workflow, allowing for building models out of tool connections.
+	EOF
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			h.id AS h_id,
+			h.update_time::DATE AS h_update,
+			jtod.job_id AS in_id,
+			j.tool_id AS in_tool,
+			j.tool_version AS in_tool_v,
+			jtid.job_id AS out_id,
+			j2.tool_id AS out_tool,
+			j2.tool_version AS out_ver
+		FROM
+			job AS j
+			LEFT JOIN history AS h ON j.history_id = h.id
+			LEFT JOIN job_to_output_dataset AS jtod ON j.id = jtod.job_id
+			LEFT JOIN job_to_input_dataset AS jtid ON jtod.dataset_id = jtid.dataset_id
+			LEFT JOIN job AS j2 ON jtid.job_id = j2.id
+		WHERE
+			jtid.job_id IS NOT NULL
 	EOF
 }
 
@@ -3296,4 +3321,11 @@ query_aq() { ## <table> <column> <-|job_id [job_id [...]]>: Given a list of IDs 
 		FROM $table
 		WHERE id in ($ids_string)
 	EOF
+}
+
+query_q() { ## <query>: Passes a raw SQL query directly through to the database
+	handle_help "$@" <<-EOF
+	EOF
+
+	QUERY="$1"
 }
