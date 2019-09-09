@@ -1400,16 +1400,17 @@ query_workflow-connections() { ## [--all]: The connections of tools, from output
 		SELECT
 			ws_in.workflow_id as wf_id,
 			workflow.update_time::DATE as wf_updated,
-			wfc.input_step_id as in_id,
+			ws_in.id as in_id,
 			ws_in.tool_id as in_tool,
 			ws_in.tool_version as in_tool_v,
-			wfc.output_step_id as out_id,
+			ws_out.id as out_id,
 			ws_out.tool_id as out_tool,
 			ws_out.tool_version as out_tool_v
 		FROM workflow_step_connection wfc
-		JOIN workflow_step ws_in  ON ws_in.id = wfc.input_step_id
-		JOIN workflow_step ws_out ON ws_out.id = wfc.output_step_id
-		JOIN workflow on ws_in.workflow_id = workflow.id
+		LEFT JOIN workflow_step ws_out ON ws_out.id = wfc.output_step_id
+		LEFT JOIN workflow_step_input wsi ON wfc.input_step_input_id = wsi.id
+		LEFT JOIN workflow_step ws_in  ON ws_in.id = wsi.workflow_step_id
+		LEFT JOIN workflow on ws_in.workflow_id = workflow.id
 		$wf_filter
 	EOF
 }
