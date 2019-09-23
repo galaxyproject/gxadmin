@@ -330,7 +330,7 @@ query_queue-overview() { ## [--short-tool-id]: View used mostly for monitoring
 	EOF
 }
 
-query_queue-detail() { ## [--all]: Detailed overview of running and queued jobs
+query_queue-detail() { ## [--all] [--seconds]: Detailed overview of running and queued jobs
 	handle_help "$@" <<-EOF
 		    $ gxadmin query queue-detail
 		      state  |   id    |  extid  |                                 tool_id                                   | username | time_since_creation
@@ -349,9 +349,17 @@ query_queue-detail() { ## [--all]: Detailed overview of running and queued jobs
 	EOF
 
 	d=""
-	if [[ $1 == "--all" ]]; then
-		d=", 'new'"
-	fi
+	nonpretty="("
+
+	for i in "$@"; do
+		if [[ $i == "--all" ]]; then
+			d=", 'new'"
+		fi
+
+		if [[ $i == "--seconds" ]]; then
+			nonpretty="EXTRACT(EPOCH FROM "
+		fi
+	done
 
 	username=$(gdpr_safe galaxy_user.username username "Anonymous User")
 
@@ -362,7 +370,7 @@ query_queue-detail() { ## [--all]: Detailed overview of running and queued jobs
 			job.job_runner_external_id as extid,
 			job.tool_id,
 			$username,
-			(now() AT TIME ZONE 'UTC' - job.create_time) as time_since_creation,
+			$nonpretty now() AT TIME ZONE 'UTC' - job.create_time) as time_since_creation,
 			job.handler,
 			job.job_runner_name,
 			job.destination_id

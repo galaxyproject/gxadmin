@@ -973,7 +973,7 @@ query queue-detail -  Detailed overview of running and queued jobs
 
 **SYNOPSIS**
 
-    gxadmin query queue-detail [--all]
+    gxadmin query queue-detail [--all] [--seconds]
 
 **NOTES**
 
