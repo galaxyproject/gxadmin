@@ -9,6 +9,7 @@ Command | Description
 [`query datasets-created-daily`](#query-datasets-created-daily) | The min/max/average/p95/p99 of total size of datasets created in a single day.
 [`query disk-usage`](#query-disk-usage) | Disk usage per object store.
 [`query errored-jobs`](#query-errored-jobs) | Lists jobs that errored in the last N hours.
+[`query good-for-pulsar`](#query-good-for-pulsar) | Look for jobs EU would like to send to pulsar
 [`query group-cpu-seconds`](#query-group-cpu-seconds) | Retrieve an approximation of the CPU time in seconds for group(s)
 [`query group-gpu-time`](#query-group-gpu-time) | Retrieve an approximation of the GPU time for users
 [`query groups-list`](#query-groups-list) | List all groups known to Galaxy
@@ -216,6 +217,24 @@ Lists details of jobs that have status = 'error' for the specified number of hou
 
      query errored-jobs 24
     TO_DO: Add output of query here!
+
+
+## query good-for-pulsar
+
+query good-for-pulsar -  Look for jobs EU would like to send to pulsar
+
+**SYNOPSIS**
+
+    gxadmin query good-for-pulsar
+
+**NOTES**
+
+This selects all jobs and finds two things:
+- sum of input sizes
+- runtime
+
+and then returns a simple /score/ of (input/runtime) and sorts on that
+hopefully identifying things with small inputs and long runtimes.
 
 
 ## query group-cpu-seconds

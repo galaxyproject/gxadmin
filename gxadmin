@@ -4607,6 +4607,45 @@ query_q() { ## <query>: Passes a raw SQL query directly through to the database
 
 	QUERY="$1"
 }
+
+query_good-for-pulsar() { ## : Look for jobs EU would like to send to pulsar
+	handle_help "$@" <<-EOF
+		This selects all jobs and finds two things:
+		- sum of input sizes
+		- runtime
+
+		and then returns a simple /score/ of (input/runtime) and sorts on that
+		hopefully identifying things with small inputs and long runtimes.
+	EOF
+
+	read -r -d '' QUERY <<-EOF
+		WITH job_data AS (
+			SELECT
+				regexp_replace(j.tool_id, '.*toolshed.*/repos/', '') as tool_id,
+				SUM(d.total_size) AS size,
+				MIN(jmn.metric_value) AS runtime,
+				SUM(d.total_size) / min(jmn.metric_value) AS score
+			FROM job j
+			LEFT JOIN job_to_input_dataset jtid ON j.id = jtid.job_id
+			LEFT JOIN history_dataset_association hda ON jtid.dataset_id = hda.id
+			LEFT JOIN dataset d ON hda.dataset_id = d.id
+			LEFT JOIN job_metric_numeric jmn ON j.id = jmn.job_id
+			WHERE jmn.metric_name = 'runtime_seconds'
+				AND d.total_size IS NOT NULL
+			GROUP BY j.id
+		)
+
+		SELECT
+			tool_id,
+			percentile_cont(0.50) WITHIN GROUP (ORDER BY score) ::bigint AS median_score,
+			percentile_cont(0.50) WITHIN GROUP (ORDER BY runtime) ::bigint AS median_runtime,
+			pg_size_pretty(percentile_cont(0.50) WITHIN GROUP (ORDER BY size) ::bigint) AS median_size,
+			count(*)
+		FROM job_data
+		GROUP BY tool_id
+		ORDER BY median_score ASC
+	EOF
+}
 filter_pg2md() { ## : Convert postgres table format outputs to something that can be pasted as markdown
 	handle_help "$@" <<-EOF
 		Imagine doing something like:
