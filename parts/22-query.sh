@@ -616,7 +616,7 @@ query_largest-histories() { ## : Largest histories in Galaxy
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			pg_size_pretty(sum(coalesce(dataset.total_size, coalesce(dataset.file_size, 0)))) as total_size,
+			pg_size_pretty(sum(coalesce(dataset.total_size, dataset.file_size, 0))) as total_size,
 			history.id,
 			substring(history.name, 1, 10),
 			$username
@@ -626,7 +626,7 @@ query_largest-histories() { ## : Largest histories in Galaxy
 			JOIN history on history_dataset_association.history_id = history.id
 			JOIN galaxy_user on history.user_id = galaxy_user.id
 		GROUP BY history.id, history.name, history.user_id, galaxy_user.username
-		ORDER BY sum(coalesce(dataset.total_size, coalesce(dataset.file_size, 0))) DESC
+		ORDER BY sum(coalesce(dataset.total_size, dataset.file_size, 0)) DESC
 	EOF
 }
 
@@ -701,9 +701,9 @@ query_disk-usage() { ## [--nice]: Disk usage per object store.
 	fields="count=1"
 	tags="object_store_id=0"
 
-	size="sum(coalesce(dataset.total_size, coalesce(dataset.file_size, 0)))"
+	size="sum(coalesce(dataset.total_size, dataset.file_size, 0))"
 	if [[ $1 == "--nice" ]]; then
-		size="pg_size_pretty(sum(coalesce(dataset.total_size, coalesce(dataset.file_size, 0)))) as sum"
+		size="pg_size_pretty(sum(coalesce(dataset.total_size, dataset.file_size, 0))) as sum"
 	fi
 
 	read -r -d '' QUERY <<-EOF
@@ -712,7 +712,7 @@ query_disk-usage() { ## [--nice]: Disk usage per object store.
 			FROM dataset
 			WHERE NOT purged
 			GROUP BY object_store_id
-			ORDER BY sum(coalesce(dataset.total_size, coalesce(dataset.file_size, 0))) DESC
+			ORDER BY sum(coalesce(dataset.total_size, dataset.file_size, 0)) DESC
 	EOF
 }
 
@@ -975,7 +975,7 @@ query_monthly-data(){ ## [year]: Number of active users per month, running jobs
 	read -r -d '' QUERY <<-EOF
 		SELECT
 			date_trunc('month', dataset.create_time AT TIME ZONE 'UTC')::date AS month,
-			pg_size_pretty(sum(coalesce(dataset.total_size, coalesce(dataset.file_size, 0))))
+			pg_size_pretty(sum(coalesce(dataset.total_size, dataset.file_size, 0)))
 		FROM
 			dataset
 		$where
@@ -1151,11 +1151,11 @@ query_user-disk-usage() { ## : Retrieve an approximation of the disk usage for u
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			row_number() OVER (ORDER BY sum(coalesce(dataset.total_size, coalesce(dataset.file_size, 0))) DESC) as rank,
+			row_number() OVER (ORDER BY sum(coalesce(dataset.total_size, dataset.file_size, 0)) DESC) as rank,
 			galaxy_user.id as "user id",
 			$username,
 			$useremail,
-			pg_size_pretty(sum(coalesce(dataset.total_size, coalesce(dataset.file_size, 0)))) as "storage usage"
+			pg_size_pretty(sum(coalesce(dataset.total_size, dataset.file_size, 0))) as "storage usage"
 		FROM
 			dataset,
 			galaxy_user,
@@ -1915,7 +1915,7 @@ query_server-datasets() {
 			purged,
 			COALESCE(object_store_id, 'none'),
 			count(*),
-			sum(coalesce(dataset.total_size, coalesce(dataset.file_size, 0)))
+			sum(coalesce(dataset.total_size, dataset.file_size, 0))
 		FROM
 			dataset
 		$date_filter
@@ -2198,7 +2198,7 @@ query_server-groups-disk-usage() { ## [YYYY-MM-DD] [=, <=, >= operators]: Retrie
 
 	read -r -d '' QUERY <<-EOF
 		SELECT $groupname,
-			sum(coalesce(dataset.total_size, coalesce(dataset.file_size, 0))) as "storage_usage"
+			sum(coalesce(dataset.total_size, dataset.file_size, 0)) as "storage_usage"
 		FROM dataset,
 			galaxy_group,
 			user_group_association,
@@ -2550,7 +2550,7 @@ query_user-history-list() { ## <username|id|email> [--size]: Shows the ID of the
 			) AND NOT purged
 		), history_sizes AS (
 			SELECT history_id,
-				sum(coalesce(dataset.total_size, coalesce(dataset.file_size, 0))) as "hist_size"
+				sum(coalesce(dataset.total_size, dataset.file_size, 0)) as "hist_size"
 			FROM history_dataset_association,
 				dataset
 			WHERE history_id IN (
@@ -2758,7 +2758,7 @@ query_upload-gb-in-past-hour() { ## [hours|1]: Sum in bytes of files uploaded in
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			sum(coalesce(dataset.total_size, coalesce(dataset.file_size, 0))),
+			sum(coalesce(dataset.total_size, dataset.file_size, 0)),
 			$hours as hours
 		FROM
 			job
@@ -2872,7 +2872,7 @@ query_pg-table-bloat() { ## [--human]: show table and index bloat in your databa
 		), index_bloat AS (
 			SELECT
 				schemaname, tablename, bs,
-				COALESCE(c2.relname,'?') AS iname, COALESCE(c2.reltuples,0) AS ituples, COALESCE(c2.relpages,0) AS ipages,
+				coalesce(c2.relname,'?') AS iname, COALESCE(c2.reltuples,0) AS ituples, c2.relpages,0 AS ipages,
 				COALESCE(CEIL((c2.reltuples*(datahdr-12))/(bs-20::float)),0) AS iotta -- very rough approximation, assumes all cols
 			FROM bloat_info
 			JOIN pg_class cc ON cc.relname = bloat_info.tablename
@@ -3185,7 +3185,7 @@ query_data-origin-distribution-merged() {
 		WITH asdf AS (
 			SELECT
 				'total' as origin,
-				sum(coalesce(dataset.total_size, coalesce(dataset.file_size, 0))) AS data,
+				sum(coalesce(dataset.total_size, dataset.file_size, 0)) AS data,
 				date_trunc('month', dataset.create_time) as created,
 				$username
 			FROM job
@@ -3242,7 +3242,7 @@ query_data-origin-distribution() { ## [--human]: data sources (uploaded vs deriv
 		WITH asdf AS (
 			SELECT
 				case when job.tool_id = 'upload1' then 'created' else 'derived' end AS origin,
-				sum(coalesce(dataset.total_size, coalesce(dataset.file_size, 0))) AS data,
+				sum(coalesce(dataset.total_size, dataset.file_size, 0)) AS data,
 				date_trunc('month', dataset.create_time) as created,
 				$username
 			FROM job
@@ -3289,7 +3289,7 @@ query_data-origin-distribution-summary() { ## [--human]: breakdown of data sourc
 		WITH user_job_data AS (
 			SELECT
 				case when job.tool_id = 'upload1' then 'created' else 'derived' end AS origin,
-				sum(coalesce(dataset.total_size, coalesce(dataset.file_size, 0))) AS data,
+				sum(coalesce(dataset.total_size, dataset.file_size, 0)) AS data,
 				job.user_id
 			FROM job
 			LEFT JOIN job_to_output_dataset ON job.id = job_to_output_dataset.job_id
