@@ -4624,7 +4624,7 @@ query_good-for-pulsar() { ## : Look for jobs EU would like to send to pulsar
 				regexp_replace(j.tool_id, '.*toolshed.*/repos/', '') as tool_id,
 				SUM(d.total_size) AS size,
 				MIN(jmn.metric_value) AS runtime,
-				SUM(d.total_size) / min(jmn.metric_value) AS score
+				SUM(d.total_size) / NULLIF(min(jmn.metric_value), 0) AS score
 			FROM job j
 			LEFT JOIN job_to_input_dataset jtid ON j.id = jtid.job_id
 			LEFT JOIN history_dataset_association hda ON jtid.dataset_id = hda.id
