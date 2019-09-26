@@ -10,6 +10,15 @@ query_tsv() {
 	EOF
 }
 
+query_json() {
+	psql <<-EOF
+	COPY (
+		SELECT array_to_json(array_agg(row_to_json(t)))
+		FROM ($1) t
+	) to STDOUT with (FORMAT CSV, QUOTE ' ')
+	EOF
+}
+
 query_tsv_json() {
 	psql <<-EOF
 	COPY ($1) to STDOUT with (FORMAT CSV, QUOTE ' ')

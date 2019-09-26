@@ -334,6 +334,15 @@ query_tsv() {
 	EOF
 }
 
+query_json() {
+	psql <<-EOF
+	COPY (
+		SELECT array_to_json(array_agg(row_to_json(t)))
+		FROM ($1) t
+	) to STDOUT with (FORMAT CSV, QUOTE ' ')
+	EOF
+}
+
 query_tsv_json() {
 	psql <<-EOF
 	COPY ($1) to STDOUT with (FORMAT CSV, QUOTE ' ')
@@ -6435,6 +6444,7 @@ query() {
 		tsvquery         ) $wrapper query_tsv "$QUERY";;
 		csvquery         ) $wrapper query_csv "$QUERY";;
 		query            ) $wrapper query_tbl "$QUERY";;
+		jsonquery        ) $wrapper query_json "$QUERY";;
 		iquery           ) $wrapper query_influx "$QUERY" "$query_name" "$fields" "$tags" "$timestamp";;
 		explainquery     ) $wrapper query_exp "$QUERY";;
 		explainjsonquery ) $wrapper query_expj "$QUERY";;
