@@ -23,6 +23,7 @@ query() {
 
 	# If query in error, exit.
 	if [[ "$QUERY" == "ERROR" ]]; then
+		error "Error"
 		usage query
 		exit 1
 	fi
@@ -38,7 +39,7 @@ query() {
 		explainjsonquery ) $wrapper query_expj "$QUERY";;
 		echoquery        ) $wrapper query_echo "$QUERY";;
 		# default
-		*            )  usage "Error";;
+		*                )  usage "Error";;
 	esac
 }
 

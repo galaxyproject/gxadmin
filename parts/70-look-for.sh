@@ -16,6 +16,7 @@ look_for() {
 			query_influx "$QUERY" "$query_name" "$fields" "$tags" "$timestamp"
 		fi
 	else
+		error "Unknown command"
 		usage "${group_name}"
 	fi
 }
