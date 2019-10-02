@@ -1608,6 +1608,10 @@ query_queue-overview() { ## [--short-tool-id]: View used mostly for monitoring
 	EOF
 }
 
+query_queue-details() {
+	query_queue-detail $@
+}
+
 query_queue-detail() { ## [--all] [--seconds]: Detailed overview of running and queued jobs
 	handle_help "$@" <<-EOF
 		    $ gxadmin query queue-detail
