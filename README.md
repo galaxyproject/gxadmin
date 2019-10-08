@@ -136,6 +136,8 @@ Command | Description
 [`galaxy cleanup-jwd`](docs/README.galaxy.md#galaxy-cleanup-jwd) | (NEW) Cleanup job working directories
 [`galaxy fav_tools`](docs/README.galaxy.md#galaxy-fav_tools) | Favourite tools in Galaxy DB
 [`galaxy fix-conda-env`](docs/README.galaxy.md#galaxy-fix-conda-env) | Fix broken conda environments
+[`galaxy ie-list`](docs/README.galaxy.md#galaxy-ie-list) | List GIEs
+[`galaxy ie-show`](docs/README.galaxy.md#galaxy-ie-show) | Report on a GIE [HTCondor Only!]
 [`galaxy migrate-tool-install-from-sqlite`](docs/README.galaxy.md#galaxy-migrate-tool-install-from-sqlite) | Converts SQLite version into normal potsgres toolshed repository tables
 [`galaxy migrate-tool-install-to-sqlite`](docs/README.galaxy.md#galaxy-migrate-tool-install-to-sqlite) | Converts normal potsgres toolshed repository tables into the SQLite version
 
