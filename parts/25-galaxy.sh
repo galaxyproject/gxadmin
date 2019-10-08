@@ -432,7 +432,7 @@ galaxy_ie-show() { ## [gie-galaxy-job-id]: Report on a GIE [HTCondor Only!]
 	EOF
 	id=$1
 
-	cluster_id=$(gxadmin jsonquery queue-detail | jq '.[] | select(.id == 6136923) | .extid' -r)
+	cluster_id=$(gxadmin jsonquery queue-detail | jq ".[] | select(.id == $1) | .extid" -r)
 	cluster_id_c=$(echo -n "$cluster_id" | wc -c)
 	echo "Galaxy ID: $id"
 	echo "Condor ID: $cluster_id"
