@@ -461,3 +461,36 @@ mutate_restart-jobs() { ## [--commit] <-|job_id [job_id [...]]> : Restart some j
 	commit=$(should_commit "$commit_flag")
 	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
 }
+
+mutate_generate-unset-api-keys() { ## [--commit]: Generate API keys for users which do not have one set.
+	handle_help "$@" <<-EOF
+		For some use cases (IEs), it is preferrable that everyone has an API
+		key set for them, if they don't choose to set one themselves. So we set
+		a base64'd key to be a bit extra secure just in case. These work just
+		fine like hex keys.
+	EOF
+
+	commit_flag=""
+	if [[ $1 == "--commit" ]]; then
+		commit_flag="$1"
+		shift;
+	fi
+
+	read -r -d '' QUERY <<-EOF
+		INSERT INTO api_keys (create_time, user_id, key)
+		(
+			SELECT
+				now(),
+				galaxy_user.id,
+				substring(regexp_replace(encode(random_bytea(64), 'base64')::TEXT, '[^a-z0-9A-Z]', '', 'g'), 0, 32)
+			FROM
+				galaxy_user LEFT JOIN api_keys ON galaxy_user.id = api_keys.user_id
+			WHERE
+				api_keys.key IS NULL
+		)
+	EOF
+
+	commit=$(should_commit "$commit_flag")
+	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
+
+}
