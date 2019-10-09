@@ -315,14 +315,14 @@ query_queue-overview() { ## [--short-tool-id]: View used mostly for monitoring
 	read -r -d '' QUERY <<-EOF
 		WITH queue AS (
 			SELECT
-				regexp_replace($tool_id, '/[0-9.a-z+-]+$', '')::STRING AS tool_id,
-				tool_version::STRING,
-				COALESCE(destination_id, 'unknown')::STRING AS destination_id,
-				COALESCE(handler, 'unknown')::STRING AS handler,
-				state::STRING,
-				COALESCE(job_runner_name, 'unknown')::STRING AS job_runner_name,
+				regexp_replace($tool_id, '/[0-9.a-z+-]+$', '')::TEXT AS tool_id,
+				tool_version::TEXT,
+				COALESCE(destination_id, 'unknown')::TEXT AS destination_id,
+				COALESCE(handler, 'unknown')::TEXT AS handler,
+				state::TEXT,
+				COALESCE(job_runner_name, 'unknown')::TEXT AS job_runner_name,
 				count(*) AS count,
-				$user_id::STRING AS user_id
+				$user_id::TEXT AS user_id
 			FROM
 				job
 			WHERE
