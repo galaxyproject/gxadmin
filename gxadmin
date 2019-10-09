@@ -1591,20 +1591,30 @@ query_queue-overview() { ## [--short-tool-id]: View used mostly for monitoring
 	tags="tool_id=0;tool_version=1;destination_id=2;handler=3;state=4;job_runner_name=5;user_id=7"
 
 	read -r -d '' QUERY <<-EOF
+		WITH queue AS (
+			SELECT
+				regexp_replace($tool_id, '/[0-9.a-z+-]+$', '')::STRING AS tool_id,
+				tool_version::STRING,
+				COALESCE(destination_id, 'unknown')::STRING AS destination_id,
+				COALESCE(handler, 'unknown')::STRING AS handler,
+				state::STRING,
+				COALESCE(job_runner_name, 'unknown')::STRING AS job_runner_name,
+				count(*) AS count,
+				$user_id::STRING AS user_id
+			FROM
+				job
+			WHERE
+				state = 'running' OR state = 'queued' OR state = 'new'
+			GROUP BY
+				tool_id, tool_version, destination_id, handler, state, job_runner_name, user_id
+		)
 		SELECT
-			regexp_replace($tool_id, '/[0-9.a-z+-]+$', '') as tool_id,
-			tool_version,
-			COALESCE(destination_id, 'unknown'),
-			COALESCE(handler, 'unknown'),
-			state,
-			COALESCE(job_runner_name, 'unknown'),
-			count(*) as count,
-			$user_id as user_id
-		FROM job
-		WHERE
-			state = 'running' or state = 'queued' or state = 'new'
+			tool_id, tool_version, destination_id, handler, state, job_runner_name, sum(count), user_id
+		FROM
+			queue
 		GROUP BY
 			tool_id, tool_version, destination_id, handler, state, job_runner_name, user_id
+
 	EOF
 }
 
