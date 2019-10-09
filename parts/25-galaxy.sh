@@ -463,9 +463,11 @@ galaxy_ie-show() { ## [gie-galaxy-job-id]: Report on a GIE [HTCondor Only!]
 	echo
 	echo "Mapping"
 
-	key=$(sqlite3 /opt/galaxy/mutable-config/interactivetools_map.sqlite 'select key from gxitproxy where port = '$port' and host = "'$host'"')
-	key_type=$(sqlite3 /opt/galaxy/mutable-config/interactivetools_map.sqlite 'select key_type from gxitproxy where port = '$port' and host = "'$host'"')
-	token=$(sqlite3 /opt/galaxy/mutable-config/interactivetools_map.sqlite 'select token from gxitproxy where port = '$port' and host = "'$host'"')
+	token=$(gxadmin tsvquery q "select token from interactivetool_entry_point where job_id = $id")
+
+	key=$(sqlite3 /opt/galaxy/mutable-config/interactivetools_map.sqlite 'select key from gxitproxy where token='$token)
+	key_type=$(sqlite3 /opt/galaxy/mutable-config/interactivetools_map.sqlite 'select key_type from gxitproxy where token='$token)
+	token=$(sqlite3 /opt/galaxy/mutable-config/interactivetools_map.sqlite 'select token from gxitproxy where token='$token)
 
 	echo "Key: $key"
 	echo "KeyType: $key_type"
