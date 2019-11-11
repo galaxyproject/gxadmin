@@ -114,7 +114,7 @@ meta_slurp-current() { ## [--date] [slurp-name [2nd-slurp-name [...]]]: Executes
 	append=""
 	if [[ $1 == "--date" ]]; then
 		append=" "$(date +%s%N)
-		shift;
+		shift; shift;
 	fi
 
 	specific_slurp=($@)
