@@ -1866,7 +1866,7 @@ query_server-users() {
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			active, external, deleted, purged, count(*) as count
+			active, external, deleted, purged, count(*) as count, "$HOSTNAME" as hostname
 		FROM
 			galaxy_user
 		$date_filter
@@ -2075,13 +2075,17 @@ query_server-allocated-cpu() {
 		date_filter="AND date_trunc('day', job.create_time AT TIME ZONE 'UTC') $op '$1'::date"
 	fi
 
+	# TODO: here we select the hostname, don't do that.
+	# Hack for EU's test vs main separation, both submitting job stats.
+	# Solve by either running IN telegraf or doing it in the meta functions
 	fields="cpu_seconds=1"
-	tags="job_runner_name=0"
+	tags="job_runner_name=0;host=2"
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
 			job.job_runner_name,
-			round(sum(a.metric_value * b.metric_value), 2) AS cpu_seconds
+			round(sum(a.metric_value * b.metric_value), 2) AS cpu_seconds,
+			"$HOSTNAME" as hostname
 		FROM
 			job_metric_numeric AS a,
 			job_metric_numeric AS b,
