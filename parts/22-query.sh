@@ -2085,7 +2085,7 @@ query_server-allocated-cpu() {
 		SELECT
 			job.job_runner_name,
 			round(sum(a.metric_value * b.metric_value), 2) AS cpu_seconds,
-			'$HOSTNAME' as hostname
+			'$HOSTNAME' as host
 		FROM
 			job_metric_numeric AS a,
 			job_metric_numeric AS b,
