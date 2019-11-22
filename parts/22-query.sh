@@ -1866,7 +1866,7 @@ query_server-users() {
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			active, external, deleted, purged, count(*) as count, "$HOSTNAME" as hostname
+			active, external, deleted, purged, count(*) as count
 		FROM
 			galaxy_user
 		$date_filter
