@@ -3949,7 +3949,7 @@ query_upload-gb-in-past-hour() { ## [hours|1]: Sum in bytes of files uploaded in
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			sum(coalesce(dataset.total_size, coalesce(dataset.file_size, 0))),
+			coalesce(sum(coalesce(dataset.total_size, coalesce(dataset.file_size, 0))), 0),
 			$hours as hours
 		FROM
 			job
