@@ -334,6 +334,21 @@ query_tsv() {
 	EOF
 }
 
+query_json() {
+	psql <<-EOF
+	COPY (
+		SELECT array_to_json(array_agg(row_to_json(t)))
+		FROM ($1) t
+	) to STDOUT with (FORMAT CSV, QUOTE ' ')
+	EOF
+}
+
+query_tsv_json() {
+	psql <<-EOF
+	COPY ($1) to STDOUT with (FORMAT CSV, QUOTE ' ')
+	EOF
+}
+
 query_csv() {
 	psql <<-EOF
 	COPY ($1) to STDOUT with CSV DELIMITER ','
@@ -352,6 +367,10 @@ query_expj() {
 	psql -qAt <<-EOF
 	EXPLAIN (ANALYZE, COSTS, VERBOSE, BUFFERS, FORMAT JSON) $1
 	EOF
+}
+
+query_echo() {
+	echo "$1"
 }
 
 query_influx() {
@@ -405,12 +424,12 @@ gdpr_safe() {
 		coalesce_to="__UNKNOWN__"
 	fi
 
-	if [ -z "$GDPR_MODE"  ]; then
+	if [ -z "$GDPR_MODE" ]; then
 		echo "COALESCE($1, '$coalesce_to')"
 	else
 		# Try and be privacy respecting while generating numbers that can allow
 		# linking data across tables if need be?
-		echo "substring(md5(COALESCE($1, '$coalesce_to') || now()::date), 0, 12) as ${2:-$1}"
+		echo "substring(md5(COALESCE($1::text, '$coalesce_to') || now()::date || '$GDPR_MODE'), 0, 12) as ${2:-$1}"
 	fi
 }
 
@@ -461,6 +480,9 @@ success() {
 }
 CHANGELOG=$(cat <<EOF
 # 16-pre
+
+- Fixed:
+	- figured out how to decode hex blobs in postgres
 
 # 15
 
@@ -1223,6 +1245,70 @@ mutate_drop-extraneous-workflow-step-output-associations() { ## [--commit]: #841
 	commit=$(should_commit "$1")
 	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
 }
+
+mutate_restart-jobs() { ## [--commit] <-|job_id [job_id [...]]> : Restart some jobs
+	handle_help "$@" <<-EOF
+		Restart jobs
+	EOF
+
+	commit_flag=""
+	if [[ $1 == "--commit" ]]; then
+		commit_flag="$1"
+		shift;
+	fi
+
+	if [[ "$1" == "-" ]]; then
+		# read jobs from stdin
+		job_ids=$(cat | paste -s -d' ')
+	else
+		# read from $@
+		job_ids=$@;
+	fi
+
+	job_ids_string=$(join_by ',' ${job_ids[@]})
+
+	read -r -d '' QUERY <<-EOF
+		UPDATE job
+		SET state = 'new'
+		WHERE job.id in ($job_ids_string)
+	EOF
+
+	commit=$(should_commit "$commit_flag")
+	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
+}
+
+mutate_generate-unset-api-keys() { ## [--commit]: Generate API keys for users which do not have one set.
+	handle_help "$@" <<-EOF
+		For some use cases (IEs), it is preferrable that everyone has an API
+		key set for them, if they don't choose to set one themselves. So we set
+		a base64'd key to be a bit extra secure just in case. These work just
+		fine like hex keys.
+	EOF
+
+	commit_flag=""
+	if [[ $1 == "--commit" ]]; then
+		commit_flag="$1"
+		shift;
+	fi
+
+	read -r -d '' QUERY <<-EOF
+		INSERT INTO api_keys (create_time, user_id, key)
+		(
+			SELECT
+				now(),
+				galaxy_user.id,
+				substring(regexp_replace(encode(random_bytea(64), 'base64')::TEXT, '[^a-z0-9A-Z]', '', 'g'), 0, 32)
+			FROM
+				galaxy_user LEFT JOIN api_keys ON galaxy_user.id = api_keys.user_id
+			WHERE
+				api_keys.key IS NULL
+		)
+	EOF
+
+	commit=$(should_commit "$commit_flag")
+	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
+
+}
 query_latest-users() { ## : 40 recently registered users
 	handle_help "$@" <<-EOF
 		Returns 40 most recently registered users
@@ -1289,7 +1375,7 @@ query_tool-usage() { ## [weeks]: Counts of tool runs in the past weeks (default 
 	EOF
 }
 
-query_tool-popularity() { ## [months|24]: Most run tools by month
+query_tool-popularity() { ## [months|24]: Most run tools by month (tool_predictions)
 	handle_help "$@" <<-EOF
 		See most popular tools by month
 
@@ -1324,7 +1410,7 @@ query_tool-popularity() { ## [months|24]: Most run tools by month
 	EOF
 }
 
-query_workflow-connections() { ## [--all]: The connections of tools, from output to input, in the latest (or all) versions of user workflows
+query_workflow-connections() { ## [--all]: The connections of tools, from output to input, in the latest (or all) versions of user workflows (tool_predictions)
 	handle_help "$@" <<-EOF
 		This is used by the usegalaxy.eu tool prediction workflow, allowing for building models out of tool connections in workflows.
 
@@ -1361,19 +1447,45 @@ query_workflow-connections() { ## [--all]: The connections of tools, from output
 	read -r -d '' QUERY <<-EOF
 		SELECT
 			ws_in.workflow_id as wf_id,
-			workflow.update_time AT TIME ZONE 'UTC' as wf_updated,
-			wfc.input_step_id as in_id,
+			workflow.update_time::DATE as wf_updated,
+			ws_in.id as in_id,
 			ws_in.tool_id as in_tool,
 			ws_in.tool_version as in_tool_v,
-			wfc.output_step_id as out_id,
+			ws_out.id as out_id,
 			ws_out.tool_id as out_tool,
 			ws_out.tool_version as out_tool_v
-		FROM
-			workflow_step_connection wfc
-		JOIN workflow_step ws_in  ON ws_in.id = wfc.input_step_id
-		JOIN workflow_step ws_out ON ws_out.id = wfc.output_step_id
-		JOIN workflow on ws_in.workflow_id = workflow.id
+		FROM workflow_step_connection wfc
+		LEFT JOIN workflow_step ws_out ON ws_out.id = wfc.output_step_id
+		LEFT JOIN workflow_step_input wsi ON wfc.input_step_input_id = wsi.id
+		LEFT JOIN workflow_step ws_in  ON ws_in.id = wsi.workflow_step_id
+		LEFT JOIN workflow on ws_in.workflow_id = workflow.id
 		$wf_filter
+	EOF
+}
+
+query_history-connections() { ## : The connections of tools, from output to input, in histories (tool_predictions)
+	handle_help "$@" <<-EOF
+		This is used by the usegalaxy.eu tool prediction workflow, allowing for building models out of tool connections.
+	EOF
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			h.id AS h_id,
+			h.update_time::DATE AS h_update,
+			jtod.job_id AS in_id,
+			j.tool_id AS in_tool,
+			j.tool_version AS in_tool_v,
+			jtid.job_id AS out_id,
+			j2.tool_id AS out_tool,
+			j2.tool_version AS out_ver
+		FROM
+			job AS j
+			LEFT JOIN history AS h ON j.history_id = h.id
+			LEFT JOIN job_to_output_dataset AS jtod ON j.id = jtod.job_id
+			LEFT JOIN job_to_input_dataset AS jtid ON jtod.dataset_id = jtid.dataset_id
+			LEFT JOIN job AS j2 ON jtid.job_id = j2.id
+		WHERE
+			jtid.job_id IS NOT NULL
 	EOF
 }
 
@@ -1512,24 +1624,38 @@ query_queue-overview() { ## [--short-tool-id]: View used mostly for monitoring
 	tags="tool_id=0;tool_version=1;destination_id=2;handler=3;state=4;job_runner_name=5;user_id=7"
 
 	read -r -d '' QUERY <<-EOF
+		WITH queue AS (
+			SELECT
+				regexp_replace($tool_id, '/[0-9.a-z+-]+$', '')::TEXT AS tool_id,
+				tool_version::TEXT,
+				COALESCE(destination_id, 'unknown')::TEXT AS destination_id,
+				COALESCE(handler, 'unknown')::TEXT AS handler,
+				state::TEXT,
+				COALESCE(job_runner_name, 'unknown')::TEXT AS job_runner_name,
+				count(*) AS count,
+				$user_id::TEXT AS user_id
+			FROM
+				job
+			WHERE
+				state = 'running' OR state = 'queued' OR state = 'new'
+			GROUP BY
+				tool_id, tool_version, destination_id, handler, state, job_runner_name, user_id
+		)
 		SELECT
-			regexp_replace($tool_id, '/[0-9.a-z+-]+$', '') as tool_id,
-			tool_version,
-			COALESCE(destination_id, 'unknown'),
-			COALESCE(handler, 'unknown'),
-			state,
-			COALESCE(job_runner_name, 'unknown'),
-			count(*) as count,
-			$user_id as user_id
-		FROM job
-		WHERE
-			state = 'running' or state = 'queued' or state = 'new'
+			tool_id, tool_version, destination_id, handler, state, job_runner_name, sum(count), user_id
+		FROM
+			queue
 		GROUP BY
 			tool_id, tool_version, destination_id, handler, state, job_runner_name, user_id
+
 	EOF
 }
 
-query_queue-detail() { ## [--all]: Detailed overview of running and queued jobs
+query_queue-details() {
+	query_queue-detail $@
+}
+
+query_queue-detail() { ## [--all] [--seconds]: Detailed overview of running and queued jobs
 	handle_help "$@" <<-EOF
 		    $ gxadmin query queue-detail
 		      state  |   id    |  extid  |                                 tool_id                                   | username | time_since_creation
@@ -1548,9 +1674,17 @@ query_queue-detail() { ## [--all]: Detailed overview of running and queued jobs
 	EOF
 
 	d=""
-	if [[ $1 == "--all" ]]; then
-		d=", 'new'"
-	fi
+	nonpretty="("
+
+	for i in "$@"; do
+		if [[ $i == "--all" ]]; then
+			d=", 'new'"
+		fi
+
+		if [[ $i == "--seconds" ]]; then
+			nonpretty="EXTRACT(EPOCH FROM "
+		fi
+	done
 
 	username=$(gdpr_safe galaxy_user.username username "Anonymous User")
 
@@ -1561,7 +1695,7 @@ query_queue-detail() { ## [--all]: Detailed overview of running and queued jobs
 			job.job_runner_external_id as extid,
 			job.tool_id,
 			$username,
-			(now() AT TIME ZONE 'UTC' - job.create_time) as time_since_creation,
+			$nonpretty now() AT TIME ZONE 'UTC' - job.create_time) as time_since_creation,
 			job.handler,
 			job.job_runner_name,
 			job.destination_id
@@ -1807,7 +1941,7 @@ query_largest-histories() { ## : Largest histories in Galaxy
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			pg_size_pretty(sum(coalesce(dataset.total_size, coalesce(dataset.file_size, 0)))) as total_size,
+			pg_size_pretty(sum(coalesce(dataset.total_size, dataset.file_size, 0))) as total_size,
 			history.id,
 			substring(history.name, 1, 10),
 			$username
@@ -1817,7 +1951,7 @@ query_largest-histories() { ## : Largest histories in Galaxy
 			JOIN history on history_dataset_association.history_id = history.id
 			JOIN galaxy_user on history.user_id = galaxy_user.id
 		GROUP BY history.id, history.name, history.user_id, galaxy_user.username
-		ORDER BY sum(coalesce(dataset.total_size, coalesce(dataset.file_size, 0))) DESC
+		ORDER BY sum(coalesce(dataset.total_size, dataset.file_size, 0)) DESC
 	EOF
 }
 
@@ -1892,9 +2026,9 @@ query_disk-usage() { ## [--nice]: Disk usage per object store.
 	fields="count=1"
 	tags="object_store_id=0"
 
-	size="sum(coalesce(dataset.total_size, coalesce(dataset.file_size, 0)))"
+	size="sum(coalesce(dataset.total_size, dataset.file_size, 0))"
 	if [[ $1 == "--nice" ]]; then
-		size="pg_size_pretty(sum(coalesce(dataset.total_size, coalesce(dataset.file_size, 0)))) as sum"
+		size="pg_size_pretty(sum(coalesce(dataset.total_size, dataset.file_size, 0))) as sum"
 	fi
 
 	read -r -d '' QUERY <<-EOF
@@ -1903,7 +2037,7 @@ query_disk-usage() { ## [--nice]: Disk usage per object store.
 			FROM dataset
 			WHERE NOT purged
 			GROUP BY object_store_id
-			ORDER BY sum(coalesce(dataset.total_size, coalesce(dataset.file_size, 0))) DESC
+			ORDER BY sum(coalesce(dataset.total_size, dataset.file_size, 0)) DESC
 	EOF
 }
 
@@ -2166,7 +2300,7 @@ query_monthly-data(){ ## [year]: Number of active users per month, running jobs
 	read -r -d '' QUERY <<-EOF
 		SELECT
 			date_trunc('month', dataset.create_time AT TIME ZONE 'UTC')::date AS month,
-			pg_size_pretty(sum(coalesce(dataset.total_size, coalesce(dataset.file_size, 0))))
+			pg_size_pretty(sum(coalesce(dataset.total_size, dataset.file_size, 0)))
 		FROM
 			dataset
 		$where
@@ -2342,11 +2476,11 @@ query_user-disk-usage() { ## : Retrieve an approximation of the disk usage for u
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			row_number() OVER (ORDER BY sum(coalesce(dataset.total_size, coalesce(dataset.file_size, 0))) DESC) as rank,
+			row_number() OVER (ORDER BY sum(coalesce(dataset.total_size, dataset.file_size, 0)) DESC) as rank,
 			galaxy_user.id as "user id",
 			$username,
 			$useremail,
-			pg_size_pretty(sum(coalesce(dataset.total_size, coalesce(dataset.file_size, 0)))) as "storage usage"
+			pg_size_pretty(sum(coalesce(dataset.total_size, dataset.file_size, 0))) as "storage usage"
 		FROM
 			dataset,
 			galaxy_user,
@@ -2861,7 +2995,7 @@ query_job-outputs() { ## <id>: Output datasets from a specific job
 	EOF
 }
 
-query_job-info() { ## <-|job_id> [job_id [job_id [...]]] : Retrieve information about jobs given some job IDs
+query_job-info() { ## <-|job_id [job_id [...]]> : Retrieve information about jobs given some job IDs
 	handle_help "$@" <<-EOF
 		Retrieves information on a job, like the host it ran on,
 		how long it ran for and the total memory.
@@ -3106,7 +3240,7 @@ query_server-datasets() {
 			purged,
 			COALESCE(object_store_id, 'none'),
 			count(*),
-			sum(coalesce(dataset.total_size, coalesce(dataset.file_size, 0)))
+			sum(coalesce(dataset.total_size, dataset.file_size, 0))
 		FROM
 			dataset
 		$date_filter
@@ -3252,13 +3386,17 @@ query_server-allocated-cpu() {
 		date_filter="AND date_trunc('day', job.create_time AT TIME ZONE 'UTC') $op '$1'::date"
 	fi
 
+	# TODO: here we select the hostname, don't do that.
+	# Hack for EU's test vs main separation, both submitting job stats.
+	# Solve by either running IN telegraf or doing it in the meta functions
 	fields="cpu_seconds=1"
-	tags="job_runner_name=0"
+	tags="job_runner_name=0;host=2"
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
 			job.job_runner_name,
-			round(sum(a.metric_value * b.metric_value), 2) AS cpu_seconds
+			round(sum(a.metric_value * b.metric_value), 2) AS cpu_seconds,
+			'$HOSTNAME' as host
 		FROM
 			job_metric_numeric AS a,
 			job_metric_numeric AS b,
@@ -3389,7 +3527,7 @@ query_server-groups-disk-usage() { ## [YYYY-MM-DD] [=, <=, >= operators]: Retrie
 
 	read -r -d '' QUERY <<-EOF
 		SELECT $groupname,
-			sum(coalesce(dataset.total_size, coalesce(dataset.file_size, 0))) as "storage_usage"
+			sum(coalesce(dataset.total_size, dataset.file_size, 0)) as "storage_usage"
 		FROM dataset,
 			galaxy_group,
 			user_group_association,
@@ -3398,7 +3536,7 @@ query_server-groups-disk-usage() { ## [YYYY-MM-DD] [=, <=, >= operators]: Retrie
 		WHERE NOT dataset.purged
 			AND dataset.id = history_dataset_association.dataset_id
 			AND history_dataset_association.history_id = history.id
-			AND history.user_id = user_group_association.id
+			AND history.user_id = user_group_association.user_id
 			AND user_group_association.group_id = galaxy_group.id
 			$date_filter
 		GROUP BY galaxy_group.name
@@ -3741,7 +3879,7 @@ query_user-history-list() { ## <username|id|email> [--size]: Shows the ID of the
 			) AND NOT purged
 		), history_sizes AS (
 			SELECT history_id,
-				sum(coalesce(dataset.total_size, coalesce(dataset.file_size, 0))) as "hist_size"
+				sum(coalesce(dataset.total_size, dataset.file_size, 0)) as "hist_size"
 			FROM history_dataset_association,
 				dataset
 			WHERE history_id IN (
@@ -4063,7 +4201,7 @@ query_pg-table-bloat() { ## [--human]: show table and index bloat in your databa
 		), index_bloat AS (
 			SELECT
 				schemaname, tablename, bs,
-				COALESCE(c2.relname,'?') AS iname, COALESCE(c2.reltuples,0) AS ituples, COALESCE(c2.relpages,0) AS ipages,
+				coalesce(c2.relname,'?') AS iname, COALESCE(c2.reltuples,0) AS ituples, c2.relpages,0 AS ipages,
 				COALESCE(CEIL((c2.reltuples*(datahdr-12))/(bs-20::float)),0) AS iotta -- very rough approximation, assumes all cols
 			FROM bloat_info
 			JOIN pg_class cc ON cc.relname = bloat_info.tablename
@@ -4368,9 +4506,56 @@ query_pg-stat-user-tables() { ## : stats about tables (tuples, index scans, vacu
 	EOF
 }
 
+query_data-origin-distribution-merged() {
+	summary="$(summary_statistics data $human)"
+	username=$(gdpr_safe job.user_id galaxy_user)
+
+	read -r -d '' QUERY <<-EOF
+		WITH asdf AS (
+			SELECT
+				'total' as origin,
+				sum(coalesce(dataset.total_size, dataset.file_size, 0)) AS data,
+				date_trunc('month', dataset.create_time) as created,
+				$username
+			FROM job
+			LEFT JOIN job_to_output_dataset ON job.id = job_to_output_dataset.job_id
+			LEFT JOIN history_dataset_association ON job_to_output_dataset.dataset_id = history_dataset_association.id
+			LEFT JOIN dataset ON history_dataset_association.dataset_id = dataset.id
+			GROUP BY
+				origin, job.user_id, created, galaxy_user
+		)
+		SELECT
+			origin,
+			round(data, 2 - length(data::text)),
+			created,
+			galaxy_user
+		FROM asdf
+		ORDER BY galaxy_user desc
+	EOF
+}
+
 query_data-origin-distribution() { ## [--human]: data sources (uploaded vs derived)
 	handle_help "$@" <<-EOF
 		Break down the source of data in the server, uploaded data vs derived (created as output from a tool)
+
+		Recommendation is to run with GDPR_MODE so you can safely share this information:
+
+		    GDPR_MODE=\$(openssl rand -hex 24 2>/dev/null) gxadmin tsvquery data-origin-distribution | gzip > data-origin.tsv.gz
+
+		Output looks like:
+
+		    derived 130000000000    2019-07-01 00:00:00     fff4f423d06
+		    derived 61000000000     2019-08-01 00:00:00     fff4f423d06
+		    created 340000000       2019-08-01 00:00:00     fff4f423d06
+		    created 19000000000     2019-07-01 00:00:00     fff4f423d06
+		    derived 180000000000    2019-04-01 00:00:00     ffd28c0cf8c
+		    created 21000000000     2019-04-01 00:00:00     ffd28c0cf8c
+		    derived 1700000000      2019-06-01 00:00:00     ffd28c0cf8c
+		    derived 120000000       2019-06-01 00:00:00     ffcb567a837
+		    created 62000000        2019-05-01 00:00:00     ffcb567a837
+		    created 52000000        2019-06-01 00:00:00     ffcb567a837
+		    derived 34000000        2019-07-01 00:00:00     ffcb567a837
+
 	EOF
 
 	if [[ $1 == "--human" ]]; then
@@ -4380,18 +4565,29 @@ query_data-origin-distribution() { ## [--human]: data sources (uploaded vs deriv
 	fi
 
 	summary="$(summary_statistics data $human)"
+	username=$(gdpr_safe job.user_id galaxy_user)
 
 	read -r -d '' QUERY <<-EOF
+		WITH asdf AS (
+			SELECT
+				case when job.tool_id = 'upload1' then 'created' else 'derived' end AS origin,
+				sum(coalesce(dataset.total_size, dataset.file_size, 0)) AS data,
+				date_trunc('month', dataset.create_time) as created,
+				$username
+			FROM job
+			LEFT JOIN job_to_output_dataset ON job.id = job_to_output_dataset.job_id
+			LEFT JOIN history_dataset_association ON job_to_output_dataset.dataset_id = history_dataset_association.id
+			LEFT JOIN dataset ON history_dataset_association.dataset_id = dataset.id
+			GROUP BY
+				origin, job.user_id, created, galaxy_user
+		)
 		SELECT
-			case when job.tool_id = 'upload1' then 'created' else 'derived' end AS origin,
-			sum(coalesce(dataset.total_size, coalesce(dataset.file_size, 0))) AS data,
-			job.user_id
-		FROM job
-		LEFT JOIN job_to_output_dataset ON job.id = job_to_output_dataset.job_id
-		LEFT JOIN history_dataset_association ON job_to_output_dataset.dataset_id = history_dataset_association.id
-		LEFT JOIN dataset ON history_dataset_association.dataset_id = dataset.id
-		GROUP BY
-			origin, job.user_id
+			origin,
+			round(data, 2 - length(data::text)),
+			created,
+			galaxy_user
+		FROM asdf
+		ORDER BY galaxy_user desc
 	EOF
 }
 
@@ -4422,7 +4618,7 @@ query_data-origin-distribution-summary() { ## [--human]: breakdown of data sourc
 		WITH user_job_data AS (
 			SELECT
 				case when job.tool_id = 'upload1' then 'created' else 'derived' end AS origin,
-				sum(coalesce(dataset.total_size, coalesce(dataset.file_size, 0))) AS data,
+				sum(coalesce(dataset.total_size, dataset.file_size, 0)) AS data,
 				job.user_id
 			FROM job
 			LEFT JOIN job_to_output_dataset ON job.id = job_to_output_dataset.job_id
@@ -4437,6 +4633,77 @@ query_data-origin-distribution-summary() { ## [--human]: breakdown of data sourc
 			$summary
 		FROM user_job_data
 		GROUP BY origin
+	EOF
+}
+
+query_aq() { ## <table> <column> <-|job_id [job_id [...]]>: Given a list of IDs from a table (e.g. 'job'), access a specific column from that table
+	handle_help "$@" <<-EOF
+	EOF
+
+	table=$1; shift
+	column=$1; shift
+
+	if [[ "$1" == "-" ]]; then
+		# read jobs from stdin
+		ids=$(cat | paste -s -d' ')
+	else
+		# read from $@
+		ids=$@;
+	fi
+
+	ids_string=$(join_by ',' ${ids[@]})
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			$column
+		FROM $table
+		WHERE id in ($ids_string)
+	EOF
+}
+
+query_q() { ## <query>: Passes a raw SQL query directly through to the database
+	handle_help "$@" <<-EOF
+	EOF
+
+	QUERY="$1"
+}
+
+query_good-for-pulsar() { ## : Look for jobs EU would like to send to pulsar
+	handle_help "$@" <<-EOF
+		This selects all jobs and finds two things:
+		- sum of input sizes
+		- runtime
+
+		and then returns a simple /score/ of (input/runtime) and sorts on that
+		hopefully identifying things with small inputs and long runtimes.
+	EOF
+
+	read -r -d '' QUERY <<-EOF
+		WITH job_data AS (
+			SELECT
+				regexp_replace(j.tool_id, '.*toolshed.*/repos/', '') as tool_id,
+				SUM(d.total_size) AS size,
+				MIN(jmn.metric_value) AS runtime,
+				SUM(d.total_size) / min(jmn.metric_value) AS score
+			FROM job j
+			LEFT JOIN job_to_input_dataset jtid ON j.id = jtid.job_id
+			LEFT JOIN history_dataset_association hda ON jtid.dataset_id = hda.id
+			LEFT JOIN dataset d ON hda.dataset_id = d.id
+			LEFT JOIN job_metric_numeric jmn ON j.id = jmn.job_id
+			WHERE jmn.metric_name = 'runtime_seconds'
+				AND d.total_size IS NOT NULL
+			GROUP BY j.id
+		)
+
+		SELECT
+			tool_id,
+			percentile_cont(0.50) WITHIN GROUP (ORDER BY score) ::bigint AS median_score,
+			percentile_cont(0.50) WITHIN GROUP (ORDER BY runtime) ::bigint AS median_runtime,
+			pg_size_pretty(percentile_cont(0.50) WITHIN GROUP (ORDER BY size) ::bigint) AS median_size,
+			count(*)
+		FROM job_data
+		GROUP BY tool_id
+		ORDER BY median_score ASC
 	EOF
 }
 filter_pg2md() { ## : Convert postgres table format outputs to something that can be pasted as markdown
@@ -4503,7 +4770,7 @@ filter_digest-color() { ## : Color an input stream based on the contents (e.g. h
 	echo "$(tput setaf $fg_color)$(tput setab $bg_color)${data}$(tput sgr0)"
 }
 
-filter_hexdecode() { ## : Decodes any hex blobs from postgres outputs
+filter_hexdecode() { ## : Deprecated, There is an easier built in postgres function for this same feature
 	handle_help "$@" <<-EOF
 		This automatically replaces any hex strings (\\x[a-f0-9]+) with their decoded versions. This can allow you to query galaxy metadata, decode it, and start processing it with JQ. Just pipe your query to it and it will replace it wherever it is found.
 
@@ -4554,6 +4821,7 @@ filter_hexdecode() { ## : Decodes any hex blobs from postgres outputs
 	EOF
 
 	cat | python -c "$hexdecodelines"
+	warning "If you are still using this, consider updating your query to use: convert_from(your-column::bytea, 'UTF8')"
 }
 uwsgi_stats-influx(){ ## <addr>: InfluxDB formatted output for the current stats
 	handle_help "$@" <<-EOF
@@ -5168,6 +5436,127 @@ galaxy_cleanup-jwd() { ## <working_dir> [1|months ago]: (NEW) Cleanup job workin
 			fi
 	done
 }
+
+galaxy_fix-conda-env() { ## <conda_dir/envs/>: Fix broken conda environments
+	handle_help "$@" <<-EOF
+		Fixes any broken conda environments which are missing the activate scripts in their correct locations.
+
+		MUST end in /envs/
+	EOF
+
+	conda_dir=$(dirname $1)
+
+	for i in $(find ${conda_dir}/envs/ -mindepth 1 -maxdepth 1 -type d);
+	do
+		if [ ! -f $i/bin/conda ]; then
+			${conda_dir}/bin/conda ..checkenv bash $i
+		fi
+	done
+}
+
+galaxy_fav_tools() { ## : Favourite tools in Galaxy DB
+	handle_help "$@" <<-EOF
+		What are people's fav tools
+	EOF
+
+	psql -qAt -c "select value::json->'tools' from user_preference where name = 'favorites'" | jq -s add | jq '. | @tsv' -r | sed 's/\t/\n/g' | sort | uniq -c | sort -n
+}
+
+galaxy_ie-list() { ## : List GIEs
+	handle_help "$@" <<-EOF
+		List running IEs (based on output of queue-detail)
+
+		    $ gxadmin local ie-list
+		    running  6134209  jupyter_notebook  helena-rasche
+
+	EOF
+
+	gxadmin query queue-detail  | grep interactive | awk -F'|' '{print $1" "$2" "$4" "$5}' | sed 's/interactive_tool_//g' | column -t
+}
+
+galaxy_ie-show() { ## [gie-galaxy-job-id]: Report on a GIE [HTCondor Only!]
+	handle_help "$@" <<-EOF
+		The new versions of IEs are IMPOSSIBLE to track down, so here's a handy
+		function for you to make you hate life a lil bit less.
+
+
+		    root@sn04:/opt/galaxy/server$ gxadmin local ie-show 6134209
+		    Galaxy ID: 6134209
+		    Condor ID: 1489026
+		    Container: jupyter_notebook
+		    Running on: cn032.bi.uni-freiburg.de
+		    Job script: /data/dnb01/galaxy_db/pbs/galaxy_6134209.sh
+		    Working dir: /data/dnb02/galaxy_db/job_working_directory/006/134/6134209
+		    Container name: 20aa70fc1aa04d97bdc709a4c76dbcbd
+		    Runtime:
+		    {
+		      8888: {
+		        host: 132.230.68.65,
+		        port: 1035,
+		        protocol: tcp,
+		        tool_port: 8888
+		      }
+		    }
+
+		    Mapping
+		    Key: aaaabbbbccccdddd
+		    KeyType: interactivetoolentrypoint
+		    Token: 00001111222233334444555566667777
+		    URL: https://aaaabbbbccccdddd-00001111222233334444555566667777.interactivetoolentrypoint.interactivetool.usegalaxy.eu
+
+		It's probably only going to work for us? Sorry :)
+	EOF
+	id=$1
+
+	cluster_id=$(gxadmin jsonquery queue-detail | jq ".[] | select(.id == $1) | .extid" -r)
+	cluster_id_c=$(echo -n "$cluster_id" | wc -c)
+	echo "Galaxy ID: $id"
+	echo "Condor ID: $cluster_id"
+	if (( cluster_id_c  == 0 )); then
+		exit 1
+	fi
+
+	container=$(condor_q $cluster_id -autoformat JobDescription | sed 's/interactive_tool_//g')
+	echo "Container: $container"
+	running_on=$(condor_q $cluster_id -autoformat RemoteHost | sed 's/.*@//g')
+	echo "Running on: $running_on"
+
+	job_script=$(condor_q $cluster_id -autoformat Cmd)
+	echo "Job script: $job_script"
+
+	working_dir=$(grep ^cd $job_script | sed 's/^cd //g')
+	echo "Working dir: $working_dir"
+
+	container_name=$(cat $working_dir/container_config.json | jq .container_name -r)
+	echo "Container name: $container_name"
+
+	echo "Runtime:"
+	cat $working_dir/container_runtime.json  | jq -S
+
+	port=$(cat $working_dir/container_runtime.json  | jq .[].port -r)
+	host=$(cat $working_dir/container_runtime.json  | jq .[].host -r)
+
+	echo
+	echo "Mapping"
+
+	token=$(gxadmin tsvquery q "select token from interactivetool_entry_point where job_id = $id")
+
+	key=$(sqlite3 /opt/galaxy/mutable-config/interactivetools_map.sqlite 'select key from gxitproxy where token="'$token'"')
+	key_type=$(sqlite3 /opt/galaxy/mutable-config/interactivetools_map.sqlite 'select key_type from gxitproxy where token="'$token'"')
+	token=$(sqlite3 /opt/galaxy/mutable-config/interactivetools_map.sqlite 'select token from gxitproxy where token="'$token'"')
+
+	echo "Key: $key"
+	echo "KeyType: $key_type"
+	echo "Token: $token"
+
+	echo "URL: https://${key}-${token}.${key_type}.interactivetool.usegalaxy.eu"
+}
+
+align_cols() {
+	cat | sed 's/\t/\t | /g' | column -t -s'	'
+}
+
+
 report_user-info(){ ## <user_id|username|email>: Quick overview of a Galaxy user in your system
 	handle_help "$@" <<-EOF
 		This command lets you quickly find out information about a user. The output is formatted as markdown by default.
@@ -5254,7 +5643,7 @@ report_user-info(){ ## <user_id|username|email>: Quick overview of a Galaxy user
 			job.user_id = $user_id and job.id = job_metric_numeric.job_id and metric_name = 'runtime_seconds' order by job.id desc limit 10
 	EOF
 	recent_jobs=$(query_tsv "$qstr")
-	recent_jobs2=$(printf "ID\tTool ID\tStatus\tCreated\tExit Code\tRuntime\n----\t----\t----\t----\t---\t----\n%s" "$recent_jobs" | sed 's/\t/\t | \t/g' | column -t -s'	')
+	recent_jobs2=$(printf "ID\tTool ID\tStatus\tCreated\tExit Code\tRuntime\n----\t----\t----\t----\t---\t----\n%s" "$recent_jobs" | align_cols)
 
 	# running jobs
 	read -r -d '' qstr <<-EOF
@@ -5266,7 +5655,7 @@ report_user-info(){ ## <user_id|username|email>: Quick overview of a Galaxy user
 			job.user_id = $user_id and job.state in ('running', 'queued', 'new') order by job.id desc
 	EOF
 	running_jobs=$(query_tsv "$qstr")
-	running_jobs2=$(printf "Tool ID\tTool Version\tHandler\tDestination\tState\tCreated\tRuntime\n----\t----\t----\t----\t----\t---\t----\n%s" "$running_jobs" | sed 's/\t/\t | \t/g' | column -t -s'	')
+	running_jobs2=$(printf "Tool ID\tTool Version\tHandler\tDestination\tState\tCreated\tRuntime\n----\t----\t----\t----\t----\t---\t----\n%s" "$running_jobs" | align_cols)
 
 	# Recent workflows
 	read -r -d '' qstr <<-EOF
@@ -5290,7 +5679,7 @@ report_user-info(){ ## <user_id|username|email>: Quick overview of a Galaxy user
 			5
 	EOF
 	recent_wf=$(query_tsv "$qstr")
-	recent_wf=$(printf "ID\tCreated\tState\tScheduler\tHandler\tWorkflow\tHistory\n----\t----\t----\t----\t----\t----\t----\n%s" "$recent_wf" | sed 's/\t/\t | \t/g' | column -t -s'	')
+	recent_wf=$(printf "ID\tCreated\tState\tScheduler\tHandler\tWorkflow\tHistory\n----\t----\t----\t----\t----\t----\t----\n%s" "$recent_wf" | align_cols)
 
 	# Largest Histories
 	read -r -d '' qstr <<-EOF
@@ -5310,7 +5699,7 @@ report_user-info(){ ## <user_id|username|email>: Quick overview of a Galaxy user
 			10
 	EOF
 	largest_histories=$(query_tsv "$qstr")
-	largest_histories=$(printf "History ID\tName\tSize\tDeleted\tPurged\n----\t----\t----\t----\t----\n%s" "$largest_histories" | sed 's/\t/\t | \t/g' | column -t -s'	')
+	largest_histories=$(printf "History ID\tName\tSize\tDeleted\tPurged\n----\t----\t----\t----\t----\n%s" "$largest_histories" | align_cols)
 
 	read -r -d '' template <<EOF
 # Galaxy User $user_id
@@ -5371,7 +5760,6 @@ report_job-info(){ ## <id>: Information about a specific job
 			job.state,
 			job.handler,
 			job.create_time AT TIME ZONE 'UTC' as create_time,
-			(now() AT TIME ZONE 'UTC' - job.create_time)::interval,
 			COALESCE(job.job_runner_name, '?'),
 			COALESCE(job.job_runner_external_id, '?')
 		FROM job
@@ -5386,7 +5774,7 @@ Property      | Value
          Tool | %s
         State | %s
       Handler | %s
-      Created | %s %s (%s %s %s ago)
+      Created | %s %s
 Job Runner/ID | %s / %s
 EOF
 	# shellcheck disable=SC2059
@@ -5414,30 +5802,30 @@ EOF
 	# DEST PARAMS #
 	###         ###
 	read -r -d '' qstr <<-EOF
-		SELECT destination_params
+		SELECT convert_from(destination_params::bytea, 'UTF8')
 		FROM job
 		WHERE job.id = $job_id
 	EOF
-	results=$(query_tsv "$qstr")
+	results=$(query_tsv_json "$qstr")
 	printf "## Destination Parameters\n\n"
 	# shellcheck disable=SC2016
-	tbl=$(echo "$results" | python -c "$hexdecodelines" | jq -S '. | to_entries[] | [.key, .value] | @tsv' -r | sed 's/\t/\t`/g;s/$/`/g')
+	tbl=$(echo "$results" | jq -S '. | to_entries[] | [.key, .value] | @tsv' -r | sed 's/\t/\t`/g;s/$/`/g')
 	# shellcheck disable=SC2059
-	printf "Key\tValue\n---\t---\n$tbl" | sed 's/\t/\t | \t/g' | column -t -s'	'
+	printf "Key\tValue\n---\t---\n$tbl" | align_cols
 
 	###          ###
 	# DEPENDENCIES #
 	###          ###
 	read -r -d '' qstr <<-EOF
-		SELECT dependencies
+		SELECT convert_from(dependencies::bytea, 'UTF8')
 		FROM job
 		WHERE job.id = $job_id
 	EOF
-	results=$(query_tsv "$qstr")
+	results=$(query_tsv_json "$qstr")
 	printf "\n## Dependencies\n\n"
-	tbl=$(echo "$results" | python -c "$hexdecodelines" | jq -S '.[] | [.name, .version, .dependency_type, .cacheable, .exact, .environment_path, .model_class] | @tsv' -r)
+	tbl=$(echo "$results" | jq -S '.[] | [.name, .version, .dependency_type, .cacheable, .exact, .environment_path, .model_class] | @tsv' -r)
 	# shellcheck disable=SC2059
-	printf "Name\tVersion\tDependency Type\tCacheable\tExact\tEnvironment Path\tModel Class\n----\t-------\t---------------\t---------\t-----\t----------------\t-----------\n$tbl\n" | sed 's/\t/\t | \t/g'       #| column -t -s'	'
+	printf "Name\tVersion\tDependency Type\tCacheable\tExact\tEnvironment Path\tModel Class\n----\t-------\t---------------\t---------\t-----\t----------------\t-----------\n$tbl\n" | align_cols
 
 	###        ###
 	# JOB PARAMS #
@@ -5450,7 +5838,7 @@ EOF
 	results=$(query_tsv "$qstr")
 	printf "\n## Tool Parameters\n\n"
 	# shellcheck disable=SC2059
-	printf "Name\tSettings\n---------\t------------------------------------\n$results\n\n" | sed 's/\t/\t | \t/g' | sed 's/[\"\`]//g'
+	printf "Name\tSettings\n-----\t------------\n$results\n\n" | sed 's/[\"\`]//g' | align_cols
 
 	###      ###
 	#  INPUTS  #
@@ -5481,7 +5869,7 @@ EOF
 		AND jtod.dataset_id = ds.id
 	EOF
 	input_ds=$(query_tsv "$qstr")
-	input_ds_tbl=$(printf "Job ID\tName\tExtension\thda-id\thda-state\thda-deleted\thda-purged\tds-id\tds-state\tds-deleted\tds-purged\tSize\n----\t----\t----\t----\t----\t----\t----\t----\t----\t----\t----\t----\n%s" "$input_ds" | sed 's/\t/\t | \t/g' )      #| column -t -s'	')
+	input_ds_tbl=$(printf "\nJob ID\tName\tExtension\thda-id\thda-state\thda-deleted\thda-purged\tds-id\tds-state\tds-deleted\tds-purged\tSize\n----\t----\t----\t----\t----\t----\t----\t----\t----\t----\t----\t----\n%s" "$input_ds" | align_cols)
 
 	###       ###
 	#  OUTPUTS  #
@@ -5509,7 +5897,7 @@ EOF
 		AND hda.dataset_id = ds.id
 	EOF
 	output_ds=$(query_tsv "$qstr")
-	output_ds_tbl=$(printf "Name\tExtension\thda-id\thda-state\thda-deleted\thda-purged\tds-id\tds-state\tds-deleted\tds-purged\tSize\n----\t----\t----\t----\t----\t----\t----\t----\t----\t----\t----\n%s" "$output_ds" | sed 's/\t/\t | \t/g' )          #| column -t -s'	')
+	output_ds_tbl=$(printf "Name\tExtension\thda-id\thda-state\thda-deleted\thda-purged\tds-id\tds-state\tds-deleted\tds-purged\tSize\n----\t----\t----\t----\t----\t----\t----\t----\t----\t----\t----\n%s" "$output_ds" |  align_cols)
 
 
 	read -r -d '' template3 <<EOF
@@ -5546,7 +5934,7 @@ report_assigned-to-handler(){ ## <handler>: Report what items are assigned to a 
 		ORDER BY create_time DESC
 	EOF
 	output_ds=$(query_tsv "$qstr")
-	printf "ID\tCreate Time\tTool ID\tState\tObject Store\tUser ID\n----\t----\t----\t----\t----\t----\n%s" "$output_ds" | sed 's/\t/\t | \t/g' | column -t -s'	'
+	printf "ID\tCreate Time\tTool ID\tState\tObject Store\tUser ID\n----\t----\t----\t----\t----\t----\n%s" "$output_ds" | align_cols
 
 
 	# Workflows
@@ -5558,7 +5946,7 @@ report_assigned-to-handler(){ ## <handler>: Report what items are assigned to a 
 		WHERE handler = '$1' and state = 'new'
 	EOF
 	output_ds=$(query_tsv "$qstr")
-	printf "ID\tCreate Time\tWorkflow ID\tHistory ID\tState\tScheduler\tUUID\n----\t----\t----\t----\t----\t----\t----\n%s" "$output_ds" | sed 's/\t/\t | \t/g' | column -t -s'	'
+	printf "ID\tCreate Time\tWorkflow ID\tHistory ID\tState\tScheduler\tUUID\n----\t----\t----\t----\t----\t----\t----\n%s" "$output_ds" | align_cols
 }
 # Some unlisted functions that are probably not useful as things people might
 # want to query (and thus have cluttering their query menu), but should be
@@ -6129,6 +6517,7 @@ look_for() {
 			query_influx "$QUERY" "$query_name" "$fields" "$tags" "$timestamp"
 		fi
 	else
+		error "Unknown command"
 		usage "${group_name}"
 	fi
 }
@@ -6155,6 +6544,7 @@ mutate() {
 
 	# TODO(hxr)
 	if [[ "$QUERY" == "ERROR" ]]; then
+		error "Error"
 		usage mutate
 	fi
 
@@ -6189,6 +6579,7 @@ query() {
 
 	# If query in error, exit.
 	if [[ "$QUERY" == "ERROR" ]]; then
+		error "Error"
 		usage query
 		exit 1
 	fi
@@ -6198,11 +6589,13 @@ query() {
 		tsvquery         ) $wrapper query_tsv "$QUERY";;
 		csvquery         ) $wrapper query_csv "$QUERY";;
 		query            ) $wrapper query_tbl "$QUERY";;
+		jsonquery        ) $wrapper query_json "$QUERY";;
 		iquery           ) $wrapper query_influx "$QUERY" "$query_name" "$fields" "$tags" "$timestamp";;
 		explainquery     ) $wrapper query_exp "$QUERY";;
 		explainjsonquery ) $wrapper query_expj "$QUERY";;
+		echoquery        ) $wrapper query_echo "$QUERY";;
 		# default
-		*            )  usage "Error";;
+		*                )  usage "Error";;
 	esac
 }
 

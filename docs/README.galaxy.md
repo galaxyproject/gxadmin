@@ -5,6 +5,10 @@ Command | Description
 [`galaxy amqp-test`](#galaxy-amqp-test) | Test a given AMQP URL for connectivity
 [`galaxy cleanup`](#galaxy-cleanup) | Cleanup histories/hdas/etc for past N days (default=30)
 [`galaxy cleanup-jwd`](#galaxy-cleanup-jwd) | (NEW) Cleanup job working directories
+[`galaxy fav_tools`](#galaxy-fav_tools) | Favourite tools in Galaxy DB
+[`galaxy fix-conda-env`](#galaxy-fix-conda-env) | Fix broken conda environments
+[`galaxy ie-list`](#galaxy-ie-list) | List GIEs
+[`galaxy ie-show`](#galaxy-ie-show) | Report on a GIE [HTCondor Only!]
 [`galaxy migrate-tool-install-from-sqlite`](#galaxy-migrate-tool-install-from-sqlite) | Converts SQLite version into normal potsgres toolshed repository tables
 [`galaxy migrate-tool-install-to-sqlite`](#galaxy-migrate-tool-install-to-sqlite) | Converts normal potsgres toolshed repository tables into the SQLite version
 
@@ -79,6 +83,91 @@ were changed less recently than N months.
  Then it takes the first 1000 entries and cleans them up. This was more
 of a hack to handle the fact that the list produced by find is really
 long, and the for loop hangs until it's done generating the list.
+
+
+## galaxy fav_tools
+
+galaxy fav_tools -  Favourite tools in Galaxy DB
+
+**SYNOPSIS**
+
+    gxadmin galaxy fav_tools
+
+**NOTES**
+
+What are people's fav tools
+
+
+## galaxy fix-conda-env
+
+galaxy fix-conda-env -  Fix broken conda environments
+
+**SYNOPSIS**
+
+    gxadmin galaxy fix-conda-env <conda_dir/envs/>
+
+**NOTES**
+
+Fixes any broken conda environments which are missing the activate scripts in their correct locations.
+
+MUST end in /envs/
+
+
+## galaxy ie-list
+
+galaxy ie-list -  List GIEs
+
+**SYNOPSIS**
+
+    gxadmin galaxy ie-list
+
+**NOTES**
+
+List running IEs (based on output of queue-detail)
+
+    $ gxadmin local ie-list
+    running  6134209  jupyter_notebook  helena-rasche
+
+
+## galaxy ie-show
+
+galaxy ie-show -  Report on a GIE [HTCondor Only!]
+
+**SYNOPSIS**
+
+    gxadmin galaxy ie-show [gie-galaxy-job-id]
+
+**NOTES**
+
+The new versions of IEs are IMPOSSIBLE to track down, so here's a handy
+function for you to make you hate life a lil bit less.
+
+
+    root@sn04:/opt/galaxy/server$ gxadmin local ie-show 6134209
+    Galaxy ID: 6134209
+    Condor ID: 1489026
+    Container: jupyter_notebook
+    Running on: cn032.bi.uni-freiburg.de
+    Job script: /data/dnb01/galaxy_db/pbs/galaxy_6134209.sh
+    Working dir: /data/dnb02/galaxy_db/job_working_directory/006/134/6134209
+    Container name: 20aa70fc1aa04d97bdc709a4c76dbcbd
+    Runtime:
+    {
+      8888: {
+        host: 132.230.68.65,
+        port: 1035,
+        protocol: tcp,
+        tool_port: 8888
+      }
+    }
+
+    Mapping
+    Key: aaaabbbbccccdddd
+    KeyType: interactivetoolentrypoint
+    Token: 00001111222233334444555566667777
+    URL: https://aaaabbbbccccdddd-00001111222233334444555566667777.interactivetoolentrypoint.interactivetool.usegalaxy.eu
+
+It's probably only going to work for us? Sorry :)
 
 
 ## galaxy migrate-tool-install-from-sqlite

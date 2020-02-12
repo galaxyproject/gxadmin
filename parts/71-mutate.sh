@@ -21,6 +21,7 @@ mutate() {
 
 	# TODO(hxr)
 	if [[ "$QUERY" == "ERROR" ]]; then
+		error "Error"
 		usage mutate
 	fi
 

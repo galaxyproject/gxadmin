@@ -64,7 +64,7 @@ query_tool-usage() { ## [weeks]: Counts of tool runs in the past weeks (default 
 	EOF
 }
 
-query_tool-popularity() { ## [months|24]: Most run tools by month
+query_tool-popularity() { ## [months|24]: Most run tools by month (tool_predictions)
 	handle_help "$@" <<-EOF
 		See most popular tools by month
 
@@ -99,7 +99,7 @@ query_tool-popularity() { ## [months|24]: Most run tools by month
 	EOF
 }
 
-query_workflow-connections() { ## [--all]: The connections of tools, from output to input, in the latest (or all) versions of user workflows
+query_workflow-connections() { ## [--all]: The connections of tools, from output to input, in the latest (or all) versions of user workflows (tool_predictions)
 	handle_help "$@" <<-EOF
 		This is used by the usegalaxy.eu tool prediction workflow, allowing for building models out of tool connections in workflows.
 
@@ -136,19 +136,45 @@ query_workflow-connections() { ## [--all]: The connections of tools, from output
 	read -r -d '' QUERY <<-EOF
 		SELECT
 			ws_in.workflow_id as wf_id,
-			workflow.update_time AT TIME ZONE 'UTC' as wf_updated,
-			wfc.input_step_id as in_id,
+			workflow.update_time::DATE as wf_updated,
+			ws_in.id as in_id,
 			ws_in.tool_id as in_tool,
 			ws_in.tool_version as in_tool_v,
-			wfc.output_step_id as out_id,
+			ws_out.id as out_id,
 			ws_out.tool_id as out_tool,
 			ws_out.tool_version as out_tool_v
-		FROM
-			workflow_step_connection wfc
-		JOIN workflow_step ws_in  ON ws_in.id = wfc.input_step_id
-		JOIN workflow_step ws_out ON ws_out.id = wfc.output_step_id
-		JOIN workflow on ws_in.workflow_id = workflow.id
+		FROM workflow_step_connection wfc
+		LEFT JOIN workflow_step ws_out ON ws_out.id = wfc.output_step_id
+		LEFT JOIN workflow_step_input wsi ON wfc.input_step_input_id = wsi.id
+		LEFT JOIN workflow_step ws_in  ON ws_in.id = wsi.workflow_step_id
+		LEFT JOIN workflow on ws_in.workflow_id = workflow.id
 		$wf_filter
+	EOF
+}
+
+query_history-connections() { ## : The connections of tools, from output to input, in histories (tool_predictions)
+	handle_help "$@" <<-EOF
+		This is used by the usegalaxy.eu tool prediction workflow, allowing for building models out of tool connections.
+	EOF
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			h.id AS h_id,
+			h.update_time::DATE AS h_update,
+			jtod.job_id AS in_id,
+			j.tool_id AS in_tool,
+			j.tool_version AS in_tool_v,
+			jtid.job_id AS out_id,
+			j2.tool_id AS out_tool,
+			j2.tool_version AS out_ver
+		FROM
+			job AS j
+			LEFT JOIN history AS h ON j.history_id = h.id
+			LEFT JOIN job_to_output_dataset AS jtod ON j.id = jtod.job_id
+			LEFT JOIN job_to_input_dataset AS jtid ON jtod.dataset_id = jtid.dataset_id
+			LEFT JOIN job AS j2 ON jtid.job_id = j2.id
+		WHERE
+			jtid.job_id IS NOT NULL
 	EOF
 }
 
@@ -287,24 +313,38 @@ query_queue-overview() { ## [--short-tool-id]: View used mostly for monitoring
 	tags="tool_id=0;tool_version=1;destination_id=2;handler=3;state=4;job_runner_name=5;user_id=7"
 
 	read -r -d '' QUERY <<-EOF
+		WITH queue AS (
+			SELECT
+				regexp_replace($tool_id, '/[0-9.a-z+-]+$', '')::TEXT AS tool_id,
+				tool_version::TEXT,
+				COALESCE(destination_id, 'unknown')::TEXT AS destination_id,
+				COALESCE(handler, 'unknown')::TEXT AS handler,
+				state::TEXT,
+				COALESCE(job_runner_name, 'unknown')::TEXT AS job_runner_name,
+				count(*) AS count,
+				$user_id::TEXT AS user_id
+			FROM
+				job
+			WHERE
+				state = 'running' OR state = 'queued' OR state = 'new'
+			GROUP BY
+				tool_id, tool_version, destination_id, handler, state, job_runner_name, user_id
+		)
 		SELECT
-			regexp_replace($tool_id, '/[0-9.a-z+-]+$', '') as tool_id,
-			tool_version,
-			COALESCE(destination_id, 'unknown'),
-			COALESCE(handler, 'unknown'),
-			state,
-			COALESCE(job_runner_name, 'unknown'),
-			count(*) as count,
-			$user_id as user_id
-		FROM job
-		WHERE
-			state = 'running' or state = 'queued' or state = 'new'
+			tool_id, tool_version, destination_id, handler, state, job_runner_name, sum(count), user_id
+		FROM
+			queue
 		GROUP BY
 			tool_id, tool_version, destination_id, handler, state, job_runner_name, user_id
+
 	EOF
 }
 
-query_queue-detail() { ## [--all]: Detailed overview of running and queued jobs
+query_queue-details() {
+	query_queue-detail $@
+}
+
+query_queue-detail() { ## [--all] [--seconds]: Detailed overview of running and queued jobs
 	handle_help "$@" <<-EOF
 		    $ gxadmin query queue-detail
 		      state  |   id    |  extid  |                                 tool_id                                   | username | time_since_creation
@@ -323,9 +363,17 @@ query_queue-detail() { ## [--all]: Detailed overview of running and queued jobs
 	EOF
 
 	d=""
-	if [[ $1 == "--all" ]]; then
-		d=", 'new'"
-	fi
+	nonpretty="("
+
+	for i in "$@"; do
+		if [[ $i == "--all" ]]; then
+			d=", 'new'"
+		fi
+
+		if [[ $i == "--seconds" ]]; then
+			nonpretty="EXTRACT(EPOCH FROM "
+		fi
+	done
 
 	username=$(gdpr_safe galaxy_user.username username "Anonymous User")
 
@@ -336,7 +384,7 @@ query_queue-detail() { ## [--all]: Detailed overview of running and queued jobs
 			job.job_runner_external_id as extid,
 			job.tool_id,
 			$username,
-			(now() AT TIME ZONE 'UTC' - job.create_time) as time_since_creation,
+			$nonpretty now() AT TIME ZONE 'UTC' - job.create_time) as time_since_creation,
 			job.handler,
 			job.job_runner_name,
 			job.destination_id
@@ -582,7 +630,7 @@ query_largest-histories() { ## : Largest histories in Galaxy
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			pg_size_pretty(sum(coalesce(dataset.total_size, coalesce(dataset.file_size, 0)))) as total_size,
+			pg_size_pretty(sum(coalesce(dataset.total_size, dataset.file_size, 0))) as total_size,
 			history.id,
 			substring(history.name, 1, 10),
 			$username
@@ -592,7 +640,7 @@ query_largest-histories() { ## : Largest histories in Galaxy
 			JOIN history on history_dataset_association.history_id = history.id
 			JOIN galaxy_user on history.user_id = galaxy_user.id
 		GROUP BY history.id, history.name, history.user_id, galaxy_user.username
-		ORDER BY sum(coalesce(dataset.total_size, coalesce(dataset.file_size, 0))) DESC
+		ORDER BY sum(coalesce(dataset.total_size, dataset.file_size, 0)) DESC
 	EOF
 }
 
@@ -667,9 +715,9 @@ query_disk-usage() { ## [--nice]: Disk usage per object store.
 	fields="count=1"
 	tags="object_store_id=0"
 
-	size="sum(coalesce(dataset.total_size, coalesce(dataset.file_size, 0)))"
+	size="sum(coalesce(dataset.total_size, dataset.file_size, 0))"
 	if [[ $1 == "--nice" ]]; then
-		size="pg_size_pretty(sum(coalesce(dataset.total_size, coalesce(dataset.file_size, 0)))) as sum"
+		size="pg_size_pretty(sum(coalesce(dataset.total_size, dataset.file_size, 0))) as sum"
 	fi
 
 	read -r -d '' QUERY <<-EOF
@@ -678,7 +726,7 @@ query_disk-usage() { ## [--nice]: Disk usage per object store.
 			FROM dataset
 			WHERE NOT purged
 			GROUP BY object_store_id
-			ORDER BY sum(coalesce(dataset.total_size, coalesce(dataset.file_size, 0))) DESC
+			ORDER BY sum(coalesce(dataset.total_size, dataset.file_size, 0)) DESC
 	EOF
 }
 
@@ -941,7 +989,7 @@ query_monthly-data(){ ## [year]: Number of active users per month, running jobs
 	read -r -d '' QUERY <<-EOF
 		SELECT
 			date_trunc('month', dataset.create_time AT TIME ZONE 'UTC')::date AS month,
-			pg_size_pretty(sum(coalesce(dataset.total_size, coalesce(dataset.file_size, 0))))
+			pg_size_pretty(sum(coalesce(dataset.total_size, dataset.file_size, 0)))
 		FROM
 			dataset
 		$where
@@ -1117,11 +1165,11 @@ query_user-disk-usage() { ## : Retrieve an approximation of the disk usage for u
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			row_number() OVER (ORDER BY sum(coalesce(dataset.total_size, coalesce(dataset.file_size, 0))) DESC) as rank,
+			row_number() OVER (ORDER BY sum(coalesce(dataset.total_size, dataset.file_size, 0)) DESC) as rank,
 			galaxy_user.id as "user id",
 			$username,
 			$useremail,
-			pg_size_pretty(sum(coalesce(dataset.total_size, coalesce(dataset.file_size, 0)))) as "storage usage"
+			pg_size_pretty(sum(coalesce(dataset.total_size, dataset.file_size, 0))) as "storage usage"
 		FROM
 			dataset,
 			galaxy_user,
@@ -1636,7 +1684,7 @@ query_job-outputs() { ## <id>: Output datasets from a specific job
 	EOF
 }
 
-query_job-info() { ## <-|job_id> [job_id [job_id [...]]] : Retrieve information about jobs given some job IDs
+query_job-info() { ## <-|job_id [job_id [...]]> : Retrieve information about jobs given some job IDs
 	handle_help "$@" <<-EOF
 		Retrieves information on a job, like the host it ran on,
 		how long it ran for and the total memory.
@@ -1881,7 +1929,7 @@ query_server-datasets() {
 			purged,
 			COALESCE(object_store_id, 'none'),
 			count(*),
-			sum(coalesce(dataset.total_size, coalesce(dataset.file_size, 0)))
+			sum(coalesce(dataset.total_size, dataset.file_size, 0))
 		FROM
 			dataset
 		$date_filter
@@ -2027,13 +2075,17 @@ query_server-allocated-cpu() {
 		date_filter="AND date_trunc('day', job.create_time AT TIME ZONE 'UTC') $op '$1'::date"
 	fi
 
+	# TODO: here we select the hostname, don't do that.
+	# Hack for EU's test vs main separation, both submitting job stats.
+	# Solve by either running IN telegraf or doing it in the meta functions
 	fields="cpu_seconds=1"
-	tags="job_runner_name=0"
+	tags="job_runner_name=0;host=2"
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
 			job.job_runner_name,
-			round(sum(a.metric_value * b.metric_value), 2) AS cpu_seconds
+			round(sum(a.metric_value * b.metric_value), 2) AS cpu_seconds,
+			'$HOSTNAME' as host
 		FROM
 			job_metric_numeric AS a,
 			job_metric_numeric AS b,
@@ -2164,7 +2216,7 @@ query_server-groups-disk-usage() { ## [YYYY-MM-DD] [=, <=, >= operators]: Retrie
 
 	read -r -d '' QUERY <<-EOF
 		SELECT $groupname,
-			sum(coalesce(dataset.total_size, coalesce(dataset.file_size, 0))) as "storage_usage"
+			sum(coalesce(dataset.total_size, dataset.file_size, 0)) as "storage_usage"
 		FROM dataset,
 			galaxy_group,
 			user_group_association,
@@ -2173,7 +2225,7 @@ query_server-groups-disk-usage() { ## [YYYY-MM-DD] [=, <=, >= operators]: Retrie
 		WHERE NOT dataset.purged
 			AND dataset.id = history_dataset_association.dataset_id
 			AND history_dataset_association.history_id = history.id
-			AND history.user_id = user_group_association.id
+			AND history.user_id = user_group_association.user_id
 			AND user_group_association.group_id = galaxy_group.id
 			$date_filter
 		GROUP BY galaxy_group.name
@@ -2516,7 +2568,7 @@ query_user-history-list() { ## <username|id|email> [--size]: Shows the ID of the
 			) AND NOT purged
 		), history_sizes AS (
 			SELECT history_id,
-				sum(coalesce(dataset.total_size, coalesce(dataset.file_size, 0))) as "hist_size"
+				sum(coalesce(dataset.total_size, dataset.file_size, 0)) as "hist_size"
 			FROM history_dataset_association,
 				dataset
 			WHERE history_id IN (
@@ -2838,7 +2890,7 @@ query_pg-table-bloat() { ## [--human]: show table and index bloat in your databa
 		), index_bloat AS (
 			SELECT
 				schemaname, tablename, bs,
-				COALESCE(c2.relname,'?') AS iname, COALESCE(c2.reltuples,0) AS ituples, COALESCE(c2.relpages,0) AS ipages,
+				coalesce(c2.relname,'?') AS iname, COALESCE(c2.reltuples,0) AS ituples, c2.relpages,0 AS ipages,
 				COALESCE(CEIL((c2.reltuples*(datahdr-12))/(bs-20::float)),0) AS iotta -- very rough approximation, assumes all cols
 			FROM bloat_info
 			JOIN pg_class cc ON cc.relname = bloat_info.tablename
@@ -3143,9 +3195,56 @@ query_pg-stat-user-tables() { ## : stats about tables (tuples, index scans, vacu
 	EOF
 }
 
+query_data-origin-distribution-merged() {
+	summary="$(summary_statistics data $human)"
+	username=$(gdpr_safe job.user_id galaxy_user)
+
+	read -r -d '' QUERY <<-EOF
+		WITH asdf AS (
+			SELECT
+				'total' as origin,
+				sum(coalesce(dataset.total_size, dataset.file_size, 0)) AS data,
+				date_trunc('month', dataset.create_time) as created,
+				$username
+			FROM job
+			LEFT JOIN job_to_output_dataset ON job.id = job_to_output_dataset.job_id
+			LEFT JOIN history_dataset_association ON job_to_output_dataset.dataset_id = history_dataset_association.id
+			LEFT JOIN dataset ON history_dataset_association.dataset_id = dataset.id
+			GROUP BY
+				origin, job.user_id, created, galaxy_user
+		)
+		SELECT
+			origin,
+			round(data, 2 - length(data::text)),
+			created,
+			galaxy_user
+		FROM asdf
+		ORDER BY galaxy_user desc
+	EOF
+}
+
 query_data-origin-distribution() { ## [--human]: data sources (uploaded vs derived)
 	handle_help "$@" <<-EOF
 		Break down the source of data in the server, uploaded data vs derived (created as output from a tool)
+
+		Recommendation is to run with GDPR_MODE so you can safely share this information:
+
+		    GDPR_MODE=\$(openssl rand -hex 24 2>/dev/null) gxadmin tsvquery data-origin-distribution | gzip > data-origin.tsv.gz
+
+		Output looks like:
+
+		    derived 130000000000    2019-07-01 00:00:00     fff4f423d06
+		    derived 61000000000     2019-08-01 00:00:00     fff4f423d06
+		    created 340000000       2019-08-01 00:00:00     fff4f423d06
+		    created 19000000000     2019-07-01 00:00:00     fff4f423d06
+		    derived 180000000000    2019-04-01 00:00:00     ffd28c0cf8c
+		    created 21000000000     2019-04-01 00:00:00     ffd28c0cf8c
+		    derived 1700000000      2019-06-01 00:00:00     ffd28c0cf8c
+		    derived 120000000       2019-06-01 00:00:00     ffcb567a837
+		    created 62000000        2019-05-01 00:00:00     ffcb567a837
+		    created 52000000        2019-06-01 00:00:00     ffcb567a837
+		    derived 34000000        2019-07-01 00:00:00     ffcb567a837
+
 	EOF
 
 	if [[ $1 == "--human" ]]; then
@@ -3155,18 +3254,29 @@ query_data-origin-distribution() { ## [--human]: data sources (uploaded vs deriv
 	fi
 
 	summary="$(summary_statistics data $human)"
+	username=$(gdpr_safe job.user_id galaxy_user)
 
 	read -r -d '' QUERY <<-EOF
+		WITH asdf AS (
+			SELECT
+				case when job.tool_id = 'upload1' then 'created' else 'derived' end AS origin,
+				sum(coalesce(dataset.total_size, dataset.file_size, 0)) AS data,
+				date_trunc('month', dataset.create_time) as created,
+				$username
+			FROM job
+			LEFT JOIN job_to_output_dataset ON job.id = job_to_output_dataset.job_id
+			LEFT JOIN history_dataset_association ON job_to_output_dataset.dataset_id = history_dataset_association.id
+			LEFT JOIN dataset ON history_dataset_association.dataset_id = dataset.id
+			GROUP BY
+				origin, job.user_id, created, galaxy_user
+		)
 		SELECT
-			case when job.tool_id = 'upload1' then 'created' else 'derived' end AS origin,
-			sum(coalesce(dataset.total_size, coalesce(dataset.file_size, 0))) AS data,
-			job.user_id
-		FROM job
-		LEFT JOIN job_to_output_dataset ON job.id = job_to_output_dataset.job_id
-		LEFT JOIN history_dataset_association ON job_to_output_dataset.dataset_id = history_dataset_association.id
-		LEFT JOIN dataset ON history_dataset_association.dataset_id = dataset.id
-		GROUP BY
-			origin, job.user_id
+			origin,
+			round(data, 2 - length(data::text)),
+			created,
+			galaxy_user
+		FROM asdf
+		ORDER BY galaxy_user desc
 	EOF
 }
 
@@ -3197,7 +3307,7 @@ query_data-origin-distribution-summary() { ## [--human]: breakdown of data sourc
 		WITH user_job_data AS (
 			SELECT
 				case when job.tool_id = 'upload1' then 'created' else 'derived' end AS origin,
-				sum(coalesce(dataset.total_size, coalesce(dataset.file_size, 0))) AS data,
+				sum(coalesce(dataset.total_size, dataset.file_size, 0)) AS data,
 				job.user_id
 			FROM job
 			LEFT JOIN job_to_output_dataset ON job.id = job_to_output_dataset.job_id
@@ -3212,5 +3322,76 @@ query_data-origin-distribution-summary() { ## [--human]: breakdown of data sourc
 			$summary
 		FROM user_job_data
 		GROUP BY origin
+	EOF
+}
+
+query_aq() { ## <table> <column> <-|job_id [job_id [...]]>: Given a list of IDs from a table (e.g. 'job'), access a specific column from that table
+	handle_help "$@" <<-EOF
+	EOF
+
+	table=$1; shift
+	column=$1; shift
+
+	if [[ "$1" == "-" ]]; then
+		# read jobs from stdin
+		ids=$(cat | paste -s -d' ')
+	else
+		# read from $@
+		ids=$@;
+	fi
+
+	ids_string=$(join_by ',' ${ids[@]})
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			$column
+		FROM $table
+		WHERE id in ($ids_string)
+	EOF
+}
+
+query_q() { ## <query>: Passes a raw SQL query directly through to the database
+	handle_help "$@" <<-EOF
+	EOF
+
+	QUERY="$1"
+}
+
+query_good-for-pulsar() { ## : Look for jobs EU would like to send to pulsar
+	handle_help "$@" <<-EOF
+		This selects all jobs and finds two things:
+		- sum of input sizes
+		- runtime
+
+		and then returns a simple /score/ of (input/runtime) and sorts on that
+		hopefully identifying things with small inputs and long runtimes.
+	EOF
+
+	read -r -d '' QUERY <<-EOF
+		WITH job_data AS (
+			SELECT
+				regexp_replace(j.tool_id, '.*toolshed.*/repos/', '') as tool_id,
+				SUM(d.total_size) AS size,
+				MIN(jmn.metric_value) AS runtime,
+				SUM(d.total_size) / min(jmn.metric_value) AS score
+			FROM job j
+			LEFT JOIN job_to_input_dataset jtid ON j.id = jtid.job_id
+			LEFT JOIN history_dataset_association hda ON jtid.dataset_id = hda.id
+			LEFT JOIN dataset d ON hda.dataset_id = d.id
+			LEFT JOIN job_metric_numeric jmn ON j.id = jmn.job_id
+			WHERE jmn.metric_name = 'runtime_seconds'
+				AND d.total_size IS NOT NULL
+			GROUP BY j.id
+		)
+
+		SELECT
+			tool_id,
+			percentile_cont(0.50) WITHIN GROUP (ORDER BY score) ::bigint AS median_score,
+			percentile_cont(0.50) WITHIN GROUP (ORDER BY runtime) ::bigint AS median_runtime,
+			pg_size_pretty(percentile_cont(0.50) WITHIN GROUP (ORDER BY size) ::bigint) AS median_size,
+			count(*)
+		FROM job_data
+		GROUP BY tool_id
+		ORDER BY median_score ASC
 	EOF
 }

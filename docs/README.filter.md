@@ -3,7 +3,7 @@
 Command | Description
 ------- | -----------
 [`filter digest-color`](#filter-digest-color) | Color an input stream based on the contents (e.g. hostname)
-[`filter hexdecode`](#filter-hexdecode) | Decodes any hex blobs from postgres outputs
+`filter hexdecode` | Deprecated, There is an easier built in postgres function for this same feature
 [`filter identicon`](#filter-identicon) | Convert an input data stream into an identicon (e.g. with hostname)
 [`filter pg2md`](#filter-pg2md) | Convert postgres table format outputs to something that can be pasted as markdown
 
@@ -28,64 +28,6 @@ Mostly useful for colouring a hostname or some similar value.
 **NOTE** If the output isn't coloured properly, try:
 
     export TERM=screen-256color
-
-
-## filter hexdecode
-
-filter hexdecode -  Decodes any hex blobs from postgres outputs
-
-**SYNOPSIS**
-
-    gxadmin filter hexdecode
-
-**NOTES**
-
-This automatically replaces any hex strings (\x[a-f0-9]+) with their decoded versions. This can allow you to query galaxy metadata, decode it, and start processing it with JQ. Just pipe your query to it and it will replace it wherever it is found.
-
-    [galaxy@sn04 ~]$ psql -c  'select metadata from history_dataset_association limit 10;'
-                                 metadata
-    ------------------------------------------------------------------------------------------------------------------
-     \x7b22646174615f6c696e6573223a206e756c6c2c202264626b6579223a205b223f225d2c202273657175656e636573223a206e756c6c7d
-     \x7b22646174615f6c696e6573223a206e756c6c2c202264626b6579223a205b223f225d2c202273657175656e636573223a206e756c6c7d
-     \x7b22646174615f6c696e6573223a206e756c6c2c202264626b6579223a205b223f225d2c202273657175656e636573223a206e756c6c7d
-     \x7b22646174615f6c696e6573223a206e756c6c2c202264626b6579223a205b223f225d2c202273657175656e636573223a206e756c6c7d
-     \x7b22646174615f6c696e6573223a206e756c6c2c202264626b6579223a205b223f225d2c202273657175656e636573223a206e756c6c7d
-     \x7b22646174615f6c696e6573223a20333239312c202264626b6579223a205b223f225d2c202273657175656e636573223a20317d
-     \x7b22646174615f6c696e6573223a20312c202264626b6579223a205b223f225d7d
-     \x7b22646174615f6c696e6573223a20312c202264626b6579223a205b223f225d7d
-     \x7b22646174615f6c696e6573223a20312c202264626b6579223a205b223f225d7d
-     \x7b22646174615f6c696e6573223a20312c202264626b6579223a205b223f225d7d
-    (10 rows)
-
-    [galaxy@sn04 ~]$ psql -c  'select metadata from history_dataset_association limit 10;'  | gxadmin filter hexdecode
-                                 metadata
-    ------------------------------------------------------------------------------------------------------------------
-     {"data_lines": null, "dbkey": ["?"], "sequences": null}
-     {"data_lines": null, "dbkey": ["?"], "sequences": null}
-     {"data_lines": null, "dbkey": ["?"], "sequences": null}
-     {"data_lines": null, "dbkey": ["?"], "sequences": null}
-     {"data_lines": null, "dbkey": ["?"], "sequences": null}
-     {"data_lines": 3291, "dbkey": ["?"], "sequences": 1}
-     {"data_lines": 1, "dbkey": ["?"]}
-     {"data_lines": 1, "dbkey": ["?"]}
-     {"data_lines": 1, "dbkey": ["?"]}
-     {"data_lines": 1, "dbkey": ["?"]}
-    (10 rows)
-
-Or to query for the dbkeys uesd by datasets:
-
-    [galaxy@sn04 ~]$ psql -c  'copy (select metadata from history_dataset_association limit 1000) to stdout' | \
-        gxadmin filter hexdecode | \
-        jq -r '.dbkey[0]' 2>/dev/null | sort | uniq -c | sort -nr
-        768 ?
-        118 danRer7
-         18 hg19
-         17 mm10
-         13 mm9
-          4 dm3
-          1 TAIR10
-          1 hg38
-          1 ce10
 
 
 ## filter identicon

@@ -2,17 +2,20 @@
 
 Command | Description
 ------- | -----------
+[`query aq`](#query-aq) | Given a list of IDs from a table (e.g. 'job'), access a specific column from that table
 [`query collection-usage`](#query-collection-usage) | Information about how many collections of various types are used
 [`query data-origin-distribution`](#query-data-origin-distribution) | data sources (uploaded vs derived)
 [`query data-origin-distribution-summary`](#query-data-origin-distribution-summary) | breakdown of data sources (uploaded vs derived)
 [`query datasets-created-daily`](#query-datasets-created-daily) | The min/max/average/p95/p99 of total size of datasets created in a single day.
 [`query disk-usage`](#query-disk-usage) | Disk usage per object store.
 [`query errored-jobs`](#query-errored-jobs) | Lists jobs that errored in the last N hours.
+[`query good-for-pulsar`](#query-good-for-pulsar) | Look for jobs EU would like to send to pulsar
 [`query group-cpu-seconds`](#query-group-cpu-seconds) | Retrieve an approximation of the CPU time in seconds for group(s)
 [`query group-gpu-time`](#query-group-gpu-time) | Retrieve an approximation of the GPU time for users
 [`query groups-list`](#query-groups-list) | List all groups known to Galaxy
 [`query hdca-datasets`](#query-hdca-datasets) | List of files in a dataset collection
 [`query hdca-info`](#query-hdca-info) | Information on a dataset collection
+[`query history-connections`](#query-history-connections) | The connections of tools, from output to input, in histories (tool_predictions)
 [`query history-contents`](#query-history-contents) | List datasets and/or collections in a history
 [`query history-runtime-system-by-tool`](#query-history-runtime-system-by-tool) | Sum of runtimes by all jobs in a history, split by tool
 [`query history-runtime-system`](#query-history-runtime-system) | Sum of runtimes by all jobs in a history
@@ -47,6 +50,7 @@ Command | Description
 [`query pg-table-size`](#query-pg-table-size) | show the size of the tables (excluding indexes), descending by size
 [`query pg-unused-indexes`](#query-pg-unused-indexes) | show unused and almost unused indexes
 [`query pg-vacuum-stats`](#query-pg-vacuum-stats) | show dead rows and whether an automatic vacuum is expected to be triggered
+[`query q`](#query-q) | Passes a raw SQL query directly through to the database
 [`query queue`](#query-queue) | Brief overview of currently running jobs
 [`query queue-detail`](#query-queue-detail) | Detailed overview of running and queued jobs
 [`query queue-detail-by-handler`](#query-queue-detail-by-handler) | List jobs for a specific handler
@@ -63,7 +67,7 @@ Command | Description
 [`query tool-likely-broken`](#query-tool-likely-broken) | Find tools that have been executed in recent weeks that are (or were due to job running) likely substantially broken
 [`query tool-metrics`](#query-tool-metrics) | See values of a specific metric
 [`query tool-new-errors`](#query-tool-new-errors) | Summarize percent of tool runs in error over the past weeks for "new tools"
-[`query tool-popularity`](#query-tool-popularity) | Most run tools by month
+[`query tool-popularity`](#query-tool-popularity) | Most run tools by month (tool_predictions)
 [`query tool-usage`](#query-tool-usage) | Counts of tool runs in the past weeks (default = all)
 [`query training-list`](#query-training-list) | List known trainings
 [`query training-members-remove`](#query-training-members-remove) | Remove a user from a training
@@ -80,8 +84,17 @@ Command | Description
 [`query users-count`](#query-users-count) | Shows sums of active/external/deleted/purged accounts
 [`query users-total`](#query-users-total) | Total number of Galaxy users (incl deleted, purged, inactive)
 [`query users-with-oidc`](#query-users-with-oidc) | How many users logged in with OIDC
-[`query workflow-connections`](#query-workflow-connections) | The connections of tools, from output to input, in the latest (or all) versions of user workflows
+[`query workflow-connections`](#query-workflow-connections) | The connections of tools, from output to input, in the latest (or all) versions of user workflows (tool_predictions)
 [`query workflow-invocation-status`](#query-workflow-invocation-status) | Report on how many workflows are in new state by handler
+
+## query aq
+
+query aq -  Given a list of IDs from a table (e.g. 'job'), access a specific column from that table
+
+**SYNOPSIS**
+
+    gxadmin query aq <table> <column> <-|job_id [job_id [...]]>
+
 
 ## query collection-usage
 
@@ -103,6 +116,24 @@ query data-origin-distribution -  data sources (uploaded vs derived)
 **NOTES**
 
 Break down the source of data in the server, uploaded data vs derived (created as output from a tool)
+
+Recommendation is to run with GDPR_MODE so you can safely share this information:
+
+    GDPR_MODE=$(openssl rand -hex 24 2>/dev/null) gxadmin tsvquery data-origin-distribution | gzip > data-origin.tsv.gz
+
+Output looks like:
+
+    derived 130000000000    2019-07-01 00:00:00     fff4f423d06
+    derived 61000000000     2019-08-01 00:00:00     fff4f423d06
+    created 340000000       2019-08-01 00:00:00     fff4f423d06
+    created 19000000000     2019-07-01 00:00:00     fff4f423d06
+    derived 180000000000    2019-04-01 00:00:00     ffd28c0cf8c
+    created 21000000000     2019-04-01 00:00:00     ffd28c0cf8c
+    derived 1700000000      2019-06-01 00:00:00     ffd28c0cf8c
+    derived 120000000       2019-06-01 00:00:00     ffcb567a837
+    created 62000000        2019-05-01 00:00:00     ffcb567a837
+    created 52000000        2019-06-01 00:00:00     ffcb567a837
+    derived 34000000        2019-07-01 00:00:00     ffcb567a837
 
 
 ## query data-origin-distribution-summary
@@ -186,6 +217,24 @@ Lists details of jobs that have status = 'error' for the specified number of hou
 
      query errored-jobs 24
     TO_DO: Add output of query here!
+
+
+## query good-for-pulsar
+
+query good-for-pulsar -  Look for jobs EU would like to send to pulsar
+
+**SYNOPSIS**
+
+    gxadmin query good-for-pulsar
+
+**NOTES**
+
+This selects all jobs and finds two things:
+- sum of input sizes
+- runtime
+
+and then returns a simple /score/ of (input/runtime) and sorts on that
+hopefully identifying things with small inputs and long runtimes.
 
 
 ## query group-cpu-seconds
@@ -273,6 +322,19 @@ query hdca-info -  Information on a dataset collection
     gxadmin query hdca-info <hdca_id>
 
 
+## query history-connections
+
+query history-connections -  The connections of tools, from output to input, in histories (tool_predictions)
+
+**SYNOPSIS**
+
+    gxadmin query history-connections
+
+**NOTES**
+
+This is used by the usegalaxy.eu tool prediction workflow, allowing for building models out of tool connections.
+
+
 ## query history-contents
 
 query history-contents -  List datasets and/or collections in a history
@@ -339,7 +401,7 @@ query job-info -  Retrieve information about jobs given some job IDs
 
 **SYNOPSIS**
 
-    gxadmin query job-info <-|job_id> [job_id [job_id [...]]]
+    gxadmin query job-info <-|job_id [job_id [...]]>
 
 **NOTES**
 
@@ -890,6 +952,15 @@ query pg-vacuum-stats -  show dead rows and whether an automatic vacuum is expec
 Originally from: https://github.com/heroku/heroku-pg-extras/tree/master/commands
 
 
+## query q
+
+query q -  Passes a raw SQL query directly through to the database
+
+**SYNOPSIS**
+
+    gxadmin query q <query>
+
+
 ## query queue
 
 query queue -  Brief overview of currently running jobs
@@ -921,7 +992,7 @@ query queue-detail -  Detailed overview of running and queued jobs
 
 **SYNOPSIS**
 
-    gxadmin query queue-detail [--all]
+    gxadmin query queue-detail [--all] [--seconds]
 
 **NOTES**
 
@@ -1206,7 +1277,7 @@ See jobs-in-error summary for recent tools (tools whose first execution is in re
 
 ## query tool-popularity
 
-query tool-popularity -  Most run tools by month
+query tool-popularity -  Most run tools by month (tool_predictions)
 
 **SYNOPSIS**
 
@@ -1528,7 +1599,7 @@ elixir   |     5
 
 ## query workflow-connections
 
-query workflow-connections -  The connections of tools, from output to input, in the latest (or all) versions of user workflows
+query workflow-connections -  The connections of tools, from output to input, in the latest (or all) versions of user workflows (tool_predictions)
 
 **SYNOPSIS**
 

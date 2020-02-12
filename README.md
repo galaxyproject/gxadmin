@@ -64,7 +64,7 @@ Example .pgpass:
 
 ### InfluxDB
 
-In order to use functions like `gxadmin meta influx-post`, `gxadmin` requires 
+In order to use functions like `gxadmin meta influx-post`, `gxadmin` requires
 a few environment variables to be set. Namely
 *  `INFLUX_URL`
 *  `INFLUX_PASS`
@@ -74,6 +74,8 @@ a few environment variables to be set. Namely
 ### GDPR
 
 You may want to set `GDPR_MODE=1`. Please determine your own legal responsibilities, the authors take no responsibility for anything you may have done wrong.
+
+If you want to publish data, first be careful! Second, the `GDPR_MODE` variable is part of the hash, so you can set it to something like `GDPR_MODE=$(openssl rand -hex 24 2>/dev/null) gxadmin query ...` for hashing and "throwing away the key"
 
 ### Local Functions
 
@@ -121,7 +123,7 @@ Command | Description
 Command | Description
 ------- | -----------
 [`filter digest-color`](docs/README.filter.md#filter-digest-color) | Color an input stream based on the contents (e.g. hostname)
-[`filter hexdecode`](docs/README.filter.md#filter-hexdecode) | Decodes any hex blobs from postgres outputs
+`filter hexdecode` | Deprecated, There is an easier built in postgres function for this same feature
 [`filter identicon`](docs/README.filter.md#filter-identicon) | Convert an input data stream into an identicon (e.g. with hostname)
 [`filter pg2md`](docs/README.filter.md#filter-pg2md) | Convert postgres table format outputs to something that can be pasted as markdown
 
@@ -132,6 +134,10 @@ Command | Description
 [`galaxy amqp-test`](docs/README.galaxy.md#galaxy-amqp-test) | Test a given AMQP URL for connectivity
 [`galaxy cleanup`](docs/README.galaxy.md#galaxy-cleanup) | Cleanup histories/hdas/etc for past N days (default=30)
 [`galaxy cleanup-jwd`](docs/README.galaxy.md#galaxy-cleanup-jwd) | (NEW) Cleanup job working directories
+[`galaxy fav_tools`](docs/README.galaxy.md#galaxy-fav_tools) | Favourite tools in Galaxy DB
+[`galaxy fix-conda-env`](docs/README.galaxy.md#galaxy-fix-conda-env) | Fix broken conda environments
+[`galaxy ie-list`](docs/README.galaxy.md#galaxy-ie-list) | List GIEs
+[`galaxy ie-show`](docs/README.galaxy.md#galaxy-ie-show) | Report on a GIE [HTCondor Only!]
 [`galaxy migrate-tool-install-from-sqlite`](docs/README.galaxy.md#galaxy-migrate-tool-install-from-sqlite) | Converts SQLite version into normal potsgres toolshed repository tables
 [`galaxy migrate-tool-install-to-sqlite`](docs/README.galaxy.md#galaxy-migrate-tool-install-to-sqlite) | Converts normal potsgres toolshed repository tables into the SQLite version
 
@@ -161,26 +167,31 @@ Command | Description
 [`mutate fail-history`](docs/README.mutate.md#mutate-fail-history) | Mark all jobs within a history to state error
 [`mutate fail-job`](docs/README.mutate.md#mutate-fail-job) | Sets a job state to error
 [`mutate fail-terminal-datasets`](docs/README.mutate.md#mutate-fail-terminal-datasets) | Causes the output datasets of jobs which were manually failed, to be marked as failed
+[`mutate generate-unset-api-keys`](docs/README.mutate.md#mutate-generate-unset-api-keys) | Generate API keys for users which do not have one set.
 [`mutate oidc-role-find-affected`](docs/README.mutate.md#mutate-oidc-role-find-affected) | Find users affected by galaxyproject/galaxy#8244
 [`mutate oidc-role-fix`](docs/README.mutate.md#mutate-oidc-role-fix) | Fix permissions for users logged in via OIDC. Workaround for galaxyproject/galaxy#8244
 [`mutate reassign-job-to-handler`](docs/README.mutate.md#mutate-reassign-job-to-handler) | Reassign a job to a different handler
 [`mutate reassign-workflows-to-handler`](docs/README.mutate.md#mutate-reassign-workflows-to-handler) | Reassign workflows in 'new' state to a different handler.
+[`mutate restart-jobs`](docs/README.mutate.md#mutate-restart-jobs) | Restart some jobs
 
 ### query
 
 Command | Description
 ------- | -----------
+[`query aq`](docs/README.query.md#query-aq) | Given a list of IDs from a table (e.g. 'job'), access a specific column from that table
 [`query collection-usage`](docs/README.query.md#query-collection-usage) | Information about how many collections of various types are used
 [`query data-origin-distribution`](docs/README.query.md#query-data-origin-distribution) | data sources (uploaded vs derived)
 [`query data-origin-distribution-summary`](docs/README.query.md#query-data-origin-distribution-summary) | breakdown of data sources (uploaded vs derived)
 [`query datasets-created-daily`](docs/README.query.md#query-datasets-created-daily) | The min/max/average/p95/p99 of total size of datasets created in a single day.
 [`query disk-usage`](docs/README.query.md#query-disk-usage) | Disk usage per object store.
 [`query errored-jobs`](docs/README.query.md#query-errored-jobs) | Lists jobs that errored in the last N hours.
+[`query good-for-pulsar`](docs/README.query.md#query-good-for-pulsar) | Look for jobs EU would like to send to pulsar
 [`query group-cpu-seconds`](docs/README.query.md#query-group-cpu-seconds) | Retrieve an approximation of the CPU time in seconds for group(s)
 [`query group-gpu-time`](docs/README.query.md#query-group-gpu-time) | Retrieve an approximation of the GPU time for users
 [`query groups-list`](docs/README.query.md#query-groups-list) | List all groups known to Galaxy
 [`query hdca-datasets`](docs/README.query.md#query-hdca-datasets) | List of files in a dataset collection
 [`query hdca-info`](docs/README.query.md#query-hdca-info) | Information on a dataset collection
+[`query history-connections`](docs/README.query.md#query-history-connections) | The connections of tools, from output to input, in histories (tool_predictions)
 [`query history-contents`](docs/README.query.md#query-history-contents) | List datasets and/or collections in a history
 [`query history-runtime-system-by-tool`](docs/README.query.md#query-history-runtime-system-by-tool) | Sum of runtimes by all jobs in a history, split by tool
 [`query history-runtime-system`](docs/README.query.md#query-history-runtime-system) | Sum of runtimes by all jobs in a history
@@ -215,6 +226,7 @@ Command | Description
 [`query pg-table-size`](docs/README.query.md#query-pg-table-size) | show the size of the tables (excluding indexes), descending by size
 [`query pg-unused-indexes`](docs/README.query.md#query-pg-unused-indexes) | show unused and almost unused indexes
 [`query pg-vacuum-stats`](docs/README.query.md#query-pg-vacuum-stats) | show dead rows and whether an automatic vacuum is expected to be triggered
+[`query q`](docs/README.query.md#query-q) | Passes a raw SQL query directly through to the database
 [`query queue`](docs/README.query.md#query-queue) | Brief overview of currently running jobs
 [`query queue-detail`](docs/README.query.md#query-queue-detail) | Detailed overview of running and queued jobs
 [`query queue-detail-by-handler`](docs/README.query.md#query-queue-detail-by-handler) | List jobs for a specific handler
@@ -231,7 +243,7 @@ Command | Description
 [`query tool-likely-broken`](docs/README.query.md#query-tool-likely-broken) | Find tools that have been executed in recent weeks that are (or were due to job running) likely substantially broken
 [`query tool-metrics`](docs/README.query.md#query-tool-metrics) | See values of a specific metric
 [`query tool-new-errors`](docs/README.query.md#query-tool-new-errors) | Summarize percent of tool runs in error over the past weeks for "new tools"
-[`query tool-popularity`](docs/README.query.md#query-tool-popularity) | Most run tools by month
+[`query tool-popularity`](docs/README.query.md#query-tool-popularity) | Most run tools by month (tool_predictions)
 [`query tool-usage`](docs/README.query.md#query-tool-usage) | Counts of tool runs in the past weeks (default = all)
 [`query training-list`](docs/README.query.md#query-training-list) | List known trainings
 [`query training-members-remove`](docs/README.query.md#query-training-members-remove) | Remove a user from a training
@@ -248,7 +260,7 @@ Command | Description
 [`query users-count`](docs/README.query.md#query-users-count) | Shows sums of active/external/deleted/purged accounts
 [`query users-total`](docs/README.query.md#query-users-total) | Total number of Galaxy users (incl deleted, purged, inactive)
 [`query users-with-oidc`](docs/README.query.md#query-users-with-oidc) | How many users logged in with OIDC
-[`query workflow-connections`](docs/README.query.md#query-workflow-connections) | The connections of tools, from output to input, in the latest (or all) versions of user workflows
+[`query workflow-connections`](docs/README.query.md#query-workflow-connections) | The connections of tools, from output to input, in the latest (or all) versions of user workflows (tool_predictions)
 [`query workflow-invocation-status`](docs/README.query.md#query-workflow-invocation-status) | Report on how many workflows are in new state by handler
 
 ### report

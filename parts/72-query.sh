@@ -23,6 +23,7 @@ query() {
 
 	# If query in error, exit.
 	if [[ "$QUERY" == "ERROR" ]]; then
+		error "Error"
 		usage query
 		exit 1
 	fi
@@ -32,11 +33,13 @@ query() {
 		tsvquery         ) $wrapper query_tsv "$QUERY";;
 		csvquery         ) $wrapper query_csv "$QUERY";;
 		query            ) $wrapper query_tbl "$QUERY";;
+		jsonquery        ) $wrapper query_json "$QUERY";;
 		iquery           ) $wrapper query_influx "$QUERY" "$query_name" "$fields" "$tags" "$timestamp";;
 		explainquery     ) $wrapper query_exp "$QUERY";;
 		explainjsonquery ) $wrapper query_expj "$QUERY";;
+		echoquery        ) $wrapper query_echo "$QUERY";;
 		# default
-		*            )  usage "Error";;
+		*                )  usage "Error";;
 	esac
 }
 

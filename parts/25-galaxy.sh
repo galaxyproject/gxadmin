@@ -360,3 +360,119 @@ galaxy_cleanup-jwd() { ## <working_dir> [1|months ago]: (NEW) Cleanup job workin
 			fi
 	done
 }
+
+galaxy_fix-conda-env() { ## <conda_dir/envs/>: Fix broken conda environments
+	handle_help "$@" <<-EOF
+		Fixes any broken conda environments which are missing the activate scripts in their correct locations.
+
+		MUST end in /envs/
+	EOF
+
+	conda_dir=$(dirname $1)
+
+	for i in $(find ${conda_dir}/envs/ -mindepth 1 -maxdepth 1 -type d);
+	do
+		if [ ! -f $i/bin/conda ]; then
+			${conda_dir}/bin/conda ..checkenv bash $i
+		fi
+	done
+}
+
+galaxy_fav_tools() { ## : Favourite tools in Galaxy DB
+	handle_help "$@" <<-EOF
+		What are people's fav tools
+	EOF
+
+	psql -qAt -c "select value::json->'tools' from user_preference where name = 'favorites'" | jq -s add | jq '. | @tsv' -r | sed 's/\t/\n/g' | sort | uniq -c | sort -n
+}
+
+galaxy_ie-list() { ## : List GIEs
+	handle_help "$@" <<-EOF
+		List running IEs (based on output of queue-detail)
+
+		    $ gxadmin local ie-list
+		    running  6134209  jupyter_notebook  helena-rasche
+
+	EOF
+
+	gxadmin query queue-detail  | grep interactive | awk -F'|' '{print $1" "$2" "$4" "$5}' | sed 's/interactive_tool_//g' | column -t
+}
+
+galaxy_ie-show() { ## [gie-galaxy-job-id]: Report on a GIE [HTCondor Only!]
+	handle_help "$@" <<-EOF
+		The new versions of IEs are IMPOSSIBLE to track down, so here's a handy
+		function for you to make you hate life a lil bit less.
+
+
+		    root@sn04:/opt/galaxy/server$ gxadmin local ie-show 6134209
+		    Galaxy ID: 6134209
+		    Condor ID: 1489026
+		    Container: jupyter_notebook
+		    Running on: cn032.bi.uni-freiburg.de
+		    Job script: /data/dnb01/galaxy_db/pbs/galaxy_6134209.sh
+		    Working dir: /data/dnb02/galaxy_db/job_working_directory/006/134/6134209
+		    Container name: 20aa70fc1aa04d97bdc709a4c76dbcbd
+		    Runtime:
+		    {
+		      8888: {
+		        host: 132.230.68.65,
+		        port: 1035,
+		        protocol: tcp,
+		        tool_port: 8888
+		      }
+		    }
+
+		    Mapping
+		    Key: aaaabbbbccccdddd
+		    KeyType: interactivetoolentrypoint
+		    Token: 00001111222233334444555566667777
+		    URL: https://aaaabbbbccccdddd-00001111222233334444555566667777.interactivetoolentrypoint.interactivetool.usegalaxy.eu
+
+		It's probably only going to work for us? Sorry :)
+	EOF
+	id=$1
+
+	cluster_id=$(gxadmin jsonquery queue-detail | jq ".[] | select(.id == $1) | .extid" -r)
+	cluster_id_c=$(echo -n "$cluster_id" | wc -c)
+	echo "Galaxy ID: $id"
+	echo "Condor ID: $cluster_id"
+	if (( cluster_id_c  == 0 )); then
+		exit 1
+	fi
+
+	container=$(condor_q $cluster_id -autoformat JobDescription | sed 's/interactive_tool_//g')
+	echo "Container: $container"
+	running_on=$(condor_q $cluster_id -autoformat RemoteHost | sed 's/.*@//g')
+	echo "Running on: $running_on"
+
+	job_script=$(condor_q $cluster_id -autoformat Cmd)
+	echo "Job script: $job_script"
+
+	working_dir=$(grep ^cd $job_script | sed 's/^cd //g')
+	echo "Working dir: $working_dir"
+
+	container_name=$(cat $working_dir/container_config.json | jq .container_name -r)
+	echo "Container name: $container_name"
+
+	echo "Runtime:"
+	cat $working_dir/container_runtime.json  | jq -S
+
+	port=$(cat $working_dir/container_runtime.json  | jq .[].port -r)
+	host=$(cat $working_dir/container_runtime.json  | jq .[].host -r)
+
+	echo
+	echo "Mapping"
+
+	token=$(gxadmin tsvquery q "select token from interactivetool_entry_point where job_id = $id")
+
+	key=$(sqlite3 /opt/galaxy/mutable-config/interactivetools_map.sqlite 'select key from gxitproxy where token="'$token'"')
+	key_type=$(sqlite3 /opt/galaxy/mutable-config/interactivetools_map.sqlite 'select key_type from gxitproxy where token="'$token'"')
+	token=$(sqlite3 /opt/galaxy/mutable-config/interactivetools_map.sqlite 'select token from gxitproxy where token="'$token'"')
+
+	echo "Key: $key"
+	echo "KeyType: $key_type"
+	echo "Token: $token"
+
+	echo "URL: https://${key}-${token}.${key_type}.interactivetool.usegalaxy.eu"
+}
+
