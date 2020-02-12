@@ -22,3 +22,10 @@ make gxadmin
 git add gxadmin parts/00-header.sh CHANGELOG.md
 git commit -a -m "Release v${NEW_VERSION}"
 git tag v${NEW_VERSION}
+
+echo "Ok, release built. Please open a new terminal and confirm! Then come back here and hit enter, to proceed with uploading + release publishing"
+read garbage
+
+git push
+git push --tags
+ghr v16 gxadmin
