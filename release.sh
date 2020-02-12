@@ -2,7 +2,7 @@
 set -e
 # Build the script
 make test
-make README.md
+make docs
 # Get current version number
 rm -f gxadmin
 make gxadmin
@@ -16,7 +16,7 @@ sed -i "s/# ${NEW_VERSION}-pre/# ${NEXT_VERSION}-pre\n\n# ${NEW_VERSION}/g" CHAN
 sed -i "s/echo ${CURRENT_VERSION}/echo ${NEW_VERSION}/" parts/00-header.sh
 
 make test
-make README.md
+make docs
 make gxadmin
 
 git add gxadmin parts/00-header.sh CHANGELOG.md
