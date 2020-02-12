@@ -26,6 +26,5 @@ git tag v${NEW_VERSION}
 echo "Ok, release built. Please open a new terminal and confirm! Then come back here and hit enter, to proceed with uploading + release publishing"
 read garbage
 
-git push
-git push --tags
-ghr v16 gxadmin
+git push --follow-tags
+ghr v${NEW_VERSION} gxadmin
