@@ -15,9 +15,11 @@ meta_cmdlist() {
 
 	IFS=$'\n'
 	# TOC
-	echo "## Commands"
-	echo
 	for section in $(locate_cmds_nolocal | correct_cmd | awk '{print $1}' | sort -u); do
+		# Progress
+		echo $section
+
+		# contents
 		echo "# $section"            >  "docs/README.${section}.md"
 		echo                         >> "docs/README.${section}.md"
 		echo "Command | Description" >> "docs/README.${section}.md"
@@ -35,30 +37,19 @@ meta_cmdlist() {
 			fi
 		done
 
-		echo "### $section"
-		echo
-		echo "Command | Description"
-		echo "------- | -----------"
 		for command in $(locate_cmds_nolocal | correct_cmd | grep "^$section"); do
 			cmd_part="$(echo "$command" | sed 's/:.*//g;s/\s*<.*//g;s/\s*\[.*//;s/\s*$//')"
 			desc_part="$(echo "$command" | sed 's/^[^:]*:\s*//g;s/\s*$//')"
 			key_part="$(echo "$cmd_part" | sed 's/ /-/g')"
 
 			if [[ "$command" != *"Deprecated"* ]]; then
-				# Main ToC
-				echo "[\`${cmd_part}\`](docs/README.${section}.md#${key_part}) | $desc_part"
-
 				# Subsec documentation
 				echo                          >> "docs/README.${section}.md"
 				echo "## $cmd_part"           >> "docs/README.${section}.md"
 				echo                          >> "docs/README.${section}.md"
 				bash -c "$0 $cmd_part --help" >> "docs/README.${section}.md"
-			else
-				echo "\`${cmd_part}\` | $desc_part"
 			fi
 		done
-
-		echo
 	done
 }
 

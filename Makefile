@@ -1,13 +1,12 @@
 PARTS=$(sort $(wildcard parts/*.sh))
 TMP := $(shell mktemp)
 
-all: gxadmin test README.md
+all: gxadmin test docs
 
-README.md:
+docs:
 	@cat $(PARTS) > .tmpgxadmin
 	@chmod +x .tmpgxadmin
-	sed -n -i '/^## Commands$$/q;p' README.md
-	./.tmpgxadmin meta cmdlist >> README.md
+	./.tmpgxadmin meta cmdlist
 	@rm -f .tmpgxadmin
 
 gxadmin: $(PARTS)
@@ -37,4 +36,4 @@ shellcheck-parts:
 	@# SC2034 - unnecessary due to split
 	shellcheck -s bash -f gcc --exclude SC2001,SC2120,SC2119,SC2129,SC2044,SC2154,SC2034 parts/[023456789]*
 
-.PHONY: test shellcheck shellcheck-parts README.md
+.PHONY: test shellcheck shellcheck-parts docs
