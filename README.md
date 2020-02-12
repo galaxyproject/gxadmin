@@ -18,7 +18,7 @@ mysql or sqlite3.
 ## Installation
 
 ```
-curl https://raw.githubusercontent.com/usegalaxy-eu/gxadmin/master/gxadmin > /usr/bin/gxadmin
+curl -L https://github.com/usegalaxy-eu/gxadmin/releases/latest/download/gxadmin > /usr/bin/gxadmin
 chmod +x /usr/bin/gxadmin
 ```
 
