@@ -91,6 +91,6 @@ config = galaxy.config.Configuration(**app_properties)
 sys.stdout.write(json.dumps(config.__dict__, default=lambda o: '<fail>'))
 EOF
 )
-	echo "$dump_config_python" | python
+	echo "$dump_config_python" | $GXADMIN_PYTHON
 }
 

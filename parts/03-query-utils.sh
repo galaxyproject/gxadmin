@@ -89,7 +89,7 @@ for line in sys.stdin.read().split('\n'):
 EOF
 )
 
-	psql -c "COPY ($query) to STDOUT with CSV DELIMITER E'\t'"| python -c "$arr2py" "$rename" "$fields" "$tags" "$timestamp"
+	psql -c "COPY ($query) to STDOUT with CSV DELIMITER E'\t'"| $GXADMIN_PYTHON -c "$arr2py" "$rename" "$fields" "$tags" "$timestamp"
 }
 
 gdpr_safe() {

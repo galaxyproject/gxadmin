@@ -1,5 +1,8 @@
 # 17-pre
 
+- Fixed:
+	- Issue with py3 only machines
+
 # 16
 
 - Fixed:

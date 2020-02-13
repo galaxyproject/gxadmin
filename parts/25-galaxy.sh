@@ -16,7 +16,8 @@ galaxy_cleanup() { ## [days]: Cleanup histories/hdas/etc for past N days (defaul
 
 	for action in {delete_userless_histories,delete_exported_histories,purge_deleted_histories,purge_deleted_hdas,delete_datasets,purge_datasets}; do
 		start_time=$(date +%s)
-		python "$GALAXY_ROOT/scripts/cleanup_datasets/pgcleanup.py" \
+		$GXADMIN_PYTHON \
+			"$GALAXY_ROOT/scripts/cleanup_datasets/pgcleanup.py" \
 			-c "$GALAXY_CONFIG_FILE" \
 			-o "$days" \
 			-l "$GALAXY_LOG_DIR" \

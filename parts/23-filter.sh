@@ -37,7 +37,7 @@ filter_identicon(){ ## : Convert an input data stream into an identicon (e.g. wi
 		(Imagine that it is a nice pink/blue colour scheme)
 	EOF
 
-	cat | python -c "$identicon_script"
+	cat | $GXADMIN_PYTHON -c "$identicon_script"
 }
 
 filter_digest-color() { ## : Color an input stream based on the contents (e.g. hostname)
@@ -112,6 +112,6 @@ filter_hexdecode() { ## : Deprecated, There is an easier built in postgres funct
 		          1 ce10
 	EOF
 
-	cat | python -c "$hexdecodelines"
+	cat | $GXADMIN_PYTHON -c "$hexdecodelines"
 	warning "If you are still using this, consider updating your query to use: convert_from(your-column::bytea, 'UTF8')"
 }
