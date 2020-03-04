@@ -9,7 +9,7 @@ Command | Description
 
 ## filter digest-color
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=filter_pg2md&type=Code))
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=filter_digest-color&type=Code))
 filter digest-color -  Color an input stream based on the contents (e.g. hostname)
 
 **SYNOPSIS**
@@ -33,7 +33,7 @@ Mostly useful for colouring a hostname or some similar value.
 
 ## filter identicon
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=filter_pg2md&type=Code))
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=filter_identicon&type=Code))
 filter identicon -  Convert an input data stream into an identicon (e.g. with hostname)
 
 **SYNOPSIS**

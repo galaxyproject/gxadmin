@@ -26,7 +26,6 @@ meta_cmdlist() {
 		echo "------- | -----------" >> "docs/README.${section}.md"
 		for command in $(locate_cmds_nolocal | correct_cmd | grep "^$section"); do
 			cmd_part="$(echo "$command" | sed 's/:.*//g;s/\s*<.*//g;s/\s*\[.*//')"
-			url_part="$(echo "$cmd_part" | sed 's/ /_/g')"
 			desc_part="$(echo "$command" | sed 's/^[^:]*:\s*//g')"
 			key_part="$(echo "$cmd_part" | sed 's/ /-/g')"
 
@@ -42,6 +41,7 @@ meta_cmdlist() {
 			cmd_part="$(echo "$command" | sed 's/:.*//g;s/\s*<.*//g;s/\s*\[.*//;s/\s*$//')"
 			desc_part="$(echo "$command" | sed 's/^[^:]*:\s*//g;s/\s*$//')"
 			key_part="$(echo "$cmd_part" | sed 's/ /-/g')"
+			url_part="$(echo "$cmd_part" | sed 's/ /_/g')"
 
 			if [[ "$command" != *"Deprecated"* ]]; then
 				# Subsec documentation

@@ -15,7 +15,7 @@ Command | Description
 
 ## meta export-grafana-dashboards
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=meta_whatsnew&type=Code))
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=meta_export-grafana-dashboards&type=Code))
 meta export-grafana-dashboards -  Export all dashboards from a Grafana database to CWD and commit them to git.
 
 **SYNOPSIS**
@@ -38,7 +38,7 @@ This script forms the basis of https://github.com/usegalaxy-eu/grafana-dashboard
 
 ## meta influx-post
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=meta_whatsnew&type=Code))
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=meta_influx-post&type=Code))
 meta influx-post -  Post contents of file (in influx line protocol) to influx
 
 **SYNOPSIS**
@@ -72,7 +72,7 @@ Posting data from the output of a gxadmin command
 
 ## meta influx-query
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=meta_whatsnew&type=Code))
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=meta_influx-query&type=Code))
 meta influx-query -  Query an influx DB
 
 **SYNOPSIS**
@@ -98,7 +98,7 @@ Query percentage of memory used over last hour.
 
 ## meta iquery-grt-export
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=meta_whatsnew&type=Code))
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=meta_iquery-grt-export&type=Code))
 meta iquery-grt-export -  Export data from a GRT database for sending to influx
 
 **SYNOPSIS**
@@ -114,7 +114,7 @@ meta iquery-grt-export -  Export data from a GRT database for sending to influx
 
 ## meta slurp-current
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=meta_whatsnew&type=Code))
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=meta_slurp-current&type=Code))
 meta slurp-current -  Executes what used to be "Galaxy Slurp"
 
 **SYNOPSIS**
@@ -172,7 +172,7 @@ the $GXADMIN_SITE_SPECIFIC file. They must start with the prefix
 
 ## meta slurp-day
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=meta_whatsnew&type=Code))
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=meta_slurp-day&type=Code))
 meta slurp-day -  Slurps data on a specific date.
 
 **SYNOPSIS**
@@ -224,7 +224,7 @@ date filter as well, or the metrics reported here will be less useful.
 
 ## meta slurp-initial
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=meta_whatsnew&type=Code))
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=meta_slurp-initial&type=Code))
 meta slurp-initial -  Slurps data starting at the first date until the second date.
 
 **SYNOPSIS**
@@ -241,7 +241,7 @@ It requires a start and end date. Allows to run specific slurp queries.
 
 ## meta slurp-upto
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=meta_whatsnew&type=Code))
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=meta_slurp-upto&type=Code))
 meta slurp-upto -  Slurps data up to a specific date.
 
 **SYNOPSIS**
@@ -260,7 +260,7 @@ but with date filters for the entries' creation times.
 
 ## meta update
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=meta_whatsnew&type=Code))
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=meta_update&type=Code))
 meta update -  Update the script
 
 **SYNOPSIS**

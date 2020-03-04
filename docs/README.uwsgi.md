@@ -16,7 +16,7 @@ Command | Description
 
 ## uwsgi handler-restart
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=uwsgi_zerg-swap&type=Code))
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=uwsgi_handler-restart&type=Code))
 uwsgi handler-restart -  Restart all handlers
 
 **SYNOPSIS**
@@ -26,7 +26,7 @@ uwsgi handler-restart -  Restart all handlers
 
 ## uwsgi handler-strace
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=uwsgi_zerg-swap&type=Code))
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=uwsgi_handler-strace&type=Code))
 uwsgi handler-strace -  Strace a handler
 
 **SYNOPSIS**
@@ -36,7 +36,7 @@ uwsgi handler-strace -  Strace a handler
 
 ## uwsgi lastlog
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=uwsgi_zerg-swap&type=Code))
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=uwsgi_lastlog&type=Code))
 uwsgi lastlog -  Fetch the number of seconds since the last log message was written
 
 **SYNOPSIS**
@@ -67,7 +67,7 @@ Lets you know if any of your workers or handlers have maybe stopped processing j
 
 ## uwsgi memory
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=uwsgi_zerg-swap&type=Code))
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=uwsgi_memory&type=Code))
 uwsgi memory -  Current system memory usage
 
 **SYNOPSIS**
@@ -83,7 +83,7 @@ Also consider using systemd-cgtop
 
 ## uwsgi pids
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=uwsgi_zerg-swap&type=Code))
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=uwsgi_pids&type=Code))
 uwsgi pids -  Galaxy process PIDs
 
 **SYNOPSIS**
@@ -97,7 +97,7 @@ Obtain memory usage of the various Galaxy processes
 
 ## uwsgi stats-influx
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=uwsgi_zerg-swap&type=Code))
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=uwsgi_stats-influx&type=Code))
 uwsgi stats-influx -  InfluxDB formatted output for the current stats
 
 **SYNOPSIS**
@@ -143,7 +143,7 @@ And it will fetch only data for responding uwsgis.
 
 ## uwsgi stats
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=uwsgi_zerg-swap&type=Code))
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=uwsgi_stats&type=Code))
 uwsgi stats -  uwsgi stats
 
 **SYNOPSIS**
@@ -153,7 +153,7 @@ uwsgi stats -  uwsgi stats
 
 ## uwsgi status
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=uwsgi_zerg-swap&type=Code))
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=uwsgi_status&type=Code))
 uwsgi status -  Current system status
 
 **SYNOPSIS**
@@ -167,7 +167,7 @@ Current status of all uwsgi processes
 
 ## uwsgi zerg-scale-up
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=uwsgi_zerg-swap&type=Code))
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=uwsgi_zerg-scale-up&type=Code))
 uwsgi zerg-scale-up -  Add another zergling to deal with high load
 
 **SYNOPSIS**
@@ -177,7 +177,7 @@ uwsgi zerg-scale-up -  Add another zergling to deal with high load
 
 ## uwsgi zerg-strace
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=uwsgi_zerg-swap&type=Code))
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=uwsgi_zerg-strace&type=Code))
 uwsgi zerg-strace -  Strace a zergling
 
 **SYNOPSIS**
