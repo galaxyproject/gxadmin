@@ -18,6 +18,7 @@ Command | Description
 
 ## mutate approve-user
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=mutate_restart-jobs&type=Code))
 mutate approve-user -  Approve a user in the database
 
 **SYNOPSIS**
@@ -31,6 +32,7 @@ There is no --commit flag on this because it is relatively safe
 
 ## mutate assign-unassigned-workflows
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=mutate_restart-jobs&type=Code))
 mutate assign-unassigned-workflows -  Randomly assigns unassigned workflows to handlers. Workaround for galaxyproject/galaxy#8209
 
 **SYNOPSIS**
@@ -48,6 +50,7 @@ handlers you want to schedule workflows across.
 
 ## mutate delete-group-role
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=mutate_restart-jobs&type=Code))
 mutate delete-group-role -  Remove the group, role, and any user-group + user-role associations
 
 **SYNOPSIS**
@@ -61,6 +64,7 @@ Wipe out a group+role, and user associations.
 
 ## mutate drop-extraneous-workflow-step-output-associations
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=mutate_restart-jobs&type=Code))
 mutate drop-extraneous-workflow-step-output-associations -  #8418, drop extraneous connection
 
 **SYNOPSIS**
@@ -81,6 +85,7 @@ to remove duplicate entries in the following tables:
 
 ## mutate fail-history
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=mutate_restart-jobs&type=Code))
 mutate fail-history -  Mark all jobs within a history to state error
 
 **SYNOPSIS**
@@ -94,6 +99,7 @@ Set all jobs within a history to error
 
 ## mutate fail-job
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=mutate_restart-jobs&type=Code))
 mutate fail-job -  Sets a job state to error
 
 **SYNOPSIS**
@@ -107,6 +113,7 @@ Sets a job's state to "error"
 
 ## mutate fail-terminal-datasets
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=mutate_restart-jobs&type=Code))
 mutate fail-terminal-datasets -  Causes the output datasets of jobs which were manually failed, to be marked as failed
 
 **SYNOPSIS**
@@ -167,6 +174,7 @@ Then to run with the --commit flag to commit the changes
 
 ## mutate generate-unset-api-keys
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=mutate_restart-jobs&type=Code))
 mutate generate-unset-api-keys -  Generate API keys for users which do not have one set.
 
 **SYNOPSIS**
@@ -183,6 +191,7 @@ fine like hex keys.
 
 ## mutate oidc-role-find-affected
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=mutate_restart-jobs&type=Code))
 mutate oidc-role-find-affected -  Find users affected by galaxyproject/galaxy#8244
 
 **SYNOPSIS**
@@ -199,6 +208,7 @@ roles associated to them. (Should be sufficient?)
 
 ## mutate oidc-role-fix
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=mutate_restart-jobs&type=Code))
 mutate oidc-role-fix -  Fix permissions for users logged in via OIDC. Workaround for galaxyproject/galaxy#8244
 
 **SYNOPSIS**
@@ -212,6 +222,7 @@ Workaround for https://github.com/galaxyproject/galaxy/issues/8244
 
 ## mutate reassign-job-to-handler
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=mutate_restart-jobs&type=Code))
 mutate reassign-job-to-handler -  Reassign a job to a different handler
 
 **SYNOPSIS**
@@ -221,6 +232,7 @@ mutate reassign-job-to-handler -  Reassign a job to a different handler
 
 ## mutate reassign-workflows-to-handler
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=mutate_restart-jobs&type=Code))
 mutate reassign-workflows-to-handler -  Reassign workflows in 'new' state to a different handler.
 
 **SYNOPSIS**
@@ -236,6 +248,7 @@ Need to use the full handler names e.g. handler_main_0
 
 ## mutate restart-jobs
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=mutate_restart-jobs&type=Code))
 mutate restart-jobs -  Restart some jobs
 
 **SYNOPSIS**

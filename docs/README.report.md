@@ -8,6 +8,7 @@ Command | Description
 
 ## report assigned-to-handler
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=report_user-info&type=Code))
 report assigned-to-handler -  Report what items are assigned to a handler currently.
 
 **SYNOPSIS**
@@ -17,6 +18,7 @@ report assigned-to-handler -  Report what items are assigned to a handler curren
 
 ## report job-info
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=report_user-info&type=Code))
 report job-info -  Information about a specific job
 
 **SYNOPSIS**
@@ -33,6 +35,7 @@ report job-info -  Information about a specific job
 
 ## report user-info
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=report_user-info&type=Code))
 report user-info -  Quick overview of a Galaxy user in your system
 
 **SYNOPSIS**

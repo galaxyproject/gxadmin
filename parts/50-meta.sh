@@ -26,6 +26,7 @@ meta_cmdlist() {
 		echo "------- | -----------" >> "docs/README.${section}.md"
 		for command in $(locate_cmds_nolocal | correct_cmd | grep "^$section"); do
 			cmd_part="$(echo "$command" | sed 's/:.*//g;s/\s*<.*//g;s/\s*\[.*//')"
+			url_part="$(echo "$cmd_part" | sed 's/ /_/g')"
 			desc_part="$(echo "$command" | sed 's/^[^:]*:\s*//g')"
 			key_part="$(echo "$cmd_part" | sed 's/ /-/g')"
 
@@ -47,6 +48,7 @@ meta_cmdlist() {
 				echo                          >> "docs/README.${section}.md"
 				echo "## $cmd_part"           >> "docs/README.${section}.md"
 				echo                          >> "docs/README.${section}.md"
+				echo "([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=${url_part}&type=Code))" >> "docs/README.${section}.md"
 				bash -c "$0 $cmd_part --help" >> "docs/README.${section}.md"
 			fi
 		done

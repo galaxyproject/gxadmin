@@ -89,6 +89,7 @@ Command | Description
 
 ## query aq
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query aq -  Given a list of IDs from a table (e.g. 'job'), access a specific column from that table
 
 **SYNOPSIS**
@@ -98,6 +99,7 @@ query aq -  Given a list of IDs from a table (e.g. 'job'), access a specific col
 
 ## query collection-usage
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query collection-usage -  Information about how many collections of various types are used
 
 **SYNOPSIS**
@@ -107,6 +109,7 @@ query collection-usage -  Information about how many collections of various type
 
 ## query data-origin-distribution
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query data-origin-distribution -  data sources (uploaded vs derived)
 
 **SYNOPSIS**
@@ -138,6 +141,7 @@ Output looks like:
 
 ## query data-origin-distribution-summary
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query data-origin-distribution-summary -  breakdown of data sources (uploaded vs derived)
 
 **SYNOPSIS**
@@ -158,6 +162,7 @@ derived | 0 bytes | 39 MB     | 1751 MB | 200 GB | 28 GB     | 478 GB  | 2699 GB
 
 ## query datasets-created-daily
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query datasets-created-daily -  The min/max/average/p95/p99 of total size of datasets created in a single day.
 
 **SYNOPSIS**
@@ -174,6 +179,7 @@ query datasets-created-daily -  The min/max/average/p95/p99 of total size of dat
 
 ## query disk-usage
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query disk-usage -  Disk usage per object store.
 
 **SYNOPSIS**
@@ -205,6 +211,7 @@ Or you can supply the --nice flag, but this should not be used with iquery/Influ
 
 ## query errored-jobs
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query errored-jobs -  Lists jobs that errored in the last N hours.
 
 **SYNOPSIS**
@@ -221,6 +228,7 @@ Lists details of jobs that have status = 'error' for the specified number of hou
 
 ## query good-for-pulsar
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query good-for-pulsar -  Look for jobs EU would like to send to pulsar
 
 **SYNOPSIS**
@@ -239,6 +247,7 @@ hopefully identifying things with small inputs and long runtimes.
 
 ## query group-cpu-seconds
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query group-cpu-seconds -  Retrieve an approximation of the CPU time in seconds for group(s)
 
 **SYNOPSIS**
@@ -267,6 +276,7 @@ rank  | group_id |  group_name  | cpu_seconds
 
 ## query group-gpu-time
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query group-gpu-time -  Retrieve an approximation of the GPU time for users
 
 **SYNOPSIS**
@@ -297,6 +307,7 @@ rank  | group_id |  group_name | gpu_seconds
 
 ## query groups-list
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query groups-list -  List all groups known to Galaxy
 
 **SYNOPSIS**
@@ -306,6 +317,7 @@ query groups-list -  List all groups known to Galaxy
 
 ## query hdca-datasets
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query hdca-datasets -  List of files in a dataset collection
 
 **SYNOPSIS**
@@ -315,6 +327,7 @@ query hdca-datasets -  List of files in a dataset collection
 
 ## query hdca-info
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query hdca-info -  Information on a dataset collection
 
 **SYNOPSIS**
@@ -324,6 +337,7 @@ query hdca-info -  Information on a dataset collection
 
 ## query history-connections
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query history-connections -  The connections of tools, from output to input, in histories (tool_predictions)
 
 **SYNOPSIS**
@@ -337,6 +351,7 @@ This is used by the usegalaxy.eu tool prediction workflow, allowing for building
 
 ## query history-contents
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query history-contents -  List datasets and/or collections in a history
 
 **SYNOPSIS**
@@ -350,6 +365,7 @@ Obtain an overview of tools that a user has run in the past N days
 
 ## query history-runtime-system-by-tool
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query history-runtime-system-by-tool -  Sum of runtimes by all jobs in a history, split by tool
 
 **SYNOPSIS**
@@ -359,6 +375,7 @@ query history-runtime-system-by-tool -  Sum of runtimes by all jobs in a history
 
 ## query history-runtime-system
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query history-runtime-system -  Sum of runtimes by all jobs in a history
 
 **SYNOPSIS**
@@ -368,6 +385,7 @@ query history-runtime-system -  Sum of runtimes by all jobs in a history
 
 ## query history-runtime-wallclock
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query history-runtime-wallclock -  Time as elapsed by a clock on the wall
 
 **SYNOPSIS**
@@ -377,6 +395,7 @@ query history-runtime-wallclock -  Time as elapsed by a clock on the wall
 
 ## query job-history
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query job-history -  Job state history for a specific job
 
 **SYNOPSIS**
@@ -397,6 +416,7 @@ query job-history -  Job state history for a specific job
 
 ## query job-info
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query job-info -  Retrieve information about jobs given some job IDs
 
 **SYNOPSIS**
@@ -424,6 +444,7 @@ id    | create_time  | update_time |  tool_id     |   hostname   | runtime_secon
 
 ## query job-inputs
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query job-inputs -  Input datasets to a specific job
 
 **SYNOPSIS**
@@ -433,6 +454,7 @@ query job-inputs -  Input datasets to a specific job
 
 ## query job-outputs
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query job-outputs -  Output datasets from a specific job
 
 **SYNOPSIS**
@@ -442,6 +464,7 @@ query job-outputs -  Output datasets from a specific job
 
 ## query jobs-max-by-cpu-hours
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query jobs-max-by-cpu-hours -  Top 10 jobs by CPU hours consumed (requires CGroups metrics)
 
 **SYNOPSIS**
@@ -451,6 +474,7 @@ query jobs-max-by-cpu-hours -  Top 10 jobs by CPU hours consumed (requires CGrou
 
 ## query jobs-nonterminal
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query jobs-nonterminal -  Job info of nonterminal jobs separated by user
 
 **SYNOPSIS**
@@ -491,6 +515,7 @@ You can also query all non-terminal jobs by all users
 
 ## query jobs-per-user
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query jobs-per-user -  Number of jobs run by a specific user
 
 **SYNOPSIS**
@@ -507,6 +532,7 @@ query jobs-per-user -  Number of jobs run by a specific user
 
 ## query jobs-queued
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query jobs-queued -  How many queued jobs have external cluster IDs
 
 **SYNOPSIS**
@@ -526,6 +552,7 @@ processed    |    37
 
 ## query jobs-queued-internal-by-handler
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query jobs-queued-internal-by-handler -  How many queued jobs do not have external IDs, by handler
 
 **SYNOPSIS**
@@ -554,6 +581,7 @@ handler_main_9   |    14
 
 ## query largest-collection
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query largest-collection -  Returns the size of the single largest collection
 
 **SYNOPSIS**
@@ -563,6 +591,7 @@ query largest-collection -  Returns the size of the single largest collection
 
 ## query largest-histories
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query largest-histories -  Largest histories in Galaxy
 
 **SYNOPSIS**
@@ -587,6 +616,7 @@ Finds all jobs by people in that queue (including things they are executing that
 
 ## query latest-users
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query latest-users -  40 recently registered users
 
 **SYNOPSIS**
@@ -605,6 +635,7 @@ Returns 40 most recently registered users
 
 ## query monthly-cpu-years
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query monthly-cpu-years -  CPU years allocated to tools by month
 
 **SYNOPSIS**
@@ -641,6 +672,7 @@ actually consumed by your jobs, you should use cgroups.
 
 ## query monthly-data
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query monthly-data -  Number of active users per month, running jobs
 
 **SYNOPSIS**
@@ -670,6 +702,7 @@ Find out how much data was ingested or created by Galaxy during the past months.
 
 ## query monthly-gpu-years
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query monthly-gpu-years -  GPU years allocated to tools by month
 
 **SYNOPSIS**
@@ -708,6 +741,7 @@ Requires Nvidia GPUs.
 
 ## query monthly-jobs
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query monthly-jobs -  Number of jobs run each month
 
 **SYNOPSIS**
@@ -737,6 +771,7 @@ Count jobs run each month
 
 ## query monthly-users-active
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query monthly-users-active -  Number of active users per month, running jobs
 
 **SYNOPSIS**
@@ -766,6 +801,7 @@ Number of unique users each month who ran jobs. **NOTE**: does not include anony
 
 ## query monthly-users-registered
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query monthly-users-registered -  Number of users registered each month
 
 **SYNOPSIS**
@@ -775,6 +811,7 @@ query monthly-users-registered -  Number of users registered each month
 
 ## query old-histories
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query old-histories -  Lists histories that haven't been updated (used) for <weeks>
 
 **SYNOPSIS**
@@ -801,6 +838,7 @@ Histories and their users who haven't been updated for a specified number of wee
 
 ## query pg-cache-hit
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query pg-cache-hit -  Check postgres in-memory cache hit ratio
 
 **SYNOPSIS**
@@ -822,6 +860,7 @@ heap_read  | heap_hit |         ratio
 
 ## query pg-index-size
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query pg-index-size -  show table and index bloat in your database ordered by most wasteful
 
 **SYNOPSIS**
@@ -835,6 +874,7 @@ Originally from: https://github.com/heroku/heroku-pg-extras/tree/master/commands
 
 ## query pg-index-usage
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query pg-index-usage -  calculates your index hit rate (effective databases are at 99% and up)
 
 **SYNOPSIS**
@@ -850,6 +890,7 @@ Originally from: https://github.com/heroku/heroku-pg-extras/tree/master/commands
 
 ## query pg-long-running-queries
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query pg-long-running-queries -  show all queries longer than five minutes by descending duration
 
 **SYNOPSIS**
@@ -863,6 +904,7 @@ Originally from: https://github.com/heroku/heroku-pg-extras/tree/master/commands
 
 ## query pg-mandelbrot
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query pg-mandelbrot -  show the mandlebrot set
 
 **SYNOPSIS**
@@ -876,6 +918,7 @@ Copied from: https://github.com/heroku/heroku-pg-extras/tree/master/commands
 
 ## query pg-stat-bgwriter
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query pg-stat-bgwriter -  Stats about the behaviour of the bgwriter, checkpoints, buffers, etc.
 
 **SYNOPSIS**
@@ -885,6 +928,7 @@ query pg-stat-bgwriter -  Stats about the behaviour of the bgwriter, checkpoints
 
 ## query pg-stat-user-tables
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query pg-stat-user-tables -  stats about tables (tuples, index scans, vacuums, analyzes)
 
 **SYNOPSIS**
@@ -894,6 +938,7 @@ query pg-stat-user-tables -  stats about tables (tuples, index scans, vacuums, a
 
 ## query pg-table-bloat
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query pg-table-bloat -  show table and index bloat in your database ordered by most wasteful
 
 **SYNOPSIS**
@@ -908,6 +953,7 @@ Originally from: https://github.com/heroku/heroku-pg-extras/tree/master/commands
 
 ## query pg-table-size
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query pg-table-size -  show the size of the tables (excluding indexes), descending by size
 
 **SYNOPSIS**
@@ -921,6 +967,7 @@ Originally from: https://github.com/heroku/heroku-pg-extras/tree/master/commands
 
 ## query pg-unused-indexes
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query pg-unused-indexes -  show unused and almost unused indexes
 
 **SYNOPSIS**
@@ -941,6 +988,7 @@ From their documentation:
 
 ## query pg-vacuum-stats
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query pg-vacuum-stats -  show dead rows and whether an automatic vacuum is expected to be triggered
 
 **SYNOPSIS**
@@ -954,6 +1002,7 @@ Originally from: https://github.com/heroku/heroku-pg-extras/tree/master/commands
 
 ## query q
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query q -  Passes a raw SQL query directly through to the database
 
 **SYNOPSIS**
@@ -963,6 +1012,7 @@ query q -  Passes a raw SQL query directly through to the database
 
 ## query queue
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query queue -  Brief overview of currently running jobs
 
 **SYNOPSIS**
@@ -988,6 +1038,7 @@ query queue -  Brief overview of currently running jobs
 
 ## query queue-detail
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query queue-detail -  Detailed overview of running and queued jobs
 
 **SYNOPSIS**
@@ -1014,6 +1065,7 @@ query queue-detail -  Detailed overview of running and queued jobs
 
 ## query queue-detail-by-handler
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query queue-detail-by-handler -  List jobs for a specific handler
 
 **SYNOPSIS**
@@ -1027,6 +1079,7 @@ List the jobs currently being processed by a specific handler
 
 ## query queue-overview
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query queue-overview -  View used mostly for monitoring
 
 **SYNOPSIS**
@@ -1043,6 +1096,7 @@ Primarily for monitoring of queue. Optimally used with 'iquery' and passed to Te
 
 ## query queue-time
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query queue-time -  The average/95%/99% a specific tool spends in queue state.
 
 **SYNOPSIS**
@@ -1059,6 +1113,7 @@ query queue-time -  The average/95%/99% a specific tool spends in queue state.
 
 ## query recent-jobs
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query recent-jobs -  Jobs run in the past <hours> (in any state)
 
 **SYNOPSIS**
@@ -1081,6 +1136,7 @@ query recent-jobs -  Jobs run in the past <hours> (in any state)
 
 ## query runtime-per-user
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query runtime-per-user -  computation time of user (by email)
 
 **SYNOPSIS**
@@ -1097,6 +1153,7 @@ query runtime-per-user -  computation time of user (by email)
 
 ## query server-groups-allocated-cpu
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query server-groups-allocated-cpu -  Retrieve an approximation of the CPU allocation for groups
 
 **SYNOPSIS**
@@ -1106,6 +1163,7 @@ query server-groups-allocated-cpu -  Retrieve an approximation of the CPU alloca
 
 ## query server-groups-allocated-gpu
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query server-groups-allocated-gpu -  Retrieve an approximation of the GPU allocation for groups
 
 **SYNOPSIS**
@@ -1115,6 +1173,7 @@ query server-groups-allocated-gpu -  Retrieve an approximation of the GPU alloca
 
 ## query server-groups-disk-usage
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query server-groups-disk-usage -  Retrieve an approximation of the disk usage for groups
 
 **SYNOPSIS**
@@ -1124,6 +1183,7 @@ query server-groups-disk-usage -  Retrieve an approximation of the disk usage fo
 
 ## query tool-available-metrics
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query tool-available-metrics -  list all available metrics for a given tool
 
 **SYNOPSIS**
@@ -1146,6 +1206,7 @@ Gives a list of available metrics, which can then be used to query.
 
 ## query tool-errors
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query tool-errors -  Summarize percent of tool runs in error over the past weeks for all tools that have failed (most popular tools first)
 
 **SYNOPSIS**
@@ -1171,6 +1232,7 @@ See jobs-in-error summary for recently executed tools that have failed at least 
 
 ## query tool-last-used-date
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query tool-last-used-date -  When was the most recent invocation of every tool
 
 **SYNOPSIS**
@@ -1196,6 +1258,7 @@ Example invocation:
 
 ## query tool-likely-broken
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query tool-likely-broken -  Find tools that have been executed in recent weeks that are (or were due to job running) likely substantially broken
 
 **SYNOPSIS**
@@ -1221,6 +1284,7 @@ which were run more than 4 times, and have a failure rate over 95%.
 
 ## query tool-metrics
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query tool-metrics -  See values of a specific metric
 
 **SYNOPSIS**
@@ -1252,6 +1316,7 @@ do some aggregations. The following requires [data_hacks](https://github.com/bit
 
 ## query tool-new-errors
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query tool-new-errors -  Summarize percent of tool runs in error over the past weeks for "new tools"
 
 **SYNOPSIS**
@@ -1277,6 +1342,7 @@ See jobs-in-error summary for recent tools (tools whose first execution is in re
 
 ## query tool-popularity
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query tool-popularity -  Most run tools by month (tool_predictions)
 
 **SYNOPSIS**
@@ -1303,6 +1369,7 @@ See most popular tools by month
 
 ## query tool-usage
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query tool-usage -  Counts of tool runs in the past weeks (default = all)
 
 **SYNOPSIS**
@@ -1327,6 +1394,7 @@ query tool-usage -  Counts of tool runs in the past weeks (default = all)
 
 ## query training-list
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query training-list -  List known trainings
 
 **SYNOPSIS**
@@ -1345,6 +1413,7 @@ This module is specific to EU's implementation of Training Infrastructure as a S
 
 ## query training-members-remove
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query training-members-remove -  Remove a user from a training
 
 **SYNOPSIS**
@@ -1354,6 +1423,7 @@ query training-members-remove -  Remove a user from a training
 
 ## query training-members
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query training-members -  List users in a specific training
 
 **SYNOPSIS**
@@ -1370,6 +1440,7 @@ query training-members -  List users in a specific training
 
 ## query training-queue
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query training-queue -  Jobs currently being run by people in a given training
 
 **SYNOPSIS**
@@ -1388,6 +1459,7 @@ Finds all jobs by people in that queue (including things they are executing that
 
 ## query ts-repos
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query ts-repos -  Counts of toolshed repositories by toolshed and owner.
 
 **SYNOPSIS**
@@ -1397,6 +1469,7 @@ query ts-repos -  Counts of toolshed repositories by toolshed and owner.
 
 ## query upload-gb-in-past-hour
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query upload-gb-in-past-hour -  Sum in bytes of files uploaded in the past hour
 
 **SYNOPSIS**
@@ -1410,6 +1483,7 @@ Quick output, mostly useful for graphing, to produce a nice graph of how heavily
 
 ## query user-cpu-years
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query user-cpu-years -  CPU years allocated to tools by user
 
 **SYNOPSIS**
@@ -1438,6 +1512,7 @@ rank  | user_id |  username   | cpu_years
 
 ## query user-disk-quota
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query user-disk-quota -  Retrieves the 50 users with the largest quotas
 
 **SYNOPSIS**
@@ -1465,6 +1540,7 @@ rank  | user_id  |  username    |    quota
 
 ## query user-disk-usage
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query user-disk-usage -  Retrieve an approximation of the disk usage for users
 
 **SYNOPSIS**
@@ -1493,6 +1569,7 @@ rank  | user id  |  username   |  email      | storage usage
 
 ## query user-gpu-years
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query user-gpu-years -  GPU years allocated to tools by user
 
 **SYNOPSIS**
@@ -1523,6 +1600,7 @@ rank  | user_id |  username   | gpu_years
 
 ## query user-history-list
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query user-history-list -  Shows the ID of the history, it's size and when it was last updated.
 
 **SYNOPSIS**
@@ -1543,6 +1621,7 @@ $ gxadmin query user-history-list <username|id|email>
 
 ## query user-recent-aggregate-jobs
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query user-recent-aggregate-jobs -  Show aggregate information for jobs in past N days for user
 
 **SYNOPSIS**
@@ -1556,6 +1635,7 @@ Obtain an overview of tools that a user has run in the past N days
 
 ## query users-count
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query users-count -  Shows sums of active/external/deleted/purged accounts
 
 **SYNOPSIS**
@@ -1575,6 +1655,7 @@ query users-count -  Shows sums of active/external/deleted/purged accounts
 
 ## query users-total
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query users-total -  Total number of Galaxy users (incl deleted, purged, inactive)
 
 **SYNOPSIS**
@@ -1584,6 +1665,7 @@ query users-total -  Total number of Galaxy users (incl deleted, purged, inactiv
 
 ## query users-with-oidc
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query users-with-oidc -  How many users logged in with OIDC
 
 **SYNOPSIS**
@@ -1599,6 +1681,7 @@ elixir   |     5
 
 ## query workflow-connections
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query workflow-connections -  The connections of tools, from output to input, in the latest (or all) versions of user workflows (tool_predictions)
 
 **SYNOPSIS**
@@ -1626,6 +1709,7 @@ This is used by the usegalaxy.eu tool prediction workflow, allowing for building
 
 ## query workflow-invocation-status
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-status&type=Code))
 query workflow-invocation-status -  Report on how many workflows are in new state by handler
 
 **SYNOPSIS**

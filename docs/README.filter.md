@@ -9,6 +9,7 @@ Command | Description
 
 ## filter digest-color
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=filter_pg2md&type=Code))
 filter digest-color -  Color an input stream based on the contents (e.g. hostname)
 
 **SYNOPSIS**
@@ -32,6 +33,7 @@ Mostly useful for colouring a hostname or some similar value.
 
 ## filter identicon
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=filter_pg2md&type=Code))
 filter identicon -  Convert an input data stream into an identicon (e.g. with hostname)
 
 **SYNOPSIS**
@@ -54,6 +56,7 @@ Given an input data stream, digest it, and colour it using the same logic as dig
 
 ## filter pg2md
 
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=filter_pg2md&type=Code))
 filter pg2md -  Convert postgres table format outputs to something that can be pasted as markdown
 
 **SYNOPSIS**
