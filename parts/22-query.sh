@@ -3395,3 +3395,98 @@ query_good-for-pulsar() { ## : Look for jobs EU would like to send to pulsar
 		ORDER BY median_score ASC
 	EOF
 }
+
+query_jobs-ready-to-run() { ## : Find jobs ready to run (Mostly a performance test)
+	handle_help "$@" <<-EOF
+		Mostly a performance test
+	EOF
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			EXISTS(
+				SELECT
+					history_dataset_association.id,
+					history_dataset_association.history_id,
+					history_dataset_association.dataset_id,
+					history_dataset_association.create_time,
+					history_dataset_association.update_time,
+					history_dataset_association.state,
+					history_dataset_association.copied_from_history_dataset_association_id,
+					history_dataset_association.copied_from_library_dataset_dataset_association_id,
+					history_dataset_association.name,
+					history_dataset_association.info,
+					history_dataset_association.blurb,
+					history_dataset_association.peek,
+					history_dataset_association.tool_version,
+					history_dataset_association.extension,
+					history_dataset_association.metadata,
+					history_dataset_association.parent_id,
+					history_dataset_association.designation,
+					history_dataset_association.deleted,
+					history_dataset_association.visible,
+					history_dataset_association.extended_metadata_id,
+					history_dataset_association.version,
+					history_dataset_association.hid,
+					history_dataset_association.purged,
+					history_dataset_association.hidden_beneath_collection_instance_id
+				FROM
+					history_dataset_association,
+					job_to_output_dataset
+				WHERE
+					job.id = job_to_output_dataset.job_id
+					AND history_dataset_association.id
+						= job_to_output_dataset.dataset_id
+					AND history_dataset_association.deleted = true
+			)
+				AS anon_1,
+			EXISTS(
+				SELECT
+					history_dataset_collection_association.id
+				FROM
+					history_dataset_collection_association,
+					job_to_output_dataset_collection
+				WHERE
+					job.id = job_to_output_dataset_collection.job_id
+					AND history_dataset_collection_association.id
+						= job_to_output_dataset_collection.dataset_collection_id
+					AND history_dataset_collection_association.deleted
+						= true
+			)
+				AS anon_2,
+			job.id AS job_id,
+			job.create_time AS job_create_time,
+			job.update_time AS job_update_time,
+			job.history_id AS job_history_id,
+			job.library_folder_id AS job_library_folder_id,
+			job.tool_id AS job_tool_id,
+			job.tool_version AS job_tool_version,
+			job.state AS job_state,
+			job.info AS job_info,
+			job.copied_from_job_id AS job_copied_from_job_id,
+			job.command_line AS job_command_line,
+			job.dependencies AS job_dependencies,
+			job.param_filename AS job_param_filename,
+			job.runner_name AS job_runner_name_1,
+			job.stdout AS job_stdout,
+			job.stderr AS job_stderr,
+			job.exit_code AS job_exit_code,
+			job.traceback AS job_traceback,
+			job.session_id AS job_session_id,
+			job.user_id AS job_user_id,
+			job.job_runner_name AS job_job_runner_name,
+			job.job_runner_external_id
+				AS job_job_runner_external_id,
+			job.destination_id AS job_destination_id,
+			job.destination_params AS job_destination_params,
+			job.object_store_id AS job_object_store_id,
+			job.imported AS job_imported,
+			job.params AS job_params,
+			job.handler AS job_handler
+		FROM
+			job
+		WHERE
+			job.state = 'new'
+			AND job.handler IS NULL
+			AND job.handler = 'handler0';
+	EOF
+}

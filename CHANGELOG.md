@@ -1,7 +1,11 @@
 # 17-pre
 
+Testing our new release message
+
 - Fixed:
 	- Issue with py3 only machines
+- Added:
+	- jobs ready to run
 
 # 16
 
