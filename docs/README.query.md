@@ -29,6 +29,7 @@ Command | Description
 [`query jobs-per-user`](#query-jobs-per-user) | Number of jobs run by a specific user
 [`query jobs-queued`](#query-jobs-queued) | How many queued jobs have external cluster IDs
 [`query jobs-queued-internal-by-handler`](#query-jobs-queued-internal-by-handler) | How many queued jobs do not have external IDs, by handler
+[`query jobs-ready-to-run`](#query-jobs-ready-to-run) | Find jobs ready to run (Mostly a performance test)
 [`query largest-collection`](#query-largest-collection) | Returns the size of the single largest collection
 [`query largest-histories`](#query-largest-histories) | Largest histories in Galaxy
 [`query latest-users`](#query-latest-users) | 40 recently registered users
@@ -577,6 +578,20 @@ handler_main_6   |     7
 handler_main_7   |    13
 handler_main_8   |     9
 handler_main_9   |    14
+
+
+## query jobs-ready-to-run
+
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_jobs-ready-to-run&type=Code))
+query jobs-ready-to-run -  Find jobs ready to run (Mostly a performance test)
+
+**SYNOPSIS**
+
+    gxadmin query jobs-ready-to-run
+
+**NOTES**
+
+Mostly a performance test
 
 
 ## query largest-collection
