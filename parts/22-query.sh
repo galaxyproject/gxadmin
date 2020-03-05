@@ -3487,6 +3487,6 @@ query_jobs-ready-to-run() { ## : Find jobs ready to run (Mostly a performance te
 		WHERE
 			job.state = 'new'
 			AND job.handler IS NULL
-			AND job.handler = 'handler0';
+			AND job.handler = 'handler0'
 	EOF
 }
