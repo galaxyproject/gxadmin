@@ -610,7 +610,7 @@ query_training-members-remove() { ## <training> <username> [YESDOIT]: Remove a u
 	fi
 }
 
-query_largest-histories() { ## [--nice]: Largest histories in Galaxy
+query_largest-histories() { ## [--human]: Largest histories in Galaxy
 	handle_help "$@" <<-EOF
 		Finds all jobs by people in that queue (including things they are executing that are not part of a training)
 
@@ -628,7 +628,7 @@ query_largest-histories() { ## [--nice]: Largest histories in Galaxy
 
 	username=$(gdpr_safe galaxy_user.username username)
 	total_size="sum(coalesce(dataset.total_size, dataset.file_size, 0)) as total_size"
-	if [[ $1 == "--nice" ]]; then
+	if [[ $1 == "--human" ]]; then
 		total_size="pg_size_pretty(sum(coalesce(dataset.total_size, dataset.file_size, 0))) as total_size"
 	fi
 	
@@ -693,7 +693,7 @@ query_training-queue() { ## <training_id>: Jobs currently being run by people in
 	EOF
 }
 
-query_disk-usage() { ## [--nice]: Disk usage per object store.
+query_disk-usage() { ## [--human]: Disk usage per object store.
 	handle_help "$@" <<-EOF
 		Query the different object stores referenced in your Galaxy database
 
@@ -705,9 +705,9 @@ query_disk-usage() { ## [--nice]: Disk usage per object store.
 		     files9          | 53690953947700
 		     files7          | 30657241908566
 
-		Or you can supply the --nice flag, but this should not be used with iquery/InfluxDB
+		Or you can supply the --human flag, but this should not be used with iquery/InfluxDB
 
-		    $ gxadmin query disk-usage --nice
+		    $ gxadmin query disk-usage --human
 		     object_store_id |   sum
 		    -----------------+---------
 		     files9          | 114 TB
@@ -720,7 +720,7 @@ query_disk-usage() { ## [--nice]: Disk usage per object store.
 	tags="object_store_id=0"
 
 	size="sum(coalesce(dataset.total_size, dataset.file_size, 0))"
-	if [[ $1 == "--nice" ]]; then
+	if [[ $1 == "--human" ]]; then
 		size="pg_size_pretty(sum(coalesce(dataset.total_size, dataset.file_size, 0))) as sum"
 	fi
 
@@ -965,7 +965,7 @@ query_monthly-cpu-years() { ## : CPU years allocated to tools by month
 }
 
 
-query_monthly-data(){ ## [year] [--nice]: Number of active users per month, running jobs
+query_monthly-data(){ ## [year] [--human]: Number of active users per month, running jobs
 	handle_help "$@" <<-EOF
 		Find out how much data was ingested or created by Galaxy during the past months.
 
@@ -988,7 +988,7 @@ query_monthly-data(){ ## [year] [--nice]: Number of active users per month, runn
 	size="sum(coalesce(dataset.total_size, dataset.file_size, 0))"
 	if (( $# > 0 )); then
 		for args in "$@"; do
-			if [ "$args" = "--nice" ]; then
+			if [ "$args" = "--human" ]; then
 				size="pg_size_pretty(sum(coalesce(dataset.total_size, dataset.file_size, 0)))"
 			else
 				where="WHERE date_trunc('year', dataset.create_time AT TIME ZONE 'UTC') = '$args-01-01'::date"
@@ -1152,7 +1152,7 @@ query_user-gpu-years() { ## : GPU years allocated to tools by user
 	EOF
 }
 
-query_user-disk-usage() { ## [--nice]: Retrieve an approximation of the disk usage for users
+query_user-disk-usage() { ## [--human]: Retrieve an approximation of the disk usage for users
 	handle_help "$@" <<-EOF
 		This uses the dataset size and the history association in order to
 		calculate total disk usage for a user. This is currently limited
@@ -1176,7 +1176,7 @@ query_user-disk-usage() { ## [--nice]: Retrieve an approximation of the disk usa
 	useremail=$(gdpr_safe galaxy_user.email user_email 'Anonymous')
 
 	size="sum(coalesce(dataset.total_size, dataset.file_size, 0)) as \"storage usage\""
-	if [[ $1 == "--nice" ]]; then
+	if [[ $1 == "--human" ]]; then
 		size="pg_size_pretty(sum(coalesce(dataset.total_size, dataset.file_size, 0))) as \"storage usage\""
 	fi
 
