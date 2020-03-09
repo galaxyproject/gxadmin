@@ -612,18 +612,31 @@ query_training-members-remove() { ## <training> <username> [YESDOIT]: Remove a u
 
 query_largest-histories() { ## [--human]: Largest histories in Galaxy
 	handle_help "$@" <<-EOF
-		Finds all jobs by people in that queue (including things they are executing that are not part of a training)
+		Finds all histories and print by decreasing size
 
 		    $ gxadmin query largest-histories
 		     total_size | id | substring  | username
 		    ------------+----+------------+----------
-		     50 MB      |  6 | Unnamed hi | helena
-		     41 MB      |  8 | Unnamed hi | helena
-		     35 MB      |  9 | Unnamed hi | helena
-		     27 MB      | 10 | Circos     | helena
-		     3298 kB    |  2 | Tag Testin | helena
-		     9936 bytes | 44 | test       | helena
-		     413 bytes  | 45 | Unnamed hi | alice
+		       17215831 |  6 | Unnamed hi | helena
+		          45433 |  8 | Unnamed hi | helena
+		          42846 |  9 | Unnamed hi | helena
+		           1508 | 10 | Circos     | helena
+		            365 |  2 | Tag Testin | helena
+		            158 | 44 | test       | helena
+		             16 | 45 | Unnamed hi | alice
+		
+		Or you can supply the --human flag, but this should not be used with iquery/InfluxDB
+
+		    $ gxadmin query largest-histories --human
+		     total_size | id | substring  | userna
+		    ------------+----+------------+-------
+		     16 MB      |  6 | Unnamed hi | helena
+		     44 kB      |  8 | Unnamed hi | helena
+		     42 kB      |  9 | Unnamed hi | helena
+		     1508 bytes | 10 | Circos     | helena
+		     365 bytes  |  2 | Tag Testin | helena
+		     158 bytes  | 44 | test       | helena
+		     16 bytes   | 45 | Unnamed hi | alice
 	EOF
 
 	username=$(gdpr_safe galaxy_user.username username)
@@ -1161,6 +1174,7 @@ query_user-disk-usage() { ## [--human]: Retrieve an approximation of the disk us
 		This uses the dataset size and the history association in order to
 		calculate total disk usage for a user. This is currently limited
 		to the 50 users with the highest storage usage.
+		By default it prints the storage usage in bytes but you can use --human:
 
 		rank  | user id  |  username   |  email      | storage usage
 		----- | -------- | ----------- | ----------- | -------------
