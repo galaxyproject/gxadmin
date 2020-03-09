@@ -627,6 +627,10 @@ query_largest-histories() { ## [--human]: Largest histories in Galaxy
 	EOF
 
 	username=$(gdpr_safe galaxy_user.username username)
+
+	fields="size=0"
+    tags="id=1;name=2;username=3"
+
 	total_size="sum(coalesce(dataset.total_size, dataset.file_size, 0)) as total_size"
 	if [[ $1 == "--human" ]]; then
 		total_size="pg_size_pretty(sum(coalesce(dataset.total_size, dataset.file_size, 0))) as total_size"
@@ -1174,6 +1178,10 @@ query_user-disk-usage() { ## [--human]: Retrieve an approximation of the disk us
 
 	username=$(gdpr_safe galaxy_user.username user_name 'Anonymous')
 	useremail=$(gdpr_safe galaxy_user.email user_email 'Anonymous')
+
+
+	fields="size=4"
+    tags="userid=1;username=2"
 
 	size="sum(coalesce(dataset.total_size, dataset.file_size, 0)) as \"storage usage\""
 	if [[ $1 == "--human" ]]; then
