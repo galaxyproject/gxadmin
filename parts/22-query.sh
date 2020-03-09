@@ -610,7 +610,7 @@ query_training-members-remove() { ## <training> <username> [YESDOIT]: Remove a u
 	fi
 }
 
-query_largest-histories() { ## : Largest histories in Galaxy
+query_largest-histories() { ## [--nice]: Largest histories in Galaxy
 	handle_help "$@" <<-EOF
 		Finds all jobs by people in that queue (including things they are executing that are not part of a training)
 
@@ -627,10 +627,14 @@ query_largest-histories() { ## : Largest histories in Galaxy
 	EOF
 
 	username=$(gdpr_safe galaxy_user.username username)
-
+	total_size="sum(coalesce(dataset.total_size, dataset.file_size, 0)) as total_size"
+	if [[ $1 == "--nice" ]]; then
+		total_size="pg_size_pretty(sum(coalesce(dataset.total_size, dataset.file_size, 0))) as total_size"
+	fi
+	
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			pg_size_pretty(sum(coalesce(dataset.total_size, dataset.file_size, 0))) as total_size,
+			$total_size,
 			history.id,
 			substring(history.name, 1, 10),
 			$username
@@ -961,7 +965,7 @@ query_monthly-cpu-years() { ## : CPU years allocated to tools by month
 }
 
 
-query_monthly-data(){ ## [year]: Number of active users per month, running jobs
+query_monthly-data(){ ## [year] [--nice]: Number of active users per month, running jobs
 	handle_help "$@" <<-EOF
 		Find out how much data was ingested or created by Galaxy during the past months.
 
@@ -981,15 +985,23 @@ query_monthly-data(){ ## [year]: Number of active users per month, running jobs
 		     2018-02-01 | 18 TB
 		     2018-01-01 | 16 TB
 	EOF
-
+	size="sum(coalesce(dataset.total_size, dataset.file_size, 0))"
 	if (( $# > 0 )); then
-		where="WHERE date_trunc('year', dataset.create_time AT TIME ZONE 'UTC') = '$1-01-01'::date"
+		for args in "$@"; do
+			if [ "$args" = "--nice" ]; then
+				size="pg_size_pretty(sum(coalesce(dataset.total_size, dataset.file_size, 0)))"
+			else
+				where="WHERE date_trunc('year', dataset.create_time AT TIME ZONE 'UTC') = '$args-01-01'::date"
+			fi
+		done
 	fi
+
+
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
 			date_trunc('month', dataset.create_time AT TIME ZONE 'UTC')::date AS month,
-			pg_size_pretty(sum(coalesce(dataset.total_size, dataset.file_size, 0)))
+			$size
 		FROM
 			dataset
 		$where
@@ -1140,7 +1152,7 @@ query_user-gpu-years() { ## : GPU years allocated to tools by user
 	EOF
 }
 
-query_user-disk-usage() { ## : Retrieve an approximation of the disk usage for users
+query_user-disk-usage() { ## [--nice]: Retrieve an approximation of the disk usage for users
 	handle_help "$@" <<-EOF
 		This uses the dataset size and the history association in order to
 		calculate total disk usage for a user. This is currently limited
@@ -1163,13 +1175,18 @@ query_user-disk-usage() { ## : Retrieve an approximation of the disk usage for u
 	username=$(gdpr_safe galaxy_user.username user_name 'Anonymous')
 	useremail=$(gdpr_safe galaxy_user.email user_email 'Anonymous')
 
+	size="sum(coalesce(dataset.total_size, dataset.file_size, 0)) as \"storage usage\""
+	if [[ $1 == "--nice" ]]; then
+		size="pg_size_pretty(sum(coalesce(dataset.total_size, dataset.file_size, 0))) as \"storage usage\""
+	fi
+
 	read -r -d '' QUERY <<-EOF
 		SELECT
 			row_number() OVER (ORDER BY sum(coalesce(dataset.total_size, dataset.file_size, 0)) DESC) as rank,
 			galaxy_user.id as "user id",
 			$username,
 			$useremail,
-			pg_size_pretty(sum(coalesce(dataset.total_size, dataset.file_size, 0))) as "storage usage"
+			$size
 		FROM
 			dataset,
 			galaxy_user,
