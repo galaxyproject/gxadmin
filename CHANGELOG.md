@@ -1,5 +1,10 @@
 # 18-pre
 
+- Fixed:
+	- All previous '--nice' flags are rewritten to '--human' (Thanks @lldelisle)
+	- Update 'user-disk-usage' to support iquery (Thanks @lldelisle)
+	- Update 'largest-histories' to support iquery (Thanks @lldelisle)
+
 # 17
 
 Testing our new release message
