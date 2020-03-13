@@ -185,7 +185,7 @@ query disk-usage -  Disk usage per object store.
 
 **SYNOPSIS**
 
-    gxadmin query disk-usage [--nice]
+    gxadmin query disk-usage [--human]
 
 **NOTES**
 
@@ -199,9 +199,9 @@ Query the different object stores referenced in your Galaxy database
      files9          | 53690953947700
      files7          | 30657241908566
 
-Or you can supply the --nice flag, but this should not be used with iquery/InfluxDB
+Or you can supply the --human flag, but this should not be used with iquery/InfluxDB
 
-    $ gxadmin query disk-usage --nice
+    $ gxadmin query disk-usage --human
      object_store_id |   sum
     -----------------+---------
      files9          | 114 TB
@@ -611,22 +611,35 @@ query largest-histories -  Largest histories in Galaxy
 
 **SYNOPSIS**
 
-    gxadmin query largest-histories
+    gxadmin query largest-histories [--human]
 
 **NOTES**
 
-Finds all jobs by people in that queue (including things they are executing that are not part of a training)
+Finds all histories and print by decreasing size
 
     $ gxadmin query largest-histories
      total_size | id | substring  | username
     ------------+----+------------+----------
-     50 MB      |  6 | Unnamed hi | helena
-     41 MB      |  8 | Unnamed hi | helena
-     35 MB      |  9 | Unnamed hi | helena
-     27 MB      | 10 | Circos     | helena
-     3298 kB    |  2 | Tag Testin | helena
-     9936 bytes | 44 | test       | helena
-     413 bytes  | 45 | Unnamed hi | alice
+       17215831 |  6 | Unnamed hi | helena
+          45433 |  8 | Unnamed hi | helena
+          42846 |  9 | Unnamed hi | helena
+           1508 | 10 | Circos     | helena
+            365 |  2 | Tag Testin | helena
+            158 | 44 | test       | helena
+             16 | 45 | Unnamed hi | alice
+
+Or you can supply the --human flag, but this should not be used with iquery/InfluxDB
+
+    $ gxadmin query largest-histories --human
+     total_size | id | substring  | userna
+    ------------+----+------------+-------
+     16 MB      |  6 | Unnamed hi | helena
+     44 kB      |  8 | Unnamed hi | helena
+     42 kB      |  9 | Unnamed hi | helena
+     1508 bytes | 10 | Circos     | helena
+     365 bytes  |  2 | Tag Testin | helena
+     158 bytes  | 44 | test       | helena
+     16 bytes   | 45 | Unnamed hi | alice
 
 
 ## query latest-users
@@ -692,7 +705,7 @@ query monthly-data -  Number of active users per month, running jobs
 
 **SYNOPSIS**
 
-    gxadmin query monthly-data [year]
+    gxadmin query monthly-data [year] [--human]
 
 **NOTES**
 
@@ -1560,13 +1573,14 @@ query user-disk-usage -  Retrieve an approximation of the disk usage for users
 
 **SYNOPSIS**
 
-    gxadmin query user-disk-usage
+    gxadmin query user-disk-usage [--human]
 
 **NOTES**
 
 This uses the dataset size and the history association in order to
 calculate total disk usage for a user. This is currently limited
 to the 50 users with the highest storage usage.
+By default it prints the storage usage in bytes but you can use --human:
 
 rank  | user id  |  username   |  email      | storage usage
 ----- | -------- | ----------- | ----------- | -------------
