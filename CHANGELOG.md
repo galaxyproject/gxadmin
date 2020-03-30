@@ -4,6 +4,8 @@
 	- All previous '--nice' flags are rewritten to '--human' (Thanks @lldelisle)
 	- Update 'user-disk-usage' to support iquery (Thanks @lldelisle)
 	- Update 'largest-histories' to support iquery (Thanks @lldelisle)
+- Added:
+	- query workers, only works on Galaxy 20.01 or newer and retrieves the hostname and PID of Galaxy worker processes
 
 # 17
 
