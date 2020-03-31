@@ -3529,3 +3529,29 @@ query_jobs-ready-to-run() { ## : Find jobs ready to run (Mostly a performance te
 			AND job.handler = 'handler0'
 	EOF
 }
+
+query_workers() { ## : Retrieve a list of Galaxy worker processes
+	handle_help "$@" <<-EOF
+		This retrieves a list of Galaxy worker processes.
+		This functionality is only available on Galaxy 
+		20.01 or later.
+
+		server_name         | hostname | pid
+		------------------- | -------- | ---
+		main.web.1          | server1  | 123
+		main.job-handlers.1 | server2  | 456
+
+	EOF
+
+	read -r -d '' QUERY <<-EOF
+		SELECT 
+			server_name, 
+			hostname, 
+			pid 
+		FROM 
+			worker_process 
+		WHERE 
+			pid IS NOT NULL
+	EOF
+}
+

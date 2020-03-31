@@ -85,6 +85,7 @@ Command | Description
 [`query users-count`](#query-users-count) | Shows sums of active/external/deleted/purged accounts
 [`query users-total`](#query-users-total) | Total number of Galaxy users (incl deleted, purged, inactive)
 [`query users-with-oidc`](#query-users-with-oidc) | How many users logged in with OIDC
+[`query workers`](#query-workers) | Retrieve a list of Galaxy worker processes
 [`query workflow-connections`](#query-workflow-connections) | The connections of tools, from output to input, in the latest (or all) versions of user workflows (tool_predictions)
 [`query workflow-invocation-status`](#query-workflow-invocation-status) | Report on how many workflows are in new state by handler
 
@@ -1706,6 +1707,27 @@ query users-with-oidc -  How many users logged in with OIDC
 provider | count
 -------- | ------
 elixir   |     5
+
+
+## query workers
+
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workers&type=Code))
+query workers -  Retrieve a list of Galaxy worker processes
+
+**SYNOPSIS**
+
+    gxadmin query workers
+
+**NOTES**
+
+This retrieves a list of Galaxy worker processes.
+This functionality is only available on Galaxy 
+20.01 or later.
+
+server_name         | hostname | pid
+------------------- | -------- | ---
+main.web.1          | server1  | 123
+main.job-handlers.1 | server2  | 456
 
 
 ## query workflow-connections
