@@ -1721,6 +1721,8 @@ query workers -  Retrieve a list of Galaxy worker processes
 **NOTES**
 
 This retrieves a list of Galaxy worker processes.
+This functionality is only available on Galaxy 
+20.01 or later.
 
 server_name         | hostname | pid
 ------------------- | -------- | ---
