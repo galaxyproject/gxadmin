@@ -1776,6 +1776,7 @@ query_job-info() { ## <-|job_id [job_id [...]]> : Retrieve information about job
 			job.create_time,
 			job.update_time,
 			job.tool_id,
+			job.handler,
 			hostname_query.hostname,
 			metric_num_query.runtime_seconds,
 			metric_num_query.memtotal
