@@ -1853,7 +1853,7 @@ query_jobs-max-by-cpu-hours() { ## : Top 10 jobs by CPU hours consumed (requires
 	EOF
 }
 
-query_errored-jobs(){ ## <hours>: Lists jobs that errored in the last N hours.
+query_errored-jobs(){ ## <hours> [--details]: Lists jobs that errored in the last N hours.
 	handle_help "$@" <<-EOF
 		Lists details of jobs that have status = 'error' for the specified number of hours. Default = 24 hours
 
@@ -1864,6 +1864,11 @@ query_errored-jobs(){ ## <hours>: Lists jobs that errored in the last N hours.
 
 	hours=$1
 	email=$(gdpr_safe galaxy_user.email 'email')
+	details=
+
+	if [[ $2 == "--detail" ]] || [[ $2 == "--details" ]]; then
+		details="job.job_stderr,"
+	fi
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
@@ -1873,7 +1878,9 @@ query_errored-jobs(){ ## <hours>: Lists jobs that errored in the last N hours.
 			job.tool_version,
 			job.handler,
 			job.destination_id,
-			$email
+			job.job_runner_external_id,
+			$details
+			$email AS email
 		FROM
 			job,
 			galaxy_user
