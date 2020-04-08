@@ -1728,18 +1728,18 @@ query_job-info() { ## <-|job_id [job_id [...]]> : Retrieve information about job
 		Retrieves information on a job, like the host it ran on,
 		how long it ran for and the total memory.
 
-		id    | create_time  | update_time |  tool_id     |   hostname   | runtime_seconds | memtotal
-		----- | ------------ | ----------- | ------------ | ------------ | --------------- | --------
-		1     |              |             | 123f911b5f1  | 123f911b5f1  |          20.35  | 20.35 GB
-		2     |              |             | cb0fabc0002  | cb0fabc0002  |          14.93  |  5.96 GB
-		3     |              |             | 7e9e9b00b89  | 7e9e9b00b89  |          14.24  |  3.53 GB
-		4     |              |             | 42f211e5e87  | 42f211e5e87  |          14.06  |  1.79 GB
-		5     |              |             | 26cdba62c93  | 26cdba62c93  |          12.97  |  1.21 GB
-		6     |              |             | fa87cddfcae  | fa87cddfcae  |           7.01  |   987 MB
-		7     |              |             | 44d2a648aac  | 44d2a648aac  |           6.70  |   900 MB
-		8     |              |             | 66c57b41194  | 66c57b41194  |           6.43  |   500 MB
-		9     |              |             | 6b1467ac118  | 6b1467ac118  |           5.45  |   250 MB
-		10    |              |             | d755361b59a  | d755361b59a  |           5.19  |   100 MB
+		id    | create_time  | update_time |  tool_id     |   hostname   | handler  | runtime_seconds | memtotal
+		----- | ------------ | ----------- | ------------ | ------------ | -------- | --------------- | --------
+		1     |              |             | 123f911b5f1  | 123f911b5f1  | handler0 |          20.35  | 20.35 GB
+		2     |              |             | cb0fabc0002  | cb0fabc0002  | handler1 |          14.93  |  5.96 GB
+		3     |              |             | 7e9e9b00b89  | 7e9e9b00b89  | handler1 |          14.24  |  3.53 GB
+		4     |              |             | 42f211e5e87  | 42f211e5e87  | handler4 |          14.06  |  1.79 GB
+		5     |              |             | 26cdba62c93  | 26cdba62c93  | handler0 |          12.97  |  1.21 GB
+		6     |              |             | fa87cddfcae  | fa87cddfcae  | handler1 |           7.01  |   987 MB
+		7     |              |             | 44d2a648aac  | 44d2a648aac  | handler3 |           6.70  |   900 MB
+		8     |              |             | 66c57b41194  | 66c57b41194  | handler1 |           6.43  |   500 MB
+		9     |              |             | 6b1467ac118  | 6b1467ac118  | handler0 |           5.45  |   250 MB
+		10    |              |             | d755361b59a  | d755361b59a  | handler2 |           5.19  |   100 MB
 	EOF
 
 	assert_count_ge $# 1 "Missing job IDs"
