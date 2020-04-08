@@ -1857,8 +1857,14 @@ query_errored-jobs(){ ## <hours> [--details]: Lists jobs that errored in the las
 	handle_help "$@" <<-EOF
 		Lists details of jobs that have status = 'error' for the specified number of hours. Default = 24 hours
 
-		    $gxadmin query errored-jobs 24
-		    TO_DO: Add output of query here!
+		    $ gxadmin query errored-jobs 2
+		     id | create_time | tool_id | tool_version | handler  | destination_id | job_runner_external_id |      email
+		    ----+-------------+---------+--------------+----------+----------------+------------------------+------------------
+		      1 |             | upload1 | 1.1.0        | handler2 | slurm_normal   | 42                     | user@example.org
+		      2 |             | cut1    | 1.1.1        | handler1 | slurm_normal   | 43                     | user@example.org
+		      3 |             | bwa     | 0.7.17.1     | handler0 | slurm_multi    | 44                     | map@example.org
+		      4 |             | trinity | 2.9.1        | handler1 | pulsar_bigmem  | 4                      | rna@example.org
+
 
 	EOF
 
