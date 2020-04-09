@@ -6,6 +6,7 @@
 	- Update 'largest-histories' to support iquery (Thanks @lldelisle)
 - Added:
 	- query workers, only works on Galaxy 20.01 or newer and retrieves the hostname and PID of Galaxy worker processes
+	- '--details' option to query errored-jobs to include the job_stderr column
 
 # 17
 
