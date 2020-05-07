@@ -136,7 +136,7 @@ query_workflow-connections() { ## [--all]: The connections of tools, from output
 	read -r -d '' QUERY <<-EOF
 		SELECT
 			workflow.id as wf_id,
-			workflow.update_time as wf_updated,
+			workflow.update_time::DATE as wf_updated,
 			ws_in.id as in_id,
 			ws_in.tool_id as in_tool,
 			ws_in.tool_version as in_tool_v,
