@@ -135,17 +135,17 @@ query_workflow-connections() { ## [--all]: The connections of tools, from output
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-                        workflow.id as wf_id,
-                        workflow.update_time as wf_updated,
-                        ws_in.id as in_id,
-                        ws_in.tool_id as in_tool,
-                        ws_in.tool_version as in_tool_v,
-                        ws_out.id as out_id,
-                        ws_out.tool_id as out_tool,
-                        ws_out.tool_version as out_tool_v,
-                        sw.published as published,
-                        sw.deleted as deleted,
-                        workflow.has_errors as has_errors
+			workflow.id as wf_id,
+			workflow.update_time as wf_updated,
+			ws_in.id as in_id,
+			ws_in.tool_id as in_tool,
+			ws_in.tool_version as in_tool_v,
+			ws_out.id as out_id,
+			ws_out.tool_id as out_tool,
+			ws_out.tool_version as out_tool_v,
+			sw.published as published,
+			sw.deleted as deleted,
+			workflow.has_errors as has_errors
 		FROM workflow_step_connection wfc
 		LEFT JOIN workflow_step ws_in ON ws_in.id = wfc.output_step_id
 		LEFT JOIN workflow_step_input wsi ON wfc.input_step_input_id = wsi.id
