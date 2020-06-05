@@ -33,6 +33,7 @@ Command | Description
 [`query largest-collection`](#query-largest-collection) | Returns the size of the single largest collection
 [`query largest-histories`](#query-largest-histories) | Largest histories in Galaxy
 [`query latest-users`](#query-latest-users) | 40 recently registered users
+[`query monthly-cpu-stats`](#query-monthly-cpu-stats) | CPU years/hours allocated to tools by month
 [`query monthly-cpu-years`](#query-monthly-cpu-years) | CPU years allocated to tools by month
 [`query monthly-data`](#query-monthly-data) | Number of active users per month, running jobs
 [`query monthly-gpu-years`](#query-monthly-gpu-years) | GPU years allocated to tools by month
@@ -665,6 +666,32 @@ Returns 40 most recently registered users
      id |        create_time        | pg_size_pretty |   username    |             email
     ----+---------------------------+----------------+---------------+--------------------------------
       1 | 2018-10-05 11:40:42.90119 |                | helena-rasche | hxr@informatik.uni-freiburg.de
+
+
+## query monthly-cpu-stats
+
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_monthly-cpu-stats&type=Code))
+query monthly-cpu-stats -  CPU years/hours allocated to tools by month
+
+**SYNOPSIS**
+
+    gxadmin query monthly-cpu-stats [year]
+
+**NOTES**
+
+This uses the galaxy_slots and runtime_seconds metrics in order to
+calculate allocated CPU years/hours. This will not be the value of what is
+actually consumed by your jobs, you should use cgroups.
+
+    $ gxadmin query monthly-cpu-stats
+       month    | cpu_years | cpu_hours
+    ------------+-----------+-----------
+     2020-05-01 |     53.55 | 469088.02
+     2020-04-01 |     59.55 | 521642.60
+     2020-03-01 |     57.04 | 499658.86
+     2020-02-01 |     53.93 | 472390.31
+     2020-01-01 |     56.49 | 494887.37
+     ...
 
 
 ## query monthly-cpu-years
@@ -1726,7 +1753,7 @@ query workers -  Retrieve a list of Galaxy worker processes
 **NOTES**
 
 This retrieves a list of Galaxy worker processes.
-This functionality is only available on Galaxy 
+This functionality is only available on Galaxy
 20.01 or later.
 
 server_name         | hostname | pid
@@ -1749,18 +1776,18 @@ query workflow-connections -  The connections of tools, from output to input, in
 This is used by the usegalaxy.eu tool prediction workflow, allowing for building models out of tool connections in workflows.
 
     $ gxadmin query workflow-connections
-     wf_id |     wf_updated      | in_id |      in_tool      | in_tool_v | out_id |     out_tool      | out_tool_v
-    -------+---------------------+-------+-------------------+-----------+--------+-------------------+------------
-         3 | 2013-02-07 16:48:00 |     5 | Grep1             | 1.0.1     |     12 |                   |
-         3 | 2013-02-07 16:48:00 |     6 | Cut1              | 1.0.1     |      7 | Remove beginning1 | 1.0.0
-         3 | 2013-02-07 16:48:00 |     7 | Remove beginning1 | 1.0.0     |      5 | Grep1             | 1.0.1
-         3 | 2013-02-07 16:48:00 |     8 | addValue          | 1.0.0     |      6 | Cut1              | 1.0.1
-         3 | 2013-02-07 16:48:00 |     9 | Cut1              | 1.0.1     |      7 | Remove beginning1 | 1.0.0
-         3 | 2013-02-07 16:48:00 |    10 | addValue          | 1.0.0     |     11 | Paste1            | 1.0.0
-         3 | 2013-02-07 16:48:00 |    11 | Paste1            | 1.0.0     |      9 | Cut1              | 1.0.1
-         3 | 2013-02-07 16:48:00 |    11 | Paste1            | 1.0.0     |      8 | addValue          | 1.0.0
-         4 | 2013-02-07 16:48:00 |    13 | cat1              | 1.0.0     |     18 | addValue          | 1.0.0
-         4 | 2013-02-07 16:48:00 |    13 | cat1              | 1.0.0     |     20 | Count1            | 1.0.0
+     wf_id |     wf_updated      | in_id |      in_tool      | in_tool_v | out_id |     out_tool      | out_tool_v | published | deleted | has_errors
+    -------+---------------------+-------+-------------------+-----------+--------+-------------------+----------------------------------------------
+         3 | 2013-02-07 16:48:00 |     5 | Grep1             | 1.0.1     |     12 |                   |            |    f      |    f    |    f
+         3 | 2013-02-07 16:48:00 |     6 | Cut1              | 1.0.1     |      7 | Remove beginning1 | 1.0.0      |    f      |    f    |    f
+         3 | 2013-02-07 16:48:00 |     7 | Remove beginning1 | 1.0.0     |      5 | Grep1             | 1.0.1      |    f      |    f    |    f
+         3 | 2013-02-07 16:48:00 |     8 | addValue          | 1.0.0     |      6 | Cut1              | 1.0.1      |    t      |    f    |    f
+         3 | 2013-02-07 16:48:00 |     9 | Cut1              | 1.0.1     |      7 | Remove beginning1 | 1.0.0      |    f      |    f    |    f
+         3 | 2013-02-07 16:48:00 |    10 | addValue          | 1.0.0     |     11 | Paste1            | 1.0.0      |    t      |    f    |    f
+         3 | 2013-02-07 16:48:00 |    11 | Paste1            | 1.0.0     |      9 | Cut1              | 1.0.1      |    f      |    f    |    f
+         3 | 2013-02-07 16:48:00 |    11 | Paste1            | 1.0.0     |      8 | addValue          | 1.0.0      |    t      |    t    |    f
+         4 | 2013-02-07 16:48:00 |    13 | cat1              | 1.0.0     |     18 | addValue          | 1.0.0      |    t      |    f    |    f
+         4 | 2013-02-07 16:48:00 |    13 | cat1              | 1.0.0     |     20 | Count1            | 1.0.0      |    t      |    t    |    f
 
 
 ## query workflow-invocation-status

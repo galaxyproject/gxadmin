@@ -629,7 +629,7 @@ query_largest-histories() { ## [--human]: Largest histories in Galaxy
 		            365 |  2 | Tag Testin | helena
 		            158 | 44 | test       | helena
 		             16 | 45 | Unnamed hi | alice
-		
+
 		Or you can supply the --human flag, but this should not be used with iquery/InfluxDB
 
 		    $ gxadmin query largest-histories --human
@@ -653,7 +653,7 @@ query_largest-histories() { ## [--human]: Largest histories in Galaxy
 	if [[ $1 == "--human" ]]; then
 		total_size="pg_size_pretty(sum(coalesce(dataset.total_size, dataset.file_size, 0))) as total_size"
 	fi
-	
+
 	read -r -d '' QUERY <<-EOF
 		SELECT
 			$total_size,
@@ -937,6 +937,48 @@ query_tool-available-metrics() { ## <tool_id>: list all available metrics for a 
 			SELECT id FROM job WHERE tool_id = '$1'
 		)
 		ORDER BY metric_name asc
+	EOF
+}
+
+query_monthly-cpu-stats() { ## [year] : CPU years/hours allocated to tools by month
+	handle_help "$@" <<-EOF
+		This uses the galaxy_slots and runtime_seconds metrics in order to
+		calculate allocated CPU years/hours. This will not be the value of what is
+		actually consumed by your jobs, you should use cgroups.
+
+		    $ gxadmin query monthly-cpu-stats
+		       month    | cpu_years | cpu_hours
+		    ------------+-----------+-----------
+		     2020-05-01 |     53.55 | 469088.02
+		     2020-04-01 |     59.55 | 521642.60
+		     2020-03-01 |     57.04 | 499658.86
+		     2020-02-01 |     53.93 | 472390.31
+		     2020-01-01 |     56.49 | 494887.37
+		     ...
+	EOF
+
+	if [ ! -z $1 ] && date -d "$1" >/dev/null
+	then
+	    filter_by_year="date_trunc('year', job.create_time AT TIME ZONE 'UTC') = '$1-01-01'::date"
+	fi
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			date_trunc('month', job.create_time  AT TIME ZONE 'UTC')::date as month,
+			round(sum((a.metric_value * b.metric_value) / 3600 / 24 / 365 ), 2) as cpu_years,
+			round(sum((a.metric_value * b.metric_value) / 3600 ), 2) as cpu_hours
+		FROM
+			job_metric_numeric a,
+			job_metric_numeric b,
+			job
+		WHERE
+			b.job_id = a.job_id
+			AND a.job_id = job.id
+			AND a.metric_name = 'runtime_seconds'
+			AND b.metric_name = 'galaxy_slots'
+			$filter_by_year
+		GROUP BY month
+		ORDER BY month DESC
 	EOF
 }
 
@@ -3552,7 +3594,7 @@ query_jobs-ready-to-run() { ## : Find jobs ready to run (Mostly a performance te
 query_workers() { ## : Retrieve a list of Galaxy worker processes
 	handle_help "$@" <<-EOF
 		This retrieves a list of Galaxy worker processes.
-		This functionality is only available on Galaxy 
+		This functionality is only available on Galaxy
 		20.01 or later.
 
 		server_name         | hostname | pid
@@ -3563,13 +3605,13 @@ query_workers() { ## : Retrieve a list of Galaxy worker processes
 	EOF
 
 	read -r -d '' QUERY <<-EOF
-		SELECT 
-			server_name, 
-			hostname, 
-			pid 
-		FROM 
-			worker_process 
-		WHERE 
+		SELECT
+			server_name,
+			hostname,
+			pid
+		FROM
+			worker_process
+		WHERE
 			pid IS NOT NULL
 	EOF
 }
