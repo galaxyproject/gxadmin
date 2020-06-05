@@ -957,10 +957,10 @@ query_monthly-cpu-stats() { ## [year] : CPU years/hours allocated to tools by mo
 		 ...
 	EOF
 
-  if [ ! -z $1 ] && date -d "$1" >/dev/null
-    then
-      filter_by_year="date_trunc('year', job.create_time AT TIME ZONE 'UTC') = '$1-01-01'::date"
-  fi
+	if [ ! -z $1 ] && date -d "$1" >/dev/null
+	then
+	    filter_by_year="date_trunc('year', job.create_time AT TIME ZONE 'UTC') = '$1-01-01'::date"
+	fi
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
