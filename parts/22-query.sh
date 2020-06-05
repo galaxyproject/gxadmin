@@ -946,15 +946,15 @@ query_monthly-cpu-stats() { ## [year] : CPU years/hours allocated to tools by mo
 		calculate allocated CPU years/hours. This will not be the value of what is
 		actually consumed by your jobs, you should use cgroups.
 
-        $gxadmin query monthly-cpu-stats
-           month    | cpu_years | cpu_hours
-        ------------+-----------+-----------
-         2020-05-01 |     53.55 | 469088.02
-         2020-04-01 |     59.55 | 521642.60
-         2020-03-01 |     57.04 | 499658.86
-         2020-02-01 |     53.93 | 472390.31
-         2020-01-01 |     56.49 | 494887.37
-         ...
+		$gxadmin query monthly-cpu-stats
+		   month    | cpu_years | cpu_hours
+		------------+-----------+-----------
+		 2020-05-01 |     53.55 | 469088.02
+		 2020-04-01 |     59.55 | 521642.60
+		 2020-03-01 |     57.04 | 499658.86
+		 2020-02-01 |     53.93 | 472390.31
+		 2020-01-01 |     56.49 | 494887.37
+		 ...
 	EOF
 
   if [ ! -z $1 ] && date -d "$1" >/dev/null
