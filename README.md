@@ -37,6 +37,8 @@ Please make PRs to the `dev` branch. The master branch will only contain release
 - Simon Gladman ([@slugger70](https://github.com/slugger70))
 - Anthony Bretaudeau ([@abretaud](https://github.com/abretaud))
 - John Chilten ([@jmchilton](https://github.com/jmchilton))
+- Gianmauro Cuccuru ([@gmauro](https://github.com/gmauro))
+- Lucille Delisle ([@lldelisle](https://github.com/lldelisle))
 - Manuel Messner (mm@skellet.io)
 
 ## License
