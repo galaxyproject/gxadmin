@@ -86,6 +86,13 @@ uwsgi_memory() { ## : Current system memory usage
 		service=$(basename "$folder")
 		echo "$service $(cat "$folder/memory.memsw.usage_in_bytes")"
 	done
+
+
+	for folder in $(find /sys/fs/cgroup/memory/system.slice/system-galaxy\\x2dworkflow\\x2dscheduler.slice/ -mindepth 1 -type d -name 'galaxy-workflow*service'); do
+		service=$(basename "$folder")
+		echo "$service $(cat "$folder/memory.memsw.usage_in_bytes")"
+	done
+
 }
 
 uwsgi_pids() { ## : Galaxy process PIDs
