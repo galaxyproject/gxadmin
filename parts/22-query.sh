@@ -1692,6 +1692,30 @@ query_monthly-jobs(){ ## [year]: Number of jobs run each month
 
 }
 
+query_total-jobs(){ ## [year]: Total number of jobs run by galaxy instance
+	handle_help "$@" <<-EOF
+		Count total number of jobs
+
+		    [galaxy@sn04 galaxy]$ gxadmin query monthly-jobs 2018
+		     count
+		    --------
+		      96941
+	EOF
+
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			state, count(*)
+		FROM
+			job
+                GROUP BY
+                        state
+		ORDER BY
+			state
+	EOF
+
+}
+
 query_job-history() { ## <id>: Job state history for a specific job
 	handle_help "$@" <<-EOF
 		    $ gxadmin query job-history 4384025
