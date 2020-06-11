@@ -2458,8 +2458,8 @@ query_workflow-invocation-totals() { ## : Report on overall workflow counts, to 
 		Really only intended to be used in influx queries.
 	EOF
 
-	fields="count=0"
-	tags=""
+	fields="count=1"
+	tags="state=0"
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
