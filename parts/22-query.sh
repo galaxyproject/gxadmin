@@ -1697,9 +1697,12 @@ query_total-jobs(){ ## [year]: Total number of jobs run by galaxy instance
 		Count total number of jobs
 
 		    [galaxy@sn04 galaxy]$ gxadmin query monthly-jobs 2018
-		     count
-		    --------
-		      96941
+		        state    | count 
+		    -------------+-------
+		     deleted     |     1
+		     deleted_new |     1
+		     error       |    10
+		     ok          |    21
 	EOF
 
 
