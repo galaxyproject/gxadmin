@@ -122,7 +122,7 @@ report_user-info(){ ## <user_id|username|email>: Quick overview of a Galaxy user
 		ORDER BY
 			create_time DESC
 		LIMIT
-			5
+			25
 	EOF
 	recent_wf=$(query_tsv "$qstr")
 	recent_wf=$(printf "ID\tCreated\tState\tScheduler\tHandler\tWorkflow\tHistory\n----\t----\t----\t----\t----\t----\t----\n%s" "$recent_wf" | align_cols)
