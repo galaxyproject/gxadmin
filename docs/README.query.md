@@ -89,6 +89,7 @@ Command | Description
 [`query workers`](#query-workers) | Retrieve a list of Galaxy worker processes
 [`query workflow-connections`](#query-workflow-connections) | The connections of tools, from output to input, in the latest (or all) versions of user workflows (tool_predictions)
 [`query workflow-invocation-status`](#query-workflow-invocation-status) | Report on how many workflows are in new state by handler
+[`query workflow-invocation-totals`](#query-workflow-invocation-totals) | Report on overall workflow counts, to ensure throughput
 
 ## query aq
 
@@ -1798,6 +1799,20 @@ query workflow-invocation-status -  Report on how many workflows are in new stat
 **SYNOPSIS**
 
     gxadmin query workflow-invocation-status
+
+**NOTES**
+
+Really only intended to be used in influx queries.
+
+
+## query workflow-invocation-totals
+
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-invocation-totals&type=Code))
+query workflow-invocation-totals -  Report on overall workflow counts, to ensure throughput
+
+**SYNOPSIS**
+
+    gxadmin query workflow-invocation-totals
 
 **NOTES**
 
