@@ -2441,8 +2441,8 @@ query_workflow-invocation-status() { ## : Report on how many workflows are in ne
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			COALESCE(scheduler, '__none__'),
-			handler,
+			COALESCE(scheduler, 'none'),
+			COALESCE(handler, 'none'),
 			state,
 			count(*)
 		FROM
