@@ -2452,6 +2452,24 @@ query_workflow-invocation-status() { ## : Report on how many workflows are in ne
 	EOF
 }
 
+
+query_workflow-invocation-totals() { ## : Report on overall workflow counts, to ensure throughput
+	handle_help "$@" <<-EOF
+		Really only intended to be used in influx queries.
+	EOF
+
+	fields="count=0"
+	tags=""
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			COALESCE(state, 'unknown'), count(*)
+		FROM
+			workflow_invocation
+		GROUP BY state
+	EOF
+}
+
 query_tool-new-errors() { ## [weeks|4]: Summarize percent of tool runs in error over the past weeks for "new tools"
 	handle_help "$@" <<-EOF
 		See jobs-in-error summary for recent tools (tools whose first execution is in recent weeks).
