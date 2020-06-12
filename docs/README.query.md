@@ -71,6 +71,7 @@ Command | Description
 [`query tool-new-errors`](#query-tool-new-errors) | Summarize percent of tool runs in error over the past weeks for "new tools"
 [`query tool-popularity`](#query-tool-popularity) | Most run tools by month (tool_predictions)
 [`query tool-usage`](#query-tool-usage) | Counts of tool runs in the past weeks (default = all)
+[`query total-jobs`](#query-total-jobs) | Total number of jobs run by galaxy instance
 [`query training-list`](#query-training-list) | List known trainings
 [`query training-members-remove`](#query-training-members-remove) | Remove a user from a training
 [`query training-members`](#query-training-members) | List users in a specific training
@@ -1454,6 +1455,28 @@ query tool-usage -  Counts of tool runs in the past weeks (default = all)
      Filter1                                                                |  43253
 
 
+## query total-jobs
+
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_total-jobs&type=Code))
+query total-jobs -  Total number of jobs run by galaxy instance
+
+**SYNOPSIS**
+
+    gxadmin query total-jobs [year]
+
+**NOTES**
+
+Count total number of jobs
+
+    [galaxy@sn04 galaxy]$ gxadmin query monthly-jobs 2018
+        state    | count 
+    -------------+-------
+     deleted     |     1
+     deleted_new |     1
+     error       |    10
+     ok          |    21
+
+
 ## query training-list
 
 ([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_training-list&type=Code))
@@ -1533,10 +1556,28 @@ query ts-repos -  Counts of toolshed repositories by toolshed and owner.
 
 ([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_upload-gb-in-past-hour&type=Code))
 query upload-gb-in-past-hour -  Sum in bytes of files uploaded in the past hour
+ Sum in bytes of files uploaded in the past hour
 
 **SYNOPSIS**
 
     gxadmin query upload-gb-in-past-hour [hours|1]
+gxadmin query upload-gb-in-past-hour [hours|1]
+
+**NOTES**
+
+Quick output, mostly useful for graphing, to produce a nice graph of how heavily are people uploading currently.
+
+
+## query upload-gb-in-past-hour
+
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_upload-gb-in-past-hour&type=Code))
+query upload-gb-in-past-hour -  Sum in bytes of files uploaded in the past hour
+ Sum in bytes of files uploaded in the past hour
+
+**SYNOPSIS**
+
+    gxadmin query upload-gb-in-past-hour [hours|1]
+gxadmin query upload-gb-in-past-hour [hours|1]
 
 **NOTES**
 
