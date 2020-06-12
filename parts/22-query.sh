@@ -917,7 +917,7 @@ query_tool-available-metrics() { ## <tool_id>: list all available metrics for a 
 	handle_help "$@" <<-EOF
 		Gives a list of available metrics, which can then be used to query.
 
-		    [galaxy@sn04 galaxy]$ gxadmin query tool-available-metrics upload1
+		    $ gxadmin query tool-available-metrics upload1
 		                 metric_name
 		    -------------------------------------
 		     memory.stat.total_rss
@@ -1620,7 +1620,7 @@ query_monthly-users-active(){ ## [year]: Number of active users per month, runni
 	handle_help "$@" <<-EOF
 		Number of unique users each month who ran jobs. **NOTE**: does not include anonymous users.
 
-		    [galaxy@sn04 galaxy]$ gxadmin query monthly-users-active 2018
+		    $ gxadmin query monthly-users-active 2018
 		       month    | active_users
 		    ------------+--------------
 		     2018-12-01 |          811
@@ -1656,7 +1656,7 @@ query_monthly-jobs(){ ## [year]: Number of jobs run each month
 	handle_help "$@" <<-EOF
 		Count jobs run each month
 
-		    [galaxy@sn04 galaxy]$ gxadmin query monthly-jobs 2018
+		    $ gxadmin query monthly-jobs 2018
 		        month   | count
 		    ------------+--------
 		     2018-12-01 |  96941
@@ -1696,8 +1696,8 @@ query_total-jobs(){ ## [year]: Total number of jobs run by galaxy instance
 	handle_help "$@" <<-EOF
 		Count total number of jobs
 
-		    [galaxy@sn04 galaxy]$ gxadmin query monthly-jobs 2018
-		        state    | count 
+		    $ gxadmin query total-jobs
+		        state    | count
 		    -------------+-------
 		     deleted     |     1
 		     deleted_new |     1

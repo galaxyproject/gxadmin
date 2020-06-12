@@ -815,7 +815,7 @@ query monthly-jobs -  Number of jobs run each month
 
 Count jobs run each month
 
-    [galaxy@sn04 galaxy]$ gxadmin query monthly-jobs 2018
+    $ gxadmin query monthly-jobs 2018
         month   | count
     ------------+--------
      2018-12-01 |  96941
@@ -845,7 +845,7 @@ query monthly-users-active -  Number of active users per month, running jobs
 
 Number of unique users each month who ran jobs. **NOTE**: does not include anonymous users.
 
-    [galaxy@sn04 galaxy]$ gxadmin query monthly-users-active 2018
+    $ gxadmin query monthly-users-active 2018
        month    | active_users
     ------------+--------------
      2018-12-01 |          811
@@ -1257,7 +1257,7 @@ query tool-available-metrics -  list all available metrics for a given tool
 
 Gives a list of available metrics, which can then be used to query.
 
-    [galaxy@sn04 galaxy]$ gxadmin query tool-available-metrics upload1
+    $ gxadmin query tool-available-metrics upload1
                  metric_name
     -------------------------------------
      memory.stat.total_rss
@@ -1468,8 +1468,8 @@ query total-jobs -  Total number of jobs run by galaxy instance
 
 Count total number of jobs
 
-    [galaxy@sn04 galaxy]$ gxadmin query monthly-jobs 2018
-        state    | count 
+    $ gxadmin query total-jobs
+        state    | count
     -------------+-------
      deleted     |     1
      deleted_new |     1
@@ -1556,28 +1556,10 @@ query ts-repos -  Counts of toolshed repositories by toolshed and owner.
 
 ([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_upload-gb-in-past-hour&type=Code))
 query upload-gb-in-past-hour -  Sum in bytes of files uploaded in the past hour
- Sum in bytes of files uploaded in the past hour
 
 **SYNOPSIS**
 
     gxadmin query upload-gb-in-past-hour [hours|1]
-gxadmin query upload-gb-in-past-hour [hours|1]
-
-**NOTES**
-
-Quick output, mostly useful for graphing, to produce a nice graph of how heavily are people uploading currently.
-
-
-## query upload-gb-in-past-hour
-
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_upload-gb-in-past-hour&type=Code))
-query upload-gb-in-past-hour -  Sum in bytes of files uploaded in the past hour
- Sum in bytes of files uploaded in the past hour
-
-**SYNOPSIS**
-
-    gxadmin query upload-gb-in-past-hour [hours|1]
-gxadmin query upload-gb-in-past-hour [hours|1]
 
 **NOTES**
 

@@ -66,7 +66,7 @@ filter_hexdecode() { ## : Deprecated, There is an easier built in postgres funct
 	handle_help "$@" <<-EOF
 		This automatically replaces any hex strings (\\x[a-f0-9]+) with their decoded versions. This can allow you to query galaxy metadata, decode it, and start processing it with JQ. Just pipe your query to it and it will replace it wherever it is found.
 
-		    [galaxy@sn04 ~]$ psql -c  'select metadata from history_dataset_association limit 10;'
+		    $ psql -c  'select metadata from history_dataset_association limit 10;'
 		                                 metadata
 		    ------------------------------------------------------------------------------------------------------------------
 		     \\x7b22646174615f6c696e6573223a206e756c6c2c202264626b6579223a205b223f225d2c202273657175656e636573223a206e756c6c7d
@@ -81,7 +81,7 @@ filter_hexdecode() { ## : Deprecated, There is an easier built in postgres funct
 		     \\x7b22646174615f6c696e6573223a20312c202264626b6579223a205b223f225d7d
 		    (10 rows)
 
-		    [galaxy@sn04 ~]$ psql -c  'select metadata from history_dataset_association limit 10;'  | gxadmin filter hexdecode
+		    $ psql -c  'select metadata from history_dataset_association limit 10;'  | gxadmin filter hexdecode
 		                                 metadata
 		    ------------------------------------------------------------------------------------------------------------------
 		     {"data_lines": null, "dbkey": ["?"], "sequences": null}
@@ -98,7 +98,7 @@ filter_hexdecode() { ## : Deprecated, There is an easier built in postgres funct
 
 		Or to query for the dbkeys uesd by datasets:
 
-		    [galaxy@sn04 ~]$ psql -c  'copy (select metadata from history_dataset_association limit 1000) to stdout' | \\
+		    $ psql -c  'copy (select metadata from history_dataset_association limit 1000) to stdout' | \\
 		        gxadmin filter hexdecode | \\
 		        jq -r '.dbkey[0]' 2>/dev/null | sort | uniq -c | sort -nr
 		        768 ?

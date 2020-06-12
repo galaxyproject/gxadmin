@@ -405,7 +405,7 @@ galaxy_ie-show() { ## [gie-galaxy-job-id]: Report on a GIE [HTCondor Only!]
 		function for you to make you hate life a lil bit less.
 
 
-		    root@sn04:/opt/galaxy/server$ gxadmin local ie-show 6134209
+		    $ gxadmin local ie-show 6134209
 		    Galaxy ID: 6134209
 		    Condor ID: 1489026
 		    Container: jupyter_notebook
