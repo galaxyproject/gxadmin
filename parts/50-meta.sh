@@ -69,7 +69,7 @@ meta_slurp-current() { ## [--date] [slurp-name [2nd-slurp-name [...]]]: Executes
 
 		You can add your own functions which are included in this output, using
 		the \$GXADMIN_SITE_SPECIFIC file. They must start with the prefix
-		"query_server-", e.g. "query_server-mymetric".
+		"server_", e.g. "server_mymetric".
 
 		    $ gxadmin meta slurp-current
 		    server-allocated-cpu,job_runner_name=condor cpu_years=102.00
@@ -113,7 +113,7 @@ meta_slurp-current() { ## [--date] [slurp-name [2nd-slurp-name [...]]]: Executes
 	specific_slurp=($@)
 
 	# shellcheck disable=SC2013
-	for func in $(grep -s -h -o '^query_server-[a-z-]*' "$0" "$GXADMIN_SITE_SPECIFIC" | sort | sed 's/query_//g'); do
+	for func in $(grep -s -h -o '^server_[a-z-]*' "$0" "$GXADMIN_SITE_SPECIFIC" | sort | sed 's/query_//g'); do
 		# To allow only slurping the one that was requested, if this was done.
 		if (( ${#specific_slurp[@]} > 0 )); then
 			if [[ ! "${specific_slurp[*]}" =~ "${func}"  ]]; then
@@ -140,7 +140,7 @@ meta_slurp-upto() { ## <yyyy-mm-dd> [slurp-name [2nd-slurp-name [...]]]: Slurps 
 	specific_slurp=($@)
 
 	# shellcheck disable=SC2013
-	for func in $(grep -s -h -o '^query_server-[a-z-]*' "$0" "$GXADMIN_SITE_SPECIFIC" | sort | sed 's/query_//g'); do
+	for func in $(grep -s -h -o '^server_[a-z-]*' "$0" "$GXADMIN_SITE_SPECIFIC" | sort | sed 's/query_//g'); do
 		# To allow only slurping the one that was requested, if this was done.
 		if (( ${#specific_slurp[@]} > 0 )); then
 			if [[ ! "${specific_slurp[*]}" =~ "${func}"  ]]; then
@@ -174,8 +174,8 @@ meta_slurp-day() { ## <yyyy-mm-dd> [slurp-name [2nd-slurp-name [...]]]: Slurps d
 
 		You can add your own functions which are included in this output, using
 		the \$GXADMIN_SITE_SPECIFIC file. They must start with the prefix
-		"query_server-", e.g. "query_server-mymetric". They should include a
-		date filter as well, or the metrics reported here will be less useful.
+		"server_", e.g. "server_mymetric". They should include a date filter as
+		well, or the metrics reported here will be less useful.
 
 		    $ gxadmin meta slurp-day 2019-01-01
 		    server-allocated-cpu.daily,job_runner_name=condor cpu_years=102.00
@@ -202,7 +202,7 @@ meta_slurp-day() { ## <yyyy-mm-dd> [slurp-name [2nd-slurp-name [...]]]: Slurps d
 	specific_slurp=($@)
 
 	# shellcheck disable=SC2013
-	for func in $(grep -s -h -o '^query_server-[a-z-]*' "$0" "$GXADMIN_SITE_SPECIFIC" | sort | sed 's/query_//g'); do
+	for func in $(grep -s -h -o '^server_[a-z-]*' "$0" "$GXADMIN_SITE_SPECIFIC" | sort | sed 's/query_//g'); do
 		# To allow only slurping the one that was requested, if this was done.
 		if (( ${#specific_slurp[@]} > 0 )); then
 			if [[ ! "${specific_slurp[*]}" =~ "${func}"  ]]; then

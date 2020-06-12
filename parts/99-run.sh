@@ -18,15 +18,17 @@ if [[ "$mode" == time* ]]; then
 fi
 
 case "$mode" in
-	*query ) query "$mode"   "$@" ;;
-	config ) $wrapper look_for config "$@" ;;
-	filter ) $wrapper look_for filter "$@" ;;
-	galaxy ) $wrapper look_for galaxy "$@" ;;
-	local  ) $wrapper local_funcs     "$@" ;;
-	meta   ) $wrapper look_for meta   "$@" ;;
-	mutate ) $wrapper mutate "$mode"  "$@" ;;
-	report ) $wrapper look_for report "$@" ;;
-	uwsgi  ) $wrapper look_for uwsgi  "$@" ;;
+	#*query ) $wrapper query "$mode" "$@" ;;
+	*query ) $wrapper look_for "query" "$mode" "$@" ;;
+	server ) $wrapper look_for "query" "$mode" "$@" ;;
+	config ) $wrapper look_for "$mode" "none"  "$@" ;;
+	filter ) $wrapper look_for "$mode" "none"  "$@" ;;
+	galaxy ) $wrapper look_for "$mode" "none"  "$@" ;;
+	meta   ) $wrapper look_for "$mode" "none"  "$@" ;;
+	report ) $wrapper look_for "$mode" "none"  "$@" ;;
+	uwsgi  ) $wrapper look_for "$mode" "none"  "$@" ;;
+	local  ) $wrapper look_for "$mode" "none"  "$@" ;;
+	mutate ) $wrapper look_for "$mode" "none"  "$@" ;;
 	s      ) search "$@" ;;
 	find   ) search "$@" ;;
 	search ) search "$@" ;;

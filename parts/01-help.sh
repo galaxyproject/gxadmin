@@ -105,6 +105,12 @@ usage(){
 		EOF
 	fi
 
+	if (( $# == 0  )) || [[ "$1" == "server" ]]; then
+		cat <<-EOF
+		    server: Various overall statistics
+		EOF
+	fi
+
 	if (( $# == 0  )) || [[ "$1" == "uwsgi" ]]; then
 		cat <<-EOF
 		    uwsgi:  Galaxy Handler/Zergling management (SystemD only)
