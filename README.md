@@ -40,6 +40,7 @@ Please make PRs to the `dev` branch. The master branch will only contain release
 - Gianmauro Cuccuru ([@gmauro](https://github.com/gmauro))
 - Lucille Delisle ([@lldelisle](https://github.com/lldelisle))
 - Manuel Messner (mm@skellet.io)
+- Kim Brügger ([@bruggerk](https://github.com/bruggerk))
 
 ## License
 
