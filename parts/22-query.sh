@@ -2467,18 +2467,37 @@ query_workflow-invocation-status() { ## : Report on how many workflows are in ne
 		Really only intended to be used in influx queries.
 	EOF
 
-	fields="count=2"
-	tags="scheduler=0;handler=1"
+	fields="count=3"
+	tags="scheduler=0;handler=1;state=2"
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			scheduler,
-			handler,
+			COALESCE(scheduler, 'none'),
+			COALESCE(handler, 'none'),
+			state,
 			count(*)
 		FROM
 			workflow_invocation
-		WHERE state = 'new'
-		GROUP BY handler, scheduler
+		WHERE state in ('new', 'ready')
+		GROUP BY handler, scheduler, state
+	EOF
+}
+
+
+query_workflow-invocation-totals() { ## : Report on overall workflow counts, to ensure throughput
+	handle_help "$@" <<-EOF
+		Really only intended to be used in influx queries.
+	EOF
+
+	fields="count=1"
+	tags="state=0"
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			COALESCE(state, 'unknown'), count(*)
+		FROM
+			workflow_invocation
+		GROUP BY state
 	EOF
 }
 

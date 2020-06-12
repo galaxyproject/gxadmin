@@ -10,6 +10,7 @@
 	- '--details' option to query errored-jobs to include the job_stderr column
 	- query monthly-cpu-stats (Thanks @gmauro!)
 	- total number of jobs with exit states for galaxxy instance (Thanks @bruggerk)
+	- query workflow-invocation-totals
 
 # 17
 
