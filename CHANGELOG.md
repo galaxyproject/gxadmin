@@ -11,6 +11,8 @@
 	- query monthly-cpu-stats (Thanks @gmauro!)
 	- total number of jobs with exit states for galaxxy instance (Thanks @bruggerk)
 	- query workflow-invocation-totals
+- Removed:
+	- filter hexdecodelines, this is now replaced by a built-in postgres function
 
 # 17
 
