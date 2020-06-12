@@ -3,7 +3,6 @@
 Command | Description
 ------- | -----------
 [`filter digest-color`](#filter-digest-color) | Color an input stream based on the contents (e.g. hostname)
-`filter hexdecode` | Deprecated, There is an easier built in postgres function for this same feature
 [`filter identicon`](#filter-identicon) | Convert an input data stream into an identicon (e.g. with hostname)
 [`filter pg2md`](#filter-pg2md) | Convert postgres table format outputs to something that can be pasted as markdown
 

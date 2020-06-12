@@ -1,3 +1,8 @@
+wrap_time() {
+	local TIMEFORMAT="Time to execute $1: %R seconds"
+	time "$@"
+}
+
 search() { # <term>: Search for a specific command
 	if (( $# > 0 )); then
 		locate_cmds | correct_cmd | grep $1 | colour_word $1 orange

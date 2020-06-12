@@ -135,7 +135,7 @@ line, making it compatible for "gxadmin meta influx-post" usage
 
 You can add your own functions which are included in this output, using
 the $GXADMIN_SITE_SPECIFIC file. They must start with the prefix
-"query_server-", e.g. "query_server-mymetric".
+"server_", e.g. "server_mymetric".
 
     $ gxadmin meta slurp-current
     server-allocated-cpu,job_runner_name=condor cpu_years=102.00
@@ -199,8 +199,8 @@ but with date filters for the entries' creation times.
 
 You can add your own functions which are included in this output, using
 the $GXADMIN_SITE_SPECIFIC file. They must start with the prefix
-"query_server-", e.g. "query_server-mymetric". They should include a
-date filter as well, or the metrics reported here will be less useful.
+"server_", e.g. "server_mymetric". They should include a date filter as
+well, or the metrics reported here will be less useful.
 
     $ gxadmin meta slurp-day 2019-01-01
     server-allocated-cpu.daily,job_runner_name=condor cpu_years=102.00
