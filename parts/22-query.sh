@@ -1705,14 +1705,18 @@ query_total-jobs(){ ## [year]: Total number of jobs run by galaxy instance
 		     ok          |    21
 	EOF
 
+	fields="count=1"
+	tags="state=0"
+
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
 			state, count(*)
 		FROM
 			job
-                GROUP BY
-                        state
+
+		GROUP BY
+			state
 		ORDER BY
 			state
 	EOF
