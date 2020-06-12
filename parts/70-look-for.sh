@@ -2,9 +2,14 @@ obtain_func() {
 	category="$1"; shift
 	query_name="$1"; shift
 
-	fn="${category}_${query_name}"
+	if [[ "$category" != "" ]]; then
+		category="${category}_"
+	fi
+
+	fn="${category}${query_name}"
 	LC_ALL=C type "$fn" 2> /dev/null | grep -q 'function'
 	ec=$?
+	#echo xx $fn $ec
 
 	if (( ec == 0 )); then
 		$fn "$@";
@@ -45,8 +50,8 @@ look_for() {
 		usage "${query_type}"
 	fi
 
+	obtain_func "$query_type" "$query_name" "$@"
 	if [[ $query_type == "query" ]]; then
-		obtain_func query "$query_name" "$@"
 
 		# If query in error, exit.
 		if [[ "$QUERY" == "ERROR" ]]; then
@@ -67,8 +72,28 @@ look_for() {
 			# default
 			*                )  usage "Error";;
 		esac
+	elif [[ $query_type == "server" ]]; then
+		# If query in error, exit.
+		if [[ "$QUERY" == "ERROR" ]]; then
+			error "Error"
+			usage query
+		fi
+
+		# Run the queries
+		case "$group_name" in
+			tsvserver         ) query_tsv "$QUERY";;
+			csvserver         ) query_csv "$QUERY";;
+			server            ) query_tbl "$QUERY";;
+			jsonserver        ) query_json "$QUERY";;
+			iserver           ) query_influx "$QUERY" "$query_name" "$fields" "$tags" "$timestamp";;
+			explainserver     ) query_exp "$QUERY";;
+			explainjsonserver ) query_expj "$QUERY";;
+			echoserver        ) query_echo "$QUERY";;
+			# default
+			*                )  usage "Error";;
+		esac
+
 	elif [[ $query_type == "mutate" ]]; then
-		obtain_func mutate "$query_name" "$@"
 
 		# If query in error, exit.
 		if [[ "$QUERY" == "ERROR" ]]; then

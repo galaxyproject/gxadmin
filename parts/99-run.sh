@@ -25,7 +25,7 @@ fi
 case "$mode" in
 	#*query ) $wrapper query "$mode" "$@" ;;
 	*query ) $wrapper look_for "query" "$mode" "$@" ;;
-	server ) $wrapper look_for "$mode" "$mode" "$@" ;;
+	*server ) $wrapper look_for server "$mode" "$@" ;;
 	config ) $wrapper look_for "$mode" "none"  "$@" ;;
 	cluster) $wrapper look_for "$mode" "none"  "$@" ;;
 	filter ) $wrapper look_for "$mode" "none"  "$@" ;;

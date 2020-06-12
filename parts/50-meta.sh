@@ -121,7 +121,7 @@ meta_slurp-current() { ## [--date] [slurp-name [2nd-slurp-name [...]]]: Executes
 			fi
 		fi
 
-		obtain_query "$func"
+		obtain_func "" "$func"
 		$wrapper query_influx "$QUERY" "$query_name" "$fields" "$tags" | sed "s/$/$append/"
 	done
 }

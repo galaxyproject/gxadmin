@@ -26,11 +26,7 @@ colour_word() {
 }
 
 filter_commands() {
-	if [[ $2 == "$1" ]]; then
-		cat | grep "^$1 " | sort -k2 | column -s: -t | sed 's/^/    /' | colour_word Deprecated orange | colour_word '(NEW)' green
-	else
-		cat | grep "^$1 " | sort -k2 | column -s: -t | sed 's/^/    /' | ifmore "$1"
-	fi
+	cat | grep "^$1 " | sort -k2 | column -s: -t | sed 's/^/    /' | colour_word Deprecated orange | colour_word '(NEW)' green
 }
 
 locate_cmds() {
@@ -46,8 +42,6 @@ correct_cmd() {
 }
 
 usage(){
-	cmds="$(locate_cmds | correct_cmd)"
-
 	cat <<-EOF
 		gxadmin usage:
 
@@ -108,6 +102,9 @@ usage(){
 	if (( $# == 0  )) || [[ "$1" == "server" ]]; then
 		cat <<-EOF
 		    server: Various overall statistics
+			      'query' can be exchanged with 'tsvquery' or 'csvquery' for tab- and comma-separated variants.
+			      In some cases 'iquery' is supported for InfluxDB compatible output.
+			      In all cases 'explainquery' will show you the query plan, in case you need to optimise or index data. 'explainjsonquery' is useful with PEV: http://tatiyants.com/pev/
 		EOF
 	fi
 
@@ -139,7 +136,7 @@ usage(){
 
 	if (( $# == 1 )); then
 		echo
-		echo "$cmds" | filter_commands $1 "$1"
+		locate_cmds | correct_cmd | filter_commands "$1"
 	fi
 
 	cat <<-EOF
