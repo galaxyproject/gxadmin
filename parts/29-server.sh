@@ -1,9 +1,9 @@
 registered_subcommands="$registered_subcommands server"
 _server_short_help="server: Various overall statistics"
 _server_long_help="
-  'query' can be exchanged with 'tsvquery' or 'csvquery' for tab- and comma-separated variants.
-  In some cases 'iquery' is supported for InfluxDB compatible output.
-  In all cases 'explainquery' will show you the query plan, in case you need to optimise or index data. 'explainjsonquery' is useful with PEV: http://tatiyants.com/pev/
+	'query' can be exchanged with 'tsvquery' or 'csvquery' for tab- and comma-separated variants.
+	In some cases 'iquery' is supported for InfluxDB compatible output.
+	In all cases 'explainquery' will show you the query plan, in case you need to optimise or index data. 'explainjsonquery' is useful with PEV: http://tatiyants.com/pev/
 "
 
 

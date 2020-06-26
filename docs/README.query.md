@@ -174,9 +174,18 @@ query datasets-created-daily -  The min/max/average/p95/p99 of total size of dat
 **NOTES**
 
     $ gxadmin query datasets-created-daily
-       min   |  avg   | perc_95 | perc_99 |  max
-    ---------+--------+---------+---------+-------
-     0 bytes | 338 GB | 1355 GB | 2384 GB | 42 TB
+     min | quant_1st | median  |         mean          | quant_3rd |  perc_95  |  perc_99  |    max    |    sum     |    stddev
+    -----+-----------+---------+-----------------------+-----------+-----------+-----------+-----------+------------+---------------
+       2 |    303814 | 6812862 | 39653071.914285714286 |  30215616 | 177509882 | 415786146 | 533643009 | 1387857517 | 96920615.1745
+    (1 row)
+
+or more readably:
+
+    $ gxadmin query datasets-created-daily --human
+       min   | quant_1st | median  | mean  | quant_3rd | perc_95 | perc_99 |  max   |   sum   | stddev
+    ---------+-----------+---------+-------+-----------+---------+---------+--------+---------+--------
+     2 bytes | 297 kB    | 6653 kB | 38 MB | 29 MB     | 169 MB  | 397 MB  | 509 MB | 1324 MB | 92 MB
+    (1 row)
 
 
 ## query disk-usage
@@ -193,22 +202,18 @@ query disk-usage -  Disk usage per object store.
 Query the different object stores referenced in your Galaxy database
 
     $ gxadmin query disk-usage
-     object_store_id |      sum
-    -----------------+----------------
-     files8          | 88109503720067
-     files6          | 64083627169725
-     files9          | 53690953947700
-     files7          | 30657241908566
+     object_store_id |    sum
+    -----------------+------------
+                     | 1387857517
+    (1 row)
 
 Or you can supply the --human flag, but this should not be used with iquery/InfluxDB
 
     $ gxadmin query disk-usage --human
-     object_store_id |   sum
-    -----------------+---------
-     files9          | 114 TB
-     files8          | 77 TB
-     files7          | 56 TB
-     files6          | 17 TB
+     object_store_id |    sum
+    -----------------+------------
+                     | 1324 MB
+    (1 row)
 
 
 ## query errored-jobs
@@ -411,14 +416,15 @@ query job-history -  Job state history for a specific job
 
 **NOTES**
 
-    $ gxadmin query job-history 4384025
-            time         |  state
-    ---------------------+---------
-     2018-10-05 16:20:13 | ok
-     2018-10-05 16:19:57 | running
-     2018-10-05 16:19:55 | queued
-     2018-10-05 16:19:54 | new
-    (4 rows)
+    $ gxadmin query job-history 1
+                 time              | state
+    -------------------------------+--------
+     2018-11-20 17:15:09.297907+00 | error
+     2018-11-20 17:15:08.911972+00 | queued
+     2018-11-20 17:15:08.243363+00 | new
+     2018-11-20 17:15:08.198301+00 | upload
+     2018-11-20 17:15:08.19655+00  | new
+    (5 rows)
 
 
 ## query job-info
@@ -531,10 +537,11 @@ query jobs-per-user -  Number of jobs run by a specific user
 
 **NOTES**
 
-    $ gxadmin query jobs-per-user hxr@informatik.uni-freiburg.de
-     count
-    -------
-      1460
+    $ gxadmin query jobs-per-user helena
+     count | user_id
+    -------+---------
+       999 |       1
+    (1 row)
 
 
 ## query jobs-queued
@@ -662,9 +669,12 @@ query latest-users -  40 recently registered users
 Returns 40 most recently registered users
 
     $ gxadmin query latest-users
-     id |        create_time        | pg_size_pretty |   username    |             email
-    ----+---------------------------+----------------+---------------+--------------------------------
-      1 | 2018-10-05 11:40:42.90119 |                | helena-rasche | hxr@informatik.uni-freiburg.de
+     id |          create_time          | disk_usage | username |     email      |              groups               | active
+    ----+-------------------------------+------------+----------+----------------+-----------------------------------+--------
+      3 | 2019-03-07 13:06:37.945403+00 |            | beverly  | b@example.com  |                                   | t
+      2 | 2019-03-07 13:06:23.369201+00 | 826 bytes  | alice    | a@example.com  |                                   | t
+      1 | 2018-11-19 14:54:30.969713+00 | 869 MB     | helena   | hxr@local.host | training-asdf training-hogeschool | t
+    (3 rows)
 
 
 ## query monthly-cpu-stats
@@ -1457,10 +1467,12 @@ query training-list -  List known trainings
 
 This module is specific to EU's implementation of Training Infrastructure as a Service. But this specifically just checks for all groups with the name prefix 'training-'
 
-    $ gxadmin query training
-           name       |  created
-    ------------------+------------
-     hts2018          | 2018-09-19
+    $ gxadmin query training-list
+        name    |  created
+    ------------+------------
+     hogeschool | 2020-01-22
+     asdf       | 2019-08-28
+    (2 rows)
 
 
 ## query training-members-remove

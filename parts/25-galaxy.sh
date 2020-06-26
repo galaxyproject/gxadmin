@@ -327,7 +327,7 @@ from kombu import Connection
 from kombu import Exchange
 
 with Connection('$URL') as conn:
-    print(conn.default_channel)
+	print(conn.default_channel)
 EOF
 )
 

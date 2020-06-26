@@ -59,6 +59,19 @@ meta_cmdlist() {
 	done
 }
 
+meta_cmdlist2() {
+	handle_help "$@" <<-EOF
+	EOF
+
+	IFS=$'\n'
+	# TOC
+	for section in $(locate_cmds_nolocal | correct_cmd | awk '{print $1}' | sort -u); do
+		for command in $(locate_cmds_nolocal | correct_cmd | grep "^$section"); do
+			echo "$command" | sed 's/:.*//g;s/\s*<.*//g;s/\s*\[.*//;s/\s*$//'
+		done
+	done
+}
+
 meta_slurp-current() { ## [--date] [slurp-name [2nd-slurp-name [...]]]: Executes what used to be "Galaxy Slurp"
 	handle_help "$@" <<-EOF
 		Obtain influx compatible metrics regarding the current state of the
