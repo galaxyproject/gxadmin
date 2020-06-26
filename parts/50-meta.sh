@@ -7,7 +7,7 @@ meta_update() { ## : Update the script
 	EOF
 
 	tmp=$(mktemp);
-	curl https://raw.githubusercontent.com/usegalaxy-eu/gxadmin/master/gxadmin > "$tmp";
+	curl https://raw.githubusercontent.com/usegalaxy-eu/gxadmin/main/gxadmin > "$tmp";
 	chmod ugo+rx "$tmp";
 	mv "$tmp" "$0";
 	exit 0;
