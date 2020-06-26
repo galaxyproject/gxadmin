@@ -46,6 +46,8 @@ report user-info -  Quick overview of a Galaxy user in your system
 
 This command lets you quickly find out information about a user. The output is formatted as markdown by default.
 
+Consider [mdless](https://github.com/ttscoff/mdless) for easier reading in the terminal!
+
     $ gxadmin report user-info helena-rasche
     # Galaxy User 580
 

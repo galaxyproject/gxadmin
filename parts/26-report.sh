@@ -1,11 +1,14 @@
 align_cols() {
-	cat | sed 's/\t/\t | /g' | column -t -s'	'
+	#cat | sed 's/\t/\t | /g' | column -t -s'	'
+	cat | sed 's/\t/ | /g'
 }
 
 
 report_user-info(){ ## <user_id|username|email>: Quick overview of a Galaxy user in your system
 	handle_help "$@" <<-EOF
 		This command lets you quickly find out information about a user. The output is formatted as markdown by default.
+
+		Consider [mdless](https://github.com/ttscoff/mdless) for easier reading in the terminal!
 
 		    $ gxadmin report user-info helena-rasche
 		    # Galaxy User 580

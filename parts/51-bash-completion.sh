@@ -1,7 +1,16 @@
-meta_completion() {
+meta_complete-bash() { ## : export bash autocompletion
+	handle_help "$@" <<-EOF
+		Produces the bash autocompletion for gxadmin
+
+		Write the output of this somewhere useful, and source it in your bash profile.
+
+		    $ gxadmin meta bash-complete > ~/.cache/gxadmin-autocomplete.sh
+			$ . ~/.cache/gxadmin-autocomplete.sh
+			$ gxadmin<TAB>
+	EOF
+
 	IFS=$'\n'
-	commands="$(grep -o '{ ## .*' "$0" | grep -v grep | grep -v '| sed' | sort | sed 's/^{ ## //g' | \
-		sed 's/:.*//g;s/\s*<.*//g;s/\s*\[.*//')"
+	commands=$(locate_cmds_nolocal | correct_cmd | sed 's/://g')
 
 	leading=$(echo "$commands" | awk '{print $1}' | sort -u | paste -s -d' ')
 	subcommands=""

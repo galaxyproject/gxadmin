@@ -50,8 +50,8 @@ look_for() {
 		usage "${query_type}"
 	fi
 
-	obtain_func "$query_type" "$query_name" "$@"
 	if [[ $query_type == "query" ]]; then
+		obtain_func "$query_type" "$query_name" "$@"
 
 		# If query in error, exit.
 		if [[ "$QUERY" == "ERROR" ]]; then
@@ -73,6 +73,7 @@ look_for() {
 			*                )  usage "Error";;
 		esac
 	elif [[ $query_type == "server" ]]; then
+		obtain_func "$query_type" "$query_name" "$@"
 		# If query in error, exit.
 		if [[ "$QUERY" == "ERROR" ]]; then
 			error "Error"
@@ -94,6 +95,7 @@ look_for() {
 		esac
 
 	elif [[ $query_type == "mutate" ]]; then
+		obtain_func "$query_type" "$query_name" "$@"
 
 		# If query in error, exit.
 		if [[ "$QUERY" == "ERROR" ]]; then

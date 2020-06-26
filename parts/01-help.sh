@@ -95,7 +95,7 @@ usage(){
 
 	if (( $# == 0  )) || [[ "$1" == "report" ]]; then
 		cat <<-EOF
-		    report: Various (rich) reports.  Consider https://github.com/ttscoff/mdless for easier reading in the terminal
+		    report: Various (rich) reports. Consider https://github.com/ttscoff/mdless for easier reading in the terminal! Or | pandoc | lynx -stdin
 		EOF
 	fi
 

@@ -5,6 +5,7 @@
 	- Update 'user-disk-usage' to support iquery (Thanks @lldelisle)
 	- Update 'largest-histories' to support iquery (Thanks @lldelisle)
 	- uwsgi-memory now looks at workflow schedulers
+	- Exposed bash autocompletion and documented it
 - Added:
 	- query workers, only works on Galaxy 20.01 or newer and retrieves the hostname and PID of Galaxy worker processes
 	- '--details' option to query errored-jobs to include the job_stderr column

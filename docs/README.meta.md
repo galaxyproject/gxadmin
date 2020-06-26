@@ -2,6 +2,7 @@
 
 Command | Description
 ------- | -----------
+[`meta complete-bash`](#meta-complete-bash) | export bash autocompletion
 [`meta export-grafana-dashboards`](#meta-export-grafana-dashboards) | Export all dashboards from a Grafana database to CWD and commit them to git.
 [`meta influx-post`](#meta-influx-post) | Post contents of file (in influx line protocol) to influx
 [`meta influx-query`](#meta-influx-query) | Query an influx DB
@@ -12,6 +13,26 @@ Command | Description
 [`meta slurp-upto`](#meta-slurp-upto) | Slurps data up to a specific date.
 [`meta update`](#meta-update) | Update the script
 [`meta whatsnew`](#meta-whatsnew) | What's new in this version of gxadmin
+
+## meta complete-bash
+
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=meta_complete-bash&type=Code))
+meta complete-bash -  export bash autocompletion
+
+**SYNOPSIS**
+
+    gxadmin meta complete-bash
+
+**NOTES**
+
+Produces the bash autocompletion for gxadmin
+
+Write the output of this somewhere useful, and source it in your bash profile.
+
+    $ gxadmin meta bash-complete > ~/.cache/gxadmin-autocomplete.sh
+$ . ~/.cache/gxadmin-autocomplete.sh
+$ gxadmin<TAB>
+
 
 ## meta export-grafana-dashboards
 
