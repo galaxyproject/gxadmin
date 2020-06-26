@@ -1,3 +1,7 @@
+registered_subcommands="$registered_subcommands meta"
+_meta_short_help="meta:   Miscellaneous"
+
+
 meta_update() { ## : Update the script
 	handle_help "$@" <<-EOF
 	EOF

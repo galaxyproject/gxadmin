@@ -47,83 +47,26 @@ usage(){
 
 	EOF
 
-	if (( $# == 0  )) || [[ "$1" == "config" ]]; then
-		cat <<-EOF
-		    config: Access Galaxy configuration and other assorted things
-		EOF
-	fi
-
-	if (( $# == 0  )) || [[ "$1" == "filter" ]]; then
-		cat <<-EOF
-		    filter: Some text filtering and processing commands
-		EOF
-	fi
-
-	if (( $# == 0  )) || [[ "$1" == "galaxy" ]]; then
-		cat <<-EOF
-		    galaxy: Galaxy Administration
-		EOF
-	fi
-
-
-	if (( $# == 0  )) || [[ "$1" == "meta" ]]; then
-		cat <<-EOF
-		    meta:   Miscellaneous
-		EOF
-	fi
-
-	if (( $# == 0  )) || [[ "$1" == "mutate" ]]; then
-		cat <<-EOF
-		    mutate: DB Mutations, CSV/TSV queries are NOT available
-		EOF
-	fi
-
-	if (( $# == 0  )) || [[ "$1" == "query" ]]; then
-		if [[ "$1" == "query" ]]; then
-			cat <<-EOF
-				DB Queries:
-				  'query' can be exchanged with 'tsvquery' or 'csvquery' for tab- and comma-separated variants.
-				  In some cases 'iquery' is supported for InfluxDB compatible output.
-				  In all cases 'explainquery' will show you the query plan, in case you need to optimise or index data. 'explainjsonquery' is useful with PEV: http://tatiyants.com/pev/
-			EOF
-		else
-			cat <<-EOF
-			    query:  DB Queries
-			EOF
-		fi
-	fi
-
-	if (( $# == 0  )) || [[ "$1" == "report" ]]; then
-		cat <<-EOF
-		    report: Various (rich) reports. Consider https://github.com/ttscoff/mdless for easier reading in the terminal! Or | pandoc | lynx -stdin
-		EOF
-	fi
-
-	if (( $# == 0  )) || [[ "$1" == "server" ]]; then
-		if [[ "$1" == "server" ]]; then
-			cat <<-EOF
-			    server: Various overall statistics
-			      'query' can be exchanged with 'tsvquery' or 'csvquery' for tab- and comma-separated variants.
-			      In some cases 'iquery' is supported for InfluxDB compatible output.
-			      In all cases 'explainquery' will show you the query plan, in case you need to optimise or index data. 'explainjsonquery' is useful with PEV: http://tatiyants.com/pev/
-			EOF
-		else
-			cat <<-EOF
-			    server: Various overall statistics
-			EOF
-		fi
-	fi
-
-	if (( $# == 0  )) || [[ "$1" == "uwsgi" ]]; then
-		cat <<-EOF
-		    uwsgi:  Galaxy Handler/Zergling management (SystemD only)
-		EOF
+	if (( $# == 0 )); then
+		for x in $registered_subcommands; do
+			vn="_${x}_short_help"
+			echo "    ${!vn}"
+		done
+	else
+		for x in $registered_subcommands; do
+			if [[ "$1" == "$x" ]]; then
+				vn="_${x}_short_help"
+				echo "${!vn}"
+				vn="_${x}_long_help"
+				echo "${!vn}"
+			fi
+		done
 	fi
 
 	if [[ -f "$GXADMIN_SITE_SPECIFIC" ]]; then
 		if (( $# == 0  )) || [[ "$1" == "local" ]]; then
 			cat <<-EOF
-			    local:  (These can be configured in "$GXADMIN_SITE_SPECIFIC")
+				local:  (These can be configured in "$GXADMIN_SITE_SPECIFIC")
 			EOF
 		fi
 	else
@@ -136,7 +79,7 @@ usage(){
 	if (( $# == 0  )) || [[ "$1" == "search" ]]; then
 		cat <<-EOF
 
-		    search <term>: Search gxadmin for functions with specific terms
+			search <term>: Search gxadmin for functions with specific terms
 		EOF
 	fi
 

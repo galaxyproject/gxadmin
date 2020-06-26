@@ -1,3 +1,7 @@
+registered_subcommands="$registered_subcommands filter"
+_filter_short_help="filter: Some text filtering and processing commands"
+
+
 filter_pg2md() { ## : Convert postgres table format outputs to something that can be pasted as markdown
 	handle_help "$@" <<-EOF
 		Imagine doing something like:

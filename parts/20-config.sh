@@ -1,3 +1,7 @@
+registered_subcommands="$registered_subcommands config"
+_config_short_help="config: Access Galaxy configuration and other assorted things"
+
+
 config_validate() { ## : validate config files
 	handle_help "$@" <<-EOF
 		Validate the configuration files

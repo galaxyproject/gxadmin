@@ -1,3 +1,6 @@
+registered_subcommands="$registered_subcommands mutate"
+_mutate_short_help="mutate:  DB Mutations, CSV/TSV queries are NOT available"
+
 should_commit() {
 	if [[ $1 == "--commit" ]]; then
 		printf "COMMIT;"
