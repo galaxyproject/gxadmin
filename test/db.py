@@ -60,17 +60,22 @@ def runCases(cases):
         w = difflib.SequenceMatcher(a=o, b=c['out'])
         if w.ratio() > 0.95:
             print("PASS")
+            yield 0
         else:
             print("FAIL")
+            yield 1
 
         # for x in difflib.unified_diff(r(o), r(c['out'])):
             # print(x)
 
 
+results = []
 for cmd in enumerateCommands():
     c = ['./gxadmin', *cmd, '--help']
     if cmd[0] == 'query':
         output = subprocess.check_output(c)
         cases = identifyTestCases(output)
         cases = filterCases(cases)
-        runCases(cases)
+        results += runCases(cases)
+
+print(f'Passing: {len(results) - sum(results)} / {len(results)}')

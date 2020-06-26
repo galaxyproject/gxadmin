@@ -1725,12 +1725,12 @@ query_total-jobs(){ ## [year]: Total number of jobs run by galaxy instance
 		Count total number of jobs
 
 		    $ gxadmin query total-jobs
-		        state    | count
-		    -------------+-------
-		     deleted     |     1
-		     deleted_new |     1
-		     error       |    10
-		     ok          |    21
+		      state  | count
+		    ---------+-------
+		     deleted |    21
+		     error   |   197
+		     ok      |   798
+		    (3 rows)
 	EOF
 
 	fields="count=1"
