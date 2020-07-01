@@ -498,19 +498,41 @@ meta_gaas() {
 
 	case $request in
 		GET)
-			echo "HTTP/1.1 200 OK"
-			echo "content-type: application/json; charset=utf-8"
-			echo
 			# This is probably horribly unsafe. It could be cool to fix it...
-			q="$(echo "$query" | grep -e '^[a-z/0-9-]*' -o | sed 's/^\///g' | sed 's|^.*/||g')"
-			bash $0 jsonquery $command
+			command="$(echo "$query" | grep -e '^[a-z/0-9-]*' -o | sed 's/^\///g' | sed 's|^.*/||g')"
+
+			if [[ "$command" != "" ]]; then
+				fn="query_${command}"
+				LC_ALL=C type "$fn" 2> /dev/null | grep -q 'function'
+				ec=$?
+
+				if (( ec != 0 )); then
+					printf "HTTP/1.1 404 Command Not Found\r\n\r\nCommand Not Found"
+					exit
+				fi
+
+				echo "HTTP/1.1 200 OK"
+				echo "content-type: application/json; charset=utf-8"
+				echo
+				warning "Running $0 jsonquery $command"
+				bash $0 jsonquery $command
+				exit
+			else
+				echo "HTTP/1.1 200 OK"
+				echo "content-type: text/html; charset=utf-8"
+				echo
+				echo "<html><head></head><body style='font-family:monospace;white-space:pre;'>"
+				usage query | sed 's/</\&lt;/g;s/>/\&gt;/g' | sed -r 's|query ([^ ]*)|<a href="\1">\1</a>|g' | perl -p -e 's/\n/<br>/'
+				echo "</body></html>"
+				exit
+			fi
 			;;
 		HEAD)
 			printf 'HTTP/1.1 200 OK\r\n\r\n'
 			exit
 			;;
 		*)
-			printf 'HTTP/1.1 404 Not Found\r\n\r\n'
+			printf 'HTTP/1.1 404 Not Found\r\n\r\nOnly GET requests are supported. Try <a href="/latest-users">/latest-users</a>'
 			exit
 			;;
 	esac
