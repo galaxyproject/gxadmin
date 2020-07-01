@@ -468,6 +468,15 @@ meta_gxadmin-as-a-service() { ## [port|8080] : A totally ridiculous hack. NOT SA
 		    [{"tool_shed":"toolshed.g2.bx.psu.edu","owner":"bgruening","count":1},{"tool_shed":"toolshed.g2.bx.psu.edu","owner":"iuc","count":2}]
 		    $ curl localhost:8080/latest-users
 		    [{"id":3,"create_time":"2019-03-07T13:06:37.945403+00:00","disk_usage":null,"username":"beverly","email":"b@example.com","groups":"","active":true},{"id":2,"create_time":"2019-03-07T13:06:23.369201+00:00","disk_usage":"826  bytes","username":"alice","email":"a@example.com","groups":"","active":true},{"id":1,"create_time":"2018-11-19T14:54:30.969713+00:00","disk_usage":"869  MB","username":"helena","email":"hxr@local.host","groups":"training-asdf  training-hogeschool","active":true}]
+		    $ curl --silent http://localhost:8081/user-history-list/helena | jq '.[0]'
+		    {
+		        "ID": 74,
+		        "Name": "Unnamed  history",
+		        "Last  Updated": "2020-05-19T14:00:37.066429",
+		        "Size": "961  kB"
+		    }
+
+		Multiple arguments can be separated by %20 or +
 
 		I found https://github.com/izabera/ynaas which contained a very nice, simple bash webservice and so I learnt from that and turned gxadmin into a self-running webservice. jsonquery was already in gxadmin, so it was a short jump to this idea. This is for fun only!! Use at your own risk.
 

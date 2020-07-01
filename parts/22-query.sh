@@ -2440,15 +2440,20 @@ query_history-runtime-wallclock() { ## <history_id>: Time as elapsed by a clock 
 	EOF
 }
 
-query_history-runtime-system-by-tool() { ## <history_id>: Sum of runtimes by all jobs in a history, split by tool
+query_history-runtime-system-by-tool() { ## <history_id> [--short-tool-id]: Sum of runtimes by all jobs in a history, split by tool
 	handle_help "$@" <<-EOF
 	EOF
 
-	assert_count $# 1 "Missing history ID"
+	assert_count_ge $# 1 "Missing history ID"
+
+	tool_id="tool_id"
+	if [[ $2 = --short-tool-id ]]; then
+		tool_id="regexp_replace(tool_id, '.*toolshed.*/repos/', '')"
+	fi
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			job.tool_id,
+			$tool_id,
 			(sum(job_metric_numeric.metric_value)::INT || 'seconds')::INTERVAL
 		FROM
 			job LEFT JOIN job_metric_numeric ON job.id = job_metric_numeric.job_id

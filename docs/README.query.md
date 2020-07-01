@@ -382,7 +382,7 @@ query history-runtime-system-by-tool -  Sum of runtimes by all jobs in a history
 
 **SYNOPSIS**
 
-    gxadmin query history-runtime-system-by-tool <history_id>
+    gxadmin query history-runtime-system-by-tool <history_id> [--short-tool-id]
 
 
 ## query history-runtime-system
