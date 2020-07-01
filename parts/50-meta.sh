@@ -458,3 +458,53 @@ meta_export-grafana-dashboards() { ## [grafana_db|/var/lib/grafana/grafana.db]: 
 	git commit -a -m "Automated commit for $(date)"
 	git push --quiet
 }
+
+
+meta_gxadmin-as-a-service() { ## [port|8080] : A totally ridiculous hack. NOT SAFE :)
+	handle_help "$@" <<-EOF
+		Run gxadmin as a service, specifically the query portion of the API
+
+		    $ curl localhost:8080/ts-repos
+		    [{"tool_shed":"toolshed.g2.bx.psu.edu","owner":"bgruening","count":1},{"tool_shed":"toolshed.g2.bx.psu.edu","owner":"iuc","count":2}]
+		    $ curl localhost:8080/latest-users
+		    [{"id":3,"create_time":"2019-03-07T13:06:37.945403+00:00","disk_usage":null,"username":"beverly","email":"b@example.com","groups":"","active":true},{"id":2,"create_time":"2019-03-07T13:06:23.369201+00:00","disk_usage":"826  bytes","username":"alice","email":"a@example.com","groups":"","active":true},{"id":1,"create_time":"2018-11-19T14:54:30.969713+00:00","disk_usage":"869  MB","username":"helena","email":"hxr@local.host","groups":"training-asdf  training-hogeschool","active":true}]
+
+		I found https://github.com/izabera/ynaas which contained a very nice, simple bash webservice and so I learnt from that and turned gxadmin into a self-running webservice. jsonquery was already in gxadmin, so it was a short jump to this idea. This is for fun only!! Use at your own risk.
+
+		**WARNING**
+
+		!> This is totally ridiculous and no one should ever do this. I thought
+		!> it was fun, so, I added it. PLEASE DO NOT RUN IN PRODUCTION.
+	EOF
+
+	port=8080
+	if (( $# == 1 )); then
+		port="$1"
+	fi
+
+	ncat -e 'gxadmin meta gaas' -kl $port
+}
+
+meta_gaas() {
+	IFS=$' \t\n\r'
+
+	while read -r header value; do
+		[[ $header = GET ]] && request=GET && query=$value
+		[[ $header ]] || break
+	done
+
+	case $request in
+		GET)
+			echo "HTTP/1.1 200 OK"
+			echo "content-type: application/json; charset=utf-8"
+			echo
+			q="$(echo "$query" | grep -e '^[a-z/0-9-]*' -o | sed 's/^\///g')"
+			command="$(echo "$q" | sed 's|^.*/||g')"
+			bash $0 jsonquery $command
+			;;
+		*)
+			printf 'HTTP/1.1 404 Not Found\r\n\r\n'
+			exit
+			;;
+	esac
+}

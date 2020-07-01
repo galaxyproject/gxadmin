@@ -13,6 +13,7 @@
 	- total number of jobs with exit states for galaxxy instance (Thanks @bruggerk)
 	- query workflow-invocation-totals
 	- server subcommand exposing previously hidden functions
+	 gxadmin meta gxadmin-as-a-service: run gxadmin query as a JSON responding webservice! Now with 100% more microservices.
 - Removed:
 	- filter hexdecodelines, this is now replaced by a built-in postgres function
 - Changed:

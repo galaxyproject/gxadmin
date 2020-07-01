@@ -4,6 +4,7 @@ Command | Description
 ------- | -----------
 [`meta complete-bash`](#meta-complete-bash) | export bash autocompletion
 [`meta export-grafana-dashboards`](#meta-export-grafana-dashboards) | Export all dashboards from a Grafana database to CWD and commit them to git.
+[`meta gxadmin-as-a-service`](#meta-gxadmin-as-a-service) | A totally ridiculous hack. NOT SAFE :)
 [`meta influx-post`](#meta-influx-post) | Post contents of file (in influx line protocol) to influx
 [`meta influx-query`](#meta-influx-query) | Query an influx DB
 [`meta iquery-grt-export`](#meta-iquery-grt-export) | Export data from a GRT database for sending to influx
@@ -55,6 +56,32 @@ This script forms the basis of https://github.com/usegalaxy-eu/grafana-dashboard
 !> as a first step. Additionally it will commit and push at the end, so it
 !> should be run in a directory that has a git repo initialised, where you
 !> are not concerned about accidentally pushing to wrong remote.
+
+
+## meta gxadmin-as-a-service
+
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=meta_gxadmin-as-a-service&type=Code))
+meta gxadmin-as-a-service - )
+
+**SYNOPSIS**
+
+    gxadmin meta gxadmin-as-a-service [port|8080]
+
+**NOTES**
+
+Run gxadmin as a service, specifically the query portion of the API
+
+    $ curl localhost:8080/ts-repos
+    [{"tool_shed":"toolshed.g2.bx.psu.edu","owner":"bgruening","count":1},{"tool_shed":"toolshed.g2.bx.psu.edu","owner":"iuc","count":2}]
+    $ curl localhost:8080/latest-users
+    [{"id":3,"create_time":"2019-03-07T13:06:37.945403+00:00","disk_usage":null,"username":"beverly","email":"b@example.com","groups":"","active":true},{"id":2,"create_time":"2019-03-07T13:06:23.369201+00:00","disk_usage":"826  bytes","username":"alice","email":"a@example.com","groups":"","active":true},{"id":1,"create_time":"2018-11-19T14:54:30.969713+00:00","disk_usage":"869  MB","username":"helena","email":"hxr@local.host","groups":"training-asdf  training-hogeschool","active":true}]
+
+I found https://github.com/izabera/ynaas which contained a very nice, simple bash webservice and so I learnt from that and turned gxadmin into a self-running webservice. jsonquery was already in gxadmin, so it was a short jump to this idea. This is for fun only!! Use at your own risk.
+
+**WARNING**
+
+!> This is totally ridiculous and no one should ever do this. I thought
+!> it was fun, so, I added it. PLEASE DO NOT RUN IN PRODUCTION.
 
 
 ## meta influx-post
