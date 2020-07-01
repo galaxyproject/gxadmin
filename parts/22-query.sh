@@ -3217,3 +3217,99 @@ query_workers() { ## : Retrieve a list of Galaxy worker processes
 	EOF
 }
 
+
+
+
+query_wfi() { ## : Query the new/unscheduled workflow invocations
+	handle_help "$@" <<-EOF
+	EOF
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			galaxy_user.username,
+			workflow.name,
+			now() - workflow_invocation.create_time AS age,
+			workflow_invocation.id,
+			workflow_invocation.workflow_id,
+			workflow_invocation.history_id,
+			workflow_invocation.state,
+			workflow_invocation.scheduler,
+			workflow_invocation.handler
+		FROM
+			workflow_invocation
+			LEFT JOIN history ON workflow_invocation.history_id = history.id
+			LEFT JOIN galaxy_user ON history.user_id = galaxy_user.id
+			LEFT JOIN workflow ON workflow_invocation.workflow_id = workflow.id
+		WHERE
+			state NOT IN ('scheduled', 'cancelled', 'failed')
+		ORDER BY
+			id DESC
+	EOF
+}
+
+query_wfq() { ## <wf-id>: Minimal information about a specific workflow
+	handle_help "$@" <<-EOF
+	EOF
+
+	read -r -d '' QUERY <<-EOF
+		select * from  workflow where id = '$1'
+	EOF
+}
+
+query_wfsteps() { ## <wf-id>: List the steps/tools in a workflow
+	handle_help "$@" <<-EOF
+	EOF
+
+	read -r -d '' QUERY <<-EOF
+		select type, tool_id, tool_version from workflow_step where workflow_id = '$1'
+		order by order_index asc
+	EOF
+}
+
+query_wfij(){ ## <wf-invocation-id>: List the jobs in a workflow invocation
+	handle_help "$@" <<-EOF
+	EOF
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			ws.id, ws.workflow_id, ws.type, j.id, j.tool_id, j.tool_version, j.state, j.object_store_id, j.destination_id
+		FROM
+			workflow_step AS ws JOIN workflow_invocation_step AS wis ON ws.id = wis.workflow_step_id JOIN job AS j ON wis.job_id = j.id
+		WHERE
+			wis.workflow_invocation_id = '$1'
+		ORDER BY
+			ws.order_index ASC
+	EOF
+}
+
+query_wfj() { ## : Query the new/unscheduled workflow invocations
+	handle_help "$@" <<-EOF
+	EOF
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			galaxy_user.username,
+			wi.id as invocation_id,
+			wi.workflow_id as wf_id,
+			wi.history_id as hist_id,
+			wi.state,
+			wi.scheduler,
+			wi.handler,
+			j.id as job_id,
+			regexp_replace(j.tool_id, '.*toolshed.*/repos/', ''),
+			j.tool_version,
+			j.state,
+			j.object_store_id,
+			j.destination_id
+		FROM
+			workflow_invocation AS wi
+			JOIN workflow_invocation_step AS wis ON wi.id = wis.workflow_invocation_id
+			JOIN job AS j ON wis.job_id = j.id
+			LEFT JOIN history ON wi.history_id = history.id
+			LEFT JOIN galaxy_user ON history.user_id = galaxy_user.id
+		WHERE
+			wi.state NOT IN ('scheduled', 'cancelled', 'failed')
+		ORDER BY
+			wi.id DESC
+	EOF
+}

@@ -84,6 +84,11 @@ Command | Description
 [`query users-count`](#query-users-count) | Shows sums of active/external/deleted/purged accounts
 [`query users-total`](#query-users-total) | Total number of Galaxy users (incl deleted, purged, inactive)
 [`query users-with-oidc`](#query-users-with-oidc) | How many users logged in with OIDC
+[`query wfij`](#query-wfij) | List the jobs in a workflow invocation
+[`query wfi`](#query-wfi) | Query the new/unscheduled workflow invocations
+[`query wfj`](#query-wfj) | Query the new/unscheduled workflow invocations
+[`query wfq`](#query-wfq) | Minimal information about a specific workflow
+[`query wfsteps`](#query-wfsteps) | List the steps/tools in a workflow
 [`query workers`](#query-workers) | Retrieve a list of Galaxy worker processes
 [`query workflow-connections`](#query-workflow-connections) | The connections of tools, from output to input, in the latest (or all) versions of user workflows (tool_predictions)
 [`query workflow-invocation-status`](#query-workflow-invocation-status) | Report on how many workflows are in new state by handler
@@ -1742,6 +1747,56 @@ query users-with-oidc -  How many users logged in with OIDC
 provider | count
 -------- | ------
 elixir   |     5
+
+
+## query wfij
+
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_wfij&type=Code))
+query wfij -  List the jobs in a workflow invocation
+
+**SYNOPSIS**
+
+    gxadmin query wfij <wf-invocation-id>
+
+
+## query wfi
+
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_wfi&type=Code))
+query wfi -  Query the new/unscheduled workflow invocations
+
+**SYNOPSIS**
+
+    gxadmin query wfi
+
+
+## query wfj
+
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_wfj&type=Code))
+query wfj -  Query the new/unscheduled workflow invocations
+
+**SYNOPSIS**
+
+    gxadmin query wfj
+
+
+## query wfq
+
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_wfq&type=Code))
+query wfq -  Minimal information about a specific workflow
+
+**SYNOPSIS**
+
+    gxadmin query wfq <wf-id>
+
+
+## query wfsteps
+
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_wfsteps&type=Code))
+query wfsteps -  List the steps/tools in a workflow
+
+**SYNOPSIS**
+
+    gxadmin query wfsteps <wf-id>
 
 
 ## query workers
