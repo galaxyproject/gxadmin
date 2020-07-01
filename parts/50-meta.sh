@@ -482,7 +482,7 @@ meta_gxadmin-as-a-service() { ## [port|8080] : A totally ridiculous hack. NOT SA
 		port="$1"
 	fi
 
-	ncat -e 'gxadmin meta gaas' -kl $port
+	ncat -e "$0 meta gaas" -kl $port
 }
 
 meta_gaas() {
@@ -490,17 +490,24 @@ meta_gaas() {
 
 	while read -r header value; do
 		[[ $header = GET ]] && request=GET && query=$value
+		[[ $header = HEAD ]] && request=HEAD
 		[[ $header ]] || break
 	done
+
+	warning "[$(date --rfc-3339=seconds)] $request $query"
 
 	case $request in
 		GET)
 			echo "HTTP/1.1 200 OK"
 			echo "content-type: application/json; charset=utf-8"
 			echo
-			q="$(echo "$query" | grep -e '^[a-z/0-9-]*' -o | sed 's/^\///g')"
-			command="$(echo "$q" | sed 's|^.*/||g')"
+			# This is probably horribly unsafe. It could be cool to fix it...
+			q="$(echo "$query" | grep -e '^[a-z/0-9-]*' -o | sed 's/^\///g' | sed 's|^.*/||g')"
 			bash $0 jsonquery $command
+			;;
+		HEAD)
+			printf 'HTTP/1.1 200 OK\r\n\r\n'
+			exit
 			;;
 		*)
 			printf 'HTTP/1.1 404 Not Found\r\n\r\n'
