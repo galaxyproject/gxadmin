@@ -499,10 +499,32 @@ meta_gaas() {
 	case $request in
 		GET)
 			# This is probably horribly unsafe. It could be cool to fix it...
-			command="$(echo "$query" | grep -e '^[a-z/0-9-]*' -o | sed 's/^\///g' | sed 's|^.*/||g')"
+			command="$(echo "$query" | grep -e '^[.A-Za-z/%+0-9-]*' -o | sed 's|^\/||g' | sed 's|%20| |g;s|+| |g')"
+			echo "$command" | fgrep --quiet "/"
+			ec=$?
 
-			if [[ "$command" != "" ]]; then
-				fn="query_${command}"
+			if (( ec > 0 )); then
+				cmd="$(echo "$command" | sed 's|/.*||g')"
+				args=""
+			else
+				cmd="$(echo "$command" | sed 's|/.*||g')"
+				args="$(echo "$command" | sed 's|.*/||g')"
+			fi
+			warning "c $command c $cmd a $args"
+
+			if [[ "$cmd" != "" ]]; then
+				if [[ "$cmd" == "favicon.ico" ]]; then
+					echo "HTTP/1.1 200 OK"
+					echo "content-type: image/x-icon"
+					echo
+					#convert -size 64x64 canvas:khaki ico:-
+					convert \( xc:red xc:blue +append \) \
+						\( xc:yellow xc:cyan +append \) -append \
+						-filter triangle -resize 32x32\! ico:-
+					exit
+				fi
+
+				fn="query_${cmd}"
 				LC_ALL=C type "$fn" 2> /dev/null | grep -q 'function'
 				ec=$?
 
@@ -510,13 +532,28 @@ meta_gaas() {
 					printf "HTTP/1.1 404 Command Not Found\r\n\r\nCommand Not Found"
 					exit
 				fi
+				warning "Running $0 jsonquery $cmd | $args"
+				output="$(bash $0 jsonquery $cmd $args)"
+				ec=$?
+				warning "ec $ec"
 
-				echo "HTTP/1.1 200 OK"
-				echo "content-type: application/json; charset=utf-8"
-				echo
-				warning "Running $0 jsonquery $command"
-				bash $0 jsonquery $command
-				exit
+				if (( ec > 0 )); then
+					echo "HTTP/1.1 500 Internal Server Error"
+					echo "content-type: text/html"
+					echo
+					echo "Error."
+					exit
+				else
+					echo "HTTP/1.1 200 OK"
+					echo "content-type: application/json; charset=utf-8"
+					echo
+					if [[ "$output" != "" ]]; then
+						echo "$output"
+					else
+						echo "[]"
+					fi
+					exit
+				fi
 			else
 				echo "HTTP/1.1 200 OK"
 				echo "content-type: text/html; charset=utf-8"
