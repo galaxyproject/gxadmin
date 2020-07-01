@@ -2448,7 +2448,7 @@ query_history-runtime-system-by-tool() { ## <history_id> [--short-tool-id]: Sum 
 
 	tool_id="tool_id"
 	if [[ $2 = --short-tool-id ]]; then
-		tool_id="regexp_replace(tool_id, '.*toolshed.*/repos/', '')"
+		tool_id="regexp_replace(tool_id, '.*toolshed.*/repos/', '') as tool_id"
 	fi
 
 	read -r -d '' QUERY <<-EOF
