@@ -86,7 +86,7 @@ Command | Description
 [`query users-with-oidc`](#query-users-with-oidc) | How many users logged in with OIDC
 [`query wfij`](#query-wfij) | List the jobs in a workflow invocation
 [`query wfi`](#query-wfi) | Query the new/unscheduled workflow invocations
-[`query wfj`](#query-wfj) | Query the new/unscheduled workflow invocations
+[`query wfj`](#query-wfj) | Query the new/running/unscheduled workflow jobs
 [`query wfq`](#query-wfq) | Minimal information about a specific workflow
 [`query wfsteps`](#query-wfsteps) | List the steps/tools in a workflow
 [`query workers`](#query-workers) | Retrieve a list of Galaxy worker processes
@@ -1756,7 +1756,43 @@ query wfij -  List the jobs in a workflow invocation
 
 **SYNOPSIS**
 
-    gxadmin query wfij <wf-invocation-id>
+    gxadmin query wfij <wf-invocation-id> [--short-tool-id]
+
+**NOTES**
+
+Figure out which steps of a workflow have or haven't been scheduled.
+
+This reflects what will be seen in the user's history, so, in some rare
+cases jobs won't be listed here, even when they will be scheduled in
+the future.
+
+    $ gxadmin query wfij 3026 --short-tool-id
+      id   | workflow_id | type |   id   |                              tool_id                              |  tool_version  |  state  | object_store_id | destination_id
+    -------+-------------+------+--------+-------------------------------------------------------------------+----------------+---------+-----------------+----------------
+     36585 |        2225 | tool | 219915 | bgruening/text_processing/tp_text_file_with_recurring_lines/1.1.0 | 1.1.0          | ok      |                 | local
+     36586 |        2225 | tool | 219916 | bgruening/text_processing/tp_text_file_with_recurring_lines/1.1.0 | 1.1.0          | ok      |                 | local
+     36587 |        2225 | tool | 219917 | bgruening/text_processing/tp_cat/0.1.0                            | 0.1.0          | ok      |                 | local
+     36588 |        2225 | tool | 219918 | galaxyp/regex_find_replace/regex1/1.0.0                           | 1.0.0          | ok      |                 | local
+     36589 |        2225 | tool | 219919 | galaxyp/regex_find_replace/regex1/1.0.0                           | 1.0.0          | ok      |                 | local
+     36590 |        2225 | tool | 219920 | pjbriggs/trimmomatic/trimmomatic/0.36.5                           | 0.36.5         | ok      |                 | local
+     36591 |        2225 | tool | 219921 | iuc/nanoplot/nanoplot/1.13.0                                      | 1.13.0         | running |                 | local
+     36593 |        2225 | tool | 219927 | bgruening/text_processing/tp_cat/0.1.0                            | 0.1.0          | new     |                 |
+     36594 |        2225 | tool | 219928 | iuc/bandage/bandage_image/0.8.1+galaxy0                           | 0.8.1+galaxy0  | new     |                 |
+     36595 |        2225 | tool | 219929 | iuc/minimap2/minimap2/2.12                                        | 2.12           | new     |                 |
+     36596 |        2225 | tool | 219930 | nml/staramr/staramr_search/0.7.1+galaxy1                          | 0.7.1+galaxy1  | new     |                 |
+     36597 |        2225 | tool | 219931 | iuc/plasflow/PlasFlow/1.0                                         | 1.0            | new     |                 |
+     36598 |        2225 | tool | 219932 | iuc/nanoplot/nanoplot/1.13.0                                      | 1.13.0         | new     |                 |
+     36599 |        2225 | tool | 219933 | crs4/prokka/prokka/1.14.5                                         | 1.14.5         | new     |                 |
+     36600 |        2225 | tool | 219934 | devteam/fasta_to_tabular/fasta2tab/1.1.1                          | 1.1.1          | new     |                 |
+     36601 |        2225 | tool | 219935 | devteam/fasta_compute_length/fasta_compute_length/1.0.3           | 1.0.3          | new     |                 |
+     36602 |        2225 | tool | 219936 | devteam/ncbi_blast_plus/ncbi_blastn_wrapper/0.2.01                | 0.2.01         | new     |                 |
+     36603 |        2225 | tool | 219937 | bgruening/deeptools_bam_coverage/deeptools_bam_coverage/3.3.2.0.0 | 3.3.2.0.0      | new     |                 |
+     36604 |        2225 | tool | 219938 | bgruening/deeptools_bam_coverage/deeptools_bam_coverage/3.3.2.0.0 | 3.3.2.0.0      | new     |                 |
+     36605 |        2225 | tool | 219939 | Grep1                                                             | 1.0.1          | new     |                 |
+     36606 |        2225 | tool | 219940 | bgruening/text_processing/tp_easyjoin_tool/1.1.1                  | 1.1.1          | new     |                 |
+     36607 |        2225 | tool | 219941 | Grep1                                                             | 1.0.1          | new     |                 |
+     36608 |        2225 | tool | 219942 | gff2bed1                                                          | 1.0.1          | new     |                 |
+     36609 |        2225 | tool | 219943 | bgruening/text_processing/tp_head_tool/1.1.0                      | 1.1.0          | new     |                 |
 
 
 ## query wfi
@@ -1768,15 +1804,43 @@ query wfi -  Query the new/unscheduled workflow invocations
 
     gxadmin query wfi
 
+**NOTES**
+
+Shows unscheduled invocations
+
+    $ gxadmin query wfi
+     username |                   name                   |           age           |  id  | workflow_id | history_id | state | scheduler | handler
+    ----------+------------------------------------------+-------------------------+------+-------------+------------+-------+-----------+---------
+     helena   | Minimap/Miniasm/Racon v1.1 + Report v2.3 | 02:05:55.877203         | 3026 |        2225 |      38729 | new   | core      | main
+     helena   | Unicycler v1.1 + Report v2.3             | 02:09:03.374624         | 3025 |        2226 |      38728 | ready | core      | main
+     helena   | Flye v1.1 + Report v2.3                  | 02:10:50.557041         | 3024 |        2227 |      38727 | ready | core      | main
+(3 rows)
+
 
 ## query wfj
 
 ([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_wfj&type=Code))
-query wfj -  Query the new/unscheduled workflow invocations
+query wfj -  Query the new/running/unscheduled workflow jobs
 
 **SYNOPSIS**
 
-    gxadmin query wfj
+    gxadmin query wfj  [--short-tool-id]
+
+**NOTES**
+
+A join between the non-terminal workflow invocations, and their jobs.
+
+    $ gxadmin query wfj --short-tool-id
+     username | invocation_id | wf_id | hist_id | state | scheduler | handler | job_id |                          regexp_replace                           |  tool_version  |  state  | object_store_id | destination_id
+    ----------+---------------+-------+---------+-------+-----------+---------+--------+-------------------------------------------------------------------+----------------+---------+-----------------+----------------
+     helena   |          3026 |  2225 |   38729 | ready | core      | main    | 219961 | Cut1                                                              | 1.0.2          | new     |                 |
+     helena   |          3026 |  2225 |   38729 | ready | core      | main    | 219960 | bgruening/split_file_on_column/tp_split_on_column/0.2             | 0.2            | new     |                 |
+     helena   |          3026 |  2225 |   38729 | ready | core      | main    | 219959 | iuc/circos/circos_gc_skew/0.69.8+galaxy5                          | 0.69.8+galaxy5 | new     |                 |
+     helena   |          3026 |  2225 |   38729 | ready | core      | main    | 219958 | iuc/circos/circos_interval_to_tile/0.69.8+galaxy5                 | 0.69.8+galaxy5 | new     |                 |
+     helena   |          3026 |  2225 |   38729 | ready | core      | main    | 219957 | iuc/circos/circos_interval_to_tile/0.69.8+galaxy5                 | 0.69.8+galaxy5 | new     |                 |
+     helena   |          3026 |  2225 |   38729 | ready | core      | main    | 219956 | galaxyp/regex_find_replace/regex1/1.0.0                           | 1.0.0          | new     |                 |
+     helena   |          3026 |  2225 |   38729 | ready | core      | main    | 219955 | galaxyp/regex_find_replace/regex1/1.0.0                           | 1.0.0          | new     |                 |
+     helena   |          3026 |  2225 |   38729 | ready | core      | main    | 219954 | devteam/column_maker/Add_a_column1/1.3.0                          | 1.3.0          | new     |                 |
 
 
 ## query wfq
@@ -1788,6 +1852,16 @@ query wfq -  Minimal information about a specific workflow
 
     gxadmin query wfq <wf-id>
 
+**NOTES**
+
+Pretty useless currently
+
+    $ gxadmin query wfq 2225
+      id  |        create_time         |        update_time         | stored_workflow_id |                   name                   | has_cycles | has_errors |               uuid               | parent_workflow_id
+    ------+----------------------------+----------------------------+--------------------+------------------------------------------+------------+------------+----------------------------------+--------------------
+     2225 | 2020-07-01 12:34:21.542926 | 2020-07-01 12:34:21.542944 |                888 | Minimap/Miniasm/Racon v1.1 + Report v2.3 | f          | f          | f9415ea2c6ea469fbaf1e0891d75a120 |
+    (1 row)
+
 
 ## query wfsteps
 
@@ -1796,7 +1870,41 @@ query wfsteps -  List the steps/tools in a workflow
 
 **SYNOPSIS**
 
-    gxadmin query wfsteps <wf-id>
+    gxadmin query wfsteps <wf-id> [--short-tool-id]
+
+**NOTES**
+
+Shows individual steps. Mainly for seeing what will/has run.
+
+    $ gxadmin query wfsteps 2225 --short-tool-id
+             type          |                              tool_id                              |  tool_version
+    -----------------------+-------------------------------------------------------------------+----------------
+     data_collection_input |                                                                   |
+     tool                  | bgruening/text_processing/tp_text_file_with_recurring_lines/1.1.0 | 1.1.0
+     tool                  | bgruening/text_processing/tp_text_file_with_recurring_lines/1.1.0 | 1.1.0
+     tool                  | bgruening/text_processing/tp_cat/0.1.0                            | 0.1.0
+     tool                  | galaxyp/regex_find_replace/regex1/1.0.0                           | 1.0.0
+     tool                  | galaxyp/regex_find_replace/regex1/1.0.0                           | 1.0.0
+     tool                  | pjbriggs/trimmomatic/trimmomatic/0.36.5                           | 0.36.5
+     tool                  | iuc/nanoplot/nanoplot/1.13.0                                      | 1.13.0
+     subworkflow           |                                                                   |
+     tool                  | bgruening/text_processing/tp_cat/0.1.0                            | 0.1.0
+     tool                  | iuc/bandage/bandage_image/0.8.1+galaxy0                           | 0.8.1+galaxy0
+     tool                  | iuc/minimap2/minimap2/2.12                                        | 2.12
+     tool                  | nml/staramr/staramr_search/0.7.1+galaxy1                          | 0.7.1+galaxy1
+     tool                  | iuc/plasflow/PlasFlow/1.0                                         | 1.0
+     tool                  | iuc/nanoplot/nanoplot/1.13.0                                      | 1.13.0
+     tool                  | crs4/prokka/prokka/1.14.5                                         | 1.14.5
+     tool                  | devteam/fasta_to_tabular/fasta2tab/1.1.1                          | 1.1.1
+     tool                  | devteam/fasta_compute_length/fasta_compute_length/1.0.3           | 1.0.3
+     tool                  | devteam/ncbi_blast_plus/ncbi_blastn_wrapper/0.2.01                | 0.2.01
+     tool                  | bgruening/deeptools_bam_coverage/deeptools_bam_coverage/3.3.2.0.0 | 3.3.2.0.0
+     tool                  | bgruening/deeptools_bam_coverage/deeptools_bam_coverage/3.3.2.0.0 | 3.3.2.0.0
+     tool                  | Grep1                                                             | 1.0.1
+     tool                  | bgruening/text_processing/tp_easyjoin_tool/1.1.1                  | 1.1.1
+     tool                  | Grep1                                                             | 1.0.1
+     tool                  | gff2bed1                                                          | 1.0.1
+     tool                  | bgruening/text_processing/tp_head_tool/1.1.0                      | 1.1.0
 
 
 ## query workers
