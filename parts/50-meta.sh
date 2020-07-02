@@ -462,7 +462,7 @@ meta_export-grafana-dashboards() { ## [grafana_db|/var/lib/grafana/grafana.db]: 
 
 meta_gxadmin-as-a-service() { ## [port|8080] : A totally ridiculous hack. NOT SAFE :)
 	handle_help "$@" <<-EOF
-		Run gxadmin as a service, specifically the query portion of the API
+		Run gxadmin as a service, specifically the query portion of the API!
 
 		    $ curl localhost:8080/ts-repos
 		    [{"tool_shed":"toolshed.g2.bx.psu.edu","owner":"bgruening","count":1},{"tool_shed":"toolshed.g2.bx.psu.edu","owner":"iuc","count":2}]
@@ -479,6 +479,8 @@ meta_gxadmin-as-a-service() { ## [port|8080] : A totally ridiculous hack. NOT SA
 		Multiple arguments can be separated by %20 or +
 
 		I found https://github.com/izabera/ynaas which contained a very nice, simple bash webservice and so I learnt from that and turned gxadmin into a self-running webservice. jsonquery was already in gxadmin, so it was a short jump to this idea. This is for fun only!! Use at your own risk.
+
+		If you're legitimately considering doing this (please, do not), then just use https://github.com/PostgREST/postgrest which is a much safer and more reliable solution.
 
 		**WARNING**
 
