@@ -498,9 +498,9 @@ mutate_generate-unset-api-keys() { ## [--commit]: Generate API keys for users wh
 
 }
 
-mutate_fail-wfi() { ## <wf-invocation-d> [--commit]: Sets a workflow invocation state to error
+mutate_fail-wfi() { ## <wf-invocation-d> [--commit]: Sets a workflow invocation state to failed
 	handle_help "$@" <<-EOF
-		Sets a workflow invocation's state to "error"
+		Sets a workflow invocation's state to "failed"
 	EOF
 
 	assert_count_ge $# 1 "Must supply a wf-invocation-id"
@@ -510,7 +510,7 @@ mutate_fail-wfi() { ## <wf-invocation-d> [--commit]: Sets a workflow invocation 
 		UPDATE
 			workflow_invocation
 		SET
-			state = 'error'
+			state = 'failed'
 		WHERE
 			id = '$id'
 	EOF
