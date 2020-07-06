@@ -9,6 +9,7 @@ Command | Description
 [`mutate fail-history`](#mutate-fail-history) | Mark all jobs within a history to state error
 [`mutate fail-job`](#mutate-fail-job) | Sets a job state to error
 [`mutate fail-terminal-datasets`](#mutate-fail-terminal-datasets) | Causes the output datasets of jobs which were manually failed, to be marked as failed
+[`mutate fail-wfi`](#mutate-fail-wfi) | Sets a workflow invocation state to error
 [`mutate generate-unset-api-keys`](#mutate-generate-unset-api-keys) | Generate API keys for users which do not have one set.
 [`mutate oidc-role-find-affected`](#mutate-oidc-role-find-affected) | Find users affected by galaxyproject/galaxy#8244
 [`mutate oidc-role-fix`](#mutate-oidc-role-fix) | Fix permissions for users logged in via OIDC. Workaround for galaxyproject/galaxy#8244
@@ -170,6 +171,20 @@ Then to run with the --commit flag to commit the changes
     UPDATE 1
     UPDATE 1
     COMMIT
+
+
+## mutate fail-wfi
+
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=mutate_fail-wfi&type=Code))
+mutate fail-wfi -  Sets a workflow invocation state to error
+
+**SYNOPSIS**
+
+    gxadmin mutate fail-wfi <wf-invocation-d> [--commit]
+
+**NOTES**
+
+Sets a workflow invocation's state to "error"
 
 
 ## mutate generate-unset-api-keys

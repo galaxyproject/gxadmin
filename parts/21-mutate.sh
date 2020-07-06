@@ -497,3 +497,24 @@ mutate_generate-unset-api-keys() { ## [--commit]: Generate API keys for users wh
 	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
 
 }
+
+mutate_fail-wfi() { ## <wf-invocation-d> [--commit]: Sets a workflow invocation state to error
+	handle_help "$@" <<-EOF
+		Sets a workflow invocation's state to "error"
+	EOF
+
+	assert_count_ge $# 1 "Must supply a wf-invocation-id"
+	id=$1
+
+	read -r -d '' QUERY <<-EOF
+		UPDATE
+			workflow_invocation
+		SET
+			state = 'error'
+		WHERE
+			id = '$id'
+	EOF
+
+	commit=$(should_commit "$2")
+	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
+}

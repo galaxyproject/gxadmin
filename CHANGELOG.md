@@ -1,5 +1,8 @@
 # 19-pre
 
+- Added:
+	- mutate fail-wfi
+
 # 18
 
 - Fixed:
