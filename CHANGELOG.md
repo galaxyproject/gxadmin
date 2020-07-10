@@ -2,6 +2,7 @@
 
 - Added:
 	- mutate fail-wfi
+	- mutate oidc-by-emails, mutate users affected by https://github.com/galaxyproject/galaxy/issues/9981
 
 # 18
 
