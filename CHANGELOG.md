@@ -13,6 +13,7 @@
 	- total number of jobs with exit states for galaxxy instance (Thanks @bruggerk)
 	- query workflow-invocation-totals
 	- server subcommand exposing previously hidden functions
+	- workflow trace archive commands
 - Removed:
 	- filter hexdecodelines, this is now replaced by a built-in postgres function
 - Changed:

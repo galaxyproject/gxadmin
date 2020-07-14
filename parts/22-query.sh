@@ -3212,3 +3212,97 @@ query_workers() { ## : Retrieve a list of Galaxy worker processes
 	EOF
 }
 
+query_workflow-trace-archive-metrics() { ## : [Workflow Trace Archive] Export numeric metrics
+	handle_help "$@" <<-EOF
+		Helper for WTA
+	EOF
+
+	read -r -d '' QUERY <<-EOF
+		SELECT * FROM job_metric_numeric
+	EOF
+}
+
+query_workflow-trace-archive-jobs() { ## : [Workflow Trace Archive] Export jobs
+	handle_help "$@" <<-EOF
+		Helper for WTA
+	EOF
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			id,
+			create_time,
+			update_time,
+			tool_id,
+			tool_version,
+			state,
+			runner_name,
+			job_runner_name,
+			imported,
+			object_store_id,
+			handler,
+			exit_code,
+			destination_id,
+			copied_from_job_id,
+			dynamic_tool_id,
+			galaxy_version
+		FROM
+			job
+	EOF
+}
+
+query_workflow-trace-archive-workflows() { ## : [Workflow Trace Archive] Export workflows
+	handle_help "$@" <<-EOF
+		Helper for WTA
+	EOF
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			id,
+			create_time,
+			update_time,
+			stored_workflow_id,
+			has_cycles,
+			has_errors,
+			parent_workflow_id,
+			uuid
+		FROM workflow
+	EOF
+}
+
+query_workflow-trace-archive-workflow-invocations() { ## : [Workflow Trace Archive] Export workflow invocations
+	handle_help "$@" <<-EOF
+		Helper for WTA
+	EOF
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			id,
+			create_time,
+			update_time,
+			workflow_id,
+			state,
+			scheduler,
+			handler
+		FROM workflow_invocation
+	EOF
+}
+
+query_workflow-trace-archive-workflow-steps() { ## : [Workflow Trace Archive] Export workflow steps
+	handle_help "$@" <<-EOF
+		Helper for WTA
+	EOF
+
+	read -r -d '' QUERY <<-EOF
+		SELECT id,
+			create_time,
+			update_time,
+			workflow_id,
+			type,
+			tool_id,
+			tool_version,
+			order_index,
+			subworkflow_id,
+			dynamic_tool_id
+		FROM workflow_step
+	EOF
+}

@@ -88,6 +88,11 @@ Command | Description
 [`query workflow-connections`](#query-workflow-connections) | The connections of tools, from output to input, in the latest (or all) versions of user workflows (tool_predictions)
 [`query workflow-invocation-status`](#query-workflow-invocation-status) | Report on how many workflows are in new state by handler
 [`query workflow-invocation-totals`](#query-workflow-invocation-totals) | Report on overall workflow counts, to ensure throughput
+[`query workflow-trace-archive-jobs`](#query-workflow-trace-archive-jobs) | [Workflow Trace Archive] Export jobs
+[`query workflow-trace-archive-metrics`](#query-workflow-trace-archive-metrics) | [Workflow Trace Archive] Export numeric metrics
+[`query workflow-trace-archive-workflow-invocations`](#query-workflow-trace-archive-workflow-invocations) | [Workflow Trace Archive] Export workflow invocations
+[`query workflow-trace-archive-workflow-steps`](#query-workflow-trace-archive-workflow-steps) | [Workflow Trace Archive] Export workflow steps
+[`query workflow-trace-archive-workflows`](#query-workflow-trace-archive-workflows) | [Workflow Trace Archive] Export workflows
 
 ## query aq
 
@@ -1446,12 +1451,12 @@ query total-jobs -  Total number of jobs run by galaxy instance
 Count total number of jobs
 
     $ gxadmin query total-jobs
-        state    | count
-    -------------+-------
-     deleted     |     1
-     deleted_new |     1
-     error       |    10
-     ok          |    21
+      state  | count
+    ---------+-------
+     deleted |    21
+     error   |   197
+     ok      |   798
+    (3 rows)
 
 
 ## query training-list
@@ -1819,4 +1824,74 @@ query workflow-invocation-totals -  Report on overall workflow counts, to ensure
 **NOTES**
 
 Really only intended to be used in influx queries.
+
+
+## query workflow-trace-archive-jobs
+
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-trace-archive-jobs&type=Code))
+query workflow-trace-archive-jobs -  [Workflow Trace Archive] Export jobs
+
+**SYNOPSIS**
+
+    gxadmin query workflow-trace-archive-jobs
+
+**NOTES**
+
+Helper for WTA
+
+
+## query workflow-trace-archive-metrics
+
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-trace-archive-metrics&type=Code))
+query workflow-trace-archive-metrics -  [Workflow Trace Archive] Export numeric metrics
+
+**SYNOPSIS**
+
+    gxadmin query workflow-trace-archive-metrics
+
+**NOTES**
+
+Helper for WTA
+
+
+## query workflow-trace-archive-workflow-invocations
+
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-trace-archive-workflow-invocations&type=Code))
+query workflow-trace-archive-workflow-invocations -  [Workflow Trace Archive] Export workflow invocations
+
+**SYNOPSIS**
+
+    gxadmin query workflow-trace-archive-workflow-invocations
+
+**NOTES**
+
+Helper for WTA
+
+
+## query workflow-trace-archive-workflow-steps
+
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-trace-archive-workflow-steps&type=Code))
+query workflow-trace-archive-workflow-steps -  [Workflow Trace Archive] Export workflow steps
+
+**SYNOPSIS**
+
+    gxadmin query workflow-trace-archive-workflow-steps
+
+**NOTES**
+
+Helper for WTA
+
+
+## query workflow-trace-archive-workflows
+
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-trace-archive-workflows&type=Code))
+query workflow-trace-archive-workflows -  [Workflow Trace Archive] Export workflows
+
+**SYNOPSIS**
+
+    gxadmin query workflow-trace-archive-workflows
+
+**NOTES**
+
+Helper for WTA
 

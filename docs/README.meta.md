@@ -13,6 +13,7 @@ Command | Description
 [`meta slurp-upto`](#meta-slurp-upto) | Slurps data up to a specific date.
 [`meta update`](#meta-update) | Update the script
 [`meta whatsnew`](#meta-whatsnew) | What's new in this version of gxadmin
+[`meta wta-report Export all workflow trace archive queries`](#meta-wta-report-Export-all-workflow-trace-archive-queries) | meta wta-report Export all workflow trace archive queries
 
 ## meta complete-bash
 
@@ -301,4 +302,18 @@ meta whatsnew -  What's new in this version of gxadmin
 **NOTES**
 
 Informs users of what's new in the changelog since their version
+
+
+## meta wta-report Export all workflow trace archive queries
+
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=meta_wta-report_Export_all_workflow_trace_archive_queries&type=Code))
+meta wta-report - gxadmin meta wta-report Export all workflow trace archive queries
+
+**SYNOPSIS**
+
+    gxadmin meta wta-report Export all workflow trace archive queries
+
+**NOTES**
+
+Run through several WTA commands and export those to CSV
 

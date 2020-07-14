@@ -458,3 +458,30 @@ meta_export-grafana-dashboards() { ## [grafana_db|/var/lib/grafana/grafana.db]: 
 	git commit -a -m "Automated commit for $(date)"
 	git push --quiet
 }
+
+meta_wta-report() { ## Export all workflow trace archive queries
+	handle_help "$@" <<-EOF
+		Run through several WTA commands and export those to CSV
+	EOF
+
+	tmpdir=$(mktemp -d)
+
+	obtain_func "query" "workflow-trace-archive-metrics"
+	query_csv "$QUERY" > "$tmpdir/job_metrics_numeric.csv"
+
+	obtain_func "query" "workflow-trace-archive-jobs"
+	query_csv "$QUERY" > "$tmpdir/jobs.csv"
+
+	obtain_func "query" "workflow-trace-archive-workflows"
+	query_csv "$QUERY" > "$tmpdir/workflows.csv"
+
+	obtain_func "query" "workflow-trace-archive-workflows-invocations"
+	query_csv "$QUERY" > "$tmpdir/workflows-invocations.csv"
+
+	obtain_func "query" "workflow-trace-archive-workflows-steps"
+	query_csv "$QUERY" > "$tmpdir/workflows-steps.csv"
+
+	tar cfz $tmpdir.tar.gz $tmpdir/*
+
+	echo $tmpdir.tar.gz
+}
