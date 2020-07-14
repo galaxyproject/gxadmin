@@ -475,11 +475,11 @@ meta_wta-report() { ## Export all workflow trace archive queries
 	obtain_func "query" "workflow-trace-archive-workflows"
 	query_csv "$QUERY" > "$tmpdir/workflows.csv"
 
-	obtain_func "query" "workflow-trace-archive-workflows-invocations"
-	query_csv "$QUERY" > "$tmpdir/workflows-invocations.csv"
+	obtain_func "query" "workflow-trace-archive-workflow-invocations"
+	query_csv "$QUERY" > "$tmpdir/workflow-invocations.csv"
 
-	obtain_func "query" "workflow-trace-archive-workflows-steps"
-	query_csv "$QUERY" > "$tmpdir/workflows-steps.csv"
+	obtain_func "query" "workflow-trace-archive-workflow-steps"
+	query_csv "$QUERY" > "$tmpdir/workflow-steps.csv"
 
 	tar cfz $tmpdir.tar.gz $tmpdir/*
 
