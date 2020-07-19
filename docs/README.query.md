@@ -53,11 +53,10 @@ Command | Description
 [`query pg-unused-indexes`](#query-pg-unused-indexes) | show unused and almost unused indexes
 [`query pg-vacuum-stats`](#query-pg-vacuum-stats) | show dead rows and whether an automatic vacuum is expected to be triggered
 [`query q`](#query-q) | Passes a raw SQL query directly through to the database
-[`query queue`](#query-queue) | Brief overview of currently running jobs
+[`query queue`](#query-queue) | Brief overview of currently running jobs grouped by tool (default) or destination
 [`query queue-detail`](#query-queue-detail) | Detailed overview of running and queued jobs
 [`query queue-detail-by-handler`](#query-queue-detail-by-handler) | List jobs for a specific handler
 [`query queue-overview`](#query-queue-overview) | View used mostly for monitoring
-[`query queue-summary-by-destination`](#query-queue-summary-by-destination) | Summary of queued and running jobs grouped by destination and state
 [`query queue-time`](#query-queue-time) | The average/95%/99% a specific tool spends in queue state.
 [`query recent-jobs`](#query-recent-jobs) | Jobs run in the past <hours> (in any state)
 [`query runtime-per-user`](#query-runtime-per-user) | computation time of user (by email)
@@ -1090,11 +1089,11 @@ query q -  Passes a raw SQL query directly through to the database
 ## query queue
 
 ([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_queue&type=Code))
-query queue -  Brief overview of currently running jobs
+query queue -  Brief overview of currently running jobs grouped by tool (default) or destination
 
 **SYNOPSIS**
 
-    gxadmin query queue
+    gxadmin query queue [--by-destination]
 
 **NOTES**
 
@@ -1111,6 +1110,19 @@ query queue -  Brief overview of currently running jobs
      toolshed.g2.bx.psu.edu/repos/iuc/mothur_venn/mothur_venn/1.36.1.0 | running |     2
      toolshed.g2.bx.psu.edu/repos/nml/metaspades/metaspades/3.9.0      | running |     2
      upload1                                                           | running |     2
+
+    $ gxadmin query queue --by-destination
+
+     destination_id |  state  | job_count
+    ----------------+---------+-----------
+     normal         | running |       128
+     multicore      | running |        64
+     multicore      | queued  |        16
+
+    $ gxadmin iquery queue --by-destination
+    queue-summary-by-destination,state=running,destination_id=normal count=128
+    queue-summary-by-destination,state=running,destination_id=multicore count=64
+    queue-summary-by-destination,state=queued,destination_id=multicore count=16
 
 
 ## query queue-detail
@@ -1169,32 +1181,6 @@ Primarily for monitoring of queue. Optimally used with 'iquery' and passed to Te
 
     $ gxadmin iquery queue-overview
     queue-overview,tool_id=upload1,tool_version=0.0.1,state=running,handler=main.web.1,destination_id=condor,job_runner_name=condor,user=1 count=1
-
-
-## query queue-summary-by-destination
-
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_queue-summary-by-destination&type=Code))
-query queue-summary-by-destination -  Summary of queued and running jobs grouped by destination and state
-
-**SYNOPSIS**
-
-    gxadmin query queue-summary-by-destination
-
-**NOTES**
-
-    $ gxadmin query queue-summary-by-destination
-     destination_id |  state  | job_count
-    ----------------+---------+-----------
-     normal         | running |       128
-     multicore      | running |        64
-     multicore      | queued  |        16
-
-    Primarily for monitoring of queue. Optimally used with 'iquery' and passed to Telegraf.
-
-    $ gxadmin iquery queue-summary-by-destination
-    queue-summary-by-destination,state=running,destination_id=normal count=128
-    queue-summary-by-destination,state=running,destination_id=multicore count=64
-    queue-summary-by-destination,state=queued,destination_id=multicore count=16
 
 
 ## query queue-time

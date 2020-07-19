@@ -287,7 +287,7 @@ query_queue-time() { ## <tool_id>: The average/95%/99% a specific tool spends in
 	EOF
 }
 
-query_queue() { ## : Brief overview of currently running jobs
+query_queue() { ## [--by-destination]: Brief overview of currently running jobs grouped by tool (default) or destination
 	handle_help "$@" <<-EOF
 		    $ gxadmin query queue
 		                                tool_id                                |  state  | count
@@ -302,52 +302,53 @@ query_queue() { ## : Brief overview of currently running jobs
 		     toolshed.g2.bx.psu.edu/repos/iuc/mothur_venn/mothur_venn/1.36.1.0 | running |     2
 		     toolshed.g2.bx.psu.edu/repos/nml/metaspades/metaspades/3.9.0      | running |     2
 		     upload1                                                           | running |     2
-	EOF
 
-	fields="count=2"
-	tags="tool_id=0;state=1"
+		    $ gxadmin query queue --by-destination
 
-	read -r -d '' QUERY <<-EOF
-			SELECT tool_id, state, count(*)
-			FROM job
-			WHERE state in ('queued', 'running')
-			GROUP BY tool_id, state
-			ORDER BY count desc
-	EOF
-}
-
-query_queue-summary-by-destination() { ## : Summary of queued and running jobs grouped by destination and state
-	handle_help "$@" <<-EOF
-		    $ gxadmin query queue-summary-by-destination
 		     destination_id |  state  | job_count
 		    ----------------+---------+-----------
 		     normal         | running |       128
 		     multicore      | running |        64
 		     multicore      | queued  |        16
 
-		    Primarily for monitoring of queue. Optimally used with 'iquery' and passed to Telegraf.
-
-		    $ gxadmin iquery queue-summary-by-destination
+		    $ gxadmin iquery queue --by-destination
 		    queue-summary-by-destination,state=running,destination_id=normal count=128
 		    queue-summary-by-destination,state=running,destination_id=multicore count=64
 		    queue-summary-by-destination,state=queued,destination_id=multicore count=16
 	EOF
 
-	fields="count=2"
-	tags="destination_id=0;state=1"
+	if [[ $1 = --by-destination ]]; then
 
-	read -r -d '' QUERY <<-EOF
-		SELECT
-			destination_id, state, count(destination_id) AS job_count
-		FROM
-			job
-		WHERE
-			state IN ('queued', 'running')
-		GROUP BY
-			destination_id, state
-		ORDER BY
-			job_count DESC
-	EOF
+		fields="count=2"
+		tags="destination_id=0;state=1"
+
+		read -r -d '' QUERY <<-EOF
+			SELECT
+				destination_id, state, count(destination_id) AS job_count
+			FROM
+				job
+			WHERE
+				state IN ('queued', 'running')
+			GROUP BY
+				destination_id, state
+			ORDER BY
+				job_count DESC
+		EOF
+
+	else
+
+		fields="count=2"
+		tags="tool_id=0;state=1"
+
+		read -r -d '' QUERY <<-EOF
+			SELECT tool_id, state, count(*)
+			FROM job
+			WHERE state in ('queued', 'running')
+			GROUP BY tool_id, state
+			ORDER BY count desc
+		EOF
+
+	fi
 }
 
 query_queue-overview() { ## [--short-tool-id]: View used mostly for monitoring
