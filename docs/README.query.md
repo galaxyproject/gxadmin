@@ -57,6 +57,7 @@ Command | Description
 [`query queue-detail`](#query-queue-detail) | Detailed overview of running and queued jobs
 [`query queue-detail-by-handler`](#query-queue-detail-by-handler) | List jobs for a specific handler
 [`query queue-overview`](#query-queue-overview) | View used mostly for monitoring
+[`query queue-summary-by-destination`](#query-queue-summary-by-destination) | Summary of queued and running jobs grouped by destination and state
 [`query queue-time`](#query-queue-time) | The average/95%/99% a specific tool spends in queue state.
 [`query recent-jobs`](#query-recent-jobs) | Jobs run in the past <hours> (in any state)
 [`query runtime-per-user`](#query-runtime-per-user) | computation time of user (by email)
@@ -90,6 +91,7 @@ Command | Description
 [`query workflow-invocation-totals`](#query-workflow-invocation-totals) | Report on overall workflow counts, to ensure throughput
 [`query workflow-trace-archive-jobs`](#query-workflow-trace-archive-jobs) | [Workflow Trace Archive] Export jobs
 [`query workflow-trace-archive-metrics`](#query-workflow-trace-archive-metrics) | [Workflow Trace Archive] Export numeric metrics
+[`query workflow-trace-archive-workflow-invocation-steps`](#query-workflow-trace-archive-workflow-invocation-steps) | [Workflow Trace Archive] Export workflow invocation steps
 [`query workflow-trace-archive-workflow-invocations`](#query-workflow-trace-archive-workflow-invocations) | [Workflow Trace Archive] Export workflow invocations
 [`query workflow-trace-archive-workflow-steps`](#query-workflow-trace-archive-workflow-steps) | [Workflow Trace Archive] Export workflow steps
 [`query workflow-trace-archive-workflows`](#query-workflow-trace-archive-workflows) | [Workflow Trace Archive] Export workflows
@@ -1169,6 +1171,32 @@ Primarily for monitoring of queue. Optimally used with 'iquery' and passed to Te
     queue-overview,tool_id=upload1,tool_version=0.0.1,state=running,handler=main.web.1,destination_id=condor,job_runner_name=condor,user=1 count=1
 
 
+## query queue-summary-by-destination
+
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_queue-summary-by-destination&type=Code))
+query queue-summary-by-destination -  Summary of queued and running jobs grouped by destination and state
+
+**SYNOPSIS**
+
+    gxadmin query queue-summary-by-destination
+
+**NOTES**
+
+    $ gxadmin query queue-summary-by-destination
+     destination_id |  state  | job_count
+    ----------------+---------+-----------
+     normal         | running |       128
+     multicore      | running |        64
+     multicore      | queued  |        16
+
+    Primarily for monitoring of queue. Optimally used with 'iquery' and passed to Telegraf.
+
+    $ gxadmin iquery queue-summary-by-destination
+    queue-summary-by-destination,state=running,destination_id=normal count=128
+    queue-summary-by-destination,state=running,destination_id=multicore count=64
+    queue-summary-by-destination,state=queued,destination_id=multicore count=16
+
+
 ## query queue-time
 
 ([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_queue-time&type=Code))
@@ -1848,6 +1876,20 @@ query workflow-trace-archive-metrics -  [Workflow Trace Archive] Export numeric 
 **SYNOPSIS**
 
     gxadmin query workflow-trace-archive-metrics
+
+**NOTES**
+
+Helper for WTA
+
+
+## query workflow-trace-archive-workflow-invocation-steps
+
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-trace-archive-workflow-invocation-steps&type=Code))
+query workflow-trace-archive-workflow-invocation-steps -  [Workflow Trace Archive] Export workflow invocation steps
+
+**SYNOPSIS**
+
+    gxadmin query workflow-trace-archive-workflow-invocation-steps
 
 **NOTES**
 

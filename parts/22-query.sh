@@ -316,6 +316,40 @@ query_queue() { ## : Brief overview of currently running jobs
 	EOF
 }
 
+query_queue-summary-by-destination() { ## : Summary of queued and running jobs grouped by destination and state
+	handle_help "$@" <<-EOF
+		    $ gxadmin query queue-summary-by-destination
+		     destination_id |  state  | job_count
+		    ----------------+---------+-----------
+		     normal         | running |       128
+		     multicore      | running |        64
+		     multicore      | queued  |        16
+
+		    Primarily for monitoring of queue. Optimally used with 'iquery' and passed to Telegraf.
+
+		    $ gxadmin iquery queue-summary-by-destination
+		    queue-summary-by-destination,state=running,destination_id=normal count=128
+		    queue-summary-by-destination,state=running,destination_id=multicore count=64
+		    queue-summary-by-destination,state=queued,destination_id=multicore count=16
+	EOF
+
+	fields="count=2"
+	tags="destination_id=0;state=1"
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			destination_id, state, count(destination_id) AS job_count
+		FROM
+			job
+		WHERE
+			state IN ('queued', 'running')
+		GROUP BY
+			destination_id, state
+		ORDER BY
+			job_count DESC
+	EOF
+}
+
 query_queue-overview() { ## [--short-tool-id]: View used mostly for monitoring
 	handle_help "$@" <<-EOF
 		Primarily for monitoring of queue. Optimally used with 'iquery' and passed to Telegraf.
