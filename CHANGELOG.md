@@ -14,6 +14,7 @@
 	- query workflow-invocation-totals
 	- server subcommand exposing previously hidden functions
 	- workflow trace archive commands
+	- query queue has a new optional parameter for splitting queues by various attributes (Thanks @natefoo)
 - Removed:
 	- filter hexdecodelines, this is now replaced by a built-in postgres function
 - Changed:

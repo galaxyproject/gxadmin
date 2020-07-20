@@ -53,7 +53,7 @@ Command | Description
 [`query pg-unused-indexes`](#query-pg-unused-indexes) | show unused and almost unused indexes
 [`query pg-vacuum-stats`](#query-pg-vacuum-stats) | show dead rows and whether an automatic vacuum is expected to be triggered
 [`query q`](#query-q) | Passes a raw SQL query directly through to the database
-[`query queue`](#query-queue) | Brief overview of currently running jobs
+[`query queue`](#query-queue) | Brief overview of currently running jobs grouped by tool (default) or other columns
 [`query queue-detail`](#query-queue-detail) | Detailed overview of running and queued jobs
 [`query queue-detail-by-handler`](#query-queue-detail-by-handler) | List jobs for a specific handler
 [`query queue-overview`](#query-queue-overview) | View used mostly for monitoring
@@ -90,6 +90,7 @@ Command | Description
 [`query workflow-invocation-totals`](#query-workflow-invocation-totals) | Report on overall workflow counts, to ensure throughput
 [`query workflow-trace-archive-jobs`](#query-workflow-trace-archive-jobs) | [Workflow Trace Archive] Export jobs
 [`query workflow-trace-archive-metrics`](#query-workflow-trace-archive-metrics) | [Workflow Trace Archive] Export numeric metrics
+[`query workflow-trace-archive-workflow-invocation-steps`](#query-workflow-trace-archive-workflow-invocation-steps) | [Workflow Trace Archive] Export workflow invocation steps
 [`query workflow-trace-archive-workflow-invocations`](#query-workflow-trace-archive-workflow-invocations) | [Workflow Trace Archive] Export workflow invocations
 [`query workflow-trace-archive-workflow-steps`](#query-workflow-trace-archive-workflow-steps) | [Workflow Trace Archive] Export workflow steps
 [`query workflow-trace-archive-workflows`](#query-workflow-trace-archive-workflows) | [Workflow Trace Archive] Export workflows
@@ -1088,11 +1089,11 @@ query q -  Passes a raw SQL query directly through to the database
 ## query queue
 
 ([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_queue&type=Code))
-query queue -  Brief overview of currently running jobs
+query queue -  Brief overview of currently running jobs grouped by tool (default) or other columns
 
 **SYNOPSIS**
 
-    gxadmin query queue
+    gxadmin query queue [--by (tool|destination|user)]
 
 **NOTES**
 
@@ -1109,6 +1110,19 @@ query queue -  Brief overview of currently running jobs
      toolshed.g2.bx.psu.edu/repos/iuc/mothur_venn/mothur_venn/1.36.1.0 | running |     2
      toolshed.g2.bx.psu.edu/repos/nml/metaspades/metaspades/3.9.0      | running |     2
      upload1                                                           | running |     2
+
+    $ gxadmin query queue --by destination
+
+     destination_id |  state  | job_count
+    ----------------+---------+-----------
+     normal         | running |       128
+     multicore      | running |        64
+     multicore      | queued  |        16
+
+    $ gxadmin iquery queue --by destination
+    queue-summary-by-destination,state=running,destination_id=normal count=128
+    queue-summary-by-destination,state=running,destination_id=multicore count=64
+    queue-summary-by-destination,state=queued,destination_id=multicore count=16
 
 
 ## query queue-detail
@@ -1848,6 +1862,20 @@ query workflow-trace-archive-metrics -  [Workflow Trace Archive] Export numeric 
 **SYNOPSIS**
 
     gxadmin query workflow-trace-archive-metrics
+
+**NOTES**
+
+Helper for WTA
+
+
+## query workflow-trace-archive-workflow-invocation-steps
+
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-trace-archive-workflow-invocation-steps&type=Code))
+query workflow-trace-archive-workflow-invocation-steps -  [Workflow Trace Archive] Export workflow invocation steps
+
+**SYNOPSIS**
+
+    gxadmin query workflow-trace-archive-workflow-invocation-steps
 
 **NOTES**
 
