@@ -334,7 +334,8 @@ query_queue() { ## [--by (tool|destination|user)]: Brief overview of currently r
 			title="destination"
 			query_name="queue_by_destination"
 		elif [[ "$2" == "tool" ]]; then
-			true # nothing needed
+			query_name="queue_by_tool"
+			# nothing else needed
 		else
 			error "Unknown attribute"
 			exit 1
