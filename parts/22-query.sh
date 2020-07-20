@@ -287,7 +287,7 @@ query_queue-time() { ## <tool_id>: The average/95%/99% a specific tool spends in
 	EOF
 }
 
-query_queue() { ## [--by-destination]: Brief overview of currently running jobs grouped by tool (default) or destination
+query_queue() { ## [--by (tool|destination|user)]: Brief overview of currently running jobs grouped by tool (default) or other columns
 	handle_help "$@" <<-EOF
 		    $ gxadmin query queue
 		                                tool_id                                |  state  | count
@@ -303,7 +303,7 @@ query_queue() { ## [--by-destination]: Brief overview of currently running jobs 
 		     toolshed.g2.bx.psu.edu/repos/nml/metaspades/metaspades/3.9.0      | running |     2
 		     upload1                                                           | running |     2
 
-		    $ gxadmin query queue --by-destination
+		    $ gxadmin query queue --by destination
 
 		     destination_id |  state  | job_count
 		    ----------------+---------+-----------
@@ -311,44 +311,46 @@ query_queue() { ## [--by-destination]: Brief overview of currently running jobs 
 		     multicore      | running |        64
 		     multicore      | queued  |        16
 
-		    $ gxadmin iquery queue --by-destination
+		    $ gxadmin iquery queue --by destination
 		    queue-summary-by-destination,state=running,destination_id=normal count=128
 		    queue-summary-by-destination,state=running,destination_id=multicore count=64
 		    queue-summary-by-destination,state=queued,destination_id=multicore count=16
 	EOF
 
-	if [[ $1 = --by-destination ]]; then
+	fields="count=2"
+	tags="tool_id=0;state=1"
+	column="tool_id"
+	title="tool"
 
-		fields="count=2"
-		tags="destination_id=0;state=1"
-
-		read -r -d '' QUERY <<-EOF
-			SELECT
-				destination_id, state, count(destination_id) AS job_count
-			FROM
-				job
-			WHERE
-				state IN ('queued', 'running')
-			GROUP BY
-				destination_id, state
-			ORDER BY
-				job_count DESC
-		EOF
-
-	else
-
-		fields="count=2"
-		tags="tool_id=0;state=1"
-
-		read -r -d '' QUERY <<-EOF
-			SELECT tool_id, state, count(*)
-			FROM job
-			WHERE state in ('queued', 'running')
-			GROUP BY tool_id, state
-			ORDER BY count desc
-		EOF
-
+	if [[ "$1" == "--by" ]]; then
+		if [[ "$2" == "user" ]]; then
+			tags="user_id=0;state=1"
+			column="user_id"
+			title="user"
+		elif [[ "$2" == "destination" ]]; then
+			tags="destination_id=0;state=1"
+			column="destination_id"
+			title="destination"
+		elif [[ "$2" == "tool" ]]; then
+			true # nothing needed
+		else
+			error "Unknown attribute"
+			exit 1
+		fi
 	fi
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			${column}, state, count(${column}) as ${title}_count
+		FROM
+			job
+		WHERE
+			state in ('queued', 'running')
+		GROUP BY
+			${column}, state
+		ORDER BY
+			${title}_count desc
+	EOF
 }
 
 query_queue-overview() { ## [--short-tool-id]: View used mostly for monitoring

@@ -53,7 +53,7 @@ Command | Description
 [`query pg-unused-indexes`](#query-pg-unused-indexes) | show unused and almost unused indexes
 [`query pg-vacuum-stats`](#query-pg-vacuum-stats) | show dead rows and whether an automatic vacuum is expected to be triggered
 [`query q`](#query-q) | Passes a raw SQL query directly through to the database
-[`query queue`](#query-queue) | Brief overview of currently running jobs grouped by tool (default) or destination
+[`query queue`](#query-queue) | Brief overview of currently running jobs grouped by tool (default) or other columns
 [`query queue-detail`](#query-queue-detail) | Detailed overview of running and queued jobs
 [`query queue-detail-by-handler`](#query-queue-detail-by-handler) | List jobs for a specific handler
 [`query queue-overview`](#query-queue-overview) | View used mostly for monitoring
@@ -1089,11 +1089,11 @@ query q -  Passes a raw SQL query directly through to the database
 ## query queue
 
 ([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_queue&type=Code))
-query queue -  Brief overview of currently running jobs grouped by tool (default) or destination
+query queue -  Brief overview of currently running jobs grouped by tool (default) or other columns
 
 **SYNOPSIS**
 
-    gxadmin query queue [--by-destination]
+    gxadmin query queue [--by (tool|destination|user)]
 
 **NOTES**
 
@@ -1111,7 +1111,7 @@ query queue -  Brief overview of currently running jobs grouped by tool (default
      toolshed.g2.bx.psu.edu/repos/nml/metaspades/metaspades/3.9.0      | running |     2
      upload1                                                           | running |     2
 
-    $ gxadmin query queue --by-destination
+    $ gxadmin query queue --by destination
 
      destination_id |  state  | job_count
     ----------------+---------+-----------
@@ -1119,7 +1119,7 @@ query queue -  Brief overview of currently running jobs grouped by tool (default
      multicore      | running |        64
      multicore      | queued  |        16
 
-    $ gxadmin iquery queue --by-destination
+    $ gxadmin iquery queue --by destination
     queue-summary-by-destination,state=running,destination_id=normal count=128
     queue-summary-by-destination,state=running,destination_id=multicore count=64
     queue-summary-by-destination,state=queued,destination_id=multicore count=16
