@@ -90,6 +90,7 @@ Command | Description
 [`query workflow-invocation-totals`](#query-workflow-invocation-totals) | Report on overall workflow counts, to ensure throughput
 [`query workflow-trace-archive-jobs`](#query-workflow-trace-archive-jobs) | [Workflow Trace Archive] Export jobs
 [`query workflow-trace-archive-metrics`](#query-workflow-trace-archive-metrics) | [Workflow Trace Archive] Export numeric metrics
+[`query workflow-trace-archive-workflow-connections`](#query-workflow-trace-archive-workflow-connections) | [Workflow Trace Archive] Export workflow connections
 [`query workflow-trace-archive-workflow-invocation-steps`](#query-workflow-trace-archive-workflow-invocation-steps) | [Workflow Trace Archive] Export workflow invocation steps
 [`query workflow-trace-archive-workflow-invocations`](#query-workflow-trace-archive-workflow-invocations) | [Workflow Trace Archive] Export workflow invocations
 [`query workflow-trace-archive-workflow-steps`](#query-workflow-trace-archive-workflow-steps) | [Workflow Trace Archive] Export workflow steps
@@ -1862,6 +1863,20 @@ query workflow-trace-archive-metrics -  [Workflow Trace Archive] Export numeric 
 **SYNOPSIS**
 
     gxadmin query workflow-trace-archive-metrics
+
+**NOTES**
+
+Helper for WTA
+
+
+## query workflow-trace-archive-workflow-connections
+
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_workflow-trace-archive-workflow-connections&type=Code))
+query workflow-trace-archive-workflow-connections -  [Workflow Trace Archive] Export workflow connections
+
+**SYNOPSIS**
+
+    gxadmin query workflow-trace-archive-workflow-connections
 
 **NOTES**
 
