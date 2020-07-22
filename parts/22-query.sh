@@ -3356,3 +3356,15 @@ query_workflow-trace-archive-workflow-invocation-steps() { ## : [Workflow Trace 
 		FROM workflow_invocation_step
 	EOF
 }
+
+query_workflow-trace-archive-workflow-connections() { ## : [Workflow Trace Archive] Export workflow connections
+	handle_help "$@" <<-EOF
+		Helper for WTA
+	EOF
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			id, output_step_id, input_step_input_id, output_name, input_subworkflow_step_id
+		FROM workflow_step_connection
+	EOF
+}
