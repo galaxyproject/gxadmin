@@ -5,5 +5,5 @@ import subprocess
 
 class GxadminSuite:
     def time_query_ts_repos(self):
-        gxadmin = '11000acb91c378353a347d6cf4078b40'
+        gxadmin = 'q1000acb91c378353a347d6cf4078b40'
         subprocess.check_output('./gxadmin query ts-repos')
