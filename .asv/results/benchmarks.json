@@ -1,16 +1,16 @@
 {
     "benchmarks.MemSuite.mem_list": {
-        "code": "class MemSuite:\n    def mem_list(self):\n        return [0] * 256", 
+        "code": "class MemSuite:\n    def mem_list(self):\n        return [0] * 200", 
         "name": "benchmarks.MemSuite.mem_list", 
         "param_names": [], 
         "params": [], 
         "timeout": 60.0, 
         "type": "memory", 
         "unit": "bytes", 
-        "version": "abe86bab484550a681c61d7bb6eb081fbd37eb6d5009eba1df85c935530577b9"
+        "version": "32084b2d056ff5f1bcaf8a14c74848579e5a69ba5a0c1a748eab2e02460dc820"
     }, 
     "benchmarks.TimeSuite.time_iterkeys": {
-        "code": "class TimeSuite:\n    def time_iterkeys(self):\n        for key in self.d.iterkeys():\n            pass\n\n    def setup(self):\n        self.d = {}\n        for x in range(400):\n            self.d[x] = None", 
+        "code": "class TimeSuite:\n    def time_iterkeys(self):\n        for key in self.d.iterkeys():\n            pass\n\n    def setup(self):\n        self.d = {}\n        for x in range(300):\n            self.d[x] = None", 
         "min_run_count": 2, 
         "name": "benchmarks.TimeSuite.time_iterkeys", 
         "number": 0, 
@@ -22,11 +22,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "3ba1e309c122f6f2f859cc53e91b6d0817347a46123ff26c9e158ecfad735b14", 
+        "version": "765a2d5dca323b5cc09ecc4323990f42b62a3c8a619fde92017cf1f5edcc0221", 
         "warmup_time": -1
     }, 
     "benchmarks.TimeSuite.time_keys": {
-        "code": "class TimeSuite:\n    def time_keys(self):\n        for key in self.d.keys():\n            pass\n\n    def setup(self):\n        self.d = {}\n        for x in range(400):\n            self.d[x] = None", 
+        "code": "class TimeSuite:\n    def time_keys(self):\n        for key in self.d.keys():\n            pass\n\n    def setup(self):\n        self.d = {}\n        for x in range(300):\n            self.d[x] = None", 
         "min_run_count": 2, 
         "name": "benchmarks.TimeSuite.time_keys", 
         "number": 0, 
@@ -38,11 +38,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "6c85d600caadccb9122db2b6a0358806c920440df6167d54931860629b9cfcc1", 
+        "version": "c2174a7168fadc8f34e39d5f6adfec49fa325bde96386bcbd174e9726957f1e9", 
         "warmup_time": -1
     }, 
     "benchmarks.TimeSuite.time_range": {
-        "code": "class TimeSuite:\n    def time_range(self):\n        d = self.d\n        for key in range(500):\n            x = d[key]\n\n    def setup(self):\n        self.d = {}\n        for x in range(400):\n            self.d[x] = None", 
+        "code": "class TimeSuite:\n    def time_range(self):\n        d = self.d\n        for key in range(500):\n            x = d[key]\n\n    def setup(self):\n        self.d = {}\n        for x in range(300):\n            self.d[x] = None", 
         "min_run_count": 2, 
         "name": "benchmarks.TimeSuite.time_range", 
         "number": 0, 
@@ -54,11 +54,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "cb2422aa2932c72e51d8f642cc8374b66fe6dbba05d04d1b1582c0606a0697e7", 
+        "version": "102e175a0abb78b767c10caf69089786e690ef8a7e40ed1ab2a61b9bf9303e08", 
         "warmup_time": -1
     }, 
     "benchmarks.TimeSuite.time_xrange": {
-        "code": "class TimeSuite:\n    def time_xrange(self):\n        d = self.d\n        for key in xrange(500):\n            x = d[key]\n\n    def setup(self):\n        self.d = {}\n        for x in range(400):\n            self.d[x] = None", 
+        "code": "class TimeSuite:\n    def time_xrange(self):\n        d = self.d\n        for key in xrange(500):\n            x = d[key]\n\n    def setup(self):\n        self.d = {}\n        for x in range(300):\n            self.d[x] = None", 
         "min_run_count": 2, 
         "name": "benchmarks.TimeSuite.time_xrange", 
         "number": 0, 
@@ -70,7 +70,7 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "27ebcd62dd1dad39048783de231b940fef01dd6cf7c445eadb34299f4fa82e61", 
+        "version": "25f1fdb6034c784d143d39e1d2c544b522701bd5b6b59ab135f0e04e97742aae", 
         "warmup_time": -1
     }, 
     "version": 2
