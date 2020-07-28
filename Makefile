@@ -37,3 +37,18 @@ shellcheck-parts:
 	shellcheck -s bash -f gcc --exclude SC2001,SC2120,SC2119,SC2129,SC2044,SC2154,SC2034 parts/[023456789]*
 
 .PHONY: test shellcheck shellcheck-parts docs
+
+RESULTS := $(wildcard .asv/results/*) $(wildcard .asv/results/*/*)
+
+# Update benchmarking script
+benchmarks/benchmarks.py: benchmarks.sh gxadmin
+	benchmarks.sh > benchmarks/benchmarks.py
+
+# Run the benchmarks
+benchmark: benchmarks/benchmarks.py
+	asv run
+	git add .asv
+
+# Collect results
+benchmark-publish: $(RESULTS)
+	asv publish -o docs/benchmarking/
