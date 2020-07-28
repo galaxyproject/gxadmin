@@ -1,0 +1,15 @@
+{
+    "version": 1,
+    "project": "gxadmin",
+    "project_url": "https://github.com/usegalaxy-eu/gxadmin",
+    "repo": ".",
+    "install_command": ["echo install"],
+    "uninstall_command": ["echo uninstall"],
+    "build_command": ["echo build"],
+    "branches": ["master"],
+    "dvcs": "git",
+    "environment_type": "virtualenv",
+    "env_dir": ".asv/env",
+    "results_dir": ".asv/results",
+    "html_dir": ".asv/html"
+}
