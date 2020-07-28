@@ -1,6 +1,6 @@
 {
     "benchmarks.GxadminSuite.time_query_ts_repos": {
-        "code": "class GxadminSuite:\n    def time_query_ts_repos(self):\n        gxadmin = '11000acb91c378353a347d6cf4078b40'\n        subprocess.check_output('./gxadmin query ts-repos')", 
+        "code": "class GxadminSuite:\n    def time_query_ts_repos(self):\n        gxadmin = 'q1000acb91c378353a347d6cf4078b40'\n        gxadmin = subprocess.check_output(['/home/hxr/arbeit/galaxy/gxadmin/gxadmin', 'query', 'ts-repos'])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_ts_repos", 
         "number": 0, 
@@ -12,7 +12,7 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "814db078d59bbf0030973bf50ceedfc99a30601c11183dfb6fa0d08611bd37e2", 
+        "version": "ea7f53367584273ec97a6fbecf2a167546964655694ef5ce621e7aac2b6b7c8f", 
         "warmup_time": -1
     }, 
     "version": 2
