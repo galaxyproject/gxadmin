@@ -1,6 +1,6 @@
 {
     "benchmarks.GxadminSuite.time_query_collection_usage": {
-        "code": "class GxadminSuite:\n    def time_query_collection_usage(self):\n        query = \"\"\"\n            SELECT\n            dc.collection_type, count(*)\n            FROM\n            history_dataset_collection_association as hdca\n            INNER JOIN\n            dataset_collection as dc\n            ON hdca.collection_id = dc.id\n            GROUP BY\n            dc.collection_type\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'collection-usage',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_collection_usage(self):\n        query = \"\"\"\n            SELECT\n            \tdc.collection_type, count(*)\n            FROM\n            \thistory_dataset_collection_association AS hdca\n            \tINNER JOIN dataset_collection AS dc ON\n            \t\t\thdca.collection_id = dc.id\n            GROUP BY\n            \tdc.collection_type;\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'collection-usage',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_collection_usage", 
         "number": 0, 
@@ -12,11 +12,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "7861f4f890f2802098e3f830e7c125b6be7ad98eb19881d7617e0a776bff4cce", 
+        "version": "8c9df5140c8192033c2b5e627bbbfd14e7703bcca146a4b7b35e4241d33d9913", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_data_origin_distribution": {
-        "code": "class GxadminSuite:\n    def time_query_data_origin_distribution(self):\n        query = \"\"\"\n            WITH asdf AS (\n            SELECT\n            case when job.tool_id = 'upload1' then 'created' else 'derived' end AS origin,\n            sum(coalesce(dataset.total_size, dataset.file_size, 0)) AS data,\n            date_trunc('month', dataset.create_time) as created,\n            COALESCE(job.user_id::text, '__UNKNOWN__')\n            FROM job\n            LEFT JOIN job_to_output_dataset ON job.id = job_to_output_dataset.job_id\n            LEFT JOIN history_dataset_association ON job_to_output_dataset.dataset_id = history_dataset_association.id\n            LEFT JOIN dataset ON history_dataset_association.dataset_id = dataset.id\n            GROUP BY\n            origin, job.user_id, created, galaxy_user\n            )\n            SELECT\n            origin,\n            round(data, 2 - length(data::text)),\n            created,\n            galaxy_user\n            FROM asdf\n            ORDER BY galaxy_user desc\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'data-origin-distribution',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_data_origin_distribution(self):\n        query = \"\"\"\n            WITH\n            \tasdf\n            \t\tAS (\n            \t\t\tSELECT\n            \t\t\t\tCASE\n            \t\t\t\tWHEN job.tool_id = 'upload1' THEN 'created'\n            \t\t\t\tELSE 'derived'\n            \t\t\t\tEND\n            \t\t\t\t\tAS origin,\n            \t\t\t\tsum(\n            \t\t\t\t\tCOALESCE(\n            \t\t\t\t\t\tdataset.total_size,\n            \t\t\t\t\t\tdataset.file_size,\n            \t\t\t\t\t\t0\n            \t\t\t\t\t)\n            \t\t\t\t)\n            \t\t\t\t\tAS data,\n            \t\t\t\tdate_trunc('month', dataset.create_time)\n            \t\t\t\t\tAS created,\n            \t\t\t\tCOALESCE(job.user_id::STRING, '__UNKNOWN__')\n            \t\t\tFROM\n            \t\t\t\tjob\n            \t\t\t\tLEFT JOIN job_to_output_dataset ON\n            \t\t\t\t\t\tjob.id\n            \t\t\t\t\t\t= job_to_output_dataset.job_id\n            \t\t\t\tLEFT JOIN history_dataset_association ON\n            \t\t\t\t\t\tjob_to_output_dataset.dataset_id\n            \t\t\t\t\t\t= history_dataset_association.id\n            \t\t\t\tLEFT JOIN dataset ON\n            \t\t\t\t\t\thistory_dataset_association.dataset_id\n            \t\t\t\t\t\t= dataset.id\n            \t\t\tGROUP BY\n            \t\t\t\torigin, job.user_id, created, galaxy_user\n            \t\t)\n            SELECT\n            \torigin,\n            \tround(data, 2 - length(data::STRING)),\n            \tcreated,\n            \tgalaxy_user\n            FROM\n            \tasdf\n            ORDER BY\n            \tgalaxy_user DESC;\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'data-origin-distribution',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_data_origin_distribution", 
         "number": 0, 
@@ -28,11 +28,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "e3f5ce56e92d0ca942da3eb33f055ab5c03c73ebf528e0999bbc4f669ed6c0dd", 
+        "version": "13eb458cb4710e1576ca4fe8269734557f11edddea1d770dab8918751e686fb4", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_data_origin_distribution_summary": {
-        "code": "class GxadminSuite:\n    def time_query_data_origin_distribution_summary(self):\n        query = \"\"\"\n            WITH user_job_data AS (\n            SELECT\n            case when job.tool_id = 'upload1' then 'created' else 'derived' end AS origin,\n            sum(coalesce(dataset.total_size, dataset.file_size, 0)) AS data,\n            job.user_id\n            FROM job\n            LEFT JOIN job_to_output_dataset ON job.id = job_to_output_dataset.job_id\n            LEFT JOIN history_dataset_association ON job_to_output_dataset.dataset_id = history_dataset_association.id\n            LEFT JOIN dataset ON history_dataset_association.dataset_id = dataset.id\n            GROUP BY\n            origin, job.user_id\n            )\n    \n            SELECT\n            origin,\n            min(data) AS min,\n            percentile_cont(0.25) WITHIN GROUP (ORDER BY data) ::bigint AS quant_1st,\n            percentile_cont(0.50) WITHIN GROUP (ORDER BY data) ::bigint AS median,\n            avg(data) AS mean,\n            percentile_cont(0.75) WITHIN GROUP (ORDER BY data) ::bigint AS quant_3rd,\n            percentile_cont(0.95) WITHIN GROUP (ORDER BY data) ::bigint AS perc_95,\n            percentile_cont(0.99) WITHIN GROUP (ORDER BY data) ::bigint AS perc_99,\n            max(data) AS max,\n            sum(data) AS sum,\n            stddev(data) AS stddev\n            FROM user_job_data\n            GROUP BY origin\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'data-origin-distribution-summary',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_data_origin_distribution_summary(self):\n        query = \"\"\"\n            at or near \")\": syntax error: unimplemented: this syntax\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'data-origin-distribution-summary',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_data_origin_distribution_summary", 
         "number": 0, 
@@ -44,11 +44,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "c830dbc325a89fbef8134619eae4604f4a0271935cae229e60b0461a8ede38eb", 
+        "version": "2d9604fbb95c4ec8e0517f1c564d82d26f53784f682a605275330068845111c0", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_datasets_created_daily": {
-        "code": "class GxadminSuite:\n    def time_query_datasets_created_daily(self):\n        query = \"\"\"\n            WITH temp_queue_times AS\n            (select\n            date_trunc('day', create_time AT TIME ZONE 'UTC'),\n            sum(coalesce(total_size, file_size))\n            from dataset\n            group by date_trunc\n            order by date_trunc desc)\n            select\n            min(sum) AS min,\n            percentile_cont(0.25) WITHIN GROUP (ORDER BY sum) ::bigint AS quant_1st,\n            percentile_cont(0.50) WITHIN GROUP (ORDER BY sum) ::bigint AS median,\n            avg(sum) AS mean,\n            percentile_cont(0.75) WITHIN GROUP (ORDER BY sum) ::bigint AS quant_3rd,\n            percentile_cont(0.95) WITHIN GROUP (ORDER BY sum) ::bigint AS perc_95,\n            percentile_cont(0.99) WITHIN GROUP (ORDER BY sum) ::bigint AS perc_99,\n            max(sum) AS max,\n            sum(sum) AS sum,\n            stddev(sum) AS stddev\n            from temp_queue_times\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'datasets-created-daily',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_datasets_created_daily(self):\n        query = \"\"\"\n            at or near \")\": syntax error: unimplemented: this syntax\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'datasets-created-daily',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_datasets_created_daily", 
         "number": 0, 
@@ -60,11 +60,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "c5ee81dd0a31c75d362591067858582f56ce81fe2226dd1e32abb31c143a45b9", 
+        "version": "fdaa6b374163e372ea94c6c18c17e9b22ed03ce3105e20446368e8aa6279e835", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_disk_usage": {
-        "code": "class GxadminSuite:\n    def time_query_disk_usage(self):\n        query = \"\"\"\n            SELECT\n            object_store_id, sum(coalesce(dataset.total_size, dataset.file_size, 0))\n            FROM dataset\n            WHERE NOT purged\n            GROUP BY object_store_id\n            ORDER BY sum(coalesce(dataset.total_size, dataset.file_size, 0)) DESC\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'disk-usage',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_disk_usage(self):\n        query = \"\"\"\n            SELECT\n            \tobject_store_id,\n            \tsum(COALESCE(dataset.total_size, dataset.file_size, 0))\n            FROM\n            \tdataset\n            WHERE\n            \tNOT purged\n            GROUP BY\n            \tobject_store_id\n            ORDER BY\n            \tsum(COALESCE(dataset.total_size, dataset.file_size, 0))\n            \t\tDESC;\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'disk-usage',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_disk_usage", 
         "number": 0, 
@@ -76,11 +76,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "065b22e6f942fb701051d0cc95c6ac087ce2ca26bc79bb5e410742cfb4cc5670", 
+        "version": "856bda9d36cfe8a53dc26843344b3180c5b69522176d7d31e240c417945ea062", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_errored_jobs": {
-        "code": "class GxadminSuite:\n    def time_query_errored_jobs(self):\n        query = \"\"\"\n            SELECT\n            job.id,\n            job.create_time AT TIME ZONE 'UTC' as create_time,\n            job.tool_id,\n            job.tool_version,\n            job.handler,\n            job.destination_id,\n            job.job_runner_external_id,\n    \n            COALESCE(galaxy_user.email::text, '__UNKNOWN__') AS email\n            FROM\n            job,\n            galaxy_user\n            WHERE\n            job.create_time >= (now() AT TIME ZONE 'UTC' - ' hours'::interval) AND\n            job.state = 'error' AND\n            job.user_id = galaxy_user.id\n            ORDER BY\n            job.id\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'errored-jobs',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_errored_jobs(self):\n        query = \"\"\"\n            at or near \"as\": syntax error: unimplemented: this syntax\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'errored-jobs',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_errored_jobs", 
         "number": 0, 
@@ -92,11 +92,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "39c97286f787909168253028b3629e05bc0fc2432082c1f197079cfa31a4b496", 
+        "version": "6af62adc75598eb85d8f965c697e442e998a932c29fd15f21d5d68cca3598ad2", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_good_for_pulsar": {
-        "code": "class GxadminSuite:\n    def time_query_good_for_pulsar(self):\n        query = \"\"\"\n            WITH job_data AS (\n            SELECT\n            regexp_replace(j.tool_id, '.*toolshed.*/repos/', '') as tool_id,\n            SUM(d.total_size) AS size,\n            MIN(jmn.metric_value) AS runtime,\n            SUM(d.total_size) / min(jmn.metric_value) AS score\n            FROM job j\n            LEFT JOIN job_to_input_dataset jtid ON j.id = jtid.job_id\n            LEFT JOIN history_dataset_association hda ON jtid.dataset_id = hda.id\n            LEFT JOIN dataset d ON hda.dataset_id = d.id\n            LEFT JOIN job_metric_numeric jmn ON j.id = jmn.job_id\n            WHERE jmn.metric_name = 'runtime_seconds'\n            AND d.total_size IS NOT NULL\n            GROUP BY j.id\n            )\n    \n            SELECT\n            tool_id,\n            percentile_cont(0.50) WITHIN GROUP (ORDER BY score) ::bigint AS median_score,\n            percentile_cont(0.50) WITHIN GROUP (ORDER BY runtime) ::bigint AS median_runtime,\n            pg_size_pretty(percentile_cont(0.50) WITHIN GROUP (ORDER BY size) ::bigint) AS median_size,\n            count(*)\n            FROM job_data\n            GROUP BY tool_id\n            ORDER BY median_score ASC\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'good-for-pulsar',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_good_for_pulsar(self):\n        query = \"\"\"\n            at or near \")\": syntax error: unimplemented: this syntax\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'good-for-pulsar',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_good_for_pulsar", 
         "number": 0, 
@@ -108,11 +108,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "c54ecc196c23e8f67a70fd800744a01cc300e51254c0afa5874c45d9c3a94d17", 
+        "version": "6911422e6716b0f259f1d75a8983a706c54f1cd8c4c685a6f14dc12a956f227c", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_group_cpu_seconds": {
-        "code": "class GxadminSuite:\n    def time_query_group_cpu_seconds(self):\n        query = \"\"\"\n            WITH jobs_info AS (\n            SELECT job.user_id,\n            round(sum(a.metric_value * b.metric_value), 2) AS cpu_seconds\n            FROM job_metric_numeric AS a,\n            job_metric_numeric AS b,\n            job\n            WHERE job.id = a.job_id\n            AND job.id = b.job_id\n            AND a.metric_name = 'runtime_seconds'\n            AND b.metric_name = 'galaxy_slots'\n            GROUP BY job.user_id\n            ), user_job_info AS (\n            SELECT user_id,\n            sum(cpu_seconds) AS cpu_seconds\n            FROM jobs_info\n            GROUP BY user_id\n            )\n    \n            SELECT row_number() OVER (ORDER BY round(sum(user_job_info.cpu_seconds), 0) DESC) as rank,\n            galaxy_group.id as group_id,\n            COALESCE(galaxy_group.name::text, 'Anonymous'),\n            round(sum(user_job_info.cpu_seconds), 0) as cpu_seconds\n            FROM user_job_info,\n            galaxy_group,\n            user_group_association\n            WHERE user_job_info.user_id = user_group_association.user_id\n            AND user_group_association.group_id = galaxy_group.id\n    \n            GROUP BY galaxy_group.id, galaxy_group.name\n            ORDER BY round(sum(user_job_info.cpu_seconds), 0) DESC\n            LIMIT 50\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'group-cpu-seconds',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_group_cpu_seconds(self):\n        query = \"\"\"\n            WITH\n            \tjobs_info\n            \t\tAS (\n            \t\t\tSELECT\n            \t\t\t\tjob.user_id,\n            \t\t\t\tround(\n            \t\t\t\t\tsum(a.metric_value * b.metric_value),\n            \t\t\t\t\t2\n            \t\t\t\t)\n            \t\t\t\t\tAS cpu_seconds\n            \t\t\tFROM\n            \t\t\t\tjob_metric_numeric AS a,\n            \t\t\t\tjob_metric_numeric AS b,\n            \t\t\t\tjob\n            \t\t\tWHERE\n            \t\t\t\tjob.id = a.job_id\n            \t\t\t\tAND job.id = b.job_id\n            \t\t\t\tAND a.metric_name = 'runtime_seconds'\n            \t\t\t\tAND b.metric_name = 'galaxy_slots'\n            \t\t\tGROUP BY\n            \t\t\t\tjob.user_id\n            \t\t),\n            \tuser_job_info\n            \t\tAS (\n            \t\t\tSELECT\n            \t\t\t\tuser_id, sum(cpu_seconds) AS cpu_seconds\n            \t\t\tFROM\n            \t\t\t\tjobs_info\n            \t\t\tGROUP BY\n            \t\t\t\tuser_id\n            \t\t)\n            SELECT\n            \trow_number() OVER (\n            \t\tORDER BY\n            \t\t\tround(sum(user_job_info.cpu_seconds), 0) DESC\n            \t)\n            \t\tAS rank,\n            \tgalaxy_group.id AS group_id,\n            \tCOALESCE(galaxy_group.name::STRING, 'Anonymous'),\n            \tround(sum(user_job_info.cpu_seconds), 0) AS cpu_seconds\n            FROM\n            \tuser_job_info, galaxy_group, user_group_association\n            WHERE\n            \tuser_job_info.user_id = user_group_association.user_id\n            \tAND user_group_association.group_id = galaxy_group.id\n            GROUP BY\n            \tgalaxy_group.id, galaxy_group.name\n            ORDER BY\n            \tround(sum(user_job_info.cpu_seconds), 0) DESC\n            LIMIT\n            \t50;\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'group-cpu-seconds',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_group_cpu_seconds", 
         "number": 0, 
@@ -124,11 +124,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "3ba4444c692b8f46ab84b1dbbcdd80867b40092758f96b1193ce4c78c71b0a30", 
+        "version": "eae08eac6c9aebcc9169712e85cbdc0379d0c0bd8d41864c06e48f01cbf9a1cf", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_group_gpu_time": {
-        "code": "class GxadminSuite:\n    def time_query_group_gpu_time(self):\n        query = \"\"\"\n            WITH jobs_info AS (\n            SELECT job.user_id,\n            round(sum(a.metric_value * length(replace(b.metric_value, ',', ''))), 2) AS gpu_seconds\n            FROM job_metric_numeric AS a,\n            job_metric_text AS b,\n            job\n            WHERE job.id = a.job_id\n            AND job.id = b.job_id\n            AND a.metric_name = 'runtime_seconds'\n            AND b.metric_name = 'CUDA_VISIBLE_DEVICES'\n            GROUP BY job.user_id\n            ), user_job_info AS (\n            SELECT user_id,\n            sum(gpu_seconds) AS gpu_seconds\n            FROM jobs_info\n            GROUP BY user_id\n            )\n            SELECT row_number() OVER (ORDER BY round(sum(user_job_info.gpu_seconds), 0) DESC) as rank,\n            galaxy_group.id as group_id,\n            COALESCE(galaxy_group.name::text, 'Anonymous'),\n            round(sum(user_job_info.gpu_seconds), 0) as gpu_seconds\n            FROM user_job_info,\n            galaxy_group,\n            user_group_association\n            WHERE user_job_info.user_id = user_group_association.user_id\n            AND user_group_association.group_id = galaxy_group.id\n    \n            GROUP BY galaxy_group.id, galaxy_group.name\n            ORDER BY round(sum(user_job_info.gpu_seconds), 0) DESC\n            LIMIT 50\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'group-gpu-time',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_group_gpu_time(self):\n        query = \"\"\"\n            WITH\n            \tjobs_info\n            \t\tAS (\n            \t\t\tSELECT\n            \t\t\t\tjob.user_id,\n            \t\t\t\tround(\n            \t\t\t\t\tsum(\n            \t\t\t\t\t\ta.metric_value\n            \t\t\t\t\t\t* length(\n            \t\t\t\t\t\t\t\treplace(\n            \t\t\t\t\t\t\t\t\tb.metric_value,\n            \t\t\t\t\t\t\t\t\t',',\n            \t\t\t\t\t\t\t\t\t''\n            \t\t\t\t\t\t\t\t)\n            \t\t\t\t\t\t\t)\n            \t\t\t\t\t),\n            \t\t\t\t\t2\n            \t\t\t\t)\n            \t\t\t\t\tAS gpu_seconds\n            \t\t\tFROM\n            \t\t\t\tjob_metric_numeric AS a,\n            \t\t\t\tjob_metric_text AS b,\n            \t\t\t\tjob\n            \t\t\tWHERE\n            \t\t\t\tjob.id = a.job_id\n            \t\t\t\tAND job.id = b.job_id\n            \t\t\t\tAND a.metric_name = 'runtime_seconds'\n            \t\t\t\tAND b.metric_name = 'CUDA_VISIBLE_DEVICES'\n            \t\t\tGROUP BY\n            \t\t\t\tjob.user_id\n            \t\t),\n            \tuser_job_info\n            \t\tAS (\n            \t\t\tSELECT\n            \t\t\t\tuser_id, sum(gpu_seconds) AS gpu_seconds\n            \t\t\tFROM\n            \t\t\t\tjobs_info\n            \t\t\tGROUP BY\n            \t\t\t\tuser_id\n            \t\t)\n            SELECT\n            \trow_number() OVER (\n            \t\tORDER BY\n            \t\t\tround(sum(user_job_info.gpu_seconds), 0) DESC\n            \t)\n            \t\tAS rank,\n            \tgalaxy_group.id AS group_id,\n            \tCOALESCE(galaxy_group.name::STRING, 'Anonymous'),\n            \tround(sum(user_job_info.gpu_seconds), 0) AS gpu_seconds\n            FROM\n            \tuser_job_info, galaxy_group, user_group_association\n            WHERE\n            \tuser_job_info.user_id = user_group_association.user_id\n            \tAND user_group_association.group_id = galaxy_group.id\n            GROUP BY\n            \tgalaxy_group.id, galaxy_group.name\n            ORDER BY\n            \tround(sum(user_job_info.gpu_seconds), 0) DESC\n            LIMIT\n            \t50;\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'group-gpu-time',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_group_gpu_time", 
         "number": 0, 
@@ -140,11 +140,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "a5580d2756b46822ae48645dc8b084e5d97375f6d9e6b2760b23f1fa812ef7c8", 
+        "version": "17c40c33b20c90fa8620559ce91ac3096b271e66609d37be2cf4393bf4e6ac36", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_groups_list": {
-        "code": "class GxadminSuite:\n    def time_query_groups_list(self):\n        query = \"\"\"\n            SELECT\n            galaxy_group.name, count(*)\n            FROM\n            galaxy_group, user_group_association\n            WHERE\n            user_group_association.group_id = galaxy_group.id\n            GROUP BY name\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'groups-list',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_groups_list(self):\n        query = \"\"\"\n            SELECT\n            \tgalaxy_group.name, count(*)\n            FROM\n            \tgalaxy_group, user_group_association\n            WHERE\n            \tuser_group_association.group_id = galaxy_group.id\n            GROUP BY\n            \tname;\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'groups-list',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_groups_list", 
         "number": 0, 
@@ -156,11 +156,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "657b867cd28b00c0a1ac4ce48d55c0cbf99aec1b1f129ed3bd3c03d77e788ccc", 
+        "version": "05be49881901895e501f599fc48a823743c030444fcce91143f69d0d228fe622", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_hdca_datasets": {
-        "code": "class GxadminSuite:\n    def time_query_hdca_datasets(self):\n        query = \"\"\"\n            SELECT element_index, hda_id, ldda_id, child_collection_id, element_identifier\n            FROM dataset_collection_element\n            WHERE dataset_collection_id =\n            ORDER by element_index asc\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'hdca-datasets',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_hdca_datasets(self):\n        query = \"\"\"\n            at or near \"order\": syntax error\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'hdca-datasets',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_hdca_datasets", 
         "number": 0, 
@@ -172,11 +172,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "b8d816eb07c66ccb077f7de6c79d1d37bbb90b76737b2bc7ff4515b26d1f295b", 
+        "version": "f96cfb9682670bdd915efe2875061df2583d86a4bd28f2a32c9b3c2d4a023f91", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_hdca_info": {
-        "code": "class GxadminSuite:\n    def time_query_hdca_info(self):\n        query = \"\"\"\n            SELECT *\n            FROM dataset_collection\n            WHERE id =\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'hdca-info',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_hdca_info(self):\n        query = \"\"\"\n            at or near \"EOF\": syntax error\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'hdca-info',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_hdca_info", 
         "number": 0, 
@@ -188,11 +188,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "e12ce323f35814ed571ccb6f09026daf43b68bdb61ba086feb70c10d1998f592", 
+        "version": "58c17a215c894ea2c9cc7dbbf2f723d77fdc6aa72ecb4292d67dfdda70edf815", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_history_connections": {
-        "code": "class GxadminSuite:\n    def time_query_history_connections(self):\n        query = \"\"\"\n            SELECT\n            h.id AS h_id,\n            h.update_time::DATE AS h_update,\n            jtod.job_id AS in_id,\n            j.tool_id AS in_tool,\n            j.tool_version AS in_tool_v,\n            jtid.job_id AS out_id,\n            j2.tool_id AS out_tool,\n            j2.tool_version AS out_ver\n            FROM\n            job AS j\n            LEFT JOIN history AS h ON j.history_id = h.id\n            LEFT JOIN job_to_output_dataset AS jtod ON j.id = jtod.job_id\n            LEFT JOIN job_to_input_dataset AS jtid ON jtod.dataset_id = jtid.dataset_id\n            LEFT JOIN job AS j2 ON jtid.job_id = j2.id\n            WHERE\n            jtid.job_id IS NOT NULL\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'history-connections',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_history_connections(self):\n        query = \"\"\"\n            SELECT\n            \th.id AS h_id,\n            \th.update_time::DATE AS h_update,\n            \tjtod.job_id AS in_id,\n            \tj.tool_id AS in_tool,\n            \tj.tool_version AS in_tool_v,\n            \tjtid.job_id AS out_id,\n            \tj2.tool_id AS out_tool,\n            \tj2.tool_version AS out_ver\n            FROM\n            \tjob AS j\n            \tLEFT JOIN history AS h ON j.history_id = h.id\n            \tLEFT JOIN job_to_output_dataset AS jtod ON\n            \t\t\tj.id = jtod.job_id\n            \tLEFT JOIN job_to_input_dataset AS jtid ON\n            \t\t\tjtod.dataset_id = jtid.dataset_id\n            \tLEFT JOIN job AS j2 ON jtid.job_id = j2.id\n            WHERE\n            \tjtid.job_id IS NOT NULL;\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'history-connections',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_history_connections", 
         "number": 0, 
@@ -204,11 +204,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "5272b40dfd53a4c8b5095cd1a80a6d68e58866cee48ea15bc358943fb4b8c996", 
+        "version": "dadd580e0b8dfe1877625a89395e788758ff1abd58f55fbff7ecc5822fa6ba2f", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_history_contents": {
-        "code": "class GxadminSuite:\n    def time_query_history_contents(self):\n        query = \"\"\"\n            select dataset_id, name, hid, visible, deleted, copied_from_history_dataset_association_id as copied_from from history_dataset_association where history_id = ;select collection_id, name, hid, visible, deleted, copied_from_history_dataset_collection_association_id as copied_from from history_dataset_collection_association where history_id = ;\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'history-contents',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_history_contents(self):\n        query = \"\"\"\n            at or near \"EOF\": syntax error\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'history-contents',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_history_contents", 
         "number": 0, 
@@ -220,11 +220,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "09ab3ef76c45c78ecb3f69ac1c385e5831635a61ea2a03d1ca12fa00d5afea89", 
+        "version": "e0d5fdcf2cd8e0ab04955e1cc0b14d59854361f49346bd74ddfe7c33564cda91", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_history_runtime_system": {
-        "code": "class GxadminSuite:\n    def time_query_history_runtime_system(self):\n        query = \"\"\"\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'history-runtime-system',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_history_runtime_system(self):\n        query = \"\"\"\n    \n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'history-runtime-system',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_history_runtime_system", 
         "number": 0, 
@@ -236,11 +236,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "afefcfbec094aa317176d7cc35ab97d0df59fd2d24fe2f000e7e74e5edf21e35", 
+        "version": "479cde0db3dbb63d0b41808273c6eb86e8d65b52b494e3ed37ae1b91408e2643", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_history_runtime_system_by_tool": {
-        "code": "class GxadminSuite:\n    def time_query_history_runtime_system_by_tool(self):\n        query = \"\"\"\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'history-runtime-system-by-tool',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_history_runtime_system_by_tool(self):\n        query = \"\"\"\n    \n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'history-runtime-system-by-tool',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_history_runtime_system_by_tool", 
         "number": 0, 
@@ -252,11 +252,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "9070f2c784a29305046ac82b269bb6e6100b137af7350fc71485f553b393b4e6", 
+        "version": "21431f981d5512ac2110b48db785c0a3e455dcc536f2842b2df629665fbd0bed", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_history_runtime_wallclock": {
-        "code": "class GxadminSuite:\n    def time_query_history_runtime_wallclock(self):\n        query = \"\"\"\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'history-runtime-wallclock',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_history_runtime_wallclock(self):\n        query = \"\"\"\n    \n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'history-runtime-wallclock',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_history_runtime_wallclock", 
         "number": 0, 
@@ -268,11 +268,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "437729169e02c4e287c593ab604f793db04120de78b98615237e031d058af3a7", 
+        "version": "a722ab51974e152f60354439cf424b0aa03bc48b0cbc83cdcf5d76ffa91a0976", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_job_history": {
-        "code": "class GxadminSuite:\n    def time_query_job_history(self):\n        query = \"\"\"\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'job-history',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_job_history(self):\n        query = \"\"\"\n    \n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'job-history',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_job_history", 
         "number": 0, 
@@ -284,11 +284,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "bf6e42b279570c70baae3d9260e7f583bc6fae8670bac54a393f19fc91aaf8af", 
+        "version": "e6e755005163006f512cf80c79c573a96a065f6e52f91071bcead0e36357af6a", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_job_info": {
-        "code": "class GxadminSuite:\n    def time_query_job_info(self):\n        query = \"\"\"\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'job-info',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_job_info(self):\n        query = \"\"\"\n    \n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'job-info',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_job_info", 
         "number": 0, 
@@ -300,11 +300,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "0de2273bb2f81e77b5c741ae30f02c4e71ef6800670840b2a6da522564d3cc3f", 
+        "version": "32af1d446befffc768bd44f70bccf05bc2e81627691d3db75de7258cb16c33bf", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_job_inputs": {
-        "code": "class GxadminSuite:\n    def time_query_job_inputs(self):\n        query = \"\"\"\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'job-inputs',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_job_inputs(self):\n        query = \"\"\"\n    \n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'job-inputs',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_job_inputs", 
         "number": 0, 
@@ -316,11 +316,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "73e64e4474c5766a073c25b63e37c8a73044ba82346d9b63384364f9f42d67e3", 
+        "version": "ef9e19369bb4085db92506c4702eafc01bd33e0bc5dfc603914158f7e37f44d1", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_job_outputs": {
-        "code": "class GxadminSuite:\n    def time_query_job_outputs(self):\n        query = \"\"\"\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'job-outputs',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_job_outputs(self):\n        query = \"\"\"\n    \n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'job-outputs',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_job_outputs", 
         "number": 0, 
@@ -332,11 +332,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "50c4c511eae116c412c934da507ae5395d86c769075ac0c36fdee3673f8415a0", 
+        "version": "cae39ce17008a21648077c9b78c6e3bd15154bb7497626e38602fb13cb06d035", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_jobs_max_by_cpu_hours": {
-        "code": "class GxadminSuite:\n    def time_query_jobs_max_by_cpu_hours(self):\n        query = \"\"\"\n            SELECT\n            job.id,\n            job.tool_id,\n            job.create_time,\n            metric_value/1000000000/3600/24 as cpu_days\n            FROM job, job_metric_numeric\n            WHERE\n            job.id = job_metric_numeric.job_id\n            AND metric_name = 'cpuacct.usage'\n            ORDER BY cpu_hours desc\n            LIMIT 30\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'jobs-max-by-cpu-hours',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_jobs_max_by_cpu_hours(self):\n        query = \"\"\"\n            SELECT\n            \tjob.id,\n            \tjob.tool_id,\n            \tjob.create_time,\n            \tmetric_value / 1000000000 / 3600 / 24 AS cpu_days\n            FROM\n            \tjob, job_metric_numeric\n            WHERE\n            \tjob.id = job_metric_numeric.job_id\n            \tAND metric_name = 'cpuacct.usage'\n            ORDER BY\n            \tcpu_hours DESC\n            LIMIT\n            \t30;\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'jobs-max-by-cpu-hours',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_jobs_max_by_cpu_hours", 
         "number": 0, 
@@ -348,11 +348,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "b7d3ccfe1788bcc8b7e4245d47cff563524f60409bd4ebc5aafb6c41cbcc953f", 
+        "version": "5959e5c00b25e836515fe5e2052116acfaacb6cf8c56359e66af7bcc3f242435", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_jobs_nonterminal": {
-        "code": "class GxadminSuite:\n    def time_query_jobs_nonterminal(self):\n        query = \"\"\"\n            SELECT\n            job.id, job.tool_id, job.state, job.create_time AT TIME ZONE 'UTC', job.job_runner_name, job.job_runner_external_id, job.handler, COALESCE(job.user_id::text, 'anon')\n            FROM\n            job\n            LEFT OUTER JOIN\n            galaxy_user ON job.user_id = galaxy_user.id\n            WHERE\n            true AND job.state IN ('new', 'queued', 'running')\n            ORDER BY job.id ASC\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'jobs-nonterminal',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_jobs_nonterminal(self):\n        query = \"\"\"\n            at or near \",\": syntax error: unimplemented: this syntax\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'jobs-nonterminal',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_jobs_nonterminal", 
         "number": 0, 
@@ -364,11 +364,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "2dc2a60d8ec424aef5600fee6de70334c46a052b76328a70e2a516d4fdfc005f", 
+        "version": "caace8b0c6a7105d02876035b7bf01d5bf36a888676258e47fa10c89b8a5182a", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_jobs_per_user": {
-        "code": "class GxadminSuite:\n    def time_query_jobs_per_user(self):\n        query = \"\"\"\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'jobs-per-user',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_jobs_per_user(self):\n        query = \"\"\"\n    \n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'jobs-per-user',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_jobs_per_user", 
         "number": 0, 
@@ -380,11 +380,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "374ec2283789ab834c00b8db89ecb4cf5d11a57e873b4424e9ec06d1437ff459", 
+        "version": "9801b87a10c0893c5b0f323747aea4372c037d0a2eb946871e3c94d3a5a56b30", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_jobs_queued": {
-        "code": "class GxadminSuite:\n    def time_query_jobs_queued(self):\n        query = \"\"\"\n            SELECT\n            CASE WHEN job_runner_external_id IS NOT null THEN 'processed' ELSE 'unprocessed' END as n,\n            count(*)\n            FROM\n            job\n            WHERE\n            state = 'queued'\n            GROUP BY n\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'jobs-queued',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_jobs_queued(self):\n        query = \"\"\"\n            SELECT\n            \tCASE\n            \tWHEN job_runner_external_id IS NOT NULL THEN 'processed'\n            \tELSE 'unprocessed'\n            \tEND\n            \t\tAS n,\n            \tcount(*)\n            FROM\n            \tjob\n            WHERE\n            \tstate = 'queued'\n            GROUP BY\n            \tn;\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'jobs-queued',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_jobs_queued", 
         "number": 0, 
@@ -396,11 +396,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "77af875ebc82c8ff3606e22e17bf357d3c3c1c08fe93c557146006e8b9689c59", 
+        "version": "97820e0ba57a0bdf261d3df8872d365d5990d8be280f5121d482f75b11cfebf6", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_jobs_queued_internal_by_handler": {
-        "code": "class GxadminSuite:\n    def time_query_jobs_queued_internal_by_handler(self):\n        query = \"\"\"\n            SELECT\n            handler,\n            count(handler)\n            FROM\n            job\n            WHERE\n            state = 'queued'\n            AND job_runner_external_id IS null\n            GROUP BY\n            handler\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'jobs-queued-internal-by-handler',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_jobs_queued_internal_by_handler(self):\n        query = \"\"\"\n            SELECT\n            \thandler, count(handler)\n            FROM\n            \tjob\n            WHERE\n            \tstate = 'queued' AND job_runner_external_id IS NULL\n            GROUP BY\n            \thandler;\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'jobs-queued-internal-by-handler',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_jobs_queued_internal_by_handler", 
         "number": 0, 
@@ -412,11 +412,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "a25735a89f7223f6a66c0e628e0c35bf01eacca6ab388c084b7ab24c4855350b", 
+        "version": "745123d84dd584892a9871581e1c889cec28d454c8bebbdba3592c46918b518c", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_jobs_ready_to_run": {
-        "code": "class GxadminSuite:\n    def time_query_jobs_ready_to_run(self):\n        query = \"\"\"\n            SELECT\n            EXISTS(\n            SELECT\n            history_dataset_association.id,\n            history_dataset_association.history_id,\n            history_dataset_association.dataset_id,\n            history_dataset_association.create_time,\n            history_dataset_association.update_time,\n            history_dataset_association.state,\n            history_dataset_association.copied_from_history_dataset_association_id,\n            history_dataset_association.copied_from_library_dataset_dataset_association_id,\n            history_dataset_association.name,\n            history_dataset_association.info,\n            history_dataset_association.blurb,\n            history_dataset_association.peek,\n            history_dataset_association.tool_version,\n            history_dataset_association.extension,\n            history_dataset_association.metadata,\n            history_dataset_association.parent_id,\n            history_dataset_association.designation,\n            history_dataset_association.deleted,\n            history_dataset_association.visible,\n            history_dataset_association.extended_metadata_id,\n            history_dataset_association.version,\n            history_dataset_association.hid,\n            history_dataset_association.purged,\n            history_dataset_association.hidden_beneath_collection_instance_id\n            FROM\n            history_dataset_association,\n            job_to_output_dataset\n            WHERE\n            job.id = job_to_output_dataset.job_id\n            AND history_dataset_association.id\n            = job_to_output_dataset.dataset_id\n            AND history_dataset_association.deleted = true\n            )\n            AS anon_1,\n            EXISTS(\n            SELECT\n            history_dataset_collection_association.id\n            FROM\n            history_dataset_collection_association,\n            job_to_output_dataset_collection\n            WHERE\n            job.id = job_to_output_dataset_collection.job_id\n            AND history_dataset_collection_association.id\n            = job_to_output_dataset_collection.dataset_collection_id\n            AND history_dataset_collection_association.deleted\n            = true\n            )\n            AS anon_2,\n            job.id AS job_id,\n            job.create_time AS job_create_time,\n            job.update_time AS job_update_time,\n            job.history_id AS job_history_id,\n            job.library_folder_id AS job_library_folder_id,\n            job.tool_id AS job_tool_id,\n            job.tool_version AS job_tool_version,\n            job.state AS job_state,\n            job.info AS job_info,\n            job.copied_from_job_id AS job_copied_from_job_id,\n            job.command_line AS job_command_line,\n            job.dependencies AS job_dependencies,\n            job.param_filename AS job_param_filename,\n            job.runner_name AS job_runner_name_1,\n            job.stdout AS job_stdout,\n            job.stderr AS job_stderr,\n            job.exit_code AS job_exit_code,\n            job.traceback AS job_traceback,\n            job.session_id AS job_session_id,\n            job.user_id AS job_user_id,\n            job.job_runner_name AS job_job_runner_name,\n            job.job_runner_external_id\n            AS job_job_runner_external_id,\n            job.destination_id AS job_destination_id,\n            job.destination_params AS job_destination_params,\n            job.object_store_id AS job_object_store_id,\n            job.imported AS job_imported,\n            job.params AS job_params,\n            job.handler AS job_handler\n            FROM\n            job\n            WHERE\n            job.state = 'new'\n            AND job.handler IS NULL\n            AND job.handler = 'handler0'\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'jobs-ready-to-run',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_jobs_ready_to_run(self):\n        query = \"\"\"\n            SELECT\n            \tEXISTS(\n            \t\tSELECT\n            \t\t\thistory_dataset_association.id,\n            \t\t\thistory_dataset_association.history_id,\n            \t\t\thistory_dataset_association.dataset_id,\n            \t\t\thistory_dataset_association.create_time,\n            \t\t\thistory_dataset_association.update_time,\n            \t\t\thistory_dataset_association.state,\n            \t\t\thistory_dataset_association.copied_from_history_dataset_association_id,\n            \t\t\thistory_dataset_association.copied_from_library_dataset_dataset_association_id,\n            \t\t\thistory_dataset_association.name,\n            \t\t\thistory_dataset_association.info,\n            \t\t\thistory_dataset_association.blurb,\n            \t\t\thistory_dataset_association.peek,\n            \t\t\thistory_dataset_association.tool_version,\n            \t\t\thistory_dataset_association.extension,\n            \t\t\thistory_dataset_association.metadata,\n            \t\t\thistory_dataset_association.parent_id,\n            \t\t\thistory_dataset_association.designation,\n            \t\t\thistory_dataset_association.deleted,\n            \t\t\thistory_dataset_association.visible,\n            \t\t\thistory_dataset_association.extended_metadata_id,\n            \t\t\thistory_dataset_association.version,\n            \t\t\thistory_dataset_association.hid,\n            \t\t\thistory_dataset_association.purged,\n            \t\t\thistory_dataset_association.hidden_beneath_collection_instance_id\n            \t\tFROM\n            \t\t\thistory_dataset_association,\n            \t\t\tjob_to_output_dataset\n            \t\tWHERE\n            \t\t\tjob.id = job_to_output_dataset.job_id\n            \t\t\tAND history_dataset_association.id\n            \t\t\t\t= job_to_output_dataset.dataset_id\n            \t\t\tAND history_dataset_association.deleted = true\n            \t)\n            \t\tAS anon_1,\n            \tEXISTS(\n            \t\tSELECT\n            \t\t\thistory_dataset_collection_association.id\n            \t\tFROM\n            \t\t\thistory_dataset_collection_association,\n            \t\t\tjob_to_output_dataset_collection\n            \t\tWHERE\n            \t\t\tjob.id = job_to_output_dataset_collection.job_id\n            \t\t\tAND history_dataset_collection_association.id\n            \t\t\t\t= job_to_output_dataset_collection.dataset_collection_id\n            \t\t\tAND history_dataset_collection_association.deleted\n            \t\t\t\t= true\n            \t)\n            \t\tAS anon_2,\n            \tjob.id AS job_id,\n            \tjob.create_time AS job_create_time,\n            \tjob.update_time AS job_update_time,\n            \tjob.history_id AS job_history_id,\n            \tjob.library_folder_id AS job_library_folder_id,\n            \tjob.tool_id AS job_tool_id,\n            \tjob.tool_version AS job_tool_version,\n            \tjob.state AS job_state,\n            \tjob.info AS job_info,\n            \tjob.copied_from_job_id AS job_copied_from_job_id,\n            \tjob.command_line AS job_command_line,\n            \tjob.dependencies AS job_dependencies,\n            \tjob.param_filename AS job_param_filename,\n            \tjob.runner_name AS job_runner_name_1,\n            \tjob.stdout AS job_stdout,\n            \tjob.stderr AS job_stderr,\n            \tjob.exit_code AS job_exit_code,\n            \tjob.traceback AS job_traceback,\n            \tjob.session_id AS job_session_id,\n            \tjob.user_id AS job_user_id,\n            \tjob.job_runner_name AS job_job_runner_name,\n            \tjob.job_runner_external_id\n            \t\tAS job_job_runner_external_id,\n            \tjob.destination_id AS job_destination_id,\n            \tjob.destination_params AS job_destination_params,\n            \tjob.object_store_id AS job_object_store_id,\n            \tjob.imported AS job_imported,\n            \tjob.params AS job_params,\n            \tjob.handler AS job_handler\n            FROM\n            \tjob\n            WHERE\n            \tjob.state = 'new'\n            \tAND job.handler IS NULL\n            \tAND job.handler = 'handler0';\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'jobs-ready-to-run',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_jobs_ready_to_run", 
         "number": 0, 
@@ -428,11 +428,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "74e6e88733d2483eff23b8c3c2f1f97324e67071b52a53ab47a3461f64a44c09", 
+        "version": "ebbca8085ed4fb0dbf3420e076523ccd6fc0f05925ab3cc0329ae9a46304070d", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_largest_collection": {
-        "code": "class GxadminSuite:\n    def time_query_largest_collection(self):\n        query = \"\"\"\n            WITH temp_table_collection_count AS (\n            SELECT count(*)\n            FROM dataset_collection_element\n            GROUP BY dataset_collection_id\n            ORDER BY count desc\n            )\n            select max(count) as count from temp_table_collection_count\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'largest-collection',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_largest_collection(self):\n        query = \"\"\"\n            WITH\n            \ttemp_table_collection_count\n            \t\tAS (\n            \t\t\tSELECT\n            \t\t\t\tcount(*)\n            \t\t\tFROM\n            \t\t\t\tdataset_collection_element\n            \t\t\tGROUP BY\n            \t\t\t\tdataset_collection_id\n            \t\t\tORDER BY\n            \t\t\t\tcount DESC\n            \t\t)\n            SELECT\n            \tmax(count) AS count\n            FROM\n            \ttemp_table_collection_count;\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'largest-collection',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_largest_collection", 
         "number": 0, 
@@ -444,11 +444,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "1b95975daf62ad2ffe9a9edc07cd20295f2c72758745d97210499c21e9ab501d", 
+        "version": "619cfd775b0e2fc0d6fe154f38484f0bad4b0621932e6d0e22c85ac88a9a3d89", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_largest_histories": {
-        "code": "class GxadminSuite:\n    def time_query_largest_histories(self):\n        query = \"\"\"\n            SELECT\n            sum(coalesce(dataset.total_size, dataset.file_size, 0)) as total_size,\n            history.id,\n            substring(history.name, 1, 10),\n            COALESCE(galaxy_user.username::text, '__UNKNOWN__')\n            FROM\n            dataset\n            JOIN history_dataset_association on dataset.id = history_dataset_association.dataset_id\n            JOIN history on history_dataset_association.history_id = history.id\n            JOIN galaxy_user on history.user_id = galaxy_user.id\n            GROUP BY history.id, history.name, history.user_id, galaxy_user.username\n            ORDER BY sum(coalesce(dataset.total_size, dataset.file_size, 0)) DESC\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'largest-histories',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_largest_histories(self):\n        query = \"\"\"\n            SELECT\n            \tsum(COALESCE(dataset.total_size, dataset.file_size, 0))\n            \t\tAS total_size,\n            \thistory.id,\n            \tsubstring(history.name, 1, 10),\n            \tCOALESCE(galaxy_user.username::STRING, '__UNKNOWN__')\n            FROM\n            \tdataset\n            \tJOIN history_dataset_association ON\n            \t\t\tdataset.id\n            \t\t\t= history_dataset_association.dataset_id\n            \tJOIN history ON\n            \t\t\thistory_dataset_association.history_id\n            \t\t\t= history.id\n            \tJOIN galaxy_user ON history.user_id = galaxy_user.id\n            GROUP BY\n            \thistory.id,\n            \thistory.name,\n            \thistory.user_id,\n            \tgalaxy_user.username\n            ORDER BY\n            \tsum(COALESCE(dataset.total_size, dataset.file_size, 0))\n            \t\tDESC;\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'largest-histories',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_largest_histories", 
         "number": 0, 
@@ -460,11 +460,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "3918890579f3d83380c4f9f09ca27cde07a43308568b77b03d25828024e263f4", 
+        "version": "12e46c1dd13fb751cb93ef21a83482f4c2d68153d1a16c1ed7236c80e0f35128", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_latest_users": {
-        "code": "class GxadminSuite:\n    def time_query_latest_users(self):\n        query = \"\"\"\n            SELECT\n            id,\n            create_time AT TIME ZONE 'UTC' as create_time,\n            pg_size_pretty(disk_usage) as disk_usage,\n            COALESCE(username::text, '__UNKNOWN__') as username,\n            COALESCE(email::text, '__UNKNOWN__') as email,\n            array_to_string(ARRAY(\n            select galaxy_group.name from galaxy_group where id in (\n            select group_id from user_group_association where user_group_association.user_id = galaxy_user.id\n            )\n            ), ' ') as groups,\n            active\n            FROM galaxy_user\n            ORDER BY create_time desc\n            LIMIT 40\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'latest-users',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_latest_users(self):\n        query = \"\"\"\n            at or near \"as\": syntax error: unimplemented: this syntax\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'latest-users',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_latest_users", 
         "number": 0, 
@@ -476,11 +476,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "587bb4f709bb516de00fa895eb8545b56ccf52303e81ee27e7ab8739e18d03fa", 
+        "version": "e5214098697ca18787442a4a9671535f5c0f745f26cdadb79158ec8f8b2e2492", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_monthly_cpu_stats": {
-        "code": "class GxadminSuite:\n    def time_query_monthly_cpu_stats(self):\n        query = \"\"\"\n            SELECT\n            date_trunc('month', job.create_time  AT TIME ZONE 'UTC')::date as month,\n            round(sum((a.metric_value * b.metric_value) / 3600 / 24 / 365 ), 2) as cpu_years,\n            round(sum((a.metric_value * b.metric_value) / 3600 ), 2) as cpu_hours\n            FROM\n            job_metric_numeric a,\n            job_metric_numeric b,\n            job\n            WHERE\n            b.job_id = a.job_id\n            AND a.job_id = job.id\n            AND a.metric_name = 'runtime_seconds'\n            AND b.metric_name = 'galaxy_slots'\n    \n            GROUP BY month\n            ORDER BY month DESC\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'monthly-cpu-stats',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_monthly_cpu_stats(self):\n        query = \"\"\"\n            at or near \")\": syntax error: unimplemented: this syntax\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'monthly-cpu-stats',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_monthly_cpu_stats", 
         "number": 0, 
@@ -492,11 +492,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "5e40033d4e7a08600a8f6a57e3fbeea9ebc773d12ab9bf0365a7a40be9392893", 
+        "version": "81c910d9fe2c25de12cb738fce7019da419e89ae30aec766a73051ad49f7957e", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_monthly_cpu_years": {
-        "code": "class GxadminSuite:\n    def time_query_monthly_cpu_years(self):\n        query = \"\"\"\n            SELECT\n            date_trunc('month', job.create_time)::date as month,\n            round(sum((a.metric_value * b.metric_value) / 3600 / 24 / 365), 2) as cpu_years\n            FROM\n            job_metric_numeric a,\n            job_metric_numeric b,\n            job\n            WHERE\n            b.job_id = a.job_id\n            AND a.job_id = job.id\n            AND a.metric_name = 'runtime_seconds'\n            AND b.metric_name = 'galaxy_slots'\n            GROUP BY date_trunc('month', job.create_time)\n            ORDER BY date_trunc('month', job.create_time) DESC\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'monthly-cpu-years',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_monthly_cpu_years(self):\n        query = \"\"\"\n            SELECT\n            \tdate_trunc('month', job.create_time)::DATE AS month,\n            \tround(\n            \t\tsum(\n            \t\t\ta.metric_value * b.metric_value\n            \t\t\t/ 3600\n            \t\t\t/ 24\n            \t\t\t/ 365\n            \t\t),\n            \t\t2\n            \t)\n            \t\tAS cpu_years\n            FROM\n            \tjob_metric_numeric AS a, job_metric_numeric AS b, job\n            WHERE\n            \tb.job_id = a.job_id\n            \tAND a.job_id = job.id\n            \tAND a.metric_name = 'runtime_seconds'\n            \tAND b.metric_name = 'galaxy_slots'\n            GROUP BY\n            \tdate_trunc('month', job.create_time)\n            ORDER BY\n            \tdate_trunc('month', job.create_time) DESC;\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'monthly-cpu-years',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_monthly_cpu_years", 
         "number": 0, 
@@ -508,11 +508,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "a978a09cdbe041383762687032e324e2fc540afbf954befacf5ea8c3265035fc", 
+        "version": "aad8a673da57765ae023fe2d78a13d9eb258013862cb71ead4e8fec57bea662a", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_monthly_data": {
-        "code": "class GxadminSuite:\n    def time_query_monthly_data(self):\n        query = \"\"\"\n            SELECT\n            date_trunc('month', dataset.create_time AT TIME ZONE 'UTC')::date AS month,\n            sum(coalesce(dataset.total_size, dataset.file_size, 0))\n            FROM\n            dataset\n    \n            GROUP BY\n            month\n            ORDER BY\n            month DESC\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'monthly-data',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_monthly_data(self):\n        query = \"\"\"\n            at or near \")\": syntax error: unimplemented: this syntax\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'monthly-data',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_monthly_data", 
         "number": 0, 
@@ -524,11 +524,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "74285badeb4aceceb70d71b0d31e9036871b2ae697a4b185e5b2866e935796d5", 
+        "version": "d2f5e8106755e08a9b81f44b0283cc6c13aed42da69524d7570b68c2fbe66873", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_monthly_gpu_years": {
-        "code": "class GxadminSuite:\n    def time_query_monthly_gpu_years(self):\n        query = \"\"\"\n            SELECT\n            date_trunc('month', job.create_time)::date as month,\n            round(sum((a.metric_value * length(replace(b.metric_value, ',', ''))) / 3600 / 24 / 365), 2) as gpu_years\n            FROM\n            job_metric_numeric a,\n            job_metric_text b,\n            job\n            WHERE\n            b.job_id = a.job_id\n            AND a.job_id = job.id\n            AND a.metric_name = 'runtime_seconds'\n            AND b.metric_name = 'CUDA_VISIBLE_DEVICES'\n            GROUP BY date_trunc('month', job.create_time)\n            ORDER BY date_trunc('month', job.create_time) DESC\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'monthly-gpu-years',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_monthly_gpu_years(self):\n        query = \"\"\"\n            SELECT\n            \tdate_trunc('month', job.create_time)::DATE AS month,\n            \tround(\n            \t\tsum(\n            \t\t\ta.metric_value\n            \t\t\t* length(replace(b.metric_value, ',', ''))\n            \t\t\t/ 3600\n            \t\t\t/ 24\n            \t\t\t/ 365\n            \t\t),\n            \t\t2\n            \t)\n            \t\tAS gpu_years\n            FROM\n            \tjob_metric_numeric AS a, job_metric_text AS b, job\n            WHERE\n            \tb.job_id = a.job_id\n            \tAND a.job_id = job.id\n            \tAND a.metric_name = 'runtime_seconds'\n            \tAND b.metric_name = 'CUDA_VISIBLE_DEVICES'\n            GROUP BY\n            \tdate_trunc('month', job.create_time)\n            ORDER BY\n            \tdate_trunc('month', job.create_time) DESC;\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'monthly-gpu-years',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_monthly_gpu_years", 
         "number": 0, 
@@ -540,11 +540,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "5623df1672cfdc770e317e5adf86e4a0e0bf521b1fe5e0b4e75491c585cd9d27", 
+        "version": "5818eabb6fab8a4c732dc2356fd90e54a76aea1f46722b66ec75ff30bea3d0c5", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_monthly_jobs": {
-        "code": "class GxadminSuite:\n    def time_query_monthly_jobs(self):\n        query = \"\"\"\n            SELECT\n            date_trunc('month', job.create_time AT TIME ZONE 'UTC')::DATE AS month,\n            count(*)\n            FROM\n            job\n    \n            GROUP BY\n            month\n            ORDER BY\n            month DESC\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'monthly-jobs',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_monthly_jobs(self):\n        query = \"\"\"\n            at or near \")\": syntax error: unimplemented: this syntax\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'monthly-jobs',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_monthly_jobs", 
         "number": 0, 
@@ -556,11 +556,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "cefb222c63fc167a17c3768b2c9ebbc98e90db082ddc9c0d44fd2a4b4b7b3f03", 
+        "version": "b5be9052dd9b40d4b1a7c9ebdf5bf6006dd8cab35c68eb60fc73bf010d4a3996", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_monthly_users_active": {
-        "code": "class GxadminSuite:\n    def time_query_monthly_users_active(self):\n        query = \"\"\"\n            SELECT\n            date_trunc('month', job.create_time AT TIME ZONE 'UTC')::date as month,\n            count(distinct user_id) as active_users\n            FROM job\n    \n            GROUP BY month\n            ORDER BY month DESC\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'monthly-users-active',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_monthly_users_active(self):\n        query = \"\"\"\n            at or near \")\": syntax error: unimplemented: this syntax\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'monthly-users-active',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_monthly_users_active", 
         "number": 0, 
@@ -572,11 +572,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "d33c6554cf55ec944b6b72ef66d44267e15311e62d0bbcac13dff7da17824b7d", 
+        "version": "98e9430c089ee0b445ff58837c1c438e14bf0e69fff44fe0f40502c78e86bae3", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_monthly_users_registered": {
-        "code": "class GxadminSuite:\n    def time_query_monthly_users_registered(self):\n        query = \"\"\"\n            SELECT\n            date_trunc('month', galaxy_user.create_time)::DATE AS month,\n            count(*)\n            FROM\n            galaxy_user\n    \n            GROUP BY\n            month\n            ORDER BY\n            month DESC\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'monthly-users-registered',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_monthly_users_registered(self):\n        query = \"\"\"\n            SELECT\n            \tdate_trunc('month', galaxy_user.create_time)::DATE\n            \t\tAS month,\n            \tcount(*)\n            FROM\n            \tgalaxy_user\n            GROUP BY\n            \tmonth\n            ORDER BY\n            \tmonth DESC;\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'monthly-users-registered',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_monthly_users_registered", 
         "number": 0, 
@@ -588,11 +588,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "17b5410d7e88720e1fa3892aa3fa8eef245779a652f3adea7bbeb8d556ef5959", 
+        "version": "2dbb2cacde926d42cb1aee1387e9ce5b80fff7fc5c765a2465fa8b433f2b0c11", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_old_histories": {
-        "code": "class GxadminSuite:\n    def time_query_old_histories(self):\n        query = \"\"\"\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'old-histories',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_old_histories(self):\n        query = \"\"\"\n    \n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'old-histories',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_old_histories", 
         "number": 0, 
@@ -604,11 +604,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "23486b69e5b6d6c196dc7808c05986a4b96c065139df35ce63a798cb0c9a14f8", 
+        "version": "d1ee9ac7a95e809ad5925c3d4df65d7d77544f4b997c7e91c79c64f8cf871ced", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_pg_cache_hit": {
-        "code": "class GxadminSuite:\n    def time_query_pg_cache_hit(self):\n        query = \"\"\"\n            SELECT\n            sum(heap_blks_read) as heap_read,\n            sum(heap_blks_hit)  as heap_hit,\n            sum(heap_blks_hit) / (sum(heap_blks_hit) + sum(heap_blks_read)) as ratio\n            FROM\n            pg_statio_user_tables\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'pg-cache-hit',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_pg_cache_hit(self):\n        query = \"\"\"\n            SELECT\n            \tsum(heap_blks_read) AS heap_read,\n            \tsum(heap_blks_hit) AS heap_hit,\n            \tsum(heap_blks_hit)\n            \t/ (sum(heap_blks_hit) + sum(heap_blks_read))\n            \t\tAS ratio\n            FROM\n            \tpg_statio_user_tables;\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'pg-cache-hit',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_pg_cache_hit", 
         "number": 0, 
@@ -620,11 +620,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "c704cbe04dc319017d95c9a1d1d95efb3d90e9bf76d518d5e25036b4de4e9d26", 
+        "version": "e41876c401fe4892afd546b69cb9162f10e6b0576b19a34844ea10689ce9db77", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_pg_index_size": {
-        "code": "class GxadminSuite:\n    def time_query_pg_index_size(self):\n        query = \"\"\"\n            SELECT\n            c.relname AS name,\n            sum(c.relpages::bigint*8192)::bigint AS size\n            FROM pg_class c\n            LEFT JOIN pg_namespace n ON (n.oid = c.relnamespace)\n            WHERE n.nspname NOT IN ('pg_catalog', 'information_schema')\n            AND n.nspname !~ '^pg_toast'\n            AND c.relkind='i'\n            GROUP BY c.relname\n            ORDER BY sum(c.relpages) DESC\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'pg-index-size',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_pg_index_size(self):\n        query = \"\"\"\n            SELECT\n            \tc.relname AS name,\n            \tsum(c.relpages::INT8 * 8192)::INT8 AS size\n            FROM\n            \tpg_class AS c\n            \tLEFT JOIN pg_namespace AS n ON n.oid = c.relnamespace\n            WHERE\n            \tn.nspname NOT IN ('pg_catalog', 'information_schema')\n            \tAND n.nspname !~ '^pg_toast'\n            \tAND c.relkind = 'i'\n            GROUP BY\n            \tc.relname\n            ORDER BY\n            \tsum(c.relpages) DESC;\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'pg-index-size',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_pg_index_size", 
         "number": 0, 
@@ -636,11 +636,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "38ecdd618a5c335da15d2eb90da97e7d1a242a89581f010668e791ba075b9e1d", 
+        "version": "983685a63aee92aa0a3e70de75a2050ed91b4ea0402acbe5d28aef5bb1cb6aba", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_pg_index_usage": {
-        "code": "class GxadminSuite:\n    def time_query_pg_index_usage(self):\n        query = \"\"\"\n            SELECT relname,\n            CASE COALESCE(idx_scan, 0)\n            WHEN 0 THEN -1\n            ELSE (100 * idx_scan / (seq_scan + idx_scan))\n            END percent_of_times_index_used,\n            n_live_tup rows_in_table\n             FROM\n            pg_stat_user_tables\n            ORDER BY\n            n_live_tup DESC\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'pg-index-usage',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_pg_index_usage(self):\n        query = \"\"\"\n            SELECT\n            \trelname,\n            \tCASE COALESCE(idx_scan, 0)\n            \tWHEN 0 THEN -1\n            \tELSE (100 * idx_scan / (seq_scan + idx_scan))\n            \tEND\n            \t\tAS percent_of_times_index_used,\n            \tn_live_tup AS rows_in_table\n            FROM\n            \tpg_stat_user_tables\n            ORDER BY\n            \tn_live_tup DESC;\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'pg-index-usage',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_pg_index_usage", 
         "number": 0, 
@@ -652,11 +652,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "0097fa169c0a1a922aa5b479ac00c4c1e167ce05ab047d0b7d0d7022555309b7", 
+        "version": "6eb142c5e9620349708da1dd2a0053031f2141c402ff7febd754b5a76ea15eb2", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_pg_long_running_queries": {
-        "code": "class GxadminSuite:\n    def time_query_pg_long_running_queries(self):\n        query = \"\"\"\n            SELECT\n            pid,\n            now() - pg_stat_activity.query_start AS duration,\n            query AS query\n            FROM\n            pg_stat_activity\n            WHERE\n            pg_stat_activity.query <> ''::text\n            AND state <> 'idle'\n            AND now() - pg_stat_activity.query_start > interval '5 minutes'\n            ORDER BY\n            now() - pg_stat_activity.query_start DESC\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'pg-long-running-queries',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_pg_long_running_queries(self):\n        query = \"\"\"\n            SELECT\n            \tpid,\n            \tnow() - pg_stat_activity.query_start AS duration,\n            \tquery AS query\n            FROM\n            \tpg_stat_activity\n            WHERE\n            \tpg_stat_activity.query != ''::STRING\n            \tAND state != 'idle'\n            \tAND now() - pg_stat_activity.query_start\n            \t\t> '00:05:00':::INTERVAL\n            ORDER BY\n            \tnow() - pg_stat_activity.query_start DESC;\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'pg-long-running-queries',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_pg_long_running_queries", 
         "number": 0, 
@@ -668,11 +668,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "93bd4af18ba9ded2cf4d2fe5f0bbfee18f13e6ef7023f3d0927cdce8b9339d6e", 
+        "version": "50d2049a0596a7a5bc6f79fe04e53659903cdfab48e0e16106050a9f9ba9639f", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_pg_mandelbrot": {
-        "code": "class GxadminSuite:\n    def time_query_pg_mandelbrot(self):\n        query = \"\"\"\n            WITH RECURSIVE Z(IX, IY, CX, CY, X, Y, I) AS (\n            SELECT IX, IY, X::float, Y::float, X::float, Y::float, 0\n            FROM (select -2.2 + 0.031 * i, i from generate_series(0,101) as i) as xgen(x,ix),\n             (select -1.5 + 0.031 * i, i from generate_series(0,101) as i) as ygen(y,iy)\n            UNION ALL\n            SELECT IX, IY, CX, CY, X * X - Y * Y + CX AS X, Y * X * 2 + CY, I + 1\n            FROM Z\n            WHERE X * X + Y * Y < 16::float\n            AND I < 100\n            )\n            SELECT array_to_string(array_agg(SUBSTRING(' .,,,-----++++%%%%@@@@#### ', LEAST(GREATEST(I,1),27), 1)),'')\n            FROM (\n            SELECT IX, IY, MAX(I) AS I\n            FROM Z\n            GROUP BY IY, IX\n            ORDER BY IY, IX\n             ) AS ZT\n            GROUP BY IY\n            ORDER BY IY\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'pg-mandelbrot',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_pg_mandelbrot(self):\n        query = \"\"\"\n            at or near \"select\": syntax error: unimplemented: this syntax\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'pg-mandelbrot',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_pg_mandelbrot", 
         "number": 0, 
@@ -684,11 +684,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "732698964c06a30cb9199803d380aba5996fe4453bfd3ff1c2169de42bbab7a2", 
+        "version": "ec8147516a97d8181066e24573e023212465d605a6b6ef9f5da5e55fdc43331b", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_pg_stat_bgwriter": {
-        "code": "class GxadminSuite:\n    def time_query_pg_stat_bgwriter(self):\n        query = \"\"\"\n            SELECT\n            checkpoints_timed,\n            checkpoints_req,\n            checkpoint_write_time,\n            checkpoint_sync_time,\n            buffers_checkpoint,\n            buffers_clean,\n            maxwritten_clean,\n            buffers_backend,\n            buffers_backend_fsync,\n            buffers_alloc\n            FROM\n            pg_stat_bgwriter\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'pg-stat-bgwriter',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_pg_stat_bgwriter(self):\n        query = \"\"\"\n            SELECT\n            \tcheckpoints_timed,\n            \tcheckpoints_req,\n            \tcheckpoint_write_time,\n            \tcheckpoint_sync_time,\n            \tbuffers_checkpoint,\n            \tbuffers_clean,\n            \tmaxwritten_clean,\n            \tbuffers_backend,\n            \tbuffers_backend_fsync,\n            \tbuffers_alloc\n            FROM\n            \tpg_stat_bgwriter;\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'pg-stat-bgwriter',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_pg_stat_bgwriter", 
         "number": 0, 
@@ -700,11 +700,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "ea43639413990aa0180fcf11aa3f73cf6c0d8ed158369e695694f6fe0841b7b1", 
+        "version": "d7a091839c4dc4363cf4fd1849e1992d23195d806efb4da59be8e2943c065e5e", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_pg_stat_user_tables": {
-        "code": "class GxadminSuite:\n    def time_query_pg_stat_user_tables(self):\n        query = \"\"\"\n            SELECT\n            schemaname,\n            relname,\n            seq_scan,\n            seq_tup_read,\n            COALESCE(idx_scan, 0),\n            COALESCE(idx_tup_fetch, 0),\n            n_tup_ins,\n            n_tup_upd,\n            n_tup_del,\n            n_tup_hot_upd,\n            n_live_tup,\n            n_dead_tup,\n            vacuum_count,\n            autovacuum_count,\n            analyze_count,\n            autoanalyze_count\n            FROM\n            pg_stat_user_tables\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'pg-stat-user-tables',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_pg_stat_user_tables(self):\n        query = \"\"\"\n            SELECT\n            \tschemaname,\n            \trelname,\n            \tseq_scan,\n            \tseq_tup_read,\n            \tCOALESCE(idx_scan, 0),\n            \tCOALESCE(idx_tup_fetch, 0),\n            \tn_tup_ins,\n            \tn_tup_upd,\n            \tn_tup_del,\n            \tn_tup_hot_upd,\n            \tn_live_tup,\n            \tn_dead_tup,\n            \tvacuum_count,\n            \tautovacuum_count,\n            \tanalyze_count,\n            \tautoanalyze_count\n            FROM\n            \tpg_stat_user_tables;\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'pg-stat-user-tables',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_pg_stat_user_tables", 
         "number": 0, 
@@ -716,11 +716,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "51b2d9d66b9526f69d332bc6979916b6db876d73efe57dd0829e6b457039de99", 
+        "version": "ed086f22a3e488fdf6d1f3e9bc9f9b1f07823bddcc65e45913862c285cd0fb90", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_pg_table_bloat": {
-        "code": "class GxadminSuite:\n    def time_query_pg_table_bloat(self):\n        query = \"\"\"\n            WITH constants AS (\n            SELECT current_setting('block_size')::numeric AS bs, 23 AS hdr, 4 AS ma\n            ), bloat_info AS (\n            SELECT\n            ma,bs,schemaname,tablename,\n            (datawidth+(hdr+ma-(case when hdr%ma=0 THEN ma ELSE hdr%ma END)))::numeric AS datahdr,\n            (maxfracsum*(nullhdr+ma-(case when nullhdr%ma=0 THEN ma ELSE nullhdr%ma END))) AS nullhdr2\n            FROM (\n            SELECT\n            schemaname, tablename, hdr, ma, bs,\n            SUM((1-null_frac)*avg_width) AS datawidth,\n            MAX(null_frac) AS maxfracsum,\n            hdr+(\n            SELECT 1+count(*)/8\n            FROM pg_stats s2\n            WHERE null_frac<>0 AND s2.schemaname = s.schemaname AND s2.tablename = s.tablename\n            ) AS nullhdr\n            FROM pg_stats s, constants\n            GROUP BY 1,2,3,4,5\n            ) AS foo\n            ), table_bloat AS (\n            SELECT\n            schemaname, tablename, cc.relpages, bs,\n            CEIL((cc.reltuples*((datahdr+ma-\n            (CASE WHEN datahdr%ma=0 THEN ma ELSE datahdr%ma END))+nullhdr2+4))/(bs-20::float)) AS otta\n            FROM bloat_info\n            JOIN pg_class cc ON cc.relname = bloat_info.tablename\n            JOIN pg_namespace nn ON cc.relnamespace = nn.oid AND nn.nspname = bloat_info.schemaname AND nn.nspname <> 'information_schema'\n            ), index_bloat AS (\n            SELECT\n            schemaname, tablename, bs,\n            coalesce(c2.relname,'?') AS iname, COALESCE(c2.reltuples,0) AS ituples, c2.relpages,0 AS ipages,\n            COALESCE(CEIL((c2.reltuples*(datahdr-12))/(bs-20::float)),0) AS iotta -- very rough approximation, assumes all cols\n            FROM bloat_info\n            JOIN pg_class cc ON cc.relname = bloat_info.tablename\n            JOIN pg_namespace nn ON cc.relnamespace = nn.oid AND nn.nspname = bloat_info.schemaname AND nn.nspname <> 'information_schema'\n            JOIN pg_index i ON indrelid = cc.oid\n            JOIN pg_class c2 ON c2.oid = i.indexrelid\n            )\n            SELECT\n            type, schemaname, object_name, bloat, raw_waste as waste\n            FROM\n            (SELECT\n            'table' as type,\n            schemaname,\n            tablename as object_name,\n            ROUND(CASE WHEN otta=0 THEN 0.0 ELSE table_bloat.relpages/otta::numeric END,1) AS bloat,\n            CASE WHEN relpages < otta THEN '0' ELSE (bs*(table_bloat.relpages-otta)::bigint)::bigint END AS raw_waste\n            FROM\n            table_bloat\n            UNION\n            SELECT\n            'index' as type,\n            schemaname,\n            tablename || '::' || iname as object_name,\n            ROUND(CASE WHEN iotta=0 OR ipages=0 THEN 0.0 ELSE ipages/iotta::numeric END,1) AS bloat,\n            CASE WHEN ipages < iotta THEN '0' ELSE (bs*(ipages-iotta))::bigint END AS raw_waste\n            FROM\n            index_bloat) bloat_summary\n            ORDER BY raw_waste DESC, bloat DESC\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'pg-table-bloat',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_pg_table_bloat(self):\n        query = \"\"\"\n            WITH\n            \tconstants\n            \t\tAS (\n            \t\t\tSELECT\n            \t\t\t\tcurrent_setting('block_size')::DECIMAL\n            \t\t\t\t\tAS bs,\n            \t\t\t\t23 AS hdr,\n            \t\t\t\t4 AS ma\n            \t\t),\n            \tbloat_info\n            \t\tAS (\n            \t\t\tSELECT\n            \t\t\t\tma,\n            \t\t\t\tbs,\n            \t\t\t\tschemaname,\n            \t\t\t\ttablename,\n            \t\t\t\t(\n            \t\t\t\t\tdatawidth\n            \t\t\t\t\t+ hdr + ma\n            \t\t\t\t\t\t- (\n            \t\t\t\t\t\t\t\tCASE\n            \t\t\t\t\t\t\t\tWHEN hdr % ma = 0 THEN ma\n            \t\t\t\t\t\t\t\tELSE hdr % ma\n            \t\t\t\t\t\t\t\tEND\n            \t\t\t\t\t\t\t)\n            \t\t\t\t)::DECIMAL\n            \t\t\t\t\tAS datahdr,\n            \t\t\t\tmaxfracsum\n            \t\t\t\t* (\n            \t\t\t\t\t\tnullhdr + ma\n            \t\t\t\t\t\t- (\n            \t\t\t\t\t\t\t\tCASE\n            \t\t\t\t\t\t\t\tWHEN nullhdr % ma = 0\n            \t\t\t\t\t\t\t\tTHEN ma\n            \t\t\t\t\t\t\t\tELSE nullhdr % ma\n            \t\t\t\t\t\t\t\tEND\n            \t\t\t\t\t\t\t)\n            \t\t\t\t\t)\n            \t\t\t\t\tAS nullhdr2\n            \t\t\tFROM\n            \t\t\t\t(\n            \t\t\t\t\tSELECT\n            \t\t\t\t\t\tschemaname,\n            \t\t\t\t\t\ttablename,\n            \t\t\t\t\t\thdr,\n            \t\t\t\t\t\tma,\n            \t\t\t\t\t\tbs,\n            \t\t\t\t\t\tsum((1 - null_frac) * avg_width)\n            \t\t\t\t\t\t\tAS datawidth,\n            \t\t\t\t\t\tmax(null_frac) AS maxfracsum,\n            \t\t\t\t\t\thdr\n            \t\t\t\t\t\t+ (\n            \t\t\t\t\t\t\t\tSELECT\n            \t\t\t\t\t\t\t\t\t1 + count(*) / 8\n            \t\t\t\t\t\t\t\tFROM\n            \t\t\t\t\t\t\t\t\tpg_stats AS s2\n            \t\t\t\t\t\t\t\tWHERE\n            \t\t\t\t\t\t\t\t\tnull_frac != 0\n            \t\t\t\t\t\t\t\t\tAND s2.schemaname\n            \t\t\t\t\t\t\t\t\t\t= s.schemaname\n            \t\t\t\t\t\t\t\t\tAND s2.tablename\n            \t\t\t\t\t\t\t\t\t\t= s.tablename\n            \t\t\t\t\t\t\t)\n            \t\t\t\t\t\t\tAS nullhdr\n            \t\t\t\t\tFROM\n            \t\t\t\t\t\tpg_stats AS s, constants\n            \t\t\t\t\tGROUP BY\n            \t\t\t\t\t\t1, 2, 3, 4, 5\n            \t\t\t\t)\n            \t\t\t\t\tAS foo\n            \t\t),\n            \ttable_bloat\n            \t\tAS (\n            \t\t\tSELECT\n            \t\t\t\tschemaname,\n            \t\t\t\ttablename,\n            \t\t\t\tcc.relpages,\n            \t\t\t\tbs,\n            \t\t\t\tceil(\n            \t\t\t\t\tcc.reltuples\n            \t\t\t\t\t* (\n            \t\t\t\t\t\t\tdatahdr + ma\n            \t\t\t\t\t\t\t- (\n            \t\t\t\t\t\t\t\t\tCASE\n            \t\t\t\t\t\t\t\t\tWHEN datahdr % ma = 0\n            \t\t\t\t\t\t\t\t\tTHEN ma\n            \t\t\t\t\t\t\t\t\tELSE datahdr % ma\n            \t\t\t\t\t\t\t\t\tEND\n            \t\t\t\t\t\t\t\t)\n            \t\t\t\t\t\t\t+ nullhdr2\n            \t\t\t\t\t\t\t+ 4\n            \t\t\t\t\t\t)\n            \t\t\t\t\t/ (bs - 20::FLOAT8)\n            \t\t\t\t)\n            \t\t\t\t\tAS otta\n            \t\t\tFROM\n            \t\t\t\tbloat_info\n            \t\t\t\tJOIN pg_class AS cc ON\n            \t\t\t\t\t\tcc.relname = bloat_info.tablename\n            \t\t\t\tJOIN pg_namespace AS nn ON\n            \t\t\t\t\t\tcc.relnamespace = nn.oid\n            \t\t\t\t\t\tAND nn.nspname\n            \t\t\t\t\t\t\t= bloat_info.schemaname\n            \t\t\t\t\t\tAND nn.nspname\n            \t\t\t\t\t\t\t!= 'information_schema'\n            \t\t),\n            \tindex_bloat\n            \t\tAS (\n            \t\t\tSELECT\n            \t\t\t\tschemaname,\n            \t\t\t\ttablename,\n            \t\t\t\tbs,\n            \t\t\t\tCOALESCE(c2.relname, '?') AS iname,\n            \t\t\t\tCOALESCE(c2.reltuples, 0) AS ituples,\n            \t\t\t\tc2.relpages,\n            \t\t\t\t0 AS ipages,\n            \t\t\t\tCOALESCE(\n            \t\t\t\t\tceil(\n            \t\t\t\t\t\tc2.reltuples * (datahdr - 12)\n            \t\t\t\t\t\t/ (bs - 20::FLOAT8)\n            \t\t\t\t\t),\n            \t\t\t\t\t0\n            \t\t\t\t)\n            \t\t\t\t\tAS iotta\n            \t\t\tFROM\n            \t\t\t\tbloat_info\n            \t\t\t\tJOIN pg_class AS cc ON\n            \t\t\t\t\t\tcc.relname = bloat_info.tablename\n            \t\t\t\tJOIN pg_namespace AS nn ON\n            \t\t\t\t\t\tcc.relnamespace = nn.oid\n            \t\t\t\t\t\tAND nn.nspname\n            \t\t\t\t\t\t\t= bloat_info.schemaname\n            \t\t\t\t\t\tAND nn.nspname\n            \t\t\t\t\t\t\t!= 'information_schema'\n            \t\t\t\tJOIN pg_index AS i ON indrelid = cc.oid\n            \t\t\t\tJOIN pg_class AS c2 ON c2.oid = i.indexrelid\n            \t\t)\n            SELECT\n            \ttype, schemaname, object_name, bloat, raw_waste AS waste\n            FROM\n            \t(\n            \t\tSELECT\n            \t\t\t'table' AS type,\n            \t\t\tschemaname,\n            \t\t\ttablename AS object_name,\n            \t\t\tround(\n            \t\t\t\tCASE\n            \t\t\t\tWHEN otta = 0 THEN 0.0\n            \t\t\t\tELSE table_bloat.relpages / otta::DECIMAL\n            \t\t\t\tEND,\n            \t\t\t\t1\n            \t\t\t)\n            \t\t\t\tAS bloat,\n            \t\t\tCASE\n            \t\t\tWHEN relpages < otta THEN '0'\n            \t\t\tELSE (\n            \t\t\t\tbs * (table_bloat.relpages - otta)::INT8\n            \t\t\t)::INT8\n            \t\t\tEND\n            \t\t\t\tAS raw_waste\n            \t\tFROM\n            \t\t\ttable_bloat\n            \t\tUNION\n            \t\t\tSELECT\n            \t\t\t\t'index' AS type,\n            \t\t\t\tschemaname,\n            \t\t\t\ttablename || '::' || iname AS object_name,\n            \t\t\t\tround(\n            \t\t\t\t\tCASE\n            \t\t\t\t\tWHEN iotta = 0 OR ipages = 0 THEN 0.0\n            \t\t\t\t\tELSE ipages / iotta::DECIMAL\n            \t\t\t\t\tEND,\n            \t\t\t\t\t1\n            \t\t\t\t)\n            \t\t\t\t\tAS bloat,\n            \t\t\t\tCASE\n            \t\t\t\tWHEN ipages < iotta THEN '0'\n            \t\t\t\tELSE (bs * (ipages - iotta))::INT8\n            \t\t\t\tEND\n            \t\t\t\t\tAS raw_waste\n            \t\t\tFROM\n            \t\t\t\tindex_bloat\n            \t)\n            \t\tAS bloat_summary\n            ORDER BY\n            \traw_waste DESC, bloat DESC;\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'pg-table-bloat',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_pg_table_bloat", 
         "number": 0, 
@@ -732,11 +732,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "b18f5a156e0a0377a9bdc68a39b5518a250b9c19417b854301299b164de20e47", 
+        "version": "6020fa15b7098282aa60ef40dee3f576f0eee0a5f669fece2169da1cca5eb8e0", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_pg_table_size": {
-        "code": "class GxadminSuite:\n    def time_query_pg_table_size(self):\n        query = \"\"\"\n            SELECT\n            c.relname AS name,\n            pg_table_size(c.oid) AS size,\n            pg_indexes_size(c.oid) AS index_size\n            FROM pg_class c\n            LEFT JOIN pg_namespace n ON (n.oid = c.relnamespace)\n            WHERE n.nspname NOT IN ('pg_catalog', 'information_schema')\n            AND n.nspname !~ '^pg_toast'\n            AND c.relkind='r'\n            ORDER BY pg_table_size(c.oid) DESC\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'pg-table-size',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_pg_table_size(self):\n        query = \"\"\"\n            SELECT\n            \tc.relname AS name,\n            \tpg_table_size(c.oid) AS size,\n            \tpg_indexes_size(c.oid) AS index_size\n            FROM\n            \tpg_class AS c\n            \tLEFT JOIN pg_namespace AS n ON n.oid = c.relnamespace\n            WHERE\n            \tn.nspname NOT IN ('pg_catalog', 'information_schema')\n            \tAND n.nspname !~ '^pg_toast'\n            \tAND c.relkind = 'r'\n            ORDER BY\n            \tpg_table_size(c.oid) DESC;\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'pg-table-size',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_pg_table_size", 
         "number": 0, 
@@ -748,11 +748,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "510beaf4cb5036154a5f3d8cfc847780e485bcf791ce6c77036f51ad56cb942d", 
+        "version": "ae0c9fc1ab58251fcaf5800c2d7ea927889ee2147922499daa3ba0996e9eaaa7", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_pg_unused_indexes": {
-        "code": "class GxadminSuite:\n    def time_query_pg_unused_indexes(self):\n        query = \"\"\"\n            SELECT\n            schemaname || '.' || relname AS table,\n            indexrelname AS index,\n            pg_relation_size(i.indexrelid) AS index_size,\n            COALESCE(idx_scan, 0) as index_scans\n            FROM pg_stat_user_indexes ui\n            JOIN pg_index i ON ui.indexrelid = i.indexrelid\n            WHERE NOT indisunique AND idx_scan < 50 AND pg_relation_size(relid) > 5 * 8192\n            ORDER BY\n            pg_relation_size(i.indexrelid) / nullif(idx_scan, 0) DESC NULLS FIRST,\n            pg_relation_size(i.indexrelid) DESC\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'pg-unused-indexes',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_pg_unused_indexes(self):\n        query = \"\"\"\n            at or near \"nulls\": syntax error\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'pg-unused-indexes',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_pg_unused_indexes", 
         "number": 0, 
@@ -764,11 +764,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "cec654f9aae704f08a36c3ddf3b8f1ae8027edce6398026d575b65ea7005dfcb", 
+        "version": "744dae2d40f306d4b0ee8f249d2e9d4669a7921f2fbbadd3ded6ff5e835d7547", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_pg_vacuum_stats": {
-        "code": "class GxadminSuite:\n    def time_query_pg_vacuum_stats(self):\n        query = \"\"\"\n            WITH table_opts AS (\n            SELECT\n            pg_class.oid, relname, nspname, array_to_string(reloptions, '') AS relopts\n            FROM\n             pg_class INNER JOIN pg_namespace ns ON relnamespace = ns.oid\n            ), vacuum_settings AS (\n            SELECT\n            oid, relname, nspname,\n            CASE\n            WHEN relopts LIKE '%autovacuum_vacuum_threshold%'\n            THEN substring(relopts, '.*autovacuum_vacuum_threshold=([0-9.]+).*')::integer\n            ELSE current_setting('autovacuum_vacuum_threshold')::integer\n            END AS autovacuum_vacuum_threshold,\n            CASE\n            WHEN relopts LIKE '%autovacuum_vacuum_scale_factor%'\n            THEN substring(relopts, '.*autovacuum_vacuum_scale_factor=([0-9.]+).*')::real\n            ELSE current_setting('autovacuum_vacuum_scale_factor')::real\n            END AS autovacuum_vacuum_scale_factor\n            FROM\n            table_opts\n            )\n            SELECT\n            vacuum_settings.nspname AS schema,\n            vacuum_settings.relname AS table,\n            to_char(psut.last_vacuum, 'YYYY-MM-DD HH24:MI') AS last_vacuum,\n            to_char(psut.last_autovacuum, 'YYYY-MM-DD HH24:MI') AS last_autovacuum,\n            to_char(pg_class.reltuples, '9G999G999G999') AS rowcount,\n            to_char(psut.n_dead_tup, '9G999G999G999') AS dead_rowcount,\n            to_char(autovacuum_vacuum_threshold\n             + (autovacuum_vacuum_scale_factor::numeric * pg_class.reltuples), '9G999G999G999') AS autovacuum_threshold,\n            CASE\n            WHEN autovacuum_vacuum_threshold + (autovacuum_vacuum_scale_factor::numeric * pg_class.reltuples) < psut.n_dead_tup\n            THEN 'yes'\n            END AS expect_autovacuum\n            FROM\n            pg_stat_user_tables psut INNER JOIN pg_class ON psut.relid = pg_class.oid\n            INNER JOIN vacuum_settings ON pg_class.oid = vacuum_settings.oid\n            ORDER BY 1\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'pg-vacuum-stats',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_pg_vacuum_stats(self):\n        query = \"\"\"\n            WITH\n            \ttable_opts\n            \t\tAS (\n            \t\t\tSELECT\n            \t\t\t\tpg_class.oid,\n            \t\t\t\trelname,\n            \t\t\t\tnspname,\n            \t\t\t\tarray_to_string(reloptions, '') AS relopts\n            \t\t\tFROM\n            \t\t\t\tpg_class\n            \t\t\t\tINNER JOIN pg_namespace AS ns ON\n            \t\t\t\t\t\trelnamespace = ns.oid\n            \t\t),\n            \tvacuum_settings\n            \t\tAS (\n            \t\t\tSELECT\n            \t\t\t\toid,\n            \t\t\t\trelname,\n            \t\t\t\tnspname,\n            \t\t\t\tCASE\n            \t\t\t\tWHEN relopts\n            \t\t\t\tLIKE '%autovacuum_vacuum_threshold%'\n            \t\t\t\tTHEN substring(\n            \t\t\t\t\trelopts,\n            \t\t\t\t\t'.*autovacuum_vacuum_threshold=([0-9.]+).*'\n            \t\t\t\t)::INT8\n            \t\t\t\tELSE current_setting(\n            \t\t\t\t\t'autovacuum_vacuum_threshold'\n            \t\t\t\t)::INT8\n            \t\t\t\tEND\n            \t\t\t\t\tAS autovacuum_vacuum_threshold,\n            \t\t\t\tCASE\n            \t\t\t\tWHEN relopts\n            \t\t\t\tLIKE '%autovacuum_vacuum_scale_factor%'\n            \t\t\t\tTHEN substring(\n            \t\t\t\t\trelopts,\n            \t\t\t\t\t'.*autovacuum_vacuum_scale_factor=([0-9.]+).*'\n            \t\t\t\t)::FLOAT4\n            \t\t\t\tELSE current_setting(\n            \t\t\t\t\t'autovacuum_vacuum_scale_factor'\n            \t\t\t\t)::FLOAT4\n            \t\t\t\tEND\n            \t\t\t\t\tAS autovacuum_vacuum_scale_factor\n            \t\t\tFROM\n            \t\t\t\ttable_opts\n            \t\t)\n            SELECT\n            \tvacuum_settings.nspname AS schema,\n            \tvacuum_settings.relname AS table,\n            \tto_char(psut.last_vacuum, 'YYYY-MM-DD HH24:MI')\n            \t\tAS last_vacuum,\n            \tto_char(psut.last_autovacuum, 'YYYY-MM-DD HH24:MI')\n            \t\tAS last_autovacuum,\n            \tto_char(pg_class.reltuples, '9G999G999G999')\n            \t\tAS rowcount,\n            \tto_char(psut.n_dead_tup, '9G999G999G999')\n            \t\tAS dead_rowcount,\n            \tto_char(\n            \t\tautovacuum_vacuum_threshold\n            \t\t+ autovacuum_vacuum_scale_factor::DECIMAL\n            \t\t\t* pg_class.reltuples,\n            \t\t'9G999G999G999'\n            \t)\n            \t\tAS autovacuum_threshold,\n            \tCASE\n            \tWHEN autovacuum_vacuum_threshold\n            \t+ autovacuum_vacuum_scale_factor::DECIMAL\n            \t\t* pg_class.reltuples\n            \t< psut.n_dead_tup\n            \tTHEN 'yes'\n            \tEND\n            \t\tAS expect_autovacuum\n            FROM\n            \tpg_stat_user_tables AS psut\n            \tINNER JOIN pg_class ON psut.relid = pg_class.oid\n            \tINNER JOIN vacuum_settings ON\n            \t\t\tpg_class.oid = vacuum_settings.oid\n            ORDER BY\n            \t1;\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'pg-vacuum-stats',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_pg_vacuum_stats", 
         "number": 0, 
@@ -780,11 +780,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "5d890f777590491e57651e4694e6a1bfae0ca86815a0e7a08707781a1f6b7b88", 
+        "version": "e68a3c83ab0e5b541d57cae36b6c247011f021c4ab62242813ddac75794133d2", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_queue": {
-        "code": "class GxadminSuite:\n    def time_query_queue(self):\n        query = \"\"\"\n            SELECT\n            tool_id, state, count(tool_id) as tool_count\n            FROM\n            job\n            WHERE\n            state in ('queued', 'running')\n            GROUP BY\n            tool_id, state\n            ORDER BY\n            tool_count desc\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'queue',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_queue(self):\n        query = \"\"\"\n            SELECT\n            \ttool_id, state, count(tool_id) AS tool_count\n            FROM\n            \tjob\n            WHERE\n            \tstate IN ('queued', 'running')\n            GROUP BY\n            \ttool_id, state\n            ORDER BY\n            \ttool_count DESC;\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'queue',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_queue", 
         "number": 0, 
@@ -796,11 +796,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "a340cee61e785a9b650e67b818e5e7dd1016e9abeb3c6f2c70516fb1c8f98f22", 
+        "version": "562f925f7049974de7133fc7cb718b8fcff116dc3dfdb9cd89b880f5881b5b4c", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_queue_detail": {
-        "code": "class GxadminSuite:\n    def time_query_queue_detail(self):\n        query = \"\"\"\n            SELECT\n            job.state,\n            job.id,\n            job.job_runner_external_id as extid,\n            job.tool_id,\n            COALESCE(galaxy_user.username::text, 'Anonymous User'),\n            ( now() AT TIME ZONE 'UTC' - job.create_time) as time_since_creation,\n            job.handler,\n            job.job_runner_name,\n            job.destination_id\n            FROM job\n            FULL OUTER JOIN galaxy_user ON job.user_id = galaxy_user.id\n            WHERE\n            state in ('running', 'queued')\n            ORDER BY\n            state desc,\n            time_since_creation desc\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'queue-detail',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_queue_detail(self):\n        query = \"\"\"\n            at or near \"-\": syntax error: unimplemented: this syntax\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'queue-detail',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_queue_detail", 
         "number": 0, 
@@ -812,11 +812,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "2b1a2afb88cf4053ffc222e7a428b56ca543cfcc7fd338c25ab8e0474f0658f7", 
+        "version": "a03bf5e53044301cd14638689a1b54b451e7cbcc714cd19f1f4a8507c2a81e6f", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_queue_detail_by_handler": {
-        "code": "class GxadminSuite:\n    def time_query_queue_detail_by_handler(self):\n        query = \"\"\"\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'queue-detail-by-handler',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_queue_detail_by_handler(self):\n        query = \"\"\"\n    \n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'queue-detail-by-handler',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_queue_detail_by_handler", 
         "number": 0, 
@@ -828,11 +828,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "3bb657163fb9aa66ae69c7a1bbb21240894be33ddaa4ae11b0c1e45f05f0ac67", 
+        "version": "d04f1fea94193c880d0d170bbeba0234aa68a94e3544172febb5f0c2545b88e2", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_queue_overview": {
-        "code": "class GxadminSuite:\n    def time_query_queue_overview(self):\n        query = \"\"\"\n            WITH queue AS (\n            SELECT\n            regexp_replace(tool_id, '/[0-9.a-z+-]+$', '')::TEXT AS tool_id,\n            tool_version::TEXT,\n            COALESCE(destination_id, 'unknown')::TEXT AS destination_id,\n            COALESCE(handler, 'unknown')::TEXT AS handler,\n            state::TEXT,\n            COALESCE(job_runner_name, 'unknown')::TEXT AS job_runner_name,\n            count(*) AS count,\n            user_id::TEXT AS user_id\n            FROM\n            job\n            WHERE\n            state = 'running' OR state = 'queued' OR state = 'new'\n            GROUP BY\n            tool_id, tool_version, destination_id, handler, state, job_runner_name, user_id\n            )\n            SELECT\n            tool_id, tool_version, destination_id, handler, state, job_runner_name, sum(count), user_id\n            FROM\n            queue\n            GROUP BY\n            tool_id, tool_version, destination_id, handler, state, job_runner_name, user_id\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'queue-overview',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_queue_overview(self):\n        query = \"\"\"\n            WITH\n            \tqueue\n            \t\tAS (\n            \t\t\tSELECT\n            \t\t\t\tregexp_replace(\n            \t\t\t\t\ttool_id,\n            \t\t\t\t\t'/[0-9.a-z+-]+$',\n            \t\t\t\t\t''\n            \t\t\t\t)::STRING\n            \t\t\t\t\tAS tool_id,\n            \t\t\t\ttool_version::STRING,\n            \t\t\t\tCOALESCE(destination_id, 'unknown')::STRING\n            \t\t\t\t\tAS destination_id,\n            \t\t\t\tCOALESCE(handler, 'unknown')::STRING\n            \t\t\t\t\tAS handler,\n            \t\t\t\tstate::STRING,\n            \t\t\t\tCOALESCE(job_runner_name, 'unknown')::STRING\n            \t\t\t\t\tAS job_runner_name,\n            \t\t\t\tcount(*) AS count,\n            \t\t\t\tuser_id::STRING AS user_id\n            \t\t\tFROM\n            \t\t\t\tjob\n            \t\t\tWHERE\n            \t\t\t\tstate = 'running'\n            \t\t\t\tOR state = 'queued'\n            \t\t\t\tOR state = 'new'\n            \t\t\tGROUP BY\n            \t\t\t\ttool_id,\n            \t\t\t\ttool_version,\n            \t\t\t\tdestination_id,\n            \t\t\t\thandler,\n            \t\t\t\tstate,\n            \t\t\t\tjob_runner_name,\n            \t\t\t\tuser_id\n            \t\t)\n            SELECT\n            \ttool_id,\n            \ttool_version,\n            \tdestination_id,\n            \thandler,\n            \tstate,\n            \tjob_runner_name,\n            \tsum(count),\n            \tuser_id\n            FROM\n            \tqueue\n            GROUP BY\n            \ttool_id,\n            \ttool_version,\n            \tdestination_id,\n            \thandler,\n            \tstate,\n            \tjob_runner_name,\n            \tuser_id;\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'queue-overview',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_queue_overview", 
         "number": 0, 
@@ -844,11 +844,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "b3012f4c7c64962a5ad4c72757d5d983b851a2cd6298daf0b695f045ab6f0c42", 
+        "version": "7426cf99b0372d83476bcfadddb1ffa14e1569406e8ff4731d2fcc69911de34a", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_queue_time": {
-        "code": "class GxadminSuite:\n    def time_query_queue_time(self):\n        query = \"\"\"\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'queue-time',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_queue_time(self):\n        query = \"\"\"\n    \n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'queue-time',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_queue_time", 
         "number": 0, 
@@ -860,11 +860,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "5effa376290a9232684d800323d313b40efa5f384e8d30832db4c5f88c75fcd6", 
+        "version": "d0d7c15f9f38a18f02f4c92fca72b4311b06256e75018e16b78a08e3ca1e58fc", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_recent_jobs": {
-        "code": "class GxadminSuite:\n    def time_query_recent_jobs(self):\n        query = \"\"\"\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'recent-jobs',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_recent_jobs(self):\n        query = \"\"\"\n    \n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'recent-jobs',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_recent_jobs", 
         "number": 0, 
@@ -876,11 +876,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "5b7667bc5cb8402cb9d667b8dda65a2325c265866b07ba8f5abc517fabb710f4", 
+        "version": "21fa81c9b449e01f094502260356340b4e4dfcb64e9ec922480b59d1ac4d3a57", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_runtime_per_user": {
-        "code": "class GxadminSuite:\n    def time_query_runtime_per_user(self):\n        query = \"\"\"\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'runtime-per-user',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_runtime_per_user(self):\n        query = \"\"\"\n    \n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'runtime-per-user',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_runtime_per_user", 
         "number": 0, 
@@ -892,11 +892,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "15ca4e044f156c50233bc55b862fa23a9b6e31b4a1eeaa0f674a28a3135b20ed", 
+        "version": "4c7dba9caeab07f7f978d51ff8abf07d0273977346bdab57b9770745d18f7d1f", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_tool_available_metrics": {
-        "code": "class GxadminSuite:\n    def time_query_tool_available_metrics(self):\n        query = \"\"\"\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'tool-available-metrics',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_tool_available_metrics(self):\n        query = \"\"\"\n    \n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'tool-available-metrics',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_tool_available_metrics", 
         "number": 0, 
@@ -908,11 +908,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "8f2d148a180f56c5a70992fb2cc444bd43bcda8ff6292612f7428b31c3beb96e", 
+        "version": "bf02b7c5f2ea00c4b891c9a452c236ff776fe329ebe44e380ee9d552404ddbcd", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_tool_errors": {
-        "code": "class GxadminSuite:\n    def time_query_tool_errors(self):\n        query = \"\"\"\n            SELECT\n            j.tool_id,\n            count(*) AS tool_runs,\n            sum(CASE WHEN j.state = 'error'  THEN 1 ELSE 0 END)::float / count(*) AS percent_errored,\n            sum(CASE WHEN j.state = 'failed' THEN 1 ELSE 0 END)::float / count(*) AS percent_failed,\n            sum(CASE WHEN j.state = 'error'  THEN 1 ELSE 0 END) AS count_errored,\n            sum(CASE WHEN j.state = 'failed' THEN 1 ELSE 0 END) AS count_failed,\n            j.handler\n            FROM\n            job AS j\n            WHERE\n            j.create_time > (now() - '4 weeks'::INTERVAL)\n            GROUP BY\n            j.tool_id, j.handler\n            HAVING\n            sum(CASE WHEN j.state IN ('error', 'failed') THEN 1 ELSE 0 END) * 100.0 / count(*) > 10.0\n            ORDER BY\n            tool_runs DESC\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'tool-errors',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_tool_errors(self):\n        query = \"\"\"\n            SELECT\n            \tj.tool_id,\n            \tcount(*) AS tool_runs,\n            \tsum(\n            \t\tCASE\n            \t\tWHEN j.state = 'error' THEN 1\n            \t\tELSE 0\n            \t\tEND\n            \t)::FLOAT8\n            \t/ count(*)\n            \t\tAS percent_errored,\n            \tsum(\n            \t\tCASE\n            \t\tWHEN j.state = 'failed' THEN 1\n            \t\tELSE 0\n            \t\tEND\n            \t)::FLOAT8\n            \t/ count(*)\n            \t\tAS percent_failed,\n            \tsum(CASE WHEN j.state = 'error' THEN 1 ELSE 0 END)\n            \t\tAS count_errored,\n            \tsum(CASE WHEN j.state = 'failed' THEN 1 ELSE 0 END)\n            \t\tAS count_failed,\n            \tj.handler\n            FROM\n            \tjob AS j\n            WHERE\n            \tj.create_time > (now() - '4 weeks'::INTERVAL)\n            GROUP BY\n            \tj.tool_id, j.handler\n            HAVING\n            \tsum(\n            \t\tCASE\n            \t\tWHEN j.state IN ('error', 'failed') THEN 1\n            \t\tELSE 0\n            \t\tEND\n            \t)\n            \t* 100.0\n            \t/ count(*)\n            \t> 10.0\n            ORDER BY\n            \ttool_runs DESC;\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'tool-errors',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_tool_errors", 
         "number": 0, 
@@ -924,11 +924,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "cf0af93f0ee0df6fdf6bfd257bddf89b9a2cd0d8ce86221ce573c4361deb7ff9", 
+        "version": "ceb0925c5055ee617a9797308fa8e3029bb646e29624c7e4e27b05de5c0e7e67", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_tool_last_used_date": {
-        "code": "class GxadminSuite:\n    def time_query_tool_last_used_date(self):\n        query = \"\"\"\n            select max(date_trunc('month', create_time AT TIME ZONE 'UTC')), tool_id from job group by tool_id order by max desc\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'tool-last-used-date',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_tool_last_used_date(self):\n        query = \"\"\"\n            at or near \")\": syntax error: unimplemented: this syntax\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'tool-last-used-date',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_tool_last_used_date", 
         "number": 0, 
@@ -940,11 +940,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "bb2b7692b90a7e859dbc0f78af3b553b70cfccdfe7f6d105d9ffffde1c7f56ce", 
+        "version": "89885fe6c207a8c3c4e573e38d1202ab6669a1e23acb3e855359de36525ea223", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_tool_likely_broken": {
-        "code": "class GxadminSuite:\n    def time_query_tool_likely_broken(self):\n        query = \"\"\"\n            SELECT\n            j.tool_id,\n            count(*) AS tool_runs,\n            sum(CASE WHEN j.state = 'error'  THEN 1 ELSE 0 END)::float / count(*) AS percent_errored,\n            sum(CASE WHEN j.state = 'failed' THEN 1 ELSE 0 END)::float / count(*) AS percent_failed,\n            sum(CASE WHEN j.state = 'error'  THEN 1 ELSE 0 END) AS count_errored,\n            sum(CASE WHEN j.state = 'failed' THEN 1 ELSE 0 END) AS count_failed,\n            j.handler\n            FROM\n            job AS j\n            WHERE\n            j.create_time > (now() - '4 weeks'::INTERVAL)\n            GROUP BY\n            j.tool_id, j.handler\n            HAVING\n            sum(CASE WHEN j.state IN ('error', 'failed') THEN 1 ELSE 0 END) * 100.0 / count(*) > 95.0\n            AND count(*) > 4\n            ORDER BY\n            tool_runs DESC\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'tool-likely-broken',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_tool_likely_broken(self):\n        query = \"\"\"\n            SELECT\n            \tj.tool_id,\n            \tcount(*) AS tool_runs,\n            \tsum(\n            \t\tCASE\n            \t\tWHEN j.state = 'error' THEN 1\n            \t\tELSE 0\n            \t\tEND\n            \t)::FLOAT8\n            \t/ count(*)\n            \t\tAS percent_errored,\n            \tsum(\n            \t\tCASE\n            \t\tWHEN j.state = 'failed' THEN 1\n            \t\tELSE 0\n            \t\tEND\n            \t)::FLOAT8\n            \t/ count(*)\n            \t\tAS percent_failed,\n            \tsum(CASE WHEN j.state = 'error' THEN 1 ELSE 0 END)\n            \t\tAS count_errored,\n            \tsum(CASE WHEN j.state = 'failed' THEN 1 ELSE 0 END)\n            \t\tAS count_failed,\n            \tj.handler\n            FROM\n            \tjob AS j\n            WHERE\n            \tj.create_time > (now() - '4 weeks'::INTERVAL)\n            GROUP BY\n            \tj.tool_id, j.handler\n            HAVING\n            \tsum(\n            \t\tCASE\n            \t\tWHEN j.state IN ('error', 'failed') THEN 1\n            \t\tELSE 0\n            \t\tEND\n            \t)\n            \t* 100.0\n            \t/ count(*)\n            \t> 95.0\n            \tAND count(*) > 4\n            ORDER BY\n            \ttool_runs DESC;\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'tool-likely-broken',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_tool_likely_broken", 
         "number": 0, 
@@ -956,11 +956,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "65c8c92acb1840900f5a94334790a9edf7439455d9432a88875d81358a7c1627", 
+        "version": "a47036e056ead162c8b009e3e0107593a1e9194bd18bcf00a53f69582b587b67", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_tool_metrics": {
-        "code": "class GxadminSuite:\n    def time_query_tool_metrics(self):\n        query = \"\"\"\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'tool-metrics',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_tool_metrics(self):\n        query = \"\"\"\n    \n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'tool-metrics',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_tool_metrics", 
         "number": 0, 
@@ -972,11 +972,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "dd5cb48710c23711bc957d8a6470323fdb26fdded62f9221b4a70c7c0d703f36", 
+        "version": "f771713d13b80f9fd721edd586c4e5b9404e8c388540172cd9667327bf5207ee", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_tool_new_errors": {
-        "code": "class GxadminSuite:\n    def time_query_tool_new_errors(self):\n        query = \"\"\"\n            SELECT\n            j.tool_id,\n            count(*) AS tool_runs,\n            sum(CASE WHEN j.state = 'error'  THEN 1 ELSE 0 END)::float / count(*) AS percent_errored,\n            sum(CASE WHEN j.state = 'failed' THEN 1 ELSE 0 END)::float / count(*) AS percent_failed,\n            sum(CASE WHEN j.state = 'error'  THEN 1 ELSE 0 END) AS count_errored,\n            sum(CASE WHEN j.state = 'failed' THEN 1 ELSE 0 END) AS count_failed,\n            j.handler\n            FROM job AS j\n            WHERE\n            j.tool_id\n            IN (\n            SELECT tool_id\n            FROM job AS j\n            WHERE j.create_time > (now() - '4 weeks'::INTERVAL)\n            GROUP BY j.tool_id\n            )\n            GROUP BY j.tool_id, j.handler\n            ORDER BY percent_failed_errored DESC\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'tool-new-errors',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_tool_new_errors(self):\n        query = \"\"\"\n            SELECT\n            \tj.tool_id,\n            \tcount(*) AS tool_runs,\n            \tsum(\n            \t\tCASE\n            \t\tWHEN j.state = 'error' THEN 1\n            \t\tELSE 0\n            \t\tEND\n            \t)::FLOAT8\n            \t/ count(*)\n            \t\tAS percent_errored,\n            \tsum(\n            \t\tCASE\n            \t\tWHEN j.state = 'failed' THEN 1\n            \t\tELSE 0\n            \t\tEND\n            \t)::FLOAT8\n            \t/ count(*)\n            \t\tAS percent_failed,\n            \tsum(CASE WHEN j.state = 'error' THEN 1 ELSE 0 END)\n            \t\tAS count_errored,\n            \tsum(CASE WHEN j.state = 'failed' THEN 1 ELSE 0 END)\n            \t\tAS count_failed,\n            \tj.handler\n            FROM\n            \tjob AS j\n            WHERE\n            \tj.tool_id\n            \tIN (\n            \t\t\tSELECT\n            \t\t\t\ttool_id\n            \t\t\tFROM\n            \t\t\t\tjob AS j\n            \t\t\tWHERE\n            \t\t\t\tj.create_time\n            \t\t\t\t> (now() - '4 weeks'::INTERVAL)\n            \t\t\tGROUP BY\n            \t\t\t\tj.tool_id\n            \t\t)\n            GROUP BY\n            \tj.tool_id, j.handler\n            ORDER BY\n            \tpercent_failed_errored DESC;\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'tool-new-errors',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_tool_new_errors", 
         "number": 0, 
@@ -988,11 +988,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "8b80c4011f88eecae24225b434d86872fd4be4c16a6e8015d0523d1a9f36eada", 
+        "version": "ab4347bedd81c09945d910085aaac455b492403843a90a962a93ead2948b9ee0", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_tool_popularity": {
-        "code": "class GxadminSuite:\n    def time_query_tool_popularity(self):\n        query = \"\"\"\n            SELECT\n            tool_id,\n            date_trunc('month', create_time AT TIME ZONE 'UTC')::date as month,\n            count(*)\n            FROM job\n            WHERE create_time > (now() AT TIME ZONE 'UTC' - '24 months'::interval)\n            GROUP BY tool_id, month\n            ORDER BY month desc, count desc\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'tool-popularity',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_tool_popularity(self):\n        query = \"\"\"\n            at or near \")\": syntax error: unimplemented: this syntax\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'tool-popularity',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_tool_popularity", 
         "number": 0, 
@@ -1004,11 +1004,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "cd673f085d23293b1373d86dbd99de3ff5ceb314eab5f44a833055de5ef9b69c", 
+        "version": "8065b1a8034e61deac50099661a9fccf60e3c75bee22287164c4a369702f4edc", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_tool_usage": {
-        "code": "class GxadminSuite:\n    def time_query_tool_usage(self):\n        query = \"\"\"\n            SELECT\n            j.tool_id, count(*) AS count\n            FROM job j\n    \n            GROUP BY j.tool_id\n            ORDER BY count DESC\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'tool-usage',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_tool_usage(self):\n        query = \"\"\"\n            SELECT\n            \tj.tool_id, count(*) AS count\n            FROM\n            \tjob AS j\n            GROUP BY\n            \tj.tool_id\n            ORDER BY\n            \tcount DESC;\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'tool-usage',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_tool_usage", 
         "number": 0, 
@@ -1020,11 +1020,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "d37faba7465653f14ba9857f5c008fe55395f3c8c6b53e3f61e8cace774d2c45", 
+        "version": "68184c8cfc068a1f9c6f0822f0157c6c7bd49531cfc12039ad10aad2398e8b1e", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_total_jobs": {
-        "code": "class GxadminSuite:\n    def time_query_total_jobs(self):\n        query = \"\"\"\n            SELECT\n            state, count(*)\n            FROM\n            job\n    \n            GROUP BY\n            state\n            ORDER BY\n            state\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'total-jobs',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_total_jobs(self):\n        query = \"\"\"\n            SELECT\n            \tstate, count(*)\n            FROM\n            \tjob\n            GROUP BY\n            \tstate\n            ORDER BY\n            \tstate;\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'total-jobs',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_total_jobs", 
         "number": 0, 
@@ -1036,11 +1036,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "e1713b1537064e633efb4dddbc7d51f769800a200451b2437aa019de01b3886a", 
+        "version": "3818d0d246e6b6c32aef9e408ecae1acc076f83a4cbdfaccc93efee4c712dc31", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_training_list": {
-        "code": "class GxadminSuite:\n    def time_query_training_list(self):\n        query = \"\"\"\n            SELECT\n            substring(name from 10) as name,\n            date_trunc('day', create_time AT TIME ZONE 'UTC')::date as created\n    \n            FROM galaxy_group\n            WHERE name like 'training-%' AND deleted = false\n            ORDER BY create_time DESC\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'training-list',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_training_list(self):\n        query = \"\"\"\n            at or near \")\": syntax error: unimplemented: this syntax\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'training-list',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_training_list", 
         "number": 0, 
@@ -1052,11 +1052,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "38c5a9cd26d0ca1583ccc2ad314b3e43907798142534d4a39223d4031e55ba1c", 
+        "version": "bda4d363e77bd3f6b312f83fe92fe5a97898b44c349442a789f8c8332441e753", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_training_members": {
-        "code": "class GxadminSuite:\n    def time_query_training_members(self):\n        query = \"\"\"\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'training-members',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_training_members(self):\n        query = \"\"\"\n    \n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'training-members',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_training_members", 
         "number": 0, 
@@ -1068,11 +1068,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "cf5205a7805c96b3a914279a46b581cd34f42fc48e5b16f37acde42b288afade", 
+        "version": "3fb853bb2decafd4d3c4f2589e489c94082978970643b573377769daf34b50c5", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_training_members_remove": {
-        "code": "class GxadminSuite:\n    def time_query_training_members_remove(self):\n        query = \"\"\"\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'training-members-remove',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_training_members_remove(self):\n        query = \"\"\"\n    \n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'training-members-remove',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_training_members_remove", 
         "number": 0, 
@@ -1084,11 +1084,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "8499fa1d0ed45238edda77c618b3ab9addb8822ff2b57dd5dfee343353768e15", 
+        "version": "92d87ebd8e112b2f93aacf97b7b4619ac8bbefe3dd4262827eeb8dda43d32051", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_training_queue": {
-        "code": "class GxadminSuite:\n    def time_query_training_queue(self):\n        query = \"\"\"\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'training-queue',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_training_queue(self):\n        query = \"\"\"\n    \n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'training-queue',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_training_queue", 
         "number": 0, 
@@ -1100,11 +1100,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "ba6d7feabb5314c357ad3184d4338614a5e344fa2678d454032b814e4b6cc709", 
+        "version": "26c57eeabc866b7e097ddf231cda43614271acf00237132d501fca11366340cb", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_ts_repos": {
-        "code": "class GxadminSuite:\n    def time_query_ts_repos(self):\n        query = \"\"\"\n            SELECT\n            tool_shed, owner, count(*)\n            FROM\n            tool_shed_repository\n            GROUP BY\n            tool_shed, owner\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'ts-repos',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_ts_repos(self):\n        query = \"\"\"\n            SELECT\n            \ttool_shed, owner, count(*)\n            FROM\n            \ttool_shed_repository\n            GROUP BY\n            \ttool_shed, owner;\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'ts-repos',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_ts_repos", 
         "number": 0, 
@@ -1116,11 +1116,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "ffe0fb3e6422336c4d6dde8dcce6c6020279d6dabc063063a9ba99444b90c3a7", 
+        "version": "84cd64baa65daf13be00cbf2894b80ec7fe301a034deab19fb6e5d00b987f596", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_upload_gb_in_past_hour": {
-        "code": "class GxadminSuite:\n    def time_query_upload_gb_in_past_hour(self):\n        query = \"\"\"\n            SELECT\n            coalesce(sum(coalesce(dataset.total_size, coalesce(dataset.file_size, 0))), 0),\n            1 as hours\n            FROM\n            job\n            LEFT JOIN job_to_output_dataset ON job.id = job_to_output_dataset.job_id\n            LEFT JOIN history_dataset_association ON\n            job_to_output_dataset.dataset_id = history_dataset_association.id\n            LEFT JOIN dataset ON history_dataset_association.dataset_id = dataset.id\n            WHERE\n            job.tool_id = 'upload1'\n            AND job.create_time AT TIME ZONE 'UTC' > (now() - '1 hours'::INTERVAL)\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'upload-gb-in-past-hour',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_upload_gb_in_past_hour(self):\n        query = \"\"\"\n            at or near \">\": syntax error: unimplemented: this syntax\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'upload-gb-in-past-hour',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_upload_gb_in_past_hour", 
         "number": 0, 
@@ -1132,11 +1132,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "bb4e682322a97952e83a201df0fa598d828b294c998038ef1c8aeda6421c5365", 
+        "version": "78c405bb15390fbc099fab2c81b62034cf39ad9dba0ee21f5b83ca7e5ab9bf7a", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_user_cpu_years": {
-        "code": "class GxadminSuite:\n    def time_query_user_cpu_years(self):\n        query = \"\"\"\n            SELECT\n            row_number() OVER (ORDER BY round(sum((a.metric_value * b.metric_value) / 3600 / 24 / 365), 2) DESC) as rank,\n            job.user_id,\n            COALESCE(galaxy_user.username::text, 'Anonymous'),\n            round(sum((a.metric_value * b.metric_value) / 3600 / 24 / 365), 2) as cpu_years\n            FROM\n            job_metric_numeric a,\n            job_metric_numeric b,\n            job\n            FULL OUTER JOIN galaxy_user ON job.user_id = galaxy_user.id\n            WHERE\n            b.job_id = a.job_id\n            AND a.job_id = job.id\n            AND a.metric_name = 'runtime_seconds'\n            AND b.metric_name = 'galaxy_slots'\n            GROUP BY job.user_id, galaxy_user.username\n            ORDER BY round(sum((a.metric_value * b.metric_value) / 3600 / 24 / 365), 2) DESC\n            LIMIT 50\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'user-cpu-years',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_user_cpu_years(self):\n        query = \"\"\"\n            SELECT\n            \trow_number() OVER (\n            \t\tORDER BY\n            \t\t\tround(\n            \t\t\t\tsum(\n            \t\t\t\t\ta.metric_value * b.metric_value\n            \t\t\t\t\t/ 3600\n            \t\t\t\t\t/ 24\n            \t\t\t\t\t/ 365\n            \t\t\t\t),\n            \t\t\t\t2\n            \t\t\t)\n            \t\t\t\tDESC\n            \t)\n            \t\tAS rank,\n            \tjob.user_id,\n            \tCOALESCE(galaxy_user.username::STRING, 'Anonymous'),\n            \tround(\n            \t\tsum(\n            \t\t\ta.metric_value * b.metric_value\n            \t\t\t/ 3600\n            \t\t\t/ 24\n            \t\t\t/ 365\n            \t\t),\n            \t\t2\n            \t)\n            \t\tAS cpu_years\n            FROM\n            \tjob_metric_numeric AS a,\n            \tjob_metric_numeric AS b,\n            \tjob\n            \tFULL JOIN galaxy_user ON job.user_id = galaxy_user.id\n            WHERE\n            \tb.job_id = a.job_id\n            \tAND a.job_id = job.id\n            \tAND a.metric_name = 'runtime_seconds'\n            \tAND b.metric_name = 'galaxy_slots'\n            GROUP BY\n            \tjob.user_id, galaxy_user.username\n            ORDER BY\n            \tround(\n            \t\tsum(\n            \t\t\ta.metric_value * b.metric_value\n            \t\t\t/ 3600\n            \t\t\t/ 24\n            \t\t\t/ 365\n            \t\t),\n            \t\t2\n            \t)\n            \t\tDESC\n            LIMIT\n            \t50;\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'user-cpu-years',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_user_cpu_years", 
         "number": 0, 
@@ -1148,11 +1148,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "6af696a15de72f8911fd71cd230864b562dd374c65c1312c61d5320472c203bf", 
+        "version": "e6c539c6070ae7194b525dad23667cb7e7cedcdf2171c10b137275096f29a110", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_user_disk_quota": {
-        "code": "class GxadminSuite:\n    def time_query_user_disk_quota(self):\n        query = \"\"\"\n            WITH user_basequota_list AS (\n            SELECT galaxy_user.id as \"user_id\",\n            basequota.bytes as \"quota\"\n            FROM galaxy_user,\n            quota basequota,\n            user_quota_association\n            WHERE galaxy_user.id = user_quota_association.user_id\n            AND basequota.id = user_quota_association.quota_id\n            AND basequota.operation = '='\n            AND NOT basequota.deleted\n            GROUP BY galaxy_user.id, basequota.bytes\n            ),\n            user_basequota AS (\n            SELECT user_basequota_list.user_id,\n            MAX(user_basequota_list.quota) as \"quota\"\n            FROM user_basequota_list\n            GROUP BY user_basequota_list.user_id\n            ),\n            user_addquota_list AS (\n            SELECT galaxy_user.id as \"user_id\",\n            addquota.bytes as \"quota\"\n            FROM galaxy_user,\n            quota addquota,\n            user_quota_association\n            WHERE galaxy_user.id = user_quota_association.user_id\n            AND addquota.id = user_quota_association.quota_id\n            AND addquota.operation = '+'\n            AND NOT addquota.deleted\n            GROUP BY galaxy_user.id, addquota.bytes\n            ),\n            user_addquota AS (\n            SELECT user_addquota_list.user_id,\n            sum(user_addquota_list.quota) AS \"quota\"\n            FROM user_addquota_list\n            GROUP BY user_addquota_list.user_id\n            ),\n            user_minquota_list AS (\n            SELECT galaxy_user.id as \"user_id\",\n            minquota.bytes as \"quota\"\n            FROM galaxy_user,\n            quota minquota,\n            user_quota_association\n            WHERE galaxy_user.id = user_quota_association.user_id\n            AND minquota.id = user_quota_association.quota_id\n            AND minquota.operation = '-'\n            AND NOT minquota.deleted\n            GROUP BY galaxy_user.id, minquota.bytes\n            ),\n            user_minquota AS (\n            SELECT user_minquota_list.user_id,\n            sum(user_minquota_list.quota) AS \"quota\"\n            FROM user_minquota_list\n            GROUP BY user_minquota_list.user_id\n            ),\n            group_basequota_list AS (\n            SELECT galaxy_user.id as \"user_id\",\n            galaxy_group.id as \"group_id\",\n            basequota.bytes as \"quota\"\n            FROM galaxy_user,\n            galaxy_group,\n            quota basequota,\n            group_quota_association,\n            user_group_association\n            WHERE galaxy_user.id = user_group_association.user_id\n            AND galaxy_group.id = user_group_association.group_id\n            AND basequota.id = group_quota_association.quota_id\n            AND galaxy_group.id = group_quota_association.group_id\n            AND basequota.operation = '='\n            AND NOT basequota.deleted\n            GROUP BY galaxy_user.id, galaxy_group.id, basequota.bytes\n            ),\n            group_basequota AS (\n            SELECT group_basequota_list.user_id,\n            group_basequota_list.group_id,\n            MAX(group_basequota_list.quota) as \"quota\"\n            FROM group_basequota_list\n            GROUP BY group_basequota_list.user_id, group_basequota_list.group_id\n            ),\n            group_addquota_list AS (\n            SELECT galaxy_user.id as \"user_id\",\n            addquota.bytes as \"quota\"\n            FROM galaxy_user,\n            galaxy_group,\n            quota addquota,\n            group_quota_association,\n            user_group_association\n            WHERE galaxy_user.id = user_group_association.user_id\n            AND galaxy_group.id = user_group_association.group_id\n            AND addquota.id = group_quota_association.quota_id\n            AND galaxy_group.id = group_quota_association.group_id\n            AND addquota.operation = '+'\n            AND NOT addquota.deleted\n            GROUP BY galaxy_user.id, addquota.bytes\n            ),\n            group_addquota AS (\n            SELECT group_addquota_list.user_id,\n            sum(group_addquota_list.quota) AS \"quota\"\n            FROM group_addquota_list\n            GROUP BY group_addquota_list.user_id\n            ),\n            group_minquota_list AS (\n            SELECT galaxy_user.id as \"user_id\",\n            minquota.bytes as \"quota\"\n            FROM galaxy_user,\n            galaxy_group,\n            quota minquota,\n            group_quota_association,\n            user_group_association\n            WHERE galaxy_user.id = user_group_association.user_id\n            AND galaxy_group.id = user_group_association.group_id\n            AND minquota.id = group_quota_association.quota_id\n            AND galaxy_group.id = group_quota_association.group_id\n            AND minquota.operation = '-'\n            AND NOT minquota.deleted\n            GROUP BY galaxy_user.id, galaxy_group.id, galaxy_group.name, minquota.bytes\n            ),\n            group_minquota AS (\n            SELECT group_minquota_list.user_id,\n            sum(group_minquota_list.quota) AS \"quota\"\n            FROM group_minquota_list\n            GROUP BY group_minquota_list.user_id\n            ),\n            all_user_default_quota AS (\n            SELECT galaxy_user.id as \"user_id\",\n            quota.bytes\n            FROM galaxy_user,\n            quota\n            WHERE quota.id = (SELECT quota_id FROM default_quota_association)\n            ),\n            quotas AS (\n            SELECT all_user_default_quota.user_id as \"aud_uid\",\n            all_user_default_quota.bytes as \"aud_quota\",\n            user_basequota.user_id as \"ubq_uid\",\n            user_basequota.quota as \"ubq_quota\",\n            user_addquota.user_id as \"uaq_uid\",\n            user_addquota.quota as \"uaq_quota\",\n            user_minquota.user_id as \"umq_uid\",\n            user_minquota.quota as \"umq_quota\",\n            group_basequota.user_id as \"gbq_uid\",\n            group_basequota.quota as \"gbq_quota\",\n            group_addquota.user_id as \"gaq_uid\",\n            group_addquota.quota as \"gaq_quota\",\n            group_minquota.user_id as \"gmq_uid\",\n            group_minquota.quota as \"gmq_quota\"\n            FROM all_user_default_quota\n            FULL OUTER JOIN user_basequota ON all_user_default_quota.user_id = user_basequota.user_id\n            FULL OUTER JOIN user_addquota ON all_user_default_quota.user_id = user_addquota.user_id\n            FULL OUTER JOIN user_minquota ON all_user_default_quota.user_id = user_minquota.user_id\n            FULL OUTER JOIN group_basequota ON all_user_default_quota.user_id = group_basequota.user_id\n            FULL OUTER JOIN group_addquota ON all_user_default_quota.user_id = group_addquota.user_id\n            FULL OUTER JOIN group_minquota ON all_user_default_quota.user_id = group_minquota.user_id\n            ),\n            computed_quotas AS (\n            SELECT aud_uid as \"user_id\",\n            COALESCE(GREATEST(ubq_quota, gbq_quota), aud_quota) as \"base_quota\",\n            (COALESCE(uaq_quota, 0) + COALESCE(gaq_quota, 0)) as \"add_quota\",\n            (COALESCE(umq_quota, 0) + COALESCE(gmq_quota, 0)) as \"min_quota\"\n            FROM quotas\n            )\n    \n            SELECT row_number() OVER (ORDER BY (computed_quotas.base_quota + computed_quotas.add_quota - computed_quotas.min_quota) DESC) as rank,\n            galaxy_user.id as \"user_id\",\n            COALESCE(galaxy_user.username::text, 'Anonymous'),\n            pg_size_pretty(computed_quotas.base_quota + computed_quotas.add_quota - computed_quotas.min_quota) as \"quota\"\n            FROM computed_quotas,\n            galaxy_user\n            WHERE computed_quotas.user_id = galaxy_user.id\n            GROUP BY galaxy_user.id, galaxy_user.username, computed_quotas.base_quota, computed_quotas.add_quota, computed_quotas.min_quota\n            ORDER BY (computed_quotas.base_quota + computed_quotas.add_quota - computed_quotas.min_quota) DESC\n            LIMIT 50\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'user-disk-quota',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_user_disk_quota(self):\n        query = \"\"\"\n            WITH\n            \tuser_basequota_list\n            \t\tAS (\n            \t\t\tSELECT\n            \t\t\t\tgalaxy_user.id AS user_id,\n            \t\t\t\tbasequota.bytes AS quota\n            \t\t\tFROM\n            \t\t\t\tgalaxy_user,\n            \t\t\t\tquota AS basequota,\n            \t\t\t\tuser_quota_association\n            \t\t\tWHERE\n            \t\t\t\tgalaxy_user.id\n            \t\t\t\t= user_quota_association.user_id\n            \t\t\t\tAND basequota.id\n            \t\t\t\t\t= user_quota_association.quota_id\n            \t\t\t\tAND basequota.operation = '='\n            \t\t\t\tAND NOT basequota.deleted\n            \t\t\tGROUP BY\n            \t\t\t\tgalaxy_user.id, basequota.bytes\n            \t\t),\n            \tuser_basequota\n            \t\tAS (\n            \t\t\tSELECT\n            \t\t\t\tuser_basequota_list.user_id,\n            \t\t\t\tmax(user_basequota_list.quota) AS quota\n            \t\t\tFROM\n            \t\t\t\tuser_basequota_list\n            \t\t\tGROUP BY\n            \t\t\t\tuser_basequota_list.user_id\n            \t\t),\n            \tuser_addquota_list\n            \t\tAS (\n            \t\t\tSELECT\n            \t\t\t\tgalaxy_user.id AS user_id,\n            \t\t\t\taddquota.bytes AS quota\n            \t\t\tFROM\n            \t\t\t\tgalaxy_user,\n            \t\t\t\tquota AS addquota,\n            \t\t\t\tuser_quota_association\n            \t\t\tWHERE\n            \t\t\t\tgalaxy_user.id\n            \t\t\t\t= user_quota_association.user_id\n            \t\t\t\tAND addquota.id\n            \t\t\t\t\t= user_quota_association.quota_id\n            \t\t\t\tAND addquota.operation = '+'\n            \t\t\t\tAND NOT addquota.deleted\n            \t\t\tGROUP BY\n            \t\t\t\tgalaxy_user.id, addquota.bytes\n            \t\t),\n            \tuser_addquota\n            \t\tAS (\n            \t\t\tSELECT\n            \t\t\t\tuser_addquota_list.user_id,\n            \t\t\t\tsum(user_addquota_list.quota) AS quota\n            \t\t\tFROM\n            \t\t\t\tuser_addquota_list\n            \t\t\tGROUP BY\n            \t\t\t\tuser_addquota_list.user_id\n            \t\t),\n            \tuser_minquota_list\n            \t\tAS (\n            \t\t\tSELECT\n            \t\t\t\tgalaxy_user.id AS user_id,\n            \t\t\t\tminquota.bytes AS quota\n            \t\t\tFROM\n            \t\t\t\tgalaxy_user,\n            \t\t\t\tquota AS minquota,\n            \t\t\t\tuser_quota_association\n            \t\t\tWHERE\n            \t\t\t\tgalaxy_user.id\n            \t\t\t\t= user_quota_association.user_id\n            \t\t\t\tAND minquota.id\n            \t\t\t\t\t= user_quota_association.quota_id\n            \t\t\t\tAND minquota.operation = '-'\n            \t\t\t\tAND NOT minquota.deleted\n            \t\t\tGROUP BY\n            \t\t\t\tgalaxy_user.id, minquota.bytes\n            \t\t),\n            \tuser_minquota\n            \t\tAS (\n            \t\t\tSELECT\n            \t\t\t\tuser_minquota_list.user_id,\n            \t\t\t\tsum(user_minquota_list.quota) AS quota\n            \t\t\tFROM\n            \t\t\t\tuser_minquota_list\n            \t\t\tGROUP BY\n            \t\t\t\tuser_minquota_list.user_id\n            \t\t),\n            \tgroup_basequota_list\n            \t\tAS (\n            \t\t\tSELECT\n            \t\t\t\tgalaxy_user.id AS user_id,\n            \t\t\t\tgalaxy_group.id AS group_id,\n            \t\t\t\tbasequota.bytes AS quota\n            \t\t\tFROM\n            \t\t\t\tgalaxy_user,\n            \t\t\t\tgalaxy_group,\n            \t\t\t\tquota AS basequota,\n            \t\t\t\tgroup_quota_association,\n            \t\t\t\tuser_group_association\n            \t\t\tWHERE\n            \t\t\t\tgalaxy_user.id\n            \t\t\t\t= user_group_association.user_id\n            \t\t\t\tAND galaxy_group.id\n            \t\t\t\t\t= user_group_association.group_id\n            \t\t\t\tAND basequota.id\n            \t\t\t\t\t= group_quota_association.quota_id\n            \t\t\t\tAND galaxy_group.id\n            \t\t\t\t\t= group_quota_association.group_id\n            \t\t\t\tAND basequota.operation = '='\n            \t\t\t\tAND NOT basequota.deleted\n            \t\t\tGROUP BY\n            \t\t\t\tgalaxy_user.id,\n            \t\t\t\tgalaxy_group.id,\n            \t\t\t\tbasequota.bytes\n            \t\t),\n            \tgroup_basequota\n            \t\tAS (\n            \t\t\tSELECT\n            \t\t\t\tgroup_basequota_list.user_id,\n            \t\t\t\tgroup_basequota_list.group_id,\n            \t\t\t\tmax(group_basequota_list.quota) AS quota\n            \t\t\tFROM\n            \t\t\t\tgroup_basequota_list\n            \t\t\tGROUP BY\n            \t\t\t\tgroup_basequota_list.user_id,\n            \t\t\t\tgroup_basequota_list.group_id\n            \t\t),\n            \tgroup_addquota_list\n            \t\tAS (\n            \t\t\tSELECT\n            \t\t\t\tgalaxy_user.id AS user_id,\n            \t\t\t\taddquota.bytes AS quota\n            \t\t\tFROM\n            \t\t\t\tgalaxy_user,\n            \t\t\t\tgalaxy_group,\n            \t\t\t\tquota AS addquota,\n            \t\t\t\tgroup_quota_association,\n            \t\t\t\tuser_group_association\n            \t\t\tWHERE\n            \t\t\t\tgalaxy_user.id\n            \t\t\t\t= user_group_association.user_id\n            \t\t\t\tAND galaxy_group.id\n            \t\t\t\t\t= user_group_association.group_id\n            \t\t\t\tAND addquota.id\n            \t\t\t\t\t= group_quota_association.quota_id\n            \t\t\t\tAND galaxy_group.id\n            \t\t\t\t\t= group_quota_association.group_id\n            \t\t\t\tAND addquota.operation = '+'\n            \t\t\t\tAND NOT addquota.deleted\n            \t\t\tGROUP BY\n            \t\t\t\tgalaxy_user.id, addquota.bytes\n            \t\t),\n            \tgroup_addquota\n            \t\tAS (\n            \t\t\tSELECT\n            \t\t\t\tgroup_addquota_list.user_id,\n            \t\t\t\tsum(group_addquota_list.quota) AS quota\n            \t\t\tFROM\n            \t\t\t\tgroup_addquota_list\n            \t\t\tGROUP BY\n            \t\t\t\tgroup_addquota_list.user_id\n            \t\t),\n            \tgroup_minquota_list\n            \t\tAS (\n            \t\t\tSELECT\n            \t\t\t\tgalaxy_user.id AS user_id,\n            \t\t\t\tminquota.bytes AS quota\n            \t\t\tFROM\n            \t\t\t\tgalaxy_user,\n            \t\t\t\tgalaxy_group,\n            \t\t\t\tquota AS minquota,\n            \t\t\t\tgroup_quota_association,\n            \t\t\t\tuser_group_association\n            \t\t\tWHERE\n            \t\t\t\tgalaxy_user.id\n            \t\t\t\t= user_group_association.user_id\n            \t\t\t\tAND galaxy_group.id\n            \t\t\t\t\t= user_group_association.group_id\n            \t\t\t\tAND minquota.id\n            \t\t\t\t\t= group_quota_association.quota_id\n            \t\t\t\tAND galaxy_group.id\n            \t\t\t\t\t= group_quota_association.group_id\n            \t\t\t\tAND minquota.operation = '-'\n            \t\t\t\tAND NOT minquota.deleted\n            \t\t\tGROUP BY\n            \t\t\t\tgalaxy_user.id,\n            \t\t\t\tgalaxy_group.id,\n            \t\t\t\tgalaxy_group.name,\n            \t\t\t\tminquota.bytes\n            \t\t),\n            \tgroup_minquota\n            \t\tAS (\n            \t\t\tSELECT\n            \t\t\t\tgroup_minquota_list.user_id,\n            \t\t\t\tsum(group_minquota_list.quota) AS quota\n            \t\t\tFROM\n            \t\t\t\tgroup_minquota_list\n            \t\t\tGROUP BY\n            \t\t\t\tgroup_minquota_list.user_id\n            \t\t),\n            \tall_user_default_quota\n            \t\tAS (\n            \t\t\tSELECT\n            \t\t\t\tgalaxy_user.id AS user_id, quota.bytes\n            \t\t\tFROM\n            \t\t\t\tgalaxy_user, quota\n            \t\t\tWHERE\n            \t\t\t\tquota.id\n            \t\t\t\t= (\n            \t\t\t\t\t\tSELECT\n            \t\t\t\t\t\t\tquota_id\n            \t\t\t\t\t\tFROM\n            \t\t\t\t\t\t\tdefault_quota_association\n            \t\t\t\t\t)\n            \t\t),\n            \tquotas\n            \t\tAS (\n            \t\t\tSELECT\n            \t\t\t\tall_user_default_quota.user_id AS aud_uid,\n            \t\t\t\tall_user_default_quota.bytes AS aud_quota,\n            \t\t\t\tuser_basequota.user_id AS ubq_uid,\n            \t\t\t\tuser_basequota.quota AS ubq_quota,\n            \t\t\t\tuser_addquota.user_id AS uaq_uid,\n            \t\t\t\tuser_addquota.quota AS uaq_quota,\n            \t\t\t\tuser_minquota.user_id AS umq_uid,\n            \t\t\t\tuser_minquota.quota AS umq_quota,\n            \t\t\t\tgroup_basequota.user_id AS gbq_uid,\n            \t\t\t\tgroup_basequota.quota AS gbq_quota,\n            \t\t\t\tgroup_addquota.user_id AS gaq_uid,\n            \t\t\t\tgroup_addquota.quota AS gaq_quota,\n            \t\t\t\tgroup_minquota.user_id AS gmq_uid,\n            \t\t\t\tgroup_minquota.quota AS gmq_quota\n            \t\t\tFROM\n            \t\t\t\tall_user_default_quota\n            \t\t\t\tFULL JOIN user_basequota ON\n            \t\t\t\t\t\tall_user_default_quota.user_id\n            \t\t\t\t\t\t= user_basequota.user_id\n            \t\t\t\tFULL JOIN user_addquota ON\n            \t\t\t\t\t\tall_user_default_quota.user_id\n            \t\t\t\t\t\t= user_addquota.user_id\n            \t\t\t\tFULL JOIN user_minquota ON\n            \t\t\t\t\t\tall_user_default_quota.user_id\n            \t\t\t\t\t\t= user_minquota.user_id\n            \t\t\t\tFULL JOIN group_basequota ON\n            \t\t\t\t\t\tall_user_default_quota.user_id\n            \t\t\t\t\t\t= group_basequota.user_id\n            \t\t\t\tFULL JOIN group_addquota ON\n            \t\t\t\t\t\tall_user_default_quota.user_id\n            \t\t\t\t\t\t= group_addquota.user_id\n            \t\t\t\tFULL JOIN group_minquota ON\n            \t\t\t\t\t\tall_user_default_quota.user_id\n            \t\t\t\t\t\t= group_minquota.user_id\n            \t\t),\n            \tcomputed_quotas\n            \t\tAS (\n            \t\t\tSELECT\n            \t\t\t\taud_uid AS user_id,\n            \t\t\t\tCOALESCE(\n            \t\t\t\t\tgreatest(ubq_quota, gbq_quota),\n            \t\t\t\t\taud_quota\n            \t\t\t\t)\n            \t\t\t\t\tAS base_quota,\n            \t\t\t\tCOALESCE(uaq_quota, 0)\n            \t\t\t\t+ COALESCE(gaq_quota, 0)\n            \t\t\t\t\tAS add_quota,\n            \t\t\t\tCOALESCE(umq_quota, 0)\n            \t\t\t\t+ COALESCE(gmq_quota, 0)\n            \t\t\t\t\tAS min_quota\n            \t\t\tFROM\n            \t\t\t\tquotas\n            \t\t)\n            SELECT\n            \trow_number() OVER (\n            \t\tORDER BY\n            \t\t\t(\n            \t\t\t\tcomputed_quotas.base_quota\n            \t\t\t\t+ computed_quotas.add_quota\n            \t\t\t\t- computed_quotas.min_quota\n            \t\t\t)\n            \t\t\t\tDESC\n            \t)\n            \t\tAS rank,\n            \tgalaxy_user.id AS user_id,\n            \tCOALESCE(galaxy_user.username::STRING, 'Anonymous'),\n            \tpg_size_pretty(\n            \t\tcomputed_quotas.base_quota\n            \t\t+ computed_quotas.add_quota\n            \t\t- computed_quotas.min_quota\n            \t)\n            \t\tAS quota\n            FROM\n            \tcomputed_quotas, galaxy_user\n            WHERE\n            \tcomputed_quotas.user_id = galaxy_user.id\n            GROUP BY\n            \tgalaxy_user.id,\n            \tgalaxy_user.username,\n            \tcomputed_quotas.base_quota,\n            \tcomputed_quotas.add_quota,\n            \tcomputed_quotas.min_quota\n            ORDER BY\n            \t(\n            \t\tcomputed_quotas.base_quota\n            \t\t+ computed_quotas.add_quota\n            \t\t- computed_quotas.min_quota\n            \t)\n            \t\tDESC\n            LIMIT\n            \t50;\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'user-disk-quota',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_user_disk_quota", 
         "number": 0, 
@@ -1164,11 +1164,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "9ec0c2c26f531261c26de46669707b1b503c8817d45b54d91564cea4a9654a4d", 
+        "version": "b449cc7588a870076e78741016018cd8047e1c3dee5c3cb8557a47ab01a00342", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_user_disk_usage": {
-        "code": "class GxadminSuite:\n    def time_query_user_disk_usage(self):\n        query = \"\"\"\n            SELECT\n            row_number() OVER (ORDER BY sum(coalesce(dataset.total_size, dataset.file_size, 0)) DESC) as rank,\n            galaxy_user.id as \"user id\",\n            COALESCE(galaxy_user.username::text, 'Anonymous'),\n            COALESCE(galaxy_user.email::text, 'Anonymous'),\n            sum(coalesce(dataset.total_size, dataset.file_size, 0)) as \"storage usage\"\n            FROM\n            dataset,\n            galaxy_user,\n            history_dataset_association,\n            history\n            WHERE\n            NOT dataset.purged\n            AND dataset.id = history_dataset_association.dataset_id\n            AND history_dataset_association.history_id = history.id\n            AND history.user_id = galaxy_user.id\n            GROUP BY galaxy_user.id\n            ORDER BY 1\n            LIMIT 50\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'user-disk-usage',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_user_disk_usage(self):\n        query = \"\"\"\n            SELECT\n            \trow_number() OVER (\n            \t\tORDER BY\n            \t\t\tsum(\n            \t\t\t\tCOALESCE(\n            \t\t\t\t\tdataset.total_size,\n            \t\t\t\t\tdataset.file_size,\n            \t\t\t\t\t0\n            \t\t\t\t)\n            \t\t\t)\n            \t\t\t\tDESC\n            \t)\n            \t\tAS rank,\n            \tgalaxy_user.id AS \"user id\",\n            \tCOALESCE(galaxy_user.username::STRING, 'Anonymous'),\n            \tCOALESCE(galaxy_user.email::STRING, 'Anonymous'),\n            \tsum(COALESCE(dataset.total_size, dataset.file_size, 0))\n            \t\tAS \"storage usage\"\n            FROM\n            \tdataset,\n            \tgalaxy_user,\n            \thistory_dataset_association,\n            \thistory\n            WHERE\n            \tNOT dataset.purged\n            \tAND dataset.id = history_dataset_association.dataset_id\n            \tAND history_dataset_association.history_id = history.id\n            \tAND history.user_id = galaxy_user.id\n            GROUP BY\n            \tgalaxy_user.id\n            ORDER BY\n            \t1\n            LIMIT\n            \t50;\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'user-disk-usage',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_user_disk_usage", 
         "number": 0, 
@@ -1180,11 +1180,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "4f701f3b55ad5be2176aec88c6e5b598c50f9e79ba29b1dcdf45201d83bd4a8d", 
+        "version": "3ef66b0b142e6e1603ba8c2df78abca6905cf7c3ae5983522ecf154715aad4fd", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_user_gpu_years": {
-        "code": "class GxadminSuite:\n    def time_query_user_gpu_years(self):\n        query = \"\"\"\n            SELECT\n            row_number() OVER (ORDER BY round(sum((a.metric_value * length(replace(b.metric_value, ',', ''))) / 3600 / 24 / 365), 2) DESC) as rank,\n            job.user_id,\n            COALESCE(galaxy_user.username::text, 'Anonymous'),\n            round(sum((a.metric_value * length(replace(b.metric_value, ',', ''))) / 3600 / 24 / 365), 2) as gpu_years\n            FROM\n            job_metric_numeric a,\n            job_metric_text b,\n            job\n            FULL OUTER JOIN galaxy_user ON job.user_id = galaxy_user.id\n            WHERE\n            b.job_id = a.job_id\n            AND a.job_id = job.id\n            AND a.metric_name = 'runtime_seconds'\n            AND b.metric_name = 'CUDA_VISIBLE_DEVICES'\n            GROUP BY job.user_id, galaxy_user.username\n            ORDER BY round(sum((a.metric_value * length(replace(b.metric_value, ',', ''))) / 3600 / 24 / 365), 2) DESC\n            LIMIT 50\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'user-gpu-years',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_user_gpu_years(self):\n        query = \"\"\"\n            SELECT\n            \trow_number() OVER (\n            \t\tORDER BY\n            \t\t\tround(\n            \t\t\t\tsum(\n            \t\t\t\t\ta.metric_value\n            \t\t\t\t\t* length(\n            \t\t\t\t\t\t\treplace(b.metric_value, ',', '')\n            \t\t\t\t\t\t)\n            \t\t\t\t\t/ 3600\n            \t\t\t\t\t/ 24\n            \t\t\t\t\t/ 365\n            \t\t\t\t),\n            \t\t\t\t2\n            \t\t\t)\n            \t\t\t\tDESC\n            \t)\n            \t\tAS rank,\n            \tjob.user_id,\n            \tCOALESCE(galaxy_user.username::STRING, 'Anonymous'),\n            \tround(\n            \t\tsum(\n            \t\t\ta.metric_value\n            \t\t\t* length(replace(b.metric_value, ',', ''))\n            \t\t\t/ 3600\n            \t\t\t/ 24\n            \t\t\t/ 365\n            \t\t),\n            \t\t2\n            \t)\n            \t\tAS gpu_years\n            FROM\n            \tjob_metric_numeric AS a,\n            \tjob_metric_text AS b,\n            \tjob\n            \tFULL JOIN galaxy_user ON job.user_id = galaxy_user.id\n            WHERE\n            \tb.job_id = a.job_id\n            \tAND a.job_id = job.id\n            \tAND a.metric_name = 'runtime_seconds'\n            \tAND b.metric_name = 'CUDA_VISIBLE_DEVICES'\n            GROUP BY\n            \tjob.user_id, galaxy_user.username\n            ORDER BY\n            \tround(\n            \t\tsum(\n            \t\t\ta.metric_value\n            \t\t\t* length(replace(b.metric_value, ',', ''))\n            \t\t\t/ 3600\n            \t\t\t/ 24\n            \t\t\t/ 365\n            \t\t),\n            \t\t2\n            \t)\n            \t\tDESC\n            LIMIT\n            \t50;\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'user-gpu-years',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_user_gpu_years", 
         "number": 0, 
@@ -1196,11 +1196,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "4de3c0f806336d323925cfdd7f033a9d048330d34a37c86e01e12cf1d1231a31", 
+        "version": "344a6c902322231b6cd9a4df91ed7cb99f7fda689a257ea21566b2f8487827a3", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_user_history_list": {
-        "code": "class GxadminSuite:\n    def time_query_user_history_list(self):\n        query = \"\"\"\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'user-history-list',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_user_history_list(self):\n        query = \"\"\"\n    \n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'user-history-list',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_user_history_list", 
         "number": 0, 
@@ -1212,11 +1212,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "4290960c1dbbe01df4571a32787ec5bc5d8a8d8d8d0057063998e1b781d55c60", 
+        "version": "0c67f5301bac1427a1c583e3d0b7135e4c0733a4b30035c3e77a04bcd0ab2954", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_user_recent_aggregate_jobs": {
-        "code": "class GxadminSuite:\n    def time_query_user_recent_aggregate_jobs(self):\n        query = \"\"\"\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'user-recent-aggregate-jobs',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_user_recent_aggregate_jobs(self):\n        query = \"\"\"\n    \n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'user-recent-aggregate-jobs',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_user_recent_aggregate_jobs", 
         "number": 0, 
@@ -1228,11 +1228,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "ed219d8f2de04f3c7d863eaedf8817b4e625396109dfe69351a257c1f1e8b0e1", 
+        "version": "e51770f58f58417055d2f2a296e744bfe69a502eb0a4e3bcbe0d641107b02eb4", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_users_count": {
-        "code": "class GxadminSuite:\n    def time_query_users_count(self):\n        query = \"\"\"\n            SELECT\n            active, external, deleted, purged, count(*) as count\n            FROM\n            galaxy_user\n            GROUP BY\n            active, external, deleted, purged\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'users-count',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_users_count(self):\n        query = \"\"\"\n            SELECT\n            \tactive, external, deleted, purged, count(*) AS count\n            FROM\n            \tgalaxy_user\n            GROUP BY\n            \tactive, external, deleted, purged;\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'users-count',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_users_count", 
         "number": 0, 
@@ -1244,11 +1244,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "2e82a64a6f5d659b5fe52586b453675c67f8c8614ef40ff238d0b36a32f01c0e", 
+        "version": "961248750af20c202808f1c05cb949226c9273a8c71ec6cb68ae4f00763ff303", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_users_total": {
-        "code": "class GxadminSuite:\n    def time_query_users_total(self):\n        query = \"\"\"\n            SELECT count(*) FROM galaxy_user\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'users-total',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_users_total(self):\n        query = \"\"\"\n            SELECT count(*) FROM galaxy_user;\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'users-total',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_users_total", 
         "number": 0, 
@@ -1260,11 +1260,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "cb2b86e9045eb0e88b89571482578e7310ad6a32067fa3140b7b2f2578569ec2", 
+        "version": "2e2675570d4e3189316d1f17b1e18f1cbb5916ed350bedeaa1ba99b15aeed2d0", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_users_with_oidc": {
-        "code": "class GxadminSuite:\n    def time_query_users_with_oidc(self):\n        query = \"\"\"\n            SELECT provider, count(distinct user_id) FROM oidc_user_authnz_tokens GROUP BY provider\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'users-with-oidc',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_users_with_oidc(self):\n        query = \"\"\"\n            SELECT\n            \tprovider, count(DISTINCT user_id)\n            FROM\n            \toidc_user_authnz_tokens\n            GROUP BY\n            \tprovider;\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'users-with-oidc',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_users_with_oidc", 
         "number": 0, 
@@ -1276,11 +1276,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "1dffa89434623296ade9fd9b19800a9fb9055f858365c8b64626c365d8d75d22", 
+        "version": "23e36d5ce8430baa5fefe047c19eb2f5d790a262e6f9f39b9a1aff539593eb03", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_workers": {
-        "code": "class GxadminSuite:\n    def time_query_workers(self):\n        query = \"\"\"\n            SELECT\n            server_name,\n            hostname,\n            pid\n            FROM\n            worker_process\n            WHERE\n            pid IS NOT NULL\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'workers',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_workers(self):\n        query = \"\"\"\n            SELECT\n            \tserver_name, hostname, pid\n            FROM\n            \tworker_process\n            WHERE\n            \tpid IS NOT NULL;\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'workers',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_workers", 
         "number": 0, 
@@ -1292,11 +1292,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "27eab942c09b651758ed88260c818b9c15dc2fbe13f4905158047cb8476e7ce7", 
+        "version": "4a8c9e0874500cc569e1596019f9ab88514060ec801feaacd47b8802136e8572", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_workflow_connections": {
-        "code": "class GxadminSuite:\n    def time_query_workflow_connections(self):\n        query = \"\"\"\n            SELECT\n            workflow.id as wf_id,\n            workflow.update_time::DATE as wf_updated,\n            ws_in.id as in_id,\n            ws_in.tool_id as in_tool,\n            ws_in.tool_version as in_tool_v,\n            ws_out.id as out_id,\n            ws_out.tool_id as out_tool,\n            ws_out.tool_version as out_tool_v,\n            sw.published as published,\n            sw.deleted as deleted,\n            workflow.has_errors as has_errors\n            FROM workflow_step_connection wfc\n            LEFT JOIN workflow_step ws_in ON ws_in.id = wfc.output_step_id\n            LEFT JOIN workflow_step_input wsi ON wfc.input_step_input_id = wsi.id\n            LEFT JOIN workflow_step ws_out ON ws_out.id = wsi.workflow_step_id\n            LEFT JOIN workflow_output as wo ON wsi.workflow_step_id = wfc.output_step_id\n            LEFT JOIN workflow on ws_in.workflow_id = workflow.id\n            LEFT JOIN stored_workflow as sw on sw.latest_workflow_id = workflow.id\n            WHERE\n            workflow.id in (\n            SELECT\n             workflow.id\n            FROM\n             stored_workflow\n            LEFT JOIN\n             workflow on stored_workflow.latest_workflow_id = workflow.id\n            )\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'workflow-connections',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_workflow_connections(self):\n        query = \"\"\"\n            SELECT\n            \tworkflow.id AS wf_id,\n            \tworkflow.update_time::DATE AS wf_updated,\n            \tws_in.id AS in_id,\n            \tws_in.tool_id AS in_tool,\n            \tws_in.tool_version AS in_tool_v,\n            \tws_out.id AS out_id,\n            \tws_out.tool_id AS out_tool,\n            \tws_out.tool_version AS out_tool_v,\n            \tsw.published AS published,\n            \tsw.deleted AS deleted,\n            \tworkflow.has_errors AS has_errors\n            FROM\n            \tworkflow_step_connection AS wfc\n            \tLEFT JOIN workflow_step AS ws_in ON\n            \t\t\tws_in.id = wfc.output_step_id\n            \tLEFT JOIN workflow_step_input AS wsi ON\n            \t\t\twfc.input_step_input_id = wsi.id\n            \tLEFT JOIN workflow_step AS ws_out ON\n            \t\t\tws_out.id = wsi.workflow_step_id\n            \tLEFT JOIN workflow_output AS wo ON\n            \t\t\twsi.workflow_step_id = wfc.output_step_id\n            \tLEFT JOIN workflow ON ws_in.workflow_id = workflow.id\n            \tLEFT JOIN stored_workflow AS sw ON\n            \t\t\tsw.latest_workflow_id = workflow.id\n            WHERE\n            \tworkflow.id\n            \tIN (\n            \t\t\tSELECT\n            \t\t\t\tworkflow.id\n            \t\t\tFROM\n            \t\t\t\tstored_workflow\n            \t\t\t\tLEFT JOIN workflow ON\n            \t\t\t\t\t\tstored_workflow.latest_workflow_id\n            \t\t\t\t\t\t= workflow.id\n            \t\t);\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'workflow-connections',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_workflow_connections", 
         "number": 0, 
@@ -1308,11 +1308,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "31e6f12dd22d8569f188644df9c6a356f543d3f2feed64210e0b359c5a2b11b2", 
+        "version": "93afa9c04f23568ed2b112971ee0b646f56827d6346ea9834d7d20e98aef8748", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_workflow_invocation_status": {
-        "code": "class GxadminSuite:\n    def time_query_workflow_invocation_status(self):\n        query = \"\"\"\n            SELECT\n            COALESCE(scheduler, 'none'),\n            COALESCE(handler, 'none'),\n            state,\n            count(*)\n            FROM\n            workflow_invocation\n            WHERE state in ('new', 'ready')\n            GROUP BY handler, scheduler, state\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'workflow-invocation-status',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_workflow_invocation_status(self):\n        query = \"\"\"\n            SELECT\n            \tCOALESCE(scheduler, 'none'),\n            \tCOALESCE(handler, 'none'),\n            \tstate,\n            \tcount(*)\n            FROM\n            \tworkflow_invocation\n            WHERE\n            \tstate IN ('new', 'ready')\n            GROUP BY\n            \thandler, scheduler, state;\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'workflow-invocation-status',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_workflow_invocation_status", 
         "number": 0, 
@@ -1324,11 +1324,11 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "ae97ee7ece8bc16d4be1089f51a9434e0dce05f655568845d653b7d67e2649af", 
+        "version": "3791a20f1377f80c2736f1bd851a5c8aba92d70a43125b639d1ade63a2a68c6b", 
         "warmup_time": -1
     }, 
     "benchmarks.GxadminSuite.time_query_workflow_invocation_totals": {
-        "code": "class GxadminSuite:\n    def time_query_workflow_invocation_totals(self):\n        query = \"\"\"\n            SELECT\n            COALESCE(state, 'unknown'), count(*)\n            FROM\n            workflow_invocation\n            GROUP BY state\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'workflow-invocation-totals',\n        ])", 
+        "code": "class GxadminSuite:\n    def time_query_workflow_invocation_totals(self):\n        query = \"\"\"\n            SELECT\n            \tCOALESCE(state, 'unknown'), count(*)\n            FROM\n            \tworkflow_invocation\n            GROUP BY\n            \tstate;\n        \"\"\"\n        query = subprocess.check_output([\n            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',\n            'query',\n            'workflow-invocation-totals',\n        ])", 
         "min_run_count": 2, 
         "name": "benchmarks.GxadminSuite.time_query_workflow_invocation_totals", 
         "number": 0, 
@@ -1340,7 +1340,7 @@
         "timeout": 60.0, 
         "type": "time", 
         "unit": "seconds", 
-        "version": "be026347e1f9f0c7681c210386de9ad3f617b44f41ca8b95fbe5c40a9c28a677", 
+        "version": "9ce36b6ecc4a7d3a1f591449c1fc5f7c954680c759faae70f9d21152b672c0fd", 
         "warmup_time": -1
     }, 
     "version": 2
