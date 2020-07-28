@@ -15,7 +15,7 @@ class GxadminSuite:
             dc.collection_type
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'collection-usage',
         ])
@@ -43,7 +43,7 @@ class GxadminSuite:
             ORDER BY galaxy_user desc
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'data-origin-distribution',
         ])
@@ -78,7 +78,7 @@ class GxadminSuite:
             GROUP BY origin
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'data-origin-distribution-summary',
         ])
@@ -105,7 +105,7 @@ class GxadminSuite:
             from temp_queue_times
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'datasets-created-daily',
         ])
@@ -119,7 +119,7 @@ class GxadminSuite:
             ORDER BY sum(coalesce(dataset.total_size, dataset.file_size, 0)) DESC
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'disk-usage',
         ])
@@ -146,7 +146,7 @@ class GxadminSuite:
             job.id
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'errored-jobs',
         ])
@@ -179,7 +179,7 @@ class GxadminSuite:
             ORDER BY median_score ASC
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'good-for-pulsar',
         ])
@@ -218,7 +218,7 @@ class GxadminSuite:
             LIMIT 50
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'group-cpu-seconds',
         ])
@@ -256,7 +256,7 @@ class GxadminSuite:
             LIMIT 50
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'group-gpu-time',
         ])
@@ -271,7 +271,7 @@ class GxadminSuite:
             GROUP BY name
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'groups-list',
         ])
@@ -283,7 +283,7 @@ class GxadminSuite:
             ORDER by element_index asc
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'hdca-datasets',
         ])
@@ -294,7 +294,7 @@ class GxadminSuite:
             WHERE id =
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'hdca-info',
         ])
@@ -319,7 +319,7 @@ class GxadminSuite:
             jtid.job_id IS NOT NULL
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'history-connections',
         ])
@@ -328,7 +328,7 @@ class GxadminSuite:
             select dataset_id, name, hid, visible, deleted, copied_from_history_dataset_association_id as copied_from from history_dataset_association where history_id = ;select collection_id, name, hid, visible, deleted, copied_from_history_dataset_collection_association_id as copied_from from history_dataset_collection_association where history_id = ;
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'history-contents',
         ])
@@ -336,7 +336,7 @@ class GxadminSuite:
         query = """
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'history-runtime-system-by-tool',
         ])
@@ -344,7 +344,7 @@ class GxadminSuite:
         query = """
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'history-runtime-system',
         ])
@@ -352,7 +352,7 @@ class GxadminSuite:
         query = """
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'history-runtime-wallclock',
         ])
@@ -360,7 +360,7 @@ class GxadminSuite:
         query = """
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'job-history',
         ])
@@ -368,7 +368,7 @@ class GxadminSuite:
         query = """
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'job-info',
         ])
@@ -376,7 +376,7 @@ class GxadminSuite:
         query = """
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'job-inputs',
         ])
@@ -384,7 +384,7 @@ class GxadminSuite:
         query = """
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'job-outputs',
         ])
@@ -403,7 +403,7 @@ class GxadminSuite:
             LIMIT 30
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'jobs-max-by-cpu-hours',
         ])
@@ -420,7 +420,7 @@ class GxadminSuite:
             ORDER BY job.id ASC
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'jobs-nonterminal',
         ])
@@ -428,7 +428,7 @@ class GxadminSuite:
         query = """
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'jobs-per-user',
         ])
@@ -444,7 +444,7 @@ class GxadminSuite:
             GROUP BY n
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'jobs-queued',
         ])
@@ -462,7 +462,7 @@ class GxadminSuite:
             handler
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'jobs-queued-internal-by-handler',
         ])
@@ -556,7 +556,7 @@ class GxadminSuite:
             AND job.handler = 'handler0'
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'jobs-ready-to-run',
         ])
@@ -571,7 +571,7 @@ class GxadminSuite:
             select max(count) as count from temp_table_collection_count
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'largest-collection',
         ])
@@ -591,7 +591,7 @@ class GxadminSuite:
             ORDER BY sum(coalesce(dataset.total_size, dataset.file_size, 0)) DESC
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'largest-histories',
         ])
@@ -614,7 +614,7 @@ class GxadminSuite:
             LIMIT 40
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'latest-users',
         ])
@@ -638,7 +638,7 @@ class GxadminSuite:
             ORDER BY month DESC
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'monthly-cpu-stats',
         ])
@@ -660,7 +660,7 @@ class GxadminSuite:
             ORDER BY date_trunc('month', job.create_time) DESC
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'monthly-cpu-years',
         ])
@@ -678,7 +678,7 @@ class GxadminSuite:
             month DESC
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'monthly-data',
         ])
@@ -700,7 +700,7 @@ class GxadminSuite:
             ORDER BY date_trunc('month', job.create_time) DESC
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'monthly-gpu-years',
         ])
@@ -718,7 +718,7 @@ class GxadminSuite:
             month DESC
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'monthly-jobs',
         ])
@@ -733,7 +733,7 @@ class GxadminSuite:
             ORDER BY month DESC
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'monthly-users-active',
         ])
@@ -751,7 +751,7 @@ class GxadminSuite:
             month DESC
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'monthly-users-registered',
         ])
@@ -759,7 +759,7 @@ class GxadminSuite:
         query = """
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'old-histories',
         ])
@@ -773,7 +773,7 @@ class GxadminSuite:
             pg_statio_user_tables
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'pg-cache-hit',
         ])
@@ -791,7 +791,7 @@ class GxadminSuite:
             ORDER BY sum(c.relpages) DESC
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'pg-index-size',
         ])
@@ -809,7 +809,7 @@ class GxadminSuite:
             n_live_tup DESC
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'pg-index-usage',
         ])
@@ -829,7 +829,7 @@ class GxadminSuite:
             now() - pg_stat_activity.query_start DESC
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'pg-long-running-queries',
         ])
@@ -856,7 +856,7 @@ class GxadminSuite:
             ORDER BY IY
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'pg-mandelbrot',
         ])
@@ -877,7 +877,7 @@ class GxadminSuite:
             pg_stat_bgwriter
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'pg-stat-bgwriter',
         ])
@@ -904,7 +904,7 @@ class GxadminSuite:
             pg_stat_user_tables
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'pg-stat-user-tables',
         ])
@@ -972,7 +972,7 @@ class GxadminSuite:
             ORDER BY raw_waste DESC, bloat DESC
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'pg-table-bloat',
         ])
@@ -990,7 +990,7 @@ class GxadminSuite:
             ORDER BY pg_table_size(c.oid) DESC
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'pg-table-size',
         ])
@@ -1009,7 +1009,7 @@ class GxadminSuite:
             pg_relation_size(i.indexrelid) DESC
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'pg-unused-indexes',
         ])
@@ -1055,7 +1055,7 @@ class GxadminSuite:
             ORDER BY 1
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'pg-vacuum-stats',
         ])
@@ -1073,7 +1073,7 @@ class GxadminSuite:
             tool_count desc
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'queue',
         ])
@@ -1098,7 +1098,7 @@ class GxadminSuite:
             time_since_creation desc
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'queue-detail',
         ])
@@ -1106,7 +1106,7 @@ class GxadminSuite:
         query = """
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'queue-detail-by-handler',
         ])
@@ -1137,7 +1137,7 @@ class GxadminSuite:
             tool_id, tool_version, destination_id, handler, state, job_runner_name, user_id
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'queue-overview',
         ])
@@ -1145,7 +1145,7 @@ class GxadminSuite:
         query = """
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'queue-time',
         ])
@@ -1153,7 +1153,7 @@ class GxadminSuite:
         query = """
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'recent-jobs',
         ])
@@ -1161,7 +1161,7 @@ class GxadminSuite:
         query = """
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'runtime-per-user',
         ])
@@ -1169,7 +1169,7 @@ class GxadminSuite:
         query = """
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'tool-available-metrics',
         ])
@@ -1195,7 +1195,7 @@ class GxadminSuite:
             tool_runs DESC
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'tool-errors',
         ])
@@ -1204,7 +1204,7 @@ class GxadminSuite:
             select max(date_trunc('month', create_time AT TIME ZONE 'UTC')), tool_id from job group by tool_id order by max desc
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'tool-last-used-date',
         ])
@@ -1231,7 +1231,7 @@ class GxadminSuite:
             tool_runs DESC
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'tool-likely-broken',
         ])
@@ -1239,7 +1239,7 @@ class GxadminSuite:
         query = """
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'tool-metrics',
         ])
@@ -1266,7 +1266,7 @@ class GxadminSuite:
             ORDER BY percent_failed_errored DESC
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'tool-new-errors',
         ])
@@ -1282,7 +1282,7 @@ class GxadminSuite:
             ORDER BY month desc, count desc
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'tool-popularity',
         ])
@@ -1296,7 +1296,7 @@ class GxadminSuite:
             ORDER BY count DESC
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'tool-usage',
         ])
@@ -1313,7 +1313,7 @@ class GxadminSuite:
             state
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'total-jobs',
         ])
@@ -1328,7 +1328,7 @@ class GxadminSuite:
             ORDER BY create_time DESC
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'training-list',
         ])
@@ -1336,7 +1336,7 @@ class GxadminSuite:
         query = """
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'training-members-remove',
         ])
@@ -1344,7 +1344,7 @@ class GxadminSuite:
         query = """
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'training-members',
         ])
@@ -1352,7 +1352,7 @@ class GxadminSuite:
         query = """
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'training-queue',
         ])
@@ -1366,7 +1366,7 @@ class GxadminSuite:
             tool_shed, owner
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'ts-repos',
         ])
@@ -1386,7 +1386,7 @@ class GxadminSuite:
             AND job.create_time AT TIME ZONE 'UTC' > (now() - '1 hours'::INTERVAL)
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'upload-gb-in-past-hour',
         ])
@@ -1412,7 +1412,7 @@ class GxadminSuite:
             LIMIT 50
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'user-cpu-years',
         ])
@@ -1590,7 +1590,7 @@ class GxadminSuite:
             LIMIT 50
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'user-disk-quota',
         ])
@@ -1617,7 +1617,7 @@ class GxadminSuite:
             LIMIT 50
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'user-disk-usage',
         ])
@@ -1643,7 +1643,7 @@ class GxadminSuite:
             LIMIT 50
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'user-gpu-years',
         ])
@@ -1651,7 +1651,7 @@ class GxadminSuite:
         query = """
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'user-history-list',
         ])
@@ -1659,7 +1659,7 @@ class GxadminSuite:
         query = """
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'user-recent-aggregate-jobs',
         ])
@@ -1673,7 +1673,7 @@ class GxadminSuite:
             active, external, deleted, purged
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'users-count',
         ])
@@ -1682,7 +1682,7 @@ class GxadminSuite:
             SELECT count(*) FROM galaxy_user
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'users-total',
         ])
@@ -1691,7 +1691,7 @@ class GxadminSuite:
             SELECT provider, count(distinct user_id) FROM oidc_user_authnz_tokens GROUP BY provider
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'users-with-oidc',
         ])
@@ -1707,7 +1707,7 @@ class GxadminSuite:
             pid IS NOT NULL
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'workers',
         ])
@@ -1743,7 +1743,7 @@ class GxadminSuite:
             )
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'workflow-connections',
         ])
@@ -1760,7 +1760,7 @@ class GxadminSuite:
             GROUP BY handler, scheduler, state
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'workflow-invocation-status',
         ])
@@ -1773,7 +1773,7 @@ class GxadminSuite:
             GROUP BY state
         """
         query = subprocess.check_output([
-            './gxadmin',
+            '/home/hxr/arbeit/galaxy/gxadmin/gxadmin',
             'query',
             'workflow-invocation-totals',
         ])
