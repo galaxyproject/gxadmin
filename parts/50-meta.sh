@@ -466,28 +466,28 @@ meta_wta-report() { ## Export all workflow trace archive queries
 
 	tmpdir=$(mktemp -d)
 
-	obtain_func "query" "workflow-trace-archive-metrics"
+	obtain_func "server" "workflow-trace-archive-metrics"
 	query_csv "$QUERY" > "$tmpdir/job_metrics_numeric.csv"
 
-	obtain_func "query" "workflow-trace-archive-jobs"
+	obtain_func "server" "workflow-trace-archive-jobs"
 	query_csv "$QUERY" > "$tmpdir/jobs.csv"
 
-	obtain_func "query" "workflow-trace-archive-workflows"
+	obtain_func "server" "workflow-trace-archive-workflows"
 	query_csv "$QUERY" > "$tmpdir/workflows.csv"
 
-	obtain_func "query" "workflow-trace-archive-workflow-invocations"
+	obtain_func "server" "workflow-trace-archive-workflow-invocations"
 	query_csv "$QUERY" > "$tmpdir/workflow-invocations.csv"
 
-	obtain_func "query" "workflow-trace-archive-workflow-steps"
+	obtain_func "server" "workflow-trace-archive-workflow-steps"
 	query_csv "$QUERY" > "$tmpdir/workflow-steps.csv"
 
-	obtain_func "query" "workflow-trace-archive-workflow-invocation-steps"
+	obtain_func "server" "workflow-trace-archive-workflow-invocation-steps"
 	query_csv "$QUERY" > "$tmpdir/workflow-invoke-steps.csv"
 
-	obtain_func "query" "workflow-trace-archive-workflow-connections"
+	obtain_func "server" "workflow-trace-archive-workflow-connections"
 	query_csv "$QUERY" > "$tmpdir/workflow-connections.csv"
 
-	obtain_func "query" "workflow-trace-archive-workflow-step-input"
+	obtain_func "server" "workflow-trace-archive-workflow-step-input"
 	query_csv "$QUERY" > "$tmpdir/workflow-step-input.csv"
 
 	tar cfz $tmpdir.tar.gz $tmpdir/*

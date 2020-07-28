@@ -16,6 +16,14 @@ Command | Description
 [`server users`](#server-users) | Count of different classifications of users
 [`server workflow-invocations`](#server-workflow-invocations) | Counts of workflow invocations
 [`server workflows`](#server-workflows) | Counts of workflows
+[`server workflow-trace-archive-jobs`](#server-workflow-trace-archive-jobs) | [Workflow Trace Archive] Export jobs
+[`server workflow-trace-archive-metrics`](#server-workflow-trace-archive-metrics) | [Workflow Trace Archive] Export numeric metrics
+[`server workflow-trace-archive-workflow-connections`](#server-workflow-trace-archive-workflow-connections) | [Workflow Trace Archive] Export workflow connections
+[`server workflow-trace-archive-workflow-invocation-steps`](#server-workflow-trace-archive-workflow-invocation-steps) | [Workflow Trace Archive] Export workflow invocation steps
+[`server workflow-trace-archive-workflow-invocations`](#server-workflow-trace-archive-workflow-invocations) | [Workflow Trace Archive] Export workflow invocations
+[`server workflow-trace-archive-workflow-step-input`](#server-workflow-trace-archive-workflow-step-input) | [Workflow Trace Archive] Export workflow step-input
+[`server workflow-trace-archive-workflow-steps`](#server-workflow-trace-archive-workflow-steps) | [Workflow Trace Archive] Export workflow steps
+[`server workflow-trace-archive-workflows`](#server-workflow-trace-archive-workflows) | [Workflow Trace Archive] Export workflows
 
 ## server allocated-cpu
 
@@ -155,4 +163,116 @@ server workflows -  Counts of workflows
 **SYNOPSIS**
 
     gxadmin server workflows
+
+
+## server workflow-trace-archive-jobs
+
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=server_workflow-trace-archive-jobs&type=Code))
+server workflow-trace-archive-jobs -  [Workflow Trace Archive] Export jobs
+
+**SYNOPSIS**
+
+    gxadmin server workflow-trace-archive-jobs
+
+**NOTES**
+
+Helper for WTA
+
+
+## server workflow-trace-archive-metrics
+
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=server_workflow-trace-archive-metrics&type=Code))
+server workflow-trace-archive-metrics -  [Workflow Trace Archive] Export numeric metrics
+
+**SYNOPSIS**
+
+    gxadmin server workflow-trace-archive-metrics
+
+**NOTES**
+
+Helper for WTA
+
+
+## server workflow-trace-archive-workflow-connections
+
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=server_workflow-trace-archive-workflow-connections&type=Code))
+server workflow-trace-archive-workflow-connections -  [Workflow Trace Archive] Export workflow connections
+
+**SYNOPSIS**
+
+    gxadmin server workflow-trace-archive-workflow-connections
+
+**NOTES**
+
+Helper for WTA
+
+
+## server workflow-trace-archive-workflow-invocation-steps
+
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=server_workflow-trace-archive-workflow-invocation-steps&type=Code))
+server workflow-trace-archive-workflow-invocation-steps -  [Workflow Trace Archive] Export workflow invocation steps
+
+**SYNOPSIS**
+
+    gxadmin server workflow-trace-archive-workflow-invocation-steps
+
+**NOTES**
+
+Helper for WTA
+
+
+## server workflow-trace-archive-workflow-invocations
+
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=server_workflow-trace-archive-workflow-invocations&type=Code))
+server workflow-trace-archive-workflow-invocations -  [Workflow Trace Archive] Export workflow invocations
+
+**SYNOPSIS**
+
+    gxadmin server workflow-trace-archive-workflow-invocations
+
+**NOTES**
+
+Helper for WTA
+
+
+## server workflow-trace-archive-workflow-step-input
+
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=server_workflow-trace-archive-workflow-step-input&type=Code))
+server workflow-trace-archive-workflow-step-input -  [Workflow Trace Archive] Export workflow step-input
+
+**SYNOPSIS**
+
+    gxadmin server workflow-trace-archive-workflow-step-input
+
+**NOTES**
+
+Helper for WTA
+
+
+## server workflow-trace-archive-workflow-steps
+
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=server_workflow-trace-archive-workflow-steps&type=Code))
+server workflow-trace-archive-workflow-steps -  [Workflow Trace Archive] Export workflow steps
+
+**SYNOPSIS**
+
+    gxadmin server workflow-trace-archive-workflow-steps
+
+**NOTES**
+
+Helper for WTA
+
+
+## server workflow-trace-archive-workflows
+
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=server_workflow-trace-archive-workflows&type=Code))
+server workflow-trace-archive-workflows -  [Workflow Trace Archive] Export workflows
+
+**SYNOPSIS**
+
+    gxadmin server workflow-trace-archive-workflows
+
+**NOTES**
+
+Helper for WTA
 
