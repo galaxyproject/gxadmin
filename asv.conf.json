@@ -6,7 +6,7 @@
     "install_command": ["/bin/true"],
     "uninstall_command": ["/bin/true"],
     "build_command": ["/bin/true"],
-    "branches": ["master"],
+    "branches": ["asv"],
     "dvcs": "git",
     "environment_type": "virtualenv",
     "env_dir": ".asv/env",
