@@ -19,7 +19,7 @@ galaxy_cleanup() { ## [days]: Cleanup histories/hdas/etc for past N days (defaul
 
 	run_date=$(date --rfc-3339=seconds)
 
-	for action in {delete_userless_histories,delete_exported_histories,purge_deleted_histories,purge_deleted_hdas,delete_datasets,purge_datasets}; do
+	for action in {delete_userless_histories,delete_exported_histories,purge_deleted_users,purge_deleted_histories,purge_deleted_hdas,purge_historyless_hdas,purge_hdas_of_purged_histories,delete_datasets,purge_datasets}; do
 		start_time=$(date +%s)
 		$GXADMIN_PYTHON \
 			"$GALAXY_ROOT/scripts/cleanup_datasets/pgcleanup.py" \
