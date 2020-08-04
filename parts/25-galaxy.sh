@@ -15,6 +15,7 @@ galaxy_cleanup() { ## [days]: Cleanup histories/hdas/etc for past N days (defaul
 	assert_set_env GALAXY_ROOT
 	assert_set_env GALAXY_CONFIG_FILE
 	assert_set_env GALAXY_LOG_DIR
+	mkdir -p $GALAXY_LOG_DIR
 
 	run_date=$(date --rfc-3339=seconds)
 
