@@ -1,6 +1,7 @@
 # 18-pre
 
 - Fixed:
+	- Fixed broken slurping from previous release (Thanks @Slugger70 for catching it.)
 	- All previous '--nice' flags are rewritten to '--human' (Thanks @lldelisle)
 	- Update 'user-disk-usage' to support iquery (Thanks @lldelisle)
 	- Update 'largest-histories' to support iquery (Thanks @lldelisle)
