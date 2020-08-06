@@ -5,6 +5,8 @@ Command | Description
 [`galaxy amqp-test`](#galaxy-amqp-test) | Test a given AMQP URL for connectivity
 [`galaxy cleanup`](#galaxy-cleanup) | Cleanup histories/hdas/etc for past N days (default=30)
 [`galaxy cleanup-jwd`](#galaxy-cleanup-jwd) | (NEW) Cleanup job working directories
+[`galaxy decode`](#galaxy-decode) | Decode an encoded ID
+[`galaxy encode`](#galaxy-encode) | Encode an ID
 [`galaxy fav_tools`](#galaxy-fav_tools) | Favourite tools in Galaxy DB
 [`galaxy fix-conda-env`](#galaxy-fix-conda-env) | Fix broken conda environments
 [`galaxy ie-list`](#galaxy-ie-list) | List GIEs
@@ -86,6 +88,40 @@ were changed less recently than N months.
  Then it takes the first 1000 entries and cleans them up. This was more
 of a hack to handle the fact that the list produced by find is really
 long, and the for loop hangs until it's done generating the list.
+
+
+## galaxy decode
+
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=galaxy_decode&type=Code))
+galaxy decode -  Decode an encoded ID
+
+**SYNOPSIS**
+
+    gxadmin galaxy decode <encoded-id>
+
+**NOTES**
+
+Encode an unecoded ID
+
+    $ GALAXY_CONFIG_FILE=/srv/galaxy/config/galaxy.yml GALAXY_ROOT=/srv/galaxy/server gxadmin galaxy decode 6fe4eea8c591a9c4
+    123
+
+
+## galaxy encode
+
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=galaxy_encode&type=Code))
+galaxy encode -  Encode an ID
+
+**SYNOPSIS**
+
+    gxadmin galaxy encode <encoded-id>
+
+**NOTES**
+
+Encode an unecoded ID
+
+    $ GALAXY_CONFIG_FILE=/srv/galaxy/config/galaxy.yml GALAXY_ROOT=/srv/galaxy/server gxadmin galaxy encode 123
+    6fe4eea8c591a9c4
 
 
 ## galaxy fav_tools

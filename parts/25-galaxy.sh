@@ -43,6 +43,40 @@ galaxy_cleanup() { ## [days]: Cleanup histories/hdas/etc for past N days (defaul
 	done
 }
 
+galaxy_encode() { ## <encoded-id>: Encode an ID
+	handle_help "$@" <<-EOF
+		Encode an unecoded ID
+
+		    $ GALAXY_CONFIG_FILE=/srv/galaxy/config/galaxy.yml GALAXY_ROOT=/srv/galaxy/server gxadmin galaxy encode 123
+		    6fe4eea8c591a9c4
+	EOF
+
+	assert_set_env VIRTUAL_ENV
+	assert_set_env GALAXY_ROOT
+	assert_set_env GALAXY_CONFIG_FILE
+
+	assert_count $# 1 "Missing ID"
+
+	python "$GALAXY_ROOT/scripts/secret_decoder_ring.py" -c "$GALAXY_CONFIG_FILE" encode "$1"
+}
+
+galaxy_decode() { ## <encoded-id>: Decode an encoded ID
+	handle_help "$@" <<-EOF
+		Encode an unecoded ID
+
+		    $ GALAXY_CONFIG_FILE=/srv/galaxy/config/galaxy.yml GALAXY_ROOT=/srv/galaxy/server gxadmin galaxy decode 6fe4eea8c591a9c4
+		    123
+	EOF
+
+	assert_set_env VIRTUAL_ENV
+	assert_set_env GALAXY_ROOT
+	assert_set_env GALAXY_CONFIG_FILE
+
+	assert_count $# 1 "Missing ID"
+
+	python "$GALAXY_ROOT/scripts/secret_decoder_ring.py" -c "$GALAXY_CONFIG_FILE" decode "$1"
+}
+
 galaxy_migrate-tool-install-to-sqlite() { ## : Converts normal potsgres toolshed repository tables into the SQLite version
 	handle_help "$@" <<-EOF
 		    $ gxadmin migrate-tool-install-to-sqlite
