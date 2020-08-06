@@ -143,7 +143,7 @@ meta_slurp-current() { ## [--date] [slurp-name [2nd-slurp-name [...]]]: Executes
 		fi
 
 		obtain_func "server" "$func"
-		$wrapper query_influx "$QUERY" "$query_name" "$fields" "$tags" | sed "s/$/$append/"
+		$wrapper query_influx "$QUERY" "server-$query_name" "$fields" "$tags" | sed "s/$/$append/"
 	done
 }
 
@@ -170,7 +170,7 @@ meta_slurp-upto() { ## <yyyy-mm-dd> [slurp-name [2nd-slurp-name [...]]]: Slurps 
 		fi
 
 		obtain_func server "$func" "$date" "<="
-		$wrapper query_influx "$QUERY" "$query_name.upto" "$fields" "$tags" | \
+		$wrapper query_influx "$QUERY" "server-$query_name.upto" "$fields" "$tags" | \
 			sed "s/$/ $(date -d "$date" +%s%N)/"
 	done
 }
@@ -232,7 +232,7 @@ meta_slurp-day() { ## <yyyy-mm-dd> [slurp-name [2nd-slurp-name [...]]]: Slurps d
 		fi
 
 		obtain_func server "$func" "$date"
-		$wrapper query_influx "$QUERY" "$query_name.daily" "$fields" "$tags" | \
+		$wrapper query_influx "$QUERY" "server-$query_name.daily" "$fields" "$tags" | \
 			sed "s/$/ $(date -d "$date" +%s%N)/"
 	done
 }
