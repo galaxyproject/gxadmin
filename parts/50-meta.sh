@@ -2,6 +2,10 @@ registered_subcommands="$registered_subcommands meta"
 _meta_short_help="meta:   Miscellaneous"
 
 
+meta_find_slurpable() {
+	grep -s -h -o '^server_[a-z-]*' "$0" "$GXADMIN_SITE_SPECIFIC" | grep -v 'workflow-trace-archive' | sort | sed 's/server_//g'
+}
+
 meta_update() { ## : Update the script
 	handle_help "$@" <<-EOF
 	EOF
@@ -130,7 +134,7 @@ meta_slurp-current() { ## [--date] [slurp-name [2nd-slurp-name [...]]]: Executes
 	specific_slurp=($@)
 
 	# shellcheck disable=SC2013
-	for func in $(grep -s -h -o '^server_[a-z-]*' "$0" "$GXADMIN_SITE_SPECIFIC" | sort | sed 's/server_//g'); do
+	for func in $(meta_find_slurpable); do
 		# To allow only slurping the one that was requested, if this was done.
 		if (( ${#specific_slurp[@]} > 0 )); then
 			if [[ ! "${specific_slurp[*]}" =~ "${func}"  ]]; then
@@ -157,7 +161,7 @@ meta_slurp-upto() { ## <yyyy-mm-dd> [slurp-name [2nd-slurp-name [...]]]: Slurps 
 	specific_slurp=($@)
 
 	# shellcheck disable=SC2013
-	for func in $(grep -s -h -o '^server_[a-z-]*' "$0" "$GXADMIN_SITE_SPECIFIC" | sort | sed 's/server_//g'); do
+	for func in $(meta_find_slurpable); do
 		# To allow only slurping the one that was requested, if this was done.
 		if (( ${#specific_slurp[@]} > 0 )); then
 			if [[ ! "${specific_slurp[*]}" =~ "${func}"  ]]; then
@@ -219,7 +223,7 @@ meta_slurp-day() { ## <yyyy-mm-dd> [slurp-name [2nd-slurp-name [...]]]: Slurps d
 	specific_slurp=($@)
 
 	# shellcheck disable=SC2013
-	for func in $(grep -s -h -o '^server_[a-z-]*' "$0" "$GXADMIN_SITE_SPECIFIC" | sort | sed 's/server_//g'); do
+	for func in $(meta_find_slurpable); do
 		# To allow only slurping the one that was requested, if this was done.
 		if (( ${#specific_slurp[@]} > 0 )); then
 			if [[ ! "${specific_slurp[*]}" =~ "${func}"  ]]; then
