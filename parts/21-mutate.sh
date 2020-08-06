@@ -497,3 +497,310 @@ mutate_generate-unset-api-keys() { ## [--commit]: Generate API keys for users wh
 	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
 
 }
+
+
+mutate-anonymise-db-for-release() { ## : This will attempt to make a database completely safe to release publicly.
+	handle_help "$@" <<-EOF
+		THIS WILL DESTROY YOUR DATABASE.
+	EOF
+
+	commit_flag=""
+	if [[ $1 == "--commit" ]]; then
+		commit_flag="$1"
+		shift;
+	fi
+
+	read -r -d '' QUERY <<-EOF
+		-- api_keys
+			update api_keys set key = 'random-key-' || user_id;
+
+		-- cleanup_event_user_association empty on EU
+		-- cloudauthz                     empty on EU
+		-- custos_authnz_token            empty on EU
+
+		-- dataset
+		-- TODO: Do external_filename, and _extra_files_path need to be cleaned?
+		-- TODO: this is imperfect, we do something better in GRT where we take 2 SDs
+		-- https://stackoverflow.com/questions/48900936/postgresql-rounding-to-significant-figures
+		-- MAYBE use synthetic data here?
+			update dataset set
+				file_size = round(file_size, -3),
+				total_size = round(total_size, -3);
+
+		-- dataset_collection is OK
+		-- dataset_collection_element
+			update dataset_collection_element set
+				element_identifier = random() -- TODO: better distribution. Unicode.
+
+		-- dataset_hash                   empty on EU
+		-- dataset_permissions            is OK
+		-- dataset_source
+			update dataset_source set
+				source_uri = 'https://example.org';
+
+		-- dataset_source_hash            empty on EU
+		-- dataset_tag_association        empty on EU
+		-- default_history_permissions    is OK (hist_id, action, role_id)
+		-- default_quota_association      is OK
+		-- default_user_permissions       is OK(user, action, role)
+		-- deferred_job                   empty on EU
+		-- deferred_job                   empty on EU
+		-- event                          empty on EU
+		-- extended_metadata              empty on EU
+		-- extended_metadata_index        empty on EU
+		-- external_service               empty on EU
+		-- form_definition                empty on EU
+		-- form_definition_current        empty on EU
+		-- form_values                    empty on EU
+		-- galaxy_group
+			update galaxy_group set
+				name = 'group-' || id;
+
+		-- galaxy_session
+			update galaxy_session set
+				remote_host = 'www.xxx.yyy.zzz'
+				when remote_host is not null;
+			update galaxy_session set
+				remote_addr = 'www.xxx.yyy.zzz'
+				when remote_addr is not null;
+			update galaxy_session set
+				referer = 'https://example.org'
+				when referer is not null;
+
+			update galaxy_session set
+				session_key = '', prev_session_id = '';
+
+		-- galaxy_session_to_history is OK (time, session_id, hist_id)
+		-- galaxy_user
+
+			-- TODO: better email length/content distribution
+			-- TODO: better username length/content distribution. UNICODE.
+			-- TODO: rounding to SDs.
+			update galaxy_user set
+				email = 'user-' || id || '@example.org',
+				username = 'user-' || id,
+				disk_usage = round(disk_usage, -5)
+
+		-- galaxy_user_openid empty on EU
+		-- genome_index_tool_data empty on EU
+		-- group_quota_association is OK (group_id, quota id)
+		-- group_role_association is OK (group_id, role id)
+		-- history
+			-- TODO: better name distribution. UNICODE. (I see greek, chinese, etc on EU)
+			update history set
+				name = 'history-' || id;
+
+			update history set
+				slug = 'slug-' || id
+				when slug != '' or slug is not null;
+
+		-- history_annotation_association
+			-- TODO: better distribution. UNICODE.
+			update history_annotation_association set
+				annotation = 'something'
+				when annotation is not null;
+
+		-- history_dataset_association
+			-- TODO: SIGNIFICANT validation needed.
+			update history_dataset_association set
+				name = 'hda-' || id,
+				peek = 'redacted',
+				metadata = null,
+				designation = '';
+
+		-- history_dataset_association_annotation_association
+			-- TODO: distribution
+			update history_dataset_association_annotation_association set
+				annotation = '';
+
+		-- history_dataset_association_display_at_authorization UNKNOWN. site is in Ucscmain/archae/test on EU. nothing else incriminating.
+
+		-- history_dataset_association_history
+			-- TODO: distribution. Consistency with HDA?
+			update history_dataset_association_history set
+				name = 'hda-' || history_dataset_association_id,
+				metadata = null,
+				extended_metadata_id = null;
+
+		-- history_dataset_association_rating_association    empty on EU
+		-- history_dataset_association_subset                empty on EU
+		-- history_dataset_association_tag_association
+		    -- TODO: distribution, unicode, name: vs group: vs none.
+
+			update history_dataset_association_tag_association set
+				user_tname = 'tag-' || id,
+				value = 'tag-' || id,
+				user_value = 'tag-' || id;
+
+		-- history_dataset_collection_annotation_association empty on EU
+		-- history_dataset_collection_association
+			-- TODO: distribution, etc.
+			-- implicit_output_name ??
+			update history_dataset_collection_association set
+				name = 'hdca-' || id;
+
+
+		-- history_dataset_collection_rating_association     empty on EU
+		-- history_dataset_collection_tag_association
+		    -- TODO: distribution, unicode, name: vs group: vs none.
+
+			update history_dataset_collection_tag_association set
+				user_tname = 'tag-' || id,
+				value = 'tag-' || id,
+				user_value = 'tag-' || id;
+
+		-- history_rating_association                  is OK
+		-- history_tag_association
+		    -- TODO: distribution, unicode, name: vs group: vs none.
+
+			update history_tag_association set
+				user_tname = 'tag-' || id,
+				value = 'tag-' || id,
+				user_value = 'tag-' || id;
+
+		-- history_user_share_association is OK (hist_id, user_id)
+		-- implicit_collection_jobs is OK (id, pop state)
+		-- implicit_collection_jobs_job_association is OK
+		-- implicitly_converted_dataset_association is OK
+		-- implicitly_created_dataset_collection_inputs is OK
+		-- interactivetool_entry_point
+
+			-- TODO: fix disributions? Meh.
+			update interactivetool_entry_point set
+				name = 'NAME',
+				token = 'token-' || job_id,
+				host = '',
+				port = '',
+				protocol = '',
+				entry_url = '',
+				info = null;
+
+		-- job
+			-- TODO: anonymize tool IDs?
+			update job set
+				command_line = 'redacted',
+				destination_params = null,
+				dependencies = null;
+
+			update job set
+				tool_stdout = 'redacted'
+				where tool_stdout != null;
+
+			update job set
+				tool_stderr = 'redacted'
+				where tool_stderr != null;
+
+			update job set
+				traceback = 'redacted'
+				where traceback != null;
+
+			update job set
+				params = 'redacted'
+				where params != null;
+
+			update job set
+				job_messages = 'redacted'
+				where job_messages != null;
+
+			update job set
+				job_stdout = 'redacted'
+				where job_stdout != null;
+
+			update job set
+				job_stderr = 'redacted'
+				where job_stderr != null;
+
+		-- job_container_association
+			update job_container_association set
+				container_name = '',
+				container_info = '';
+
+		-- job_export_history_archive
+			update job_export_history_archive set
+				history_attrs_filename = '/tmp/does-not-exist',
+				datasets_attrs_filename = '/tmp/does-not-exist',
+				jobs_attrs_filename = '/tmp/does-not-exist';
+
+		-- job_external_output_metadata
+			update job_external_output_metadata set
+				filename_in  = '/tmp/does-not-exist',
+				filename_out = '/tmp/does-not-exist',
+				filename_results_code = '/tmp/does-not-exist',
+				filename_kwds = '/tmp/does-not-exist',
+				filename_override_metadata = '/tmp/does-not-exist',
+
+		-- job_import_history_archive
+			update job_import_history_archive set
+				archive_dir = '/tmp/dne';
+
+		-- job_metric_numeric is OK
+		-- job_metric_text
+			truncate job_metric_text;
+
+		-- job_parameter
+			-- TODO: length distribution? Name distribution?
+			update job_parameter set
+				name = 'param-name',
+				value = 'param-value';
+
+		-- job_state_history
+		-- job_to_implicit_output_dataset_collection
+
+			update job_to_implicit_output_dataset_collection set
+				name = 'jtiodc-' || id;
+
+		-- job_to_input_dataset
+			update job_to_input_dataset set
+				name = 'jtid-' || id;
+
+		-- library_dataset_collection_annotation_association empty on EU
+		-- library_dataset_collection_association            empty on EU
+		-- library_dataset_collection_rating_association     empty on EU
+		-- library_dataset_collection_tag_association        empty on EU
+		-- library_dataset_dataset_info_association          empty on EU
+		-- library_folder_info_association                   empty on EU
+		-- migrate_tools                                     empty on EU
+		-- migrate_version                                   empty on EU
+		-- page_tag_association                              empty on EU
+		-- psa_code                                          empty on EU
+		-- psa_nonce                                         empty on EU
+		-- psa_partial                                       empty on EU
+		-- request                                           empty on EU
+		-- request_event                                     empty on EU
+		-- request_type                                      empty on EU
+		-- request_type_external_service_association         empty on EU
+		-- request_type_permissions                          empty on EU
+		-- request_type_run_association                      empty on EU
+		-- run                                               empty on EU
+		-- sample                                            empty on EU
+		-- sample_dataset                                    empty on EU
+		-- sample_event                                      empty on EU
+		-- sample_run_association                            empty on EU
+		-- sample_state                                      empty on EU
+		-- task_metric_text                                  empty on EU
+		-- tool_tag_association                              empty on EU
+		-- transfer_job                                      empty on EU
+		-- user_action                                       empty on EU
+		-- visualization_rating_association                  empty on EU
+		-- workflow_tag_association                          empty on EU
+
+
+
+
+
+
+
+
+
+
+
+
+
+	EOF
+
+
+
+	commit=$(should_commit "$commit_flag")
+	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
+
+}
