@@ -7,6 +7,7 @@
 	- Update 'largest-histories' to support iquery (Thanks @lldelisle)
 	- uwsgi-memory now looks at workflow schedulers
 	- Exposed bash autocompletion and documented it
+	- Made changelog updates mandatory so I don't have to ask people for it. Finally.
 - Added:
 	- encode/decode ID
 	- Benchmarking via ASV (preview)
