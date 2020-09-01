@@ -816,12 +816,14 @@ query monthly-jobs -  Number of jobs run each month
 
 **SYNOPSIS**
 
-    gxadmin query monthly-jobs [year]
+    gxadmin query monthly-jobs [year] [--by_group]
 
 **NOTES**
 
 Count jobs run each month
-
+Parameters:
+--by_group: Will separate out job counts for each month by galaxy user group
+year: Will return number of monthly jobs run from the start of [year] till now
     $ gxadmin query monthly-jobs 2018
         month   | count
     ------------+--------
@@ -846,11 +848,14 @@ query monthly-users-active -  Number of active users per month, running jobs
 
 **SYNOPSIS**
 
-    gxadmin query monthly-users-active [year]
+    gxadmin query monthly-users-active [year] [--by_group]
 
 **NOTES**
 
 Number of unique users each month who ran jobs. **NOTE**: does not include anonymous users.
+Parameters:
+--by_group: Separate out active users by galaxy user group
+year: Will return monthly active users from the start of [year] till now
 
     $ gxadmin query monthly-users-active 2018
        month    | active_users
@@ -876,7 +881,29 @@ query monthly-users-registered -  Number of users registered each month
 
 **SYNOPSIS**
 
-    gxadmin query monthly-users-registered [year]
+    gxadmin query monthly-users-registered [year] [--by_group]
+
+**NOTES**
+
+Number of users that registered each month. **NOTE**: Does not include anonymous users or users in no group.
+Parameters:
+--by_group: Will separate out registrations by galaxy user group as well
+year: Will return monthly user registrations from the start of [year] till now
+
+$ gxadmin query monthly-users 2020 --by_group
+month    | Group name | count
+ ------------+------------+-------
+  2020-08-01 | Group_1    |     1
+  2020-08-01 | Group_2    |     1
+  2020-08-01 | Group_3    |     1
+  2020-08-01 | Group_4    |     3
+  2020-07-01 | Group_1    |     1
+  2020-07-01 | Group_2    |     6
+  2020-07-01 | Group_3    |     2
+  2020-07-01 | Group_4    |     6
+  2020-07-01 | Group_5    |     2
+  2020-07-01 | Group_6    |     1
+  ...
 
 
 ## query old-histories
