@@ -9,5 +9,5 @@ before_script:
 
 script:
     - make test
-    - x=$(git diff HEAD~1..HEAD~1 CHANGELOG.md | wc -l)
-    - if (( x == 0 )); then echo "Please update the CHANGELOG.md"; fi
+    - x=$(git diff $TRAVIS_COMMIT_RANGE CHANGELOG.md | wc -l)
+    - if (( x == 0 )); then echo "Please update the CHANGELOG.md"; exit 1; fi
