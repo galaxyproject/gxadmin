@@ -3251,3 +3251,29 @@ query_workers() { ## : Retrieve a list of Galaxy worker processes
 			pid IS NOT NULL
 	EOF
 }
+
+query_pg-rows-per-table() { ## : Print rows per table 
+	handle_help "$@" <<-EOF
+		This retrieves a list of tables in the database and their size
+	EOF
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+		    n.nspname AS table_schema,
+		    c.relname AS table_name,
+		    c.reltuples AS rows
+		FROM
+		    pg_class AS c
+		    JOIN pg_namespace AS n ON
+		            n.oid = c.relnamespace
+		WHERE
+		    c.relkind = 'r'
+		    AND n.nspname
+		        NOT IN (
+		                'information_schema',
+		                'pg_catalog'
+		            )
+		ORDER BY
+		    c.reltuples DESC
+	EOF
+}

@@ -499,7 +499,7 @@ mutate_generate-unset-api-keys() { ## [--commit]: Generate API keys for users wh
 }
 
 
-mutate-anonymise-db-for-release() { ## : This will attempt to make a database completely safe to release publicly.
+mutate_anonymise-db-for-release() { ## : This will attempt to make a database completely safe to release publicly.
 	handle_help "$@" <<-EOF
 		THIS WILL DESTROY YOUR DATABASE.
 	EOF
@@ -511,57 +511,107 @@ mutate-anonymise-db-for-release() { ## : This will attempt to make a database co
 	fi
 
 	read -r -d '' QUERY <<-EOF
+		CREATE OR REPLACE FUNCTION gxadmin_random()
+		RETURNS text
+		AS $$
+			SELECT
+				array_to_string(ARRAY(SELECT chr((48 + round(random() * 59)) :: integer)
+			FROM generate_series(1,15)), '')
+		$$ LANGUAGE SQL;
+
+		CREATE OR REPLACE FUNCTION gxadmin_random_text()
+		RETURNS text
+		AS $$
+			SELECT
+				array_to_string(ARRAY(SELECT chr((48 + round(random() * 59)) :: integer)
+			FROM generate_series(1,15)), '')
+		$$ LANGUAGE SQL;
+
+		CREATE OR REPLACE FUNCTION gxadmin_random_slug()
+		RETURNS text
+		AS $$
+			SELECT
+				array_to_string(ARRAY(SELECT chr((48 + round(random() * 59)) :: integer)
+			FROM generate_series(1,15)), '')
+		$$ LANGUAGE SQL;
+
+		CREATE OR REPLACE FUNCTION gxadmin_random_ip(in text)
+		RETURNS text
+		AS $$
+			-- Uses documentation range IPs
+			SELECT
+				'192.0.2.' || (('x'||substr(md5(remote_addr),1,16))::bit(64)::bigint % 255)::text
+		$$ LANGUAGE SQL;
+
+		CREATE OR REPLACE FUNCTION gxadmin_round_sf(in text)
+		RETURNS float
+		AS $$
+			-- TODO
+			select 1
+		$$ LANGUAGE SQL;
+
+
+
 		-- api_keys
 			update api_keys set key = 'random-key-' || user_id;
 
-		-- cleanup_event_user_association empty on EU
-		-- cloudauthz                     empty on EU
-		-- custos_authnz_token            empty on EU
-
+		-- cleanup_event                                        is OK
+		-- cleanup_event_dataset_association                    is OK
+		-- cleanup_event_hda_association                        is OK
+		-- cleanup_event_his tory_association                   is OK
+		-- cleanup_event_icda_association                       is OK
+		-- cleanup_event_ldda_association                       is EMPTY on AU
+		-- cleanup_event_library_association                    is EMPTY on AU
+		-- cleanup_event_library_dataset_association            is EMPTY on AU
+		-- cleanup_event_library_folder_association             is EMPTY on AU
+		-- cleanup_event_metadata_file_association              is OK
+		-- cleanup_event_user_association                       is EMPTY on AU, EU
+		-- cloudauthz                                           is EMPTY on AU, EU
+		-- custos_authnz_token                                  is EMPTY on AU, EU
+		-- data_manager_history_association                     is OK (user_id, history_id)
+		-- data_manager_job_association                         is OK (job_id, DM id)
 		-- dataset
-		-- TODO: Do external_filename, and _extra_files_path need to be cleaned?
-		-- TODO: this is imperfect, we do something better in GRT where we take 2 SDs
-		-- https://stackoverflow.com/questions/48900936/postgresql-rounding-to-significant-figures
-		-- MAYBE use synthetic data here?
+			-- TODO: Do external_filename, and _extra_files_path need to be cleaned?
+			-- TODO: this is imperfect, we do something better in GRT where we take 2 SDs
+			-- https://stackoverflow.com/questions/48900936/postgresql-rounding-to-significant-figures
+			-- MAYBE use synthetic data here?
 			update dataset set
 				file_size = round(file_size, -3),
 				total_size = round(total_size, -3);
-
-		-- dataset_collection is OK
+		-- dataset_collection                                   is OK (type, count, etc.)
 		-- dataset_collection_element
 			update dataset_collection_element set
-				element_identifier = random() -- TODO: better distribution. Unicode.
-
-		-- dataset_hash                   empty on EU
-		-- dataset_permissions            is OK
+				element_identifier = gxadmin_random();
+		-- dataset_hash                                         is EMPTY on AU, EU
+		-- dataset_permissions                                  is OK (role, dataset)
 		-- dataset_source
 			update dataset_source set
-				source_uri = 'https://example.org';
+				source_uri = 'https://example.org/test.dat';
 
-		-- dataset_source_hash            empty on EU
-		-- dataset_tag_association        empty on EU
-		-- default_history_permissions    is OK (hist_id, action, role_id)
-		-- default_quota_association      is OK
-		-- default_user_permissions       is OK(user, action, role)
-		-- deferred_job                   empty on EU
-		-- deferred_job                   empty on EU
-		-- event                          empty on EU
-		-- extended_metadata              empty on EU
-		-- extended_metadata_index        empty on EU
-		-- external_service               empty on EU
-		-- form_definition                empty on EU
-		-- form_definition_current        empty on EU
-		-- form_values                    empty on EU
+		-- dataset_source_hash                                  is EMPTY on AU, EU
+		-- dataset_tag_association                              is EMPTY on AU, EU
+		-- default_history_permissions                          is OK (hist_id, action, role_id)
+		-- default_quota_association                            is OK
+		-- default_user_permissions                             is OK (user, action, role)
+		-- deferred_job                                         is EMPTY on AU, EU
+		-- dynamic_tool                                         is EMPTY on AU, EU
+		-- event                                                is EMPTY on AU, EU
+		-- extended_metadata                                    is EMPTY on AU, EU
+		-- extended_metadata_index                              is EMPTY on AU, EU
+		-- external_service                                     is EMPTY on AU, EU
+		-- form_definition                                      is EMPTY on AU, EU
+		-- form_definition_current                              is EMPTY on AU, EU
+		-- form_values                                          is EMPTY on AU, EU
 		-- galaxy_group
 			update galaxy_group set
 				name = 'group-' || id;
 
 		-- galaxy_session
 			update galaxy_session set
-				remote_host = 'www.xxx.yyy.zzz'
+				remote_host = gxadmin_random_ip(remote_host)
 				when remote_host is not null;
 			update galaxy_session set
-				remote_addr = 'www.xxx.yyy.zzz'
+				remote_addr = gxadmin_random_ip(remote_addr)
 				when remote_addr is not null;
 			update galaxy_session set
 				referer = 'https://example.org'
@@ -570,113 +620,156 @@ mutate-anonymise-db-for-release() { ## : This will attempt to make a database co
 			update galaxy_session set
 				session_key = '', prev_session_id = '';
 
-		-- galaxy_session_to_history is OK (time, session_id, hist_id)
+		-- galaxy_session_to_history                            is OK (time, session_id, hist_id)
 		-- galaxy_user
-
 			-- TODO: better email length/content distribution
 			-- TODO: better username length/content distribution. UNICODE.
 			-- TODO: rounding to SDs.
 			update galaxy_user set
 				email = 'user-' || id || '@example.org',
+				password = 'x',
 				username = 'user-' || id,
-				disk_usage = round(disk_usage, -5)
+				form_values_id = '',
+				activation_token = '',
+				disk_usage = round(disk_usage, -5);
 
-		-- galaxy_user_openid empty on EU
-		-- genome_index_tool_data empty on EU
-		-- group_quota_association is OK (group_id, quota id)
-		-- group_role_association is OK (group_id, role id)
+		-- galaxy_user_openid
+			update galaxy_user_openid set
+				openid = 'https://example.org/identity/' || user_id;
+
+		-- genome_index_tool_data                               is EMPTY on AU, EU
+		-- group_quota_association                              is OK (group_id, quota id)
+		-- group_role_association                               is OK (group_id, role id)
 		-- history
+
 			-- TODO: better name distribution. UNICODE. (I see greek, chinese, etc on EU)
 			update history set
-				name = 'history-' || id;
+				name = gxadmin_random_text()
+				where name != 'Unnamed history';
 
 			update history set
-				slug = 'slug-' || id
+				slug = gxadmin_random_slug()
 				when slug != '' or slug is not null;
 
 		-- history_annotation_association
 			-- TODO: better distribution. UNICODE.
 			update history_annotation_association set
-				annotation = 'something'
+				annotation = gxadmin_random_freetext()
 				when annotation is not null;
 
 		-- history_dataset_association
 			-- TODO: SIGNIFICANT validation needed.
 			update history_dataset_association set
-				name = 'hda-' || id,
-				peek = 'redacted',
-				metadata = null,
-				designation = '';
+				name = gxadmin_random_text(id) || '.' || extension;
+
+			update history_dataset_association set
+				peek = 'redacted' where peek is not null;
+
+			update history_dataset_association set
+				designation = 'hda-' || id::text
+				where designation is not null;
+
+			update history_dataset_association set
+				info = 'redacted'
+				where info is not null and info != 'Job output deleted by user before job completed';
+
+			update history_dataset_association set
+				metadata = null;
 
 		-- history_dataset_association_annotation_association
-			-- TODO: distribution
+
 			update history_dataset_association_annotation_association set
-				annotation = '';
+				annotation = gxadmin_random_freetext()
+				where annotation is not null;
 
-		-- history_dataset_association_display_at_authorization UNKNOWN. site is in Ucscmain/archae/test on EU. nothing else incriminating.
-
+		-- history_dataset_association_display_at_authorization is OK (user_id, hda, site=ucsc_main)
 		-- history_dataset_association_history
+
 			-- TODO: distribution. Consistency with HDA?
 			update history_dataset_association_history set
-				name = 'hda-' || history_dataset_association_id,
-				metadata = null,
-				extended_metadata_id = null;
+				name = gxadmin_random_text(history_dataset_association_id) || '.' || extension;
 
-		-- history_dataset_association_rating_association    empty on EU
-		-- history_dataset_association_subset                empty on EU
+
+			update history_dataset_association_history set
+				metadata = null;
+
+		-- history_dataset_association_rating_association       is EMPTY on AU, EU
+		-- history_dataset_association_subset                   is OK (hda id, hdas id, location)
 		-- history_dataset_association_tag_association
-		    -- TODO: distribution, unicode, name: vs group: vs none.
 
+			-- user_tname == 'group' and 'name' are special.
 			update history_dataset_association_tag_association set
-				user_tname = 'tag-' || id,
-				value = 'tag-' || id,
-				user_value = 'tag-' || id;
+				value = lower(gxadmin_random_tag(id)),
+				user_value = gxadmin_random_tag(id)
+				where user_tname in ('group', 'name');
 
-		-- history_dataset_collection_annotation_association empty on EU
+			-- Sometimes people use a diffferent prefix
+			update history_dataset_association_tag_association set
+				user_tname = gxadmin_random_tag(id + 'tname')
+				value = lower(gxadmin_random_tag(id)),
+				user_value = gxadmin_random_tag(id)
+				where user_tname not in ('group', 'name') and user_tname is not null;
+
+			-- Otherwise just set some data
+			update history_dataset_association_tag_association set
+				user_tname = gxadmin_random_tag(id)
+				where user_tname is null;
+
+		-- history_dataset_collection_annotation_association    is EMPTY on AU, EU
 		-- history_dataset_collection_association
-			-- TODO: distribution, etc.
-			-- implicit_output_name ??
+
 			update history_dataset_collection_association set
 				name = 'hdca-' || id;
 
-
-		-- history_dataset_collection_rating_association     empty on EU
+		-- history_dataset_collection_rating_association        is EMPTY on AU
 		-- history_dataset_collection_tag_association
-		    -- TODO: distribution, unicode, name: vs group: vs none.
 
+			-- user_tname == 'group' and 'name' are special.
 			update history_dataset_collection_tag_association set
-				user_tname = 'tag-' || id,
-				value = 'tag-' || id,
-				user_value = 'tag-' || id;
+				value = lower(gxadmin_random_tag(id)),
+				user_value = gxadmin_random_tag(id)
+				where user_tname in ('group', 'name');
 
-		-- history_rating_association                  is OK
+			-- Sometimes people use a diffferent prefix
+			update history_dataset_collection_tag_association set
+				user_tname = gxadmin_random_tag(id + 'tname')
+				value = lower(gxadmin_random_tag(id)),
+				user_value = gxadmin_random_tag(id)
+				where user_tname not in ('group', 'name') and user_tname is not null;
+
+			-- Otherwise just set some data
+			update history_dataset_collection_tag_association set
+				user_tname = gxadmin_random_tag(id)
+				where user_tname is null;
+
+		-- history_rating_association is OK
 		-- history_tag_association
-		    -- TODO: distribution, unicode, name: vs group: vs none.
 
+			-- user_tname == 'group' and 'name' are special.
 			update history_tag_association set
-				user_tname = 'tag-' || id,
-				value = 'tag-' || id,
-				user_value = 'tag-' || id;
+				value = lower(gxadmin_random_tag(id)),
+				user_value = gxadmin_random_tag(id)
+				where user_tname in ('group', 'name');
 
-		-- history_user_share_association is OK (hist_id, user_id)
-		-- implicit_collection_jobs is OK (id, pop state)
-		-- implicit_collection_jobs_job_association is OK
-		-- implicitly_converted_dataset_association is OK
-		-- implicitly_created_dataset_collection_inputs is OK
-		-- interactivetool_entry_point
+			-- Sometimes people use a diffferent prefix
+			update history_tag_association set
+				user_tname = gxadmin_random_tag(id + 'tname')
+				value = lower(gxadmin_random_tag(id)),
+				user_value = gxadmin_random_tag(id)
+				where user_tname not in ('group', 'name') and user_tname is not null;
 
-			-- TODO: fix disributions? Meh.
-			update interactivetool_entry_point set
-				name = 'NAME',
-				token = 'token-' || job_id,
-				host = '',
-				port = '',
-				protocol = '',
-				entry_url = '',
-				info = null;
+			-- Otherwise just set some data
+			update history_tag_association set
+				user_tname = gxadmin_random_tag(id)
+				where user_tname is null;
 
+		-- history_user_share_association                       is MAYBE OK (hist_id, user_id) You can determine networks, but same with groups.
+		-- implicit_collection_jobs                             is OK (id, pop state)
+		-- implicit_collection_jobs_job_association             is OK
+		-- implicitly_converted_dataset_association             is OK
+		-- implicitly_created_dataset_collection_inputs         is OK
+		-- interactivetool_entry_point                          is EMPTY on AU
 		-- job
-			-- TODO: anonymize tool IDs?
 			update job set
 				command_line = 'redacted',
 				destination_params = null,
@@ -711,91 +804,377 @@ mutate-anonymise-db-for-release() { ## : This will attempt to make a database co
 				where job_stderr != null;
 
 		-- job_container_association
+
 			update job_container_association set
 				container_name = '',
 				container_info = '';
 
 		-- job_export_history_archive
+
 			update job_export_history_archive set
-				history_attrs_filename = '/tmp/does-not-exist',
-				datasets_attrs_filename = '/tmp/does-not-exist',
-				jobs_attrs_filename = '/tmp/does-not-exist';
+				history_attrs_filename = '/tmp/tmp' || gxadmin_random_pw(6),
+				datasets_attrs_filename = '/tmp/tmp' || gxadmin_random_pw(6),
+				jobs_attrs_filename = '/tmp/tmp' || gxadmin_random_pw(6);
 
 		-- job_external_output_metadata
+
 			update job_external_output_metadata set
-				filename_in  = '/tmp/does-not-exist',
-				filename_out = '/tmp/does-not-exist',
-				filename_results_code = '/tmp/does-not-exist',
-				filename_kwds = '/tmp/does-not-exist',
-				filename_override_metadata = '/tmp/does-not-exist',
+				filename_in = '/tmp/job_working_directory/' || job_id || '/metadata_in_' || gxadmin_random_pw(6),
+				filename_out = '/tmp/job_working_directory/' || job_id || '/metadata_out_' || gxadmin_random_pw(6),
+				filename_results_code = '/tmp/job_working_directory/' || job_id || '/metadata_results_' || gxadmin_random_pw(6),
+				filename_kwds = '/tmp/job_working_directory/' || job_id || '/metadata_kwds_' || gxadmin_random_pw(6),
+				filename_override_metadata = '/tmp/job_working_directory/' || job_id || '/metadata_override_' || gxadmin_random_pw(6);
 
 		-- job_import_history_archive
+
 			update job_import_history_archive set
-				archive_dir = '/tmp/dne';
+				archive_dir = '/tmp/tmp' || gxadmin_random_pw(6);
 
 		-- job_metric_numeric is OK
 		-- job_metric_text
+
 			truncate job_metric_text;
 
 		-- job_parameter
+
 			-- TODO: length distribution? Name distribution?
 			update job_parameter set
 				name = 'param-name',
 				value = 'param-value';
 
-		-- job_state_history
-		-- job_to_implicit_output_dataset_collection
+		-- job_state_history                          is OK
+		-- job_to_implicit_output_dataset_collection  is MAYBE OK (param name?)
+		-- job_to_input_dataset                       is MAYBE OK (param name?)
+		-- job_to_input_dataset_collection            is MAYBE OK (param name?)
+		-- job_to_input_library_dataset               is EMPTY on AU
+		-- job_to_output_dataset                      is MAYBE OK (param name?)
+		-- job_to_output_dataset_collection           is MAYBE OK (param name?)
+		-- job_to_output_library_dataset              is OK
+		-- kombu_message
+			truncate kombu_message;
+		-- kombu_queue                                        is OK (queue name only)
+		-- library
 
-			update job_to_implicit_output_dataset_collection set
-				name = 'jtiodc-' || id;
+			update library set
+				name = gxadmin_random_text(id),
+				description = gxadmin_random_text(id || 'desc'),
+				synopsis = gxadmin_random_text(id || 'synopsis');
 
-		-- job_to_input_dataset
-			update job_to_input_dataset set
-				name = 'jtid-' || id;
+		-- library_dataset
 
-		-- library_dataset_collection_annotation_association empty on EU
-		-- library_dataset_collection_association            empty on EU
-		-- library_dataset_collection_rating_association     empty on EU
-		-- library_dataset_collection_tag_association        empty on EU
-		-- library_dataset_dataset_info_association          empty on EU
-		-- library_folder_info_association                   empty on EU
-		-- migrate_tools                                     empty on EU
-		-- migrate_version                                   empty on EU
-		-- page_tag_association                              empty on EU
-		-- psa_code                                          empty on EU
-		-- psa_nonce                                         empty on EU
-		-- psa_partial                                       empty on EU
-		-- request                                           empty on EU
-		-- request_event                                     empty on EU
-		-- request_type                                      empty on EU
-		-- request_type_external_service_association         empty on EU
-		-- request_type_permissions                          empty on EU
-		-- request_type_run_association                      empty on EU
-		-- run                                               empty on EU
-		-- sample                                            empty on EU
-		-- sample_dataset                                    empty on EU
-		-- sample_event                                      empty on EU
-		-- sample_run_association                            empty on EU
-		-- sample_state                                      empty on EU
-		-- task_metric_text                                  empty on EU
-		-- tool_tag_association                              empty on EU
-		-- transfer_job                                      empty on EU
-		-- user_action                                       empty on EU
-		-- visualization_rating_association                  empty on EU
-		-- workflow_tag_association                          empty on EU
+			update library_dataset set
+				name = 'lda-' || id,
+				info = '';
 
+		-- library_dataset_collection_annotation_association    is EMPTY on AU, EU
+		-- library_dataset_collection_association               is EMPTY on AU, EU
+		-- library_dataset_collection_rating_association        is EMPTY on AU, EU
+		-- library_dataset_collection_tag_association           is EMPTY on AU, EU
+		-- library_dataset_dataset_association
 
+			-- TODO: SIGNIFICANT validation needed.
+			update library_dataset_dataset_association set
+				name = gxadmin_random_text(id) || '.' || extension;
 
+			update library_dataset_dataset_association set
+				peek = 'redacted' where peek is not null;
 
+			update library_dataset_dataset_association set
+				designation = 'hda-' || id::text
+				where designation is not null;
 
+			update library_dataset_dataset_association set
+				info = 'redacted' where info is not null;
 
+			update library_dataset_dataset_association set
+				message = 'redacted' where message is not null;
 
-
-
-
-
+			update library_dataset_dataset_association set
+				metadata = null;
 
 
+
+		-- library_dataset_dataset_association_permissions      is OK (permissions, ldda id, role id)
+		-- library_dataset_dataset_association_tag_association  is EMPTY on AU, EU
+		-- library_dataset_dataset_info_association             is EMPTY on AU, EU
+		-- library_dataset_permissions                          is OK (permissions, ld id, role id)
+		-- library_folder
+
+			update library_folder set
+				name = gxadmin_random_text(id),
+				description = gxadmin_random_text(id || 'desc');
+
+		-- library_folder_info_association                      is EMPTY on AU, EU
+		-- library_folder_permissions                           is OK (permissions, lf id, role id)
+		-- library_info_association                             is EMPTY on AU
+		-- library_permissions                                  is OK (permissions, lib id, role id)
+		-- metadata_file                                        is OK
+		-- migrate_tools                                        is EMPTY on AU, EU
+		-- migrate_version                                      is OK
+		-- oidc_user_authnz_tokens
+
+			update oidc_user_authnz_tokens set
+				uid = 'redacted',
+				extra_data = null;
+
+		-- page
+
+			update page set
+				title = gxadmin_random_text(id),
+				slug = gxadmin_random_slug(id);
+
+		-- page_annotation_association
+
+			update page_annotation_association set
+				annotation = gxadmin_random_text(id);
+
+		-- page_rating_association                              is EMPTY on AU
+		-- page_revision
+
+			update page_revision set
+				content = '<p>Some <b>content</b></p>';
+
+		-- page_tag_association                                 is EMPTY on AU
+
+			-- user_tname == 'group' and 'name' are special.
+			update page_tag_association set
+				value = lower(gxadmin_random_tag(id)),
+				user_value = gxadmin_random_tag(id)
+				where user_tname in ('group', 'name');
+
+			-- Sometimes people use a diffferent prefix
+			update page_tag_association set
+				user_tname = gxadmin_random_tag(id + 'tname')
+				value = lower(gxadmin_random_tag(id)),
+				user_value = gxadmin_random_tag(id)
+				where user_tname not in ('group', 'name') and user_tname is not null;
+
+			-- Otherwise just set some data
+			update page_tag_association set
+				user_tname = gxadmin_random_tag(id)
+				where user_tname is null;
+
+		-- page_user_share_association                          is EMPTY on AU, fine though
+		-- password_reset_token
+
+			update password_reset_token set
+				token = md5('x' || random());
+
+		-- post_job_action
+
+			update post_job_action set
+				action_arguments = '\x7b7d'
+				where action_type != 'RenameDatasetAction';
+
+			update post_job_action set
+				action_arguments = '\x7b226e65776e616d65223a2022436f6e74726f6c20636865636b227d';
+				where action_type = 'RenameDatasetAction';
+
+		-- post_job_action_association                          is OK
+		-- psa_association
+
+			update psa_association set
+				handle = 'redacted',
+				assoc_type = 'redacted';
+
+		-- psa_code                                             is EMPTY on AU, EU
+		-- psa_nonce                                            is EMPTY on AU, EU
+		-- psa_partial                                          is EMPTY on AU, EU
+		-- quota
+
+			update quota set
+				name = pg_size_pretty(bytes),
+				description = '';
+
+		-- repository_dependency                                is EMPTY on AU, OK on EU (ts repo id)
+		-- repository_repository_dependency_association         is EMPTY on AU, OK on EU
+		-- request                                              is EMPTY on AU, EU
+		-- request_event                                        is EMPTY on AU, EU
+		-- request_type                                         is EMPTY on AU, EU
+		-- request_type_external_service_association            is EMPTY on AU, EU
+		-- request_type_permissions                             is EMPTY on AU, EU
+		-- request_type_run_association                         is EMPTY on AU, EU
+		-- role
+
+			update role set
+				name = gxadmin_random_email(id),
+				description = 'Private role for ' || gxadmin_random_email(id),
+				where type = 'private';
+
+			update role set
+				name = gxadmin_random_text(id),
+				description = 'System role',
+				where type = 'system';
+
+			update role set
+				name = gxadmin_random_text(id),
+				description = 'Sharing role',
+				where type = 'sharing';
+
+			update role set
+				name = gxadmin_random_text(id),
+				description = '',
+				where type not in ('private', 'system', 'sharing');
+
+		-- run                                                  is EMPTY on AU, EU
+		-- sample                                               is EMPTY on AU, EU
+		-- sample_dataset                                       is EMPTY on AU, EU
+		-- sample_event                                         is EMPTY on AU, EU
+		-- sample_run_association                               is EMPTY on AU, EU
+		-- sample_state                                         is EMPTY on AU, EU
+		-- stored_workflow
+
+			update stored_workflow set
+				name = gxadmin_random_text(id),
+				slug = gxadmin_random_slug(id);
+
+		-- stored_workflow_annotation_association
+
+			update stored_workflow set
+				annotation = gxadmin_random_freetext(id)
+				where annotation is not null;
+
+		-- stored_workflow_menu_entry                           is OK
+		-- stored_workflow_rating_association                   is OK
+		-- stored_workflow_tag_association
+
+			-- user_tname == 'group' and 'name' are special.
+			update stored_workflow_tag_association set
+				value = lower(gxadmin_random_tag(id)),
+				user_value = gxadmin_random_tag(id)
+				where user_tname in ('group', 'name');
+
+			-- Sometimes people use a diffferent prefix
+			update stored_workflow_tag_association set
+				user_tname = gxadmin_random_tag(tag_id)
+				value = lower(gxadmin_random_tag(id)),
+				user_value = gxadmin_random_tag(id)
+				where user_tname not in ('group', 'name') and user_tname is not null;
+
+			-- Otherwise just set some data
+			update stored_workflow_tag_association set
+				user_tname = gxadmin_random_tag(tag_id)
+				where user_tname is null;
+
+		-- stored_workflow_user_share_connection is OK
+		-- tag
+
+			update tag set
+				name = gxadmin_random_tag(id)
+				where name not in ('name', 'group');
+
+		-- task                                                 is EMPTY on AU, not on EU
+
+			update task set
+				command_line = '',
+				param_filename = '',
+				runner_name = '',
+				tool_stdout = '',
+				tool_stderr = '',
+				task_runner_name = '',
+				task_runner_external_id = '',
+				prepare_input_files_cmd = '',
+				working_directory = '',
+				info = '',
+				job_messages = '',
+				job_stdout = '',
+				job_stderr = '';
+
+		-- task_metric_numeric                                  is EMPTY on AU, EU
+		-- task_metric_text                                     is EMPTY on AU, EU
+		-- tool_dependency                                      is EMPTY on AU, OK on EU
+		-- tool_shed_repository                                 is EMPTY on AU, OK on EU
+		-- tool_tag_association                                 is EMPTY on AU, EU
+		-- tool_version                                         is EMPTY on AU, OK on EU
+		-- tool_version_association                             is EMPTY on AU, EU
+		-- transfer_job                                         is EMPTY on AU, OK on EU
+		-- user_action                                          is EMPTY on AU, EU
+		-- user_address
+
+			update user_address set
+				desc = gxadmin_random_text(),
+				name = gxadmin_random_text(),
+				institution = gxadmin_random_text(),
+				address     = gxadmin_random_text(),
+				city        = gxadmin_random_text(),
+				state       = gxadmin_random_text(),
+				postal_code = gxadmin_random_number(),
+				country     = 'Australia'
+				phone       = gxadmin_random_number();
+
+		-- user_group_association                                          is OK
+		-- user_preference
+
+			-- TODO: make this better? I just don't feel safe given genomespace tokens, etc.
+			truncate user_preference;
+
+		-- user_quota_association                                          is OK
+		-- user_role_association                                           is OK
+		-- validation_error                                                is EMPTY on AU
+		-- visualization
+
+			update visualization set
+				title = gxadmin_random_text(id),
+				slug = gxadmin_random_slug(id);
+
+		-- visualization_annotation_association                            is EMPTY on AU
+
+			update visualization_annotation_association set
+				annotation = gxadmin_random_freetext();
+
+		-- visualization_rating_association                                is EMPTY on AU
+		-- visualization_revision                                          is MAYBE OK
+		-- visualization_tag_association                                   is EMPTY on AU
+		-- visualization_user_share_association                            is EMPTY on AU
+		-- worker_process                                                  is OK
+		-- workflow
+
+			update workflow set
+				name = gxadmin_random_text(id);
+
+			update workflow set
+				reports_config = '\x7b7d'
+				when reports_config is not null;
+
+		-- workflow_invocation                                             is OK
+		-- workflow_invocation_output_dataset_association                  is OK
+		-- workflow_invocation_output_dataset_collection_association       is OK
+		-- workflow_invocation_output_value                                is EMPTY on AU
+		-- workflow_invocation_step                                        is OK
+		-- workflow_invocation_step_output_dataset_association             is MAYBE OK (output_name?)
+		-- workflow_invocation_step_output_dataset_collection_association  is MAYBE OK (output_name?)
+		-- workflow_invocation_to_subworkflow_invocation_association       is OK
+		-- workflow_output                                                 is MAYBE OK (output_name)
+		-- workflow_request_input_parameters                               is OK
+		-- workflow_request_input_step_parameter
+
+			update workflow_request_input_step_parameter set
+				parameter_value = '\x226164736622'; -- "adsf"
+		-- workflow_request_step_states
+
+			update workflow_request_step_states set
+				value = '\x7b7d';
+
+		-- workflow_request_to_input_collection_dataset                    is OK
+		-- workflow_request_to_input_dataset                               is OK
+		-- workflow_step
+
+			update workflow_step set
+				tool_inputs = '\x7b7d';
+
+			update workflow_step set
+				label = gxadmin_random_slug(id)
+				where label is not null;
+
+		-- workflow_step_annotation_association
+
+			update workflow_step_annotation_association set
+				annotation = gxadmin_random_freetext(id);
+
+		-- workflow_step_connection                                        is OK
+		-- workflow_step_input                                             is OK
+		-- workflow_step_tag_association                                   is EMPTY on AU, EU
+		-- workflow_tag_association                                        is EMPTY on AU, EU
 	EOF
 
 
