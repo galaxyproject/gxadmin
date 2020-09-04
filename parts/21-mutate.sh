@@ -498,7 +498,6 @@ mutate_generate-unset-api-keys() { ## [--commit]: Generate API keys for users wh
 
 }
 
-
 mutate_anonymise-db-for-release() { ## : This will attempt to make a database completely safe to release publicly.
 	handle_help "$@" <<-EOF
 		THIS WILL DESTROY YOUR DATABASE.
@@ -1284,4 +1283,44 @@ gxadmin_random_freetext
 	commit=$(should_commit "$commit_flag")
 	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
 
+mutate_fail-wfi() { ## <wf-invocation-d> [--commit]: Sets a workflow invocation state to failed
+	handle_help "$@" <<-EOF
+		Sets a workflow invocation's state to "failed"
+	EOF
+
+	assert_count_ge $# 1 "Must supply a wf-invocation-id"
+	id=$1
+
+	read -r -d '' QUERY <<-EOF
+		UPDATE
+			workflow_invocation
+		SET
+			state = 'failed'
+		WHERE
+			id = '$id'
+	EOF
+
+	commit=$(should_commit "$2")
+	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
+}
+
+mutate_oidc-by-emails() { ## <email_from> <email_to> [--commit]: Reassign OIDC account between users.
+	handle_help "$@" <<-EOF
+		Workaround for users creating a new account by clicking the OIDC button, with case mismatching between existing accounts.
+		Please note that this function is case-sensitive. Fixes https://github.com/galaxyproject/galaxy/issues/9981.
+	EOF
+
+	assert_count_ge $# 2 "Must supply an email_from and an email_to";
+
+	read -r -d '' QUERY <<-EOF
+		UPDATE oidc_user_authnz_tokens
+		SET user_id=correctuser.id
+		FROM (
+			SELECT id FROM galaxy_user WHERE email='$2'
+		) AS correctuser
+		WHERE user_id = (SELECT id FROM galaxy_user WHERE email='$1')
+	EOF
+
+	commit=$(should_commit "$3")
+	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
 }

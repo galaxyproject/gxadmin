@@ -1,24 +1,28 @@
 # 18-pre
 
 - Fixed:
-	- Fixed broken slurping from previous release (Thanks @Slugger70 for catching it.)
+	- Fixed broken slurping from previous release (Thanks [@slugger70](https://github.com/Slugger70) for catching it.)
 	- All previous '--nice' flags are rewritten to '--human' (Thanks @lldelisle)
 	- Update 'user-disk-usage' to support iquery (Thanks @lldelisle)
 	- Update 'largest-histories' to support iquery (Thanks @lldelisle)
 	- uwsgi-memory now looks at workflow schedulers
 	- Exposed bash autocompletion and documented it
+	- Made changelog updates mandatory so I don't have to ask people for it. Finally.
 - Added:
 	- encode/decode ID
 	- Benchmarking via ASV (preview)
 	- query workers, only works on Galaxy 20.01 or newer and retrieves the hostname and PID of Galaxy worker processes
+	- Add '--by_group' flag to several monthly queries (Thanks [@slugger70](https://github.com/Slugger70))
 	- '--details' option to query errored-jobs to include the job_stderr column
-	- query monthly-cpu-stats (Thanks @gmauro!)
+	- query monthly-cpu-stats (Thanks @gmauro)
 	- total number of jobs with exit states for galaxxy instance (Thanks @bruggerk)
 	- query workflow-invocation-totals
 	- server subcommand exposing previously hidden functions
 	- workflow trace archive commands
 	- query queue has a new optional parameter for splitting queues by various attributes (Thanks @natefoo)
 	- query pg-rows-per-table to find out which tables have data.
+	- mutate fail-wfi
+	- mutate oidc-by-emails, mutate users affected by https://github.com/galaxyproject/galaxy/issues/9981
 - Removed:
 	- filter hexdecodelines, this is now replaced by a built-in postgres function
 - Changed:
@@ -126,7 +130,7 @@ Testing our new release message
 	- Some basic testing of the overall script
 - Fixed:
 	- Correct time zones in all queries to be client-side time zones rather
-	  than UTC encoded timestamps as stored in db (Thanks [@slugger70](https://github.com/Slugger70)!)
+	  than UTC encoded timestamps as stored in db (Thanks [@slugger70](https://github.com/Slugger70))
 	- Renamed: "query monthly-users" → "query monthly-users-active"
 - Removed:
 	- Removed highly EU specific handler and zerg functions

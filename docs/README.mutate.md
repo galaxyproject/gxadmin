@@ -9,7 +9,9 @@ Command | Description
 [`mutate fail-history`](#mutate-fail-history) | Mark all jobs within a history to state error
 [`mutate fail-job`](#mutate-fail-job) | Sets a job state to error
 [`mutate fail-terminal-datasets`](#mutate-fail-terminal-datasets) | Causes the output datasets of jobs which were manually failed, to be marked as failed
+[`mutate fail-wfi`](#mutate-fail-wfi) | Sets a workflow invocation state to failed
 [`mutate generate-unset-api-keys`](#mutate-generate-unset-api-keys) | Generate API keys for users which do not have one set.
+[`mutate oidc-by-emails`](#mutate-oidc-by-emails) | Reassign OIDC account between users.
 [`mutate oidc-role-find-affected`](#mutate-oidc-role-find-affected) | Find users affected by galaxyproject/galaxy#8244
 [`mutate oidc-role-fix`](#mutate-oidc-role-fix) | Fix permissions for users logged in via OIDC. Workaround for galaxyproject/galaxy#8244
 [`mutate reassign-job-to-handler`](#mutate-reassign-job-to-handler) | Reassign a job to a different handler
@@ -172,6 +174,20 @@ Then to run with the --commit flag to commit the changes
     COMMIT
 
 
+## mutate fail-wfi
+
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=mutate_fail-wfi&type=Code))
+mutate fail-wfi -  Sets a workflow invocation state to failed
+
+**SYNOPSIS**
+
+    gxadmin mutate fail-wfi <wf-invocation-d> [--commit]
+
+**NOTES**
+
+Sets a workflow invocation's state to "failed"
+
+
 ## mutate generate-unset-api-keys
 
 ([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=mutate_generate-unset-api-keys&type=Code))
@@ -187,6 +203,21 @@ For some use cases (IEs), it is preferrable that everyone has an API
 key set for them, if they don't choose to set one themselves. So we set
 a base64'd key to be a bit extra secure just in case. These work just
 fine like hex keys.
+
+
+## mutate oidc-by-emails
+
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=mutate_oidc-by-emails&type=Code))
+mutate oidc-by-emails -  Reassign OIDC account between users.
+
+**SYNOPSIS**
+
+    gxadmin mutate oidc-by-emails <email_from> <email_to> [--commit]
+
+**NOTES**
+
+Workaround for users creating a new account by clicking the OIDC button, with case mismatching between existing accounts.
+Please note that this function is case-sensitive. Fixes https://github.com/galaxyproject/galaxy/issues/9981.
 
 
 ## mutate oidc-role-find-affected
