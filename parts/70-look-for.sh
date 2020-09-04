@@ -104,33 +104,14 @@ look_for() {
 
 		# Run the queries
 		case "$group_name" in
-			#tsvmutate         ) query_tsv "$QUERY";;
-			#csvmutate         ) query_csv "$QUERY";;
 			mutate            ) query_tbl "$QUERY";;
-			#jsonmutate        ) query_json "$QUERY";;
-			#imutate           ) query_influx "$QUERY" "$query_name" "$fields" "$tags" "$timestamp";;
 			explainmutate     ) query_exp "$QUERY";;
 			explainjsonmutate ) query_expj "$QUERY";;
 			echomutate        ) query_echo "$QUERY";;
 			# default
-			*                )  usage "Error";;
+			*                 )  usage "Error";;
 		esac
 
-	#elif [[ $query_type == "mutate" ]]; then
-		#obtain_func "$query_type" "$query_name" "$@"
-
-		## If query in error, exit.
-		#if [[ "$QUERY" == "ERROR" ]]; then
-			#error "Error"
-			#usage mutate
-		#fi
-
-		## Run the queries
-		#if [[ "$FLAVOR" == "tsv" ]]; then
-			#query_tsv "$QUERY";
-		#else
-			#query_tbl "$QUERY";
-		#fi
 	elif [[ $query_type == "local" ]]; then
 		if [[ -z "${GXADMIN_BUGGER_OFF}" ]] && (( (RANDOM % 25) == 0 )); then
 			warning "Hey! It's great that you're using gxadmin! You should contribute these functions back :) Other people might find these useful, or could learn something from the code you've written, even if you think it is too specific to your site."
