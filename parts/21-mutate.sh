@@ -526,12 +526,22 @@ mutate_anonymise-db-for-release() { ## : This will attempt to make a database co
 			FROM generate_series(1, size)
 		$$ LANGUAGE SQL STABLE;
 
+--DONE
+		CREATE OR REPLACE FUNCTION gxadmin_alternating_series(size integer)
+		RETURNS table(value integer)
+		AS $$
+			SELECT
+				generate_series % 2 as value,
+				generate_series
+			FROM generate_series(1, size)
+		$$ LANGUAGE SQL IMMUTABLE;
+
 
 -- DONE
-		CREATE OR REPLACE FUNCTION gxadmin_random_number(size integer)
+		CREATE OR REPLACE FUNCTION gxadmin_random_number(input text, size integer)
 		RETURNS integer
 		AS $$
-			SELECT (power(10, size) * random())::integer
+			SELECT (power(10, size) * gxadmin_digest_value(input))::integer
 		$$ LANGUAGE SQL IMMUTABLE;
 
 -- DONE
@@ -545,6 +555,21 @@ mutate_anonymise-db-for-release() { ## : This will attempt to make a database co
 				),
 				''
 			);
+		$$ LANGUAGE SQL STABLE;
+
+--
+		CREATE OR REPLACE FUNCTION gxadmin_random_freetext(input text, size integer)
+		RETURNS text
+		AS $$
+			with tmp as (
+				select gxadmin_alternating_series(size)
+			)
+			SELECT
+				CASE
+					WHEN a = 0 THEN gxadmin_random_word(input, 3 + gxadmin_random_number(input, 1))
+					ELSE ' '
+				END
+			from tmp
 		$$ LANGUAGE SQL STABLE;
 
 -- DONE
@@ -571,14 +596,12 @@ mutate_anonymise-db-for-release() { ## : This will attempt to make a database co
 			)
 			SELECT
 				CASE
-					WHEN a < 0.1 THEN gxadmin_random_number(10) || '@example.com'
+					WHEN a < 0.1 THEN gxadmin_random_number(id::text, 10) || '@example.com'
 					WHEN a < 0.4 THEN gxadmin_random_slug(id::text, 6) || '@example.com'
 					ELSE gxadmin_random_slug(id::text, 30) || '@example.com'
 				END
 			from tmp
 		$$ LANGUAGE SQL STABLE;
-
-gxadmin_random_freetext
 
 -- DONE
 		CREATE OR REPLACE FUNCTION gxadmin_random_ip(input text)
@@ -601,31 +624,43 @@ gxadmin_random_freetext
 
 
 -- DONE
-		CREATE OR REPLACE FUNCTION gxadmin_random_pw(input text, size integer)
+		CREATE OR REPLACE FUNCTION gxadmin_random_string(input text, size integer, start integer, width integer)
 		RETURNS text
 		AS $$
 			SELECT array_to_string(
 				ARRAY(
-					SELECT chr((48 + round(value * 59)) :: integer)
+					SELECT chr((start + round(value * width)) :: integer)
 					FROM gxadmin_random_seed(input, size)
 				),
 				''
 			);
 		$$ LANGUAGE SQL STABLE;
 
+-- DONE
+		CREATE OR REPLACE FUNCTION gxadmin_random_pw(input text, size integer)
+		RETURNS text
+		AS $$
+			SELECT gxadmin_random_string(input, size, 48, 59);
+		$$ LANGUAGE SQL STABLE;
 
 
-		CREATE OR REPLACE FUNCTION gxadmin_random_tag(id integer)
+--
+		CREATE OR REPLACE FUNCTION gxadmin_random_tag(id text)
 		RETURNS text
 		AS $$
 			with tmp as (
-				select gxadmin_digest_value(id::text) as a
+				select gxadmin_digest_value(id) as a
 			)
 			SELECT
 				CASE
-					WHEN a < 0.2 THEN 'hi' -- EMOJI
-					WHEN a < 0.8 THEN gxadmin_random_slug(id::text, 10)
-					ELSE gxadmin_random_number(10)
+					WHEN a < 0.1 THEN gxadmin_random_string(input, size, 65, 26)
+					WHEN a < 0.2 THEN gxadmin_random_string(input, size, 192, 200)
+					WHEN a < 0.3 THEN gxadmin_random_string(input, size, 1025, 100)
+					WHEN a < 0.4 THEN gxadmin_random_string(input, size, 5121, 200)
+					WHEN a < 0.5 THEN gxadmin_random_string(input, size, 9728, 400)
+					WHEN a < 0.6 THEN gxadmin_random_string(input, size, 14300, 100)
+					WHEN a < 0.8 THEN gxadmin_random_slug(id::text, size)
+					ELSE gxadmin_random_string(input, size, 48, 10)
 				END
 			from tmp
 		$$ LANGUAGE SQL;
