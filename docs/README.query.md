@@ -46,6 +46,7 @@ Command | Description
 [`query pg-index-usage`](#query-pg-index-usage) | calculates your index hit rate (effective databases are at 99% and up)
 [`query pg-long-running-queries`](#query-pg-long-running-queries) | show all queries longer than five minutes by descending duration
 [`query pg-mandelbrot`](#query-pg-mandelbrot) | show the mandlebrot set
+[`query pg-rows-per-table`](#query-pg-rows-per-table) | Print rows per table 
 [`query pg-stat-bgwriter`](#query-pg-stat-bgwriter) | Stats about the behaviour of the bgwriter, checkpoints, buffers, etc.
 [`query pg-stat-user-tables`](#query-pg-stat-user-tables) | stats about tables (tuples, index scans, vacuums, analyzes)
 [`query pg-table-bloat`](#query-pg-table-bloat) | show table and index bloat in your database ordered by most wasteful
@@ -1011,6 +1012,20 @@ query pg-mandelbrot -  show the mandlebrot set
 **NOTES**
 
 Copied from: https://github.com/heroku/heroku-pg-extras/tree/master/commands
+
+
+## query pg-rows-per-table
+
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_pg-rows-per-table&type=Code))
+query pg-rows-per-table -  Print rows per table 
+
+**SYNOPSIS**
+
+    gxadmin query pg-rows-per-table
+
+**NOTES**
+
+This retrieves a list of tables in the database and their size
 
 
 ## query pg-stat-bgwriter

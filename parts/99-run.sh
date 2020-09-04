@@ -24,8 +24,9 @@ fi
 
 case "$mode" in
 	#*query ) $wrapper query "$mode" "$@" ;;
-	*query ) $wrapper look_for "query" "$mode" "$@" ;;
-	*server ) $wrapper look_for server "$mode" "$@" ;;
+	*query ) $wrapper look_for "query"  "$mode" "$@" ;;
+	*server) $wrapper look_for "server" "$mode" "$@" ;;
+	*mutate) $wrapper look_for "mutate" "$mode" "$@" ;;
 	config ) $wrapper look_for "$mode" "none"  "$@" ;;
 	cluster) $wrapper look_for "$mode" "none"  "$@" ;;
 	filter ) $wrapper look_for "$mode" "none"  "$@" ;;
@@ -34,7 +35,6 @@ case "$mode" in
 	report ) $wrapper look_for "$mode" "none"  "$@" ;;
 	uwsgi  ) $wrapper look_for "$mode" "none"  "$@" ;;
 	local  ) $wrapper look_for "$mode" "none"  "$@" ;;
-	mutate ) $wrapper look_for "$mode" "none"  "$@" ;;
 	s      ) search "$@" ;;
 	find   ) search "$@" ;;
 	search ) search "$@" ;;

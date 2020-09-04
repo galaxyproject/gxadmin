@@ -2,6 +2,7 @@
 
 Command | Description
 ------- | -----------
+[`mutate anonymise-db-for-release`](#mutate-anonymise-db-for-release) | This will attempt to make a database completely safe to release publicly.
 [`mutate approve-user`](#mutate-approve-user) | Approve a user in the database
 [`mutate assign-unassigned-workflows`](#mutate-assign-unassigned-workflows) | Randomly assigns unassigned workflows to handlers. Workaround for galaxyproject/galaxy#8209
 [`mutate delete-group-role`](#mutate-delete-group-role) | Remove the group, role, and any user-group + user-role associations
@@ -17,6 +18,20 @@ Command | Description
 [`mutate reassign-job-to-handler`](#mutate-reassign-job-to-handler) | Reassign a job to a different handler
 [`mutate reassign-workflows-to-handler`](#mutate-reassign-workflows-to-handler) | Reassign workflows in 'new' state to a different handler.
 [`mutate restart-jobs`](#mutate-restart-jobs) | Restart some jobs
+
+## mutate anonymise-db-for-release
+
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=mutate_anonymise-db-for-release&type=Code))
+mutate anonymise-db-for-release -  This will attempt to make a database completely safe to release publicly.
+
+**SYNOPSIS**
+
+    gxadmin mutate anonymise-db-for-release
+
+**NOTES**
+
+THIS WILL DESTROY YOUR DATABASE.
+
 
 ## mutate approve-user
 

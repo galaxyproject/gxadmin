@@ -32,7 +32,7 @@ Please make PRs to the `dev` branch. The master branch will only contain release
 
 ## Contributors
 
-- Helena Rasche ([@erasche](https://github.com/erasche))
+- Helena Rasche, BDFL ([@hexylena](https://github.com/hexylena))
 - Nate Coraor ([@natefoo](https://github.com/natefoo))
 - Simon Gladman ([@slugger70](https://github.com/slugger70))
 - Anthony Bretaudeau ([@abretaud](https://github.com/abretaud))

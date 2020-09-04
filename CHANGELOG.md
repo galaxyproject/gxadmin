@@ -11,6 +11,7 @@
 - Added:
 	- encode/decode ID
 	- Benchmarking via ASV (preview)
+	- anonymise-db-for-release (preview)
 	- query workers, only works on Galaxy 20.01 or newer and retrieves the hostname and PID of Galaxy worker processes
 	- Add '--by_group' flag to several monthly queries (Thanks [@slugger70](https://github.com/Slugger70))
 	- '--details' option to query errored-jobs to include the job_stderr column
@@ -20,8 +21,10 @@
 	- server subcommand exposing previously hidden functions
 	- workflow trace archive commands
 	- query queue has a new optional parameter for splitting queues by various attributes (Thanks @natefoo)
+	- query pg-rows-per-table to find out which tables have data.
 	- mutate fail-wfi
 	- mutate oidc-by-emails, mutate users affected by https://github.com/galaxyproject/galaxy/issues/9981
+	- mutate now supports echo/explain prefixes.
 - Removed:
 	- filter hexdecodelines, this is now replaced by a built-in postgres function
 - Changed:

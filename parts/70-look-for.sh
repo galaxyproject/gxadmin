@@ -77,7 +77,7 @@ look_for() {
 		# If query in error, exit.
 		if [[ "$QUERY" == "ERROR" ]]; then
 			error "Error"
-			usage query
+			usage server
 		fi
 
 		# Run the queries
@@ -96,7 +96,6 @@ look_for() {
 
 	elif [[ $query_type == "mutate" ]]; then
 		obtain_func "$query_type" "$query_name" "$@"
-
 		# If query in error, exit.
 		if [[ "$QUERY" == "ERROR" ]]; then
 			error "Error"
@@ -104,11 +103,15 @@ look_for() {
 		fi
 
 		# Run the queries
-		if [[ "$FLAVOR" == "tsv" ]]; then
-			query_tsv "$QUERY";
-		else
-			query_tbl "$QUERY";
-		fi
+		case "$group_name" in
+			mutate            ) query_tbl "$QUERY";;
+			explainmutate     ) query_exp "$QUERY";;
+			explainjsonmutate ) query_expj "$QUERY";;
+			echomutate        ) query_echo "$QUERY";;
+			# default
+			*                 )  usage "Error";;
+		esac
+
 	elif [[ $query_type == "local" ]]; then
 		if [[ -z "${GXADMIN_BUGGER_OFF}" ]] && (( (RANDOM % 25) == 0 )); then
 			warning "Hey! It's great that you're using gxadmin! You should contribute these functions back :) Other people might find these useful, or could learn something from the code you've written, even if you think it is too specific to your site."
