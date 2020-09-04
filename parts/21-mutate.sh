@@ -513,41 +513,30 @@ mutate_anonymise-db-for-release() { ## : This will attempt to make a database co
 --DONE
 		CREATE OR REPLACE FUNCTION gxadmin_digest_value(input text)
 		RETURNS float
-		AS $$
+		AS \$\$
 			SELECT
 				('0.' || abs(('x' || substr(md5(current_date ||input::text),1,16))::bit(64)::bigint))::float
-		$$ LANGUAGE SQL STABLE;
+		\$\$ LANGUAGE SQL STABLE;
 
 --DONE
 		CREATE OR REPLACE FUNCTION gxadmin_random_seed(input text, size integer)
 		RETURNS table(value float)
-		AS $$
+		AS \$\$
 			SELECT gxadmin_digest_value(input::text || generate_series) as value
 			FROM generate_series(1, size)
-		$$ LANGUAGE SQL STABLE;
-
---DONE
-		CREATE OR REPLACE FUNCTION gxadmin_alternating_series(size integer)
-		RETURNS table(value integer)
-		AS $$
-			SELECT
-				generate_series % 2 as value,
-				generate_series
-			FROM generate_series(1, size)
-		$$ LANGUAGE SQL IMMUTABLE;
-
+		\$\$ LANGUAGE SQL STABLE;
 
 -- DONE
 		CREATE OR REPLACE FUNCTION gxadmin_random_number(input text, size integer)
 		RETURNS integer
-		AS $$
+		AS \$\$
 			SELECT (power(10, size) * gxadmin_digest_value(input))::integer
-		$$ LANGUAGE SQL IMMUTABLE;
+		\$\$ LANGUAGE SQL IMMUTABLE;
 
 -- DONE
 		CREATE OR REPLACE FUNCTION gxadmin_random_word(input text, size integer)
 		RETURNS text
-		AS $$
+		AS \$\$
 			SELECT array_to_string(
 				ARRAY(
 					SELECT chr((97 + round(value * 25)) :: integer)
@@ -555,27 +544,12 @@ mutate_anonymise-db-for-release() { ## : This will attempt to make a database co
 				),
 				''
 			);
-		$$ LANGUAGE SQL STABLE;
-
---
-		CREATE OR REPLACE FUNCTION gxadmin_random_freetext(input text, size integer)
-		RETURNS text
-		AS $$
-			with tmp as (
-				select gxadmin_alternating_series(size)
-			)
-			SELECT
-				CASE
-					WHEN a = 0 THEN gxadmin_random_word(input, 3 + gxadmin_random_number(input, 1))
-					ELSE ' '
-				END
-			from tmp
-		$$ LANGUAGE SQL STABLE;
+		\$\$ LANGUAGE SQL STABLE;
 
 -- DONE
 		CREATE OR REPLACE FUNCTION gxadmin_random_slug(input text, size integer)
 		RETURNS text
-		AS $$
+		AS \$\$
 			SELECT
 				substr(
 					gxadmin_random_word(input || 'a' || size, 5 + (gxadmin_digest_value(input || 'a' || size) * size)::integer)
@@ -584,49 +558,44 @@ mutate_anonymise-db-for-release() { ## : This will attempt to make a database co
 					|| '-' ||
 					gxadmin_random_word(input || 'c' || size, 4 + (gxadmin_digest_value(input || 'c' || size) * size)::integer)
 				, 1, size)
-		$$ LANGUAGE SQL STABLE;
-
+		\$\$ LANGUAGE SQL STABLE;
 
 -- DONEish
-		CREATE OR REPLACE FUNCTION gxadmin_random_email(id integer)
+		CREATE OR REPLACE FUNCTION gxadmin_random_email(input text)
 		RETURNS text
-		AS $$
+		AS \$\$
 			with tmp as (
-				select gxadmin_digest_value(id::text) as a
+				select gxadmin_digest_value(input) as a
 			)
 			SELECT
 				CASE
-					WHEN a < 0.1 THEN gxadmin_random_number(id::text, 10) || '@example.com'
-					WHEN a < 0.4 THEN gxadmin_random_slug(id::text, 6) || '@example.com'
-					ELSE gxadmin_random_slug(id::text, 30) || '@example.com'
+					WHEN a < 0.3 THEN gxadmin_random_number(input, 7) || '@example.com'
+					WHEN a < 0.8 THEN gxadmin_random_slug(input, 6) || '@example.com'
+					ELSE gxadmin_random_slug(input, 20) || '@example.com'
 				END
 			from tmp
-		$$ LANGUAGE SQL STABLE;
+		\$\$ LANGUAGE SQL STABLE;
 
 -- DONE
 		CREATE OR REPLACE FUNCTION gxadmin_random_ip(input text)
 		RETURNS text
-		AS $$
+		AS \$\$
 			-- Uses documentation range IPs
-			SELECT
-				'192.0.2.' || gxadmin_digest_value(input::text) % 255
-
 			with tmp as (
 				select gxadmin_digest_value(input::text) as a
 			)
 			SELECT
 				CASE
-					WHEN a < 0.9 THEN '192.0.2.' || (gxadmin_digest_value(input) * 255)::integer
+					WHEN a < 0.7 THEN '192.0.2.' || (gxadmin_digest_value(input) * 255)::integer
 					ELSE '2001:0db8:85a3:8d3:1319:8a2e:0370:' || to_hex((gxadmin_digest_value(input) * 65536)::integer)
 				END
 			from tmp
-		$$ LANGUAGE SQL STABLE;
-
+		\$\$ LANGUAGE SQL STABLE;
 
 -- DONE
 		CREATE OR REPLACE FUNCTION gxadmin_random_string(input text, size integer, start integer, width integer)
 		RETURNS text
-		AS $$
+		AS \$\$
 			SELECT array_to_string(
 				ARRAY(
 					SELECT chr((start + round(value * width)) :: integer)
@@ -634,61 +603,60 @@ mutate_anonymise-db-for-release() { ## : This will attempt to make a database co
 				),
 				''
 			);
-		$$ LANGUAGE SQL STABLE;
+		\$\$ LANGUAGE SQL STABLE;
+
+-- DONE
+		CREATE OR REPLACE FUNCTION gxadmin_random_tag(input text)
+		RETURNS text
+		AS \$\$
+			with tmp as (
+				select gxadmin_digest_value(input) as a
+			)
+			SELECT
+				CASE
+					WHEN a < 0.1 THEN gxadmin_random_string(input, 3 + gxadmin_random_number(input, 1), 65, 26)
+					WHEN a < 0.2 THEN gxadmin_random_string(input, 3 + gxadmin_random_number(input, 1), 192, 200)
+					WHEN a < 0.3 THEN gxadmin_random_string(input, 3 + gxadmin_random_number(input, 1), 1025, 100)
+					WHEN a < 0.4 THEN gxadmin_random_string(input, 3 + gxadmin_random_number(input, 1), 5121, 200)
+					WHEN a < 0.5 THEN gxadmin_random_string(input, 3 + gxadmin_random_number(input, 1), 9728, 400)
+					WHEN a < 0.6 THEN gxadmin_random_string(input, 3 + gxadmin_random_number(input, 1), 14300, 100)
+					WHEN a < 0.8 THEN gxadmin_random_slug(input, 3 + gxadmin_random_number(input, 1))
+					ELSE gxadmin_random_string(input, 3 + gxadmin_random_number(input, 1), 48, 10)
+				END
+			from tmp
+		\$\$ LANGUAGE SQL;
 
 -- DONE
 		CREATE OR REPLACE FUNCTION gxadmin_random_pw(input text, size integer)
 		RETURNS text
-		AS $$
+		AS \$\$
 			SELECT gxadmin_random_string(input, size, 48, 59);
-		$$ LANGUAGE SQL STABLE;
+		\$\$ LANGUAGE SQL STABLE;
 
-
---
-		CREATE OR REPLACE FUNCTION gxadmin_random_tag(id text)
+-- DONE
+		CREATE OR REPLACE FUNCTION gxadmin_random_text(input text, size integer)
 		RETURNS text
-		AS $$
-			with tmp as (
-				select gxadmin_digest_value(id) as a
-			)
-			SELECT
-				CASE
-					WHEN a < 0.1 THEN gxadmin_random_string(input, size, 65, 26)
-					WHEN a < 0.2 THEN gxadmin_random_string(input, size, 192, 200)
-					WHEN a < 0.3 THEN gxadmin_random_string(input, size, 1025, 100)
-					WHEN a < 0.4 THEN gxadmin_random_string(input, size, 5121, 200)
-					WHEN a < 0.5 THEN gxadmin_random_string(input, size, 9728, 400)
-					WHEN a < 0.6 THEN gxadmin_random_string(input, size, 14300, 100)
-					WHEN a < 0.8 THEN gxadmin_random_slug(id::text, size)
-					ELSE gxadmin_random_string(input, size, 48, 10)
-				END
-			from tmp
-		$$ LANGUAGE SQL;
-
-
-		CREATE OR REPLACE FUNCTION gxadmin_random_text(id text)
-		RETURNS text
-		AS $$
-			with tmp as (
-				select random() as a
-			)
-			SELECT
-				CASE
-				END
-			from tmp
-		$$ LANGUAGE SQL;
-
+		AS \$\$
+			SELECT array_to_string(
+				ARRAY(
+					SELECT gxadmin_random_tag(input || generate_series)
+					FROM generate_series(1, size)
+				),
+				' '
+			);
+		\$\$ LANGUAGE SQL;
 
 -- DONE
 		-- https://stackoverflow.com/a/48901446
 		CREATE OR REPLACE FUNCTION gxadmin_round_sf(n numeric, digits integer)
 		RETURNS numeric
-		AS $$
+		AS \$\$
 			SELECT floor(n / (10 ^ floor(log(n) - digits + 1))) * (10 ^ floor(log(n) - digits + 1))
-		$$ LANGUAGE SQL IMMUTABLE STRICT;
+		\$\$ LANGUAGE SQL IMMUTABLE STRICT;
 
 
 		-- api_keys
+		COPY (SELECT 'api_keys') to STDOUT;
 			update api_keys set key = 'random-key-' || user_id;
 
 		-- cleanup_event                                        is OK
@@ -707,6 +675,7 @@ mutate_anonymise-db-for-release() { ## : This will attempt to make a database co
 		-- data_manager_history_association                     is OK (user_id, history_id)
 		-- data_manager_job_association                         is OK (job_id, DM id)
 		-- dataset
+		COPY (SELECT 'dataset') to STDOUT;
 			-- TODO: Do external_filename, and _extra_files_path need to be cleaned?
 			-- TODO: this is imperfect, we do something better in GRT where we take 2 SDs
 			-- https://stackoverflow.com/questions/48900936/postgresql-rounding-to-significant-figures
@@ -716,11 +685,13 @@ mutate_anonymise-db-for-release() { ## : This will attempt to make a database co
 				total_size = round(total_size, -3);
 		-- dataset_collection                                   is OK (type, count, etc.)
 		-- dataset_collection_element
+		COPY (SELECT 'dataset_collection_element') to STDOUT;
 			update dataset_collection_element set
-				element_identifier = gxadmin_random();
+				element_identifier = gxadmin_random_slug(id::text, 10);
 		-- dataset_hash                                         is EMPTY on AU, EU
 		-- dataset_permissions                                  is OK (role, dataset)
 		-- dataset_source
+		COPY (SELECT 'dataset_source') to STDOUT;
 			update dataset_source set
 				source_uri = 'https://example.org/test.dat';
 
@@ -739,25 +710,29 @@ mutate_anonymise-db-for-release() { ## : This will attempt to make a database co
 		-- form_definition_current                              is EMPTY on AU, EU
 		-- form_values                                          is EMPTY on AU, EU
 		-- galaxy_group
+		COPY (SELECT 'galaxy_group') to STDOUT;
 			update galaxy_group set
 				name = 'group-' || id;
 
 		-- galaxy_session
+		COPY (SELECT 'galaxy_session') to STDOUT;
 			update galaxy_session set
 				remote_host = gxadmin_random_ip(remote_host)
-				when remote_host is not null;
-			update galaxy_session set
-				remote_addr = gxadmin_random_ip(remote_addr)
-				when remote_addr is not null;
-			update galaxy_session set
-				referer = 'https://example.org'
-				when referer is not null;
+				where remote_host is not null;
 
 			update galaxy_session set
-				session_key = '', prev_session_id = '';
+				remote_addr = gxadmin_random_ip(remote_addr)
+				where remote_addr is not null;
+			update galaxy_session set
+				referer = 'https://example.org'
+				where  referer is not null;
+
+			update galaxy_session set
+				session_key = gxadmin_random_pw(id::text, 16), prev_session_id = null;
 
 		-- galaxy_session_to_history                            is OK (time, session_id, hist_id)
 		-- galaxy_user
+		COPY (SELECT 'galaxy_user') to STDOUT;
 			-- TODO: better email length/content distribution
 			-- TODO: better username length/content distribution. UNICODE.
 			-- TODO: rounding to SDs.
@@ -765,11 +740,12 @@ mutate_anonymise-db-for-release() { ## : This will attempt to make a database co
 				email = 'user-' || id || '@example.org',
 				password = 'x',
 				username = 'user-' || id,
-				form_values_id = '',
+				form_values_id = null,
 				activation_token = '',
 				disk_usage = round(disk_usage, -5);
 
 		-- galaxy_user_openid
+		COPY (SELECT 'galaxy_user_openid') to STDOUT;
 			update galaxy_user_openid set
 				openid = 'https://example.org/identity/' || user_id;
 
@@ -777,26 +753,29 @@ mutate_anonymise-db-for-release() { ## : This will attempt to make a database co
 		-- group_quota_association                              is OK (group_id, quota id)
 		-- group_role_association                               is OK (group_id, role id)
 		-- history
+		COPY (SELECT 'history') to STDOUT;
 
 			-- TODO: better name distribution. UNICODE. (I see greek, chinese, etc on EU)
 			update history set
-				name = gxadmin_random_text(id::text)
+				name = gxadmin_random_tag(id::text)
 				where name != 'Unnamed history';
 
 			update history set
 				slug = gxadmin_random_slug(id::text, 30)
-				when slug != '' or slug is not null;
+				where  slug != '' or slug is not null;
 
 		-- history_annotation_association
+		COPY (SELECT 'history_annotation_association') to STDOUT;
 			-- TODO: better distribution. UNICODE.
 			update history_annotation_association set
-				annotation = gxadmin_random_freetext()
-				when annotation is not null;
+				annotation = gxadmin_random_text(id::text, 30)
+				where  annotation is not null;
 
 		-- history_dataset_association
+		COPY (SELECT 'history_dataset_association') to STDOUT;
 			-- TODO: SIGNIFICANT validation needed.
 			update history_dataset_association set
-				name = gxadmin_random_text(id::text) || '.' || extension;
+				name = gxadmin_random_tag(id::text) || '.' || extension;
 
 			update history_dataset_association set
 				peek = 'redacted' where peek is not null;
@@ -813,17 +792,19 @@ mutate_anonymise-db-for-release() { ## : This will attempt to make a database co
 				metadata = null;
 
 		-- history_dataset_association_annotation_association
+		COPY (SELECT 'history_dataset_association_annotation_association') to STDOUT;
 
 			update history_dataset_association_annotation_association set
-				annotation = gxadmin_random_freetext()
+				annotation = gxadmin_random_text(id::text, 30)
 				where annotation is not null;
 
 		-- history_dataset_association_display_at_authorization is OK (user_id, hda, site=ucsc_main)
 		-- history_dataset_association_history
+		COPY (SELECT 'history_dataset_association_history') to STDOUT;
 
 			-- TODO: distribution. Consistency with HDA?
 			update history_dataset_association_history set
-				name = gxadmin_random_text(history_dataset_association_id::text) || '.' || extension;
+				name = gxadmin_random_tag(history_dataset_association_id::text) || '.' || extension;
 
 
 			update history_dataset_association_history set
@@ -832,71 +813,75 @@ mutate_anonymise-db-for-release() { ## : This will attempt to make a database co
 		-- history_dataset_association_rating_association       is EMPTY on AU, EU
 		-- history_dataset_association_subset                   is OK (hda id, hdas id, location)
 		-- history_dataset_association_tag_association
+		COPY (SELECT 'history_dataset_association_tag_association') to STDOUT;
 
 			-- user_tname == 'group' and 'name' are special.
 			update history_dataset_association_tag_association set
-				value = lower(gxadmin_random_tag(id)),
-				user_value = gxadmin_random_tag(id)
+				value = lower(gxadmin_random_tag(id::text)),
+				user_value = gxadmin_random_tag(id::text)
 				where user_tname in ('group', 'name');
 
 			-- Sometimes people use a diffferent prefix
 			update history_dataset_association_tag_association set
-				user_tname = gxadmin_random_tag(id + 'tname')
-				value = lower(gxadmin_random_tag(id)),
-				user_value = gxadmin_random_tag(id)
+				user_tname = gxadmin_random_tag(id::text || 'tname'),
+				value = lower(gxadmin_random_tag(id::text)),
+				user_value = gxadmin_random_tag(id::text)
 				where user_tname not in ('group', 'name') and user_tname is not null;
 
 			-- Otherwise just set some data
 			update history_dataset_association_tag_association set
-				user_tname = gxadmin_random_tag(id)
+				user_tname = gxadmin_random_tag(id::text)
 				where user_tname is null;
 
 		-- history_dataset_collection_annotation_association    is EMPTY on AU, EU
 		-- history_dataset_collection_association
+		COPY (SELECT 'history_dataset_collection_association') to STDOUT;
 
 			update history_dataset_collection_association set
 				name = 'hdca-' || id;
 
 		-- history_dataset_collection_rating_association        is EMPTY on AU
 		-- history_dataset_collection_tag_association
+		COPY (SELECT 'history_dataset_collection_tag_association') to STDOUT;
 
 			-- user_tname == 'group' and 'name' are special.
 			update history_dataset_collection_tag_association set
-				value = lower(gxadmin_random_tag(id)),
-				user_value = gxadmin_random_tag(id)
+				value = lower(gxadmin_random_tag(id::text)),
+				user_value = gxadmin_random_tag(id::text)
 				where user_tname in ('group', 'name');
 
 			-- Sometimes people use a diffferent prefix
 			update history_dataset_collection_tag_association set
-				user_tname = gxadmin_random_tag(id + 'tname')
-				value = lower(gxadmin_random_tag(id)),
-				user_value = gxadmin_random_tag(id)
+				user_tname = gxadmin_random_tag(id::text || 'tname'),
+				value = lower(gxadmin_random_tag(id::text)),
+				user_value = gxadmin_random_tag(id::text)
 				where user_tname not in ('group', 'name') and user_tname is not null;
 
 			-- Otherwise just set some data
 			update history_dataset_collection_tag_association set
-				user_tname = gxadmin_random_tag(id)
+				user_tname = gxadmin_random_tag(id::text)
 				where user_tname is null;
 
 		-- history_rating_association is OK
 		-- history_tag_association
+		COPY (SELECT 'history_tag_association') to STDOUT;
 
 			-- user_tname == 'group' and 'name' are special.
 			update history_tag_association set
-				value = lower(gxadmin_random_tag(id)),
-				user_value = gxadmin_random_tag(id)
+				value = lower(gxadmin_random_tag(id::text)),
+				user_value = gxadmin_random_tag(id::text)
 				where user_tname in ('group', 'name');
 
 			-- Sometimes people use a diffferent prefix
 			update history_tag_association set
-				user_tname = gxadmin_random_tag(id + 'tname')
-				value = lower(gxadmin_random_tag(id)),
-				user_value = gxadmin_random_tag(id)
+				user_tname = gxadmin_random_tag(id::text || 'tname'),
+				value = lower(gxadmin_random_tag(id::text)),
+				user_value = gxadmin_random_tag(id::text)
 				where user_tname not in ('group', 'name') and user_tname is not null;
 
 			-- Otherwise just set some data
 			update history_tag_association set
-				user_tname = gxadmin_random_tag(id)
+				user_tname = gxadmin_random_tag(id::text)
 				where user_tname is null;
 
 		-- history_user_share_association                       is MAYBE OK (hist_id, user_id) You can determine networks, but same with groups.
@@ -906,6 +891,7 @@ mutate_anonymise-db-for-release() { ## : This will attempt to make a database co
 		-- implicitly_created_dataset_collection_inputs         is OK
 		-- interactivetool_entry_point                          is EMPTY on AU
 		-- job
+		COPY (SELECT 'job') to STDOUT;
 			update job set
 				command_line = 'redacted',
 				destination_params = null,
@@ -940,38 +926,44 @@ mutate_anonymise-db-for-release() { ## : This will attempt to make a database co
 				where job_stderr != null;
 
 		-- job_container_association
+		COPY (SELECT 'job_container_association') to STDOUT;
 
 			update job_container_association set
 				container_name = '',
 				container_info = '';
 
 		-- job_export_history_archive
+		COPY (SELECT 'job_export_history_archive') to STDOUT;
 
 			update job_export_history_archive set
-				history_attrs_filename = '/tmp/tmp' || gxadmin_random_pw(6),
-				datasets_attrs_filename = '/tmp/tmp' || gxadmin_random_pw(6),
-				jobs_attrs_filename = '/tmp/tmp' || gxadmin_random_pw(6);
+				history_attrs_filename = '/tmp/tmp' || gxadmin_random_pw(id::text || 'h', 6),
+				datasets_attrs_filename = '/tmp/tmp' || gxadmin_random_pw(id::text || 'd', 6),
+				jobs_attrs_filename = '/tmp/tmp' || gxadmin_random_pw(id::text || 'j', 6);
 
 		-- job_external_output_metadata
+		COPY (SELECT 'job_external_output_metadata') to STDOUT;
 
 			update job_external_output_metadata set
-				filename_in = '/tmp/job_working_directory/' || job_id || '/metadata_in_' || gxadmin_random_pw(6),
-				filename_out = '/tmp/job_working_directory/' || job_id || '/metadata_out_' || gxadmin_random_pw(6),
-				filename_results_code = '/tmp/job_working_directory/' || job_id || '/metadata_results_' || gxadmin_random_pw(6),
-				filename_kwds = '/tmp/job_working_directory/' || job_id || '/metadata_kwds_' || gxadmin_random_pw(6),
-				filename_override_metadata = '/tmp/job_working_directory/' || job_id || '/metadata_override_' || gxadmin_random_pw(6);
+				filename_in = '/tmp/job_working_directory/' || job_id || '/metadata_in_' || gxadmin_random_pw(id::text || 'i', 6),
+				filename_out = '/tmp/job_working_directory/' || job_id || '/metadata_out_' || gxadmin_random_pw(id::text || 'o', 6),
+				filename_results_code = '/tmp/job_working_directory/' || job_id || '/metadata_results_' || gxadmin_random_pw(id::text || 'm', 6),
+				filename_kwds = '/tmp/job_working_directory/' || job_id || '/metadata_kwds_' || gxadmin_random_pw(id::text || 'k', 6),
+				filename_override_metadata = '/tmp/job_working_directory/' || job_id || '/metadata_override_' || gxadmin_random_pw(id::text || 'o', 6);
 
 		-- job_import_history_archive
+		COPY (SELECT 'job_import_history_archive') to STDOUT;
 
 			update job_import_history_archive set
-				archive_dir = '/tmp/tmp' || gxadmin_random_pw(6);
+				archive_dir = '/tmp/tmp' || gxadmin_random_pw(id::text, 6);
 
 		-- job_metric_numeric is OK
 		-- job_metric_text
+		COPY (SELECT 'job_metric_text') to STDOUT;
 
 			truncate job_metric_text;
 
 		-- job_parameter
+		COPY (SELECT 'job_parameter') to STDOUT;
 
 			-- TODO: length distribution? Name distribution?
 			update job_parameter set
@@ -987,16 +979,19 @@ mutate_anonymise-db-for-release() { ## : This will attempt to make a database co
 		-- job_to_output_dataset_collection           is MAYBE OK (param name?)
 		-- job_to_output_library_dataset              is OK
 		-- kombu_message
+		COPY (SELECT 'kombu_message') to STDOUT;
 			truncate kombu_message;
 		-- kombu_queue                                        is OK (queue name only)
 		-- library
+		COPY (SELECT 'library') to STDOUT;
 
 			update library set
-				name = gxadmin_random_text(id::text),
-				description = gxadmin_random_text(id::text || 'desc'),
-				synopsis = gxadmin_random_text(id::text || 'synopsis');
+				name = gxadmin_random_tag(id::text),
+				description = gxadmin_random_tag(id::text || 'desc'),
+				synopsis = gxadmin_random_tag(id::text || 'synopsis');
 
 		-- library_dataset
+		COPY (SELECT 'library_dataset') to STDOUT;
 
 			update library_dataset set
 				name = 'lda-' || id,
@@ -1007,10 +1002,11 @@ mutate_anonymise-db-for-release() { ## : This will attempt to make a database co
 		-- library_dataset_collection_rating_association        is EMPTY on AU, EU
 		-- library_dataset_collection_tag_association           is EMPTY on AU, EU
 		-- library_dataset_dataset_association
+		COPY (SELECT 'library_dataset_dataset_association') to STDOUT;
 
 			-- TODO: SIGNIFICANT validation needed.
 			update library_dataset_dataset_association set
-				name = gxadmin_random_text(id::text) || '.' || extension;
+				name = gxadmin_random_tag(id::text) || '.' || extension;
 
 			update library_dataset_dataset_association set
 				peek = 'redacted' where peek is not null;
@@ -1035,10 +1031,11 @@ mutate_anonymise-db-for-release() { ## : This will attempt to make a database co
 		-- library_dataset_dataset_info_association             is EMPTY on AU, EU
 		-- library_dataset_permissions                          is OK (permissions, ld id, role id)
 		-- library_folder
+		COPY (SELECT 'library_folder') to STDOUT;
 
 			update library_folder set
-				name = gxadmin_random_text(id::text),
-				description = gxadmin_random_text(id::text || 'desc');
+				name = gxadmin_random_tag(id::text),
+				description = gxadmin_random_text(id::text || 'desc', 10);
 
 		-- library_folder_info_association                      is EMPTY on AU, EU
 		-- library_folder_permissions                           is OK (permissions, lf id, role id)
@@ -1048,24 +1045,28 @@ mutate_anonymise-db-for-release() { ## : This will attempt to make a database co
 		-- migrate_tools                                        is EMPTY on AU, EU
 		-- migrate_version                                      is OK
 		-- oidc_user_authnz_tokens
+		COPY (SELECT 'oidc_user_authnz_tokens') to STDOUT;
 
 			update oidc_user_authnz_tokens set
 				uid = 'redacted',
 				extra_data = null;
 
 		-- page
+		COPY (SELECT 'page') to STDOUT;
 
 			update page set
-				title = gxadmin_random_text(id::text),
+				title = gxadmin_random_tag(id::text),
 				slug = gxadmin_random_slug(id::text, 10);
 
 		-- page_annotation_association
+		COPY (SELECT 'page_annotation_association') to STDOUT;
 
 			update page_annotation_association set
-				annotation = gxadmin_random_text(id::text);
+				annotation = gxadmin_random_tag(id::text);
 
 		-- page_rating_association                              is EMPTY on AU
 		-- page_revision
+		COPY (SELECT 'page_revision') to STDOUT;
 
 			update page_revision set
 				content = '<p>Some <b>content</b></p>';
@@ -1074,40 +1075,43 @@ mutate_anonymise-db-for-release() { ## : This will attempt to make a database co
 
 			-- user_tname == 'group' and 'name' are special.
 			update page_tag_association set
-				value = lower(gxadmin_random_tag(id)),
-				user_value = gxadmin_random_tag(id)
+				value = lower(gxadmin_random_tag(id::text)),
+				user_value = gxadmin_random_tag(id::text)
 				where user_tname in ('group', 'name');
 
 			-- Sometimes people use a diffferent prefix
 			update page_tag_association set
-				user_tname = gxadmin_random_tag(id + 'tname')
-				value = lower(gxadmin_random_tag(id)),
-				user_value = gxadmin_random_tag(id)
+				user_tname = gxadmin_random_tag(id::text || 'tname'),
+				value = lower(gxadmin_random_tag(id::text)),
+				user_value = gxadmin_random_tag(id::text)
 				where user_tname not in ('group', 'name') and user_tname is not null;
 
 			-- Otherwise just set some data
 			update page_tag_association set
-				user_tname = gxadmin_random_tag(id)
+				user_tname = gxadmin_random_tag(id::text)
 				where user_tname is null;
 
 		-- page_user_share_association                          is EMPTY on AU, fine though
 		-- password_reset_token
+		COPY (SELECT 'password_reset_token') to STDOUT;
 
 			update password_reset_token set
 				token = md5('x' || random());
 
 		-- post_job_action
+		COPY (SELECT 'post_job_action') to STDOUT;
 
 			update post_job_action set
-				action_arguments = '\x7b7d'
+				action_arguments = convert_to('{}', 'UTF8')
 				where action_type != 'RenameDatasetAction';
 
 			update post_job_action set
-				action_arguments = '\x7b226e65776e616d65223a2022436f6e74726f6c20636865636b227d';
+				action_arguments = convert_to('{"newname": "Control check"}', 'UTF8')
 				where action_type = 'RenameDatasetAction';
 
 		-- post_job_action_association                          is OK
 		-- psa_association
+		COPY (SELECT 'psa_association') to STDOUT;
 
 			update psa_association set
 				handle = 'redacted',
@@ -1117,6 +1121,7 @@ mutate_anonymise-db-for-release() { ## : This will attempt to make a database co
 		-- psa_nonce                                            is EMPTY on AU, EU
 		-- psa_partial                                          is EMPTY on AU, EU
 		-- quota
+		COPY (SELECT 'quota') to STDOUT;
 
 			update quota set
 				name = pg_size_pretty(bytes),
@@ -1131,25 +1136,26 @@ mutate_anonymise-db-for-release() { ## : This will attempt to make a database co
 		-- request_type_permissions                             is EMPTY on AU, EU
 		-- request_type_run_association                         is EMPTY on AU, EU
 		-- role
+		COPY (SELECT 'role') to STDOUT;
 
 			update role set
-				name = gxadmin_random_email(id),
-				description = 'Private role for ' || gxadmin_random_email(id),
+				name = gxadmin_random_email(id::text),
+				description = 'Private role for ' || gxadmin_random_email(id::text)
 				where type = 'private';
 
 			update role set
-				name = gxadmin_random_text(id::text),
-				description = 'System role',
+				name = gxadmin_random_text(id::text, 3),
+				description = 'System role'
 				where type = 'system';
 
 			update role set
-				name = gxadmin_random_text(id::text),
-				description = 'Sharing role',
+				name = gxadmin_random_text(id::text, 5),
+				description = 'Sharing role'
 				where type = 'sharing';
 
 			update role set
-				name = gxadmin_random_text(id::text),
-				description = '',
+				name = gxadmin_random_text(id::text, 2),
+				description = ''
 				where type not in ('private', 'system', 'sharing');
 
 		-- run                                                  is EMPTY on AU, EU
@@ -1159,44 +1165,48 @@ mutate_anonymise-db-for-release() { ## : This will attempt to make a database co
 		-- sample_run_association                               is EMPTY on AU, EU
 		-- sample_state                                         is EMPTY on AU, EU
 		-- stored_workflow
+		COPY (SELECT 'stored_workflow') to STDOUT;
 
 			update stored_workflow set
-				name = gxadmin_random_text(id::text),
+				name = gxadmin_random_tag(id::text),
 				slug = gxadmin_random_slug(id::text, 10);
 
 		-- stored_workflow_annotation_association
+		COPY (SELECT 'stored_workflow_annotation_association') to STDOUT;
 
 			update stored_workflow set
-				annotation = gxadmin_random_freetext(id)
+				annotation = gxadmin_random_text(id::text)
 				where annotation is not null;
 
 		-- stored_workflow_menu_entry                           is OK
 		-- stored_workflow_rating_association                   is OK
 		-- stored_workflow_tag_association
+		COPY (SELECT 'stored_workflow_tag_association') to STDOUT;
 
 			-- user_tname == 'group' and 'name' are special.
 			update stored_workflow_tag_association set
-				value = lower(gxadmin_random_tag(id)),
-				user_value = gxadmin_random_tag(id)
+				value = lower(gxadmin_random_tag(id::text)),
+				user_value = gxadmin_random_tag(id::text)
 				where user_tname in ('group', 'name');
 
 			-- Sometimes people use a diffferent prefix
 			update stored_workflow_tag_association set
-				user_tname = gxadmin_random_tag(tag_id)
-				value = lower(gxadmin_random_tag(id)),
-				user_value = gxadmin_random_tag(id)
+				user_tname = gxadmin_random_tag(tag_id::text),
+				value = lower(gxadmin_random_tag(id::text)),
+				user_value = gxadmin_random_tag(id::text)
 				where user_tname not in ('group', 'name') and user_tname is not null;
 
 			-- Otherwise just set some data
 			update stored_workflow_tag_association set
-				user_tname = gxadmin_random_tag(tag_id)
+				user_tname = gxadmin_random_tag(tag_id::text)
 				where user_tname is null;
 
 		-- stored_workflow_user_share_connection is OK
 		-- tag
+		COPY (SELECT 'tag') to STDOUT;
 
 			update tag set
-				name = gxadmin_random_tag(id)
+				name = gxadmin_random_tag(id::text)
 				where name not in ('name', 'group');
 
 		-- task                                                 is EMPTY on AU, not on EU
@@ -1226,20 +1236,22 @@ mutate_anonymise-db-for-release() { ## : This will attempt to make a database co
 		-- transfer_job                                         is EMPTY on AU, OK on EU
 		-- user_action                                          is EMPTY on AU, EU
 		-- user_address
+		COPY (SELECT 'user_address') to STDOUT;
 
 			update user_address set
-				desc = gxadmin_random_text(id::text),
-				name = gxadmin_random_text(id::text),
-				institution = gxadmin_random_text(id::text),
-				address     = gxadmin_random_text(id::text),
-				city        = gxadmin_random_text(id::text),
-				state       = gxadmin_random_text(id::text),
-				postal_code = gxadmin_random_number(5),
-				country     = 'Australia'
-				phone       = gxadmin_random_number(10);
+				"desc" = gxadmin_random_text(id::text, 2),
+				name = gxadmin_random_text(id::text || 'name', 3),
+				institution = gxadmin_random_text(id::text || 'inst', 4),
+				address     = gxadmin_random_text(id::text || 'addr', 4),
+				city        = gxadmin_random_text(id::text || 'city', 5),
+				state       = gxadmin_random_text(id::text || 'stat', 1),
+				postal_code = gxadmin_random_number(id::text, 5),
+				country     = 'Australia',
+				phone       = gxadmin_random_number(id::text, 10);
 
 		-- user_group_association                                          is OK
 		-- user_preference
+		COPY (SELECT 'user_preference') to STDOUT;
 
 			-- TODO: make this better? I just don't feel safe given genomespace tokens, etc.
 			truncate user_preference;
@@ -1248,15 +1260,16 @@ mutate_anonymise-db-for-release() { ## : This will attempt to make a database co
 		-- user_role_association                                           is OK
 		-- validation_error                                                is EMPTY on AU
 		-- visualization
+		COPY (SELECT 'visualization') to STDOUT;
 
 			update visualization set
-				title = gxadmin_random_text(id::text),
+				title = gxadmin_random_text(id::text, 3),
 				slug = gxadmin_random_slug(id::text, 20);
 
 		-- visualization_annotation_association                            is EMPTY on AU
 
 			update visualization_annotation_association set
-				annotation = gxadmin_random_freetext();
+				annotation = gxadmin_random_text(id::text, 10);
 
 		-- visualization_rating_association                                is EMPTY on AU
 		-- visualization_revision                                          is MAYBE OK
@@ -1264,13 +1277,14 @@ mutate_anonymise-db-for-release() { ## : This will attempt to make a database co
 		-- visualization_user_share_association                            is EMPTY on AU
 		-- worker_process                                                  is OK
 		-- workflow
+		COPY (SELECT 'workflow') to STDOUT;
 
 			update workflow set
-				name = gxadmin_random_text(id::text);
+				name = gxadmin_random_text(id::text, 3);
 
 			update workflow set
-				reports_config = '\x7b7d'
-				when reports_config is not null;
+				reports_config = convert_to('{}', 'UTF8')
+				where  reports_config is not null;
 
 		-- workflow_invocation                                             is OK
 		-- workflow_invocation_output_dataset_association                  is OK
@@ -1283,29 +1297,33 @@ mutate_anonymise-db-for-release() { ## : This will attempt to make a database co
 		-- workflow_output                                                 is MAYBE OK (output_name)
 		-- workflow_request_input_parameters                               is OK
 		-- workflow_request_input_step_parameter
+		COPY (SELECT 'workflow_request_input_step_parameter') to STDOUT;
 
 			update workflow_request_input_step_parameter set
-				parameter_value = '\x226164736622'; -- "adsf"
+				parameter_value = convert_to('asdf', 'UTF8');
 		-- workflow_request_step_states
+		COPY (SELECT 'workflow_request_step_states') to STDOUT;
 
 			update workflow_request_step_states set
-				value = '\x7b7d';
+				value = convert_to('{}', 'UTF8');
 
 		-- workflow_request_to_input_collection_dataset                    is OK
 		-- workflow_request_to_input_dataset                               is OK
 		-- workflow_step
+		COPY (SELECT 'workflow_step') to STDOUT;
 
 			update workflow_step set
-				tool_inputs = '\x7b7d';
+				tool_inputs = convert_to('{}', 'UTF8');
 
 			update workflow_step set
 				label = gxadmin_random_slug(id::text, 10)
 				where label is not null;
 
 		-- workflow_step_annotation_association
+		COPY (SELECT 'workflow_step_annotation_association') to STDOUT;
 
 			update workflow_step_annotation_association set
-				annotation = gxadmin_random_freetext(id);
+				annotation = gxadmin_random_text(id::text, 10);
 
 		-- workflow_step_connection                                        is OK
 		-- workflow_step_input                                             is OK
@@ -1316,7 +1334,12 @@ mutate_anonymise-db-for-release() { ## : This will attempt to make a database co
 
 
 	commit=$(should_commit "$commit_flag")
-	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
+	QUERY="
+		BEGIN TRANSACTION;
+		$QUERY;
+		$commit
+	"
+}
 
 mutate_fail-wfi() { ## <wf-invocation-d> [--commit]: Sets a workflow invocation state to failed
 	handle_help "$@" <<-EOF
