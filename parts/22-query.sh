@@ -249,15 +249,13 @@ query_largest-collection() { ## : Returns the size of the single largest collect
 	EOF
 }
 
-query_queue-time() { ## <tool_id>: The average/95%/99% a specific tool spends in queue state.
+query_queue-time() { ##? <tool_id>: The average/95%/99% a specific tool spends in queue state.
 	handle_help "$@" <<-EOF
 		    $ gxadmin query queue-time toolshed.g2.bx.psu.edu/repos/nilesh/rseqc/rseqc_geneBody_coverage/2.6.4.3
 		           min       |     perc_95     |     perc_99     |       max
 		    -----------------+-----------------+-----------------+-----------------
 		     00:00:15.421457 | 00:00:55.022874 | 00:00:59.974171 | 00:01:01.211995
 	EOF
-
-	assert_count $# 1 "Missing tool ID"
 
 	read -r -d '' QUERY <<-EOF
 		WITH temp_queue_times AS
@@ -270,7 +268,7 @@ query_queue-time() { ## <tool_id>: The average/95%/99% a specific tool spends in
 		on
 			(a.job_id = b.job_id)
 		where
-			a.job_id in (select id from job where tool_id like '%$3%' and state = 'ok' and create_time > (now() AT TIME ZONE 'UTC' - '3 months'::interval))
+			a.job_id in (select id from job where tool_id like '%${arg_tool_id}%' and state = 'ok' and create_time > (now() AT TIME ZONE 'UTC' - '3 months'::interval))
 			and a.state = 'running'
 			and b.state = 'queued'
 		group by
