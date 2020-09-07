@@ -1,11 +1,21 @@
 registered_subcommands="$registered_subcommands mutate"
 _mutate_short_help="mutate:  DB Mutations, CSV/TSV queries are NOT available"
 
-should_commit() {
-	if [[ $1 == "--commit" ]]; then
-		printf "COMMIT;"
+txn_prefix() {
+	if [[ "$1" == "--very-unsafe" ]]; then
+		printf "";
 	else
-		printf "ROLLBACK;"
+		printf "BEGIN TRANSACTION;\n"
+	fi
+}
+
+txn_postfix() {
+	if [[ "$1" == "--commit" ]]; then
+		printf "\nCOMMIT;\n"
+	elif [[ "$1" == "--very-unsafe" ]]; then
+		printf "";
+	else
+		printf "\nROLLBACK;\n"
 	fi
 }
 
@@ -99,8 +109,9 @@ mutate_fail-terminal-datasets() { ## [--commit]: Causes the output datasets of j
 		WHERE id in (select hda_id from terminal_jobs_temp)
 	EOF
 
-	commit=$(should_commit "$1")
-	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
+	txn_pre=$(txn_prefix "$1")
+	txn_pos=$(txn_postfix"$1")
+	QUERY="$txn_pre $QUERY; $txn_pos"
 }
 
 mutate_fail-job() { ## <job_id> [--commit]: Sets a job state to error
@@ -120,8 +131,9 @@ mutate_fail-job() { ## <job_id> [--commit]: Sets a job state to error
 			id = '$id'
 	EOF
 
-	commit=$(should_commit "$2")
-	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
+	txn_pre=$(txn_prefix  "$2")
+	txn_pos=$(txn_postfix "$2")
+	QUERY="$txn_pre $QUERY; $txn_pos"
 }
 
 mutate_fail-history() { ## <history_id> [--commit]: Mark all jobs within a history to state error
@@ -158,8 +170,9 @@ mutate_fail-history() { ## <history_id> [--commit]: Mark all jobs within a histo
 			AND state NOT IN ('ok', 'error')
 	EOF
 
-	commit=$(should_commit "$2")
-	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
+	txn_pre=$(txn_prefix  "$2")
+	txn_pos=$(txn_postfix "$2")
+	QUERY="$txn_pre $QUERY; $txn_pos"
 }
 
 mutate_delete-group-role() { ## <group_name> [--commit]: Remove the group, role, and any user-group + user-role associations
@@ -187,8 +200,9 @@ mutate_delete-group-role() { ## <group_name> [--commit]: Remove the group, role,
 		WHERE name = '$1'
 	EOF
 
-	commit=$(should_commit "$2")
-	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
+	txn_pre=$(txn_prefix  "$2")
+	txn_pos=$(txn_postfix "$2")
+	QUERY="$txn_pre $QUERY; $txn_pos"
 }
 
 mutate_assign-unassigned-workflows() { ## <handler_prefix> <handler_count> [--commit]: Randomly assigns unassigned workflows to handlers. Workaround for galaxyproject/galaxy#8209
@@ -213,8 +227,9 @@ mutate_assign-unassigned-workflows() { ## <handler_prefix> <handler_count> [--co
 		RETURNING workflow_invocation.id
 	EOF
 
-	commit=$(should_commit "$3")
-	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
+	txn_pre=$(txn_prefix  "$3")
+	txn_pos=$(txn_postfix "$3")
+	QUERY="$txn_pre $QUERY; $txn_pos"
 }
 
 mutate_reassign-workflows-to-handler() { ## <handler_from> <handler_to> [--commit]: Reassign workflows in 'new' state to a different handler.
@@ -234,8 +249,9 @@ mutate_reassign-workflows-to-handler() { ## <handler_from> <handler_to> [--commi
 		RETURNING workflow_invocation.id
 	EOF
 
-	commit=$(should_commit "$3")
-	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
+	txn_pre=$(txn_prefix  "$3")
+	txn_pos=$(txn_postfix "$3")
+	QUERY="$txn_pre $QUERY; $txn_pos"
 }
 
 mutate_approve-user() { ## <username|email|user_id>: Approve a user in the database
@@ -391,8 +407,9 @@ mutate_reassign-job-to-handler() { ## <job_id> <handler_id> [--commit]: Reassign
 			job.id = $job_id
 	EOF
 
-	commit=$(should_commit "$3")
-	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
+	txn_pre=$(txn_prefix  "$3")
+	txn_pos=$(txn_postfix "$3")
+	QUERY="$txn_pre $QUERY; $txn_pos"
 }
 
 mutate_drop-extraneous-workflow-step-output-associations() { ## [--commit]: #8418, drop extraneous connection
@@ -430,8 +447,9 @@ mutate_drop-extraneous-workflow-step-output-associations() { ## [--commit]: #841
 		WHERE NOT EXISTS (SELECT 1 FROM exclude_list WHERE wisodca.id = exclude_list.id)
 	EOF
 
-	commit=$(should_commit "$1")
-	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
+	txn_pre=$(txn_prefix  "$1")
+	txn_pos=$(txn_postfix "$1")
+	QUERY="$txn_pre $QUERY; $txn_pos"
 }
 
 mutate_restart-jobs() { ## [--commit] <-|job_id [job_id [...]]> : Restart some jobs
@@ -461,8 +479,9 @@ mutate_restart-jobs() { ## [--commit] <-|job_id [job_id [...]]> : Restart some j
 		WHERE job.id in ($job_ids_string)
 	EOF
 
-	commit=$(should_commit "$commit_flag")
-	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
+	txn_pre=$(txn_prefix  "$commit_flag")
+	txn_pos=$(txn_postfix "$commit_flag")
+	QUERY="$txn_pre $QUERY; $txn_pos"
 }
 
 mutate_generate-unset-api-keys() { ## [--commit]: Generate API keys for users which do not have one set.
@@ -493,14 +512,18 @@ mutate_generate-unset-api-keys() { ## [--commit]: Generate API keys for users wh
 		)
 	EOF
 
-	commit=$(should_commit "$commit_flag")
-	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
+	txn_pre=$(txn_prefix  "$commit_flag")
+	txn_pos=$(txn_postfix "$commit_flag")
+	QUERY="$txn_pre $QUERY; $txn_pos"
 
 }
 
-mutate_anonymise-db-for-release() { ## : This will attempt to make a database completely safe to release publicly.
+mutate_anonymise-db-for-release() { ## [--commit|--very-unsafe]: This will attempt to make a database completely safe to release publicly.
 	handle_help "$@" <<-EOF
 		THIS WILL DESTROY YOUR DATABASE.
+
+		--commit will do it and wrap it in a transaction
+		--very-unsafe will just run it without the transaction
 	EOF
 
 	commit_flag=""
@@ -1333,12 +1356,9 @@ mutate_anonymise-db-for-release() { ## : This will attempt to make a database co
 
 
 
-	commit=$(should_commit "$commit_flag")
-	QUERY="
-		BEGIN TRANSACTION;
-		$QUERY;
-		$commit
-	"
+	txn_pre=$(txn_prefix  "$commit_flag")
+	txn_pos=$(txn_postfix "$commit_flag")
+	QUERY="$txn_pre $QUERY; $txn_pos"
 }
 
 mutate_fail-wfi() { ## <wf-invocation-d> [--commit]: Sets a workflow invocation state to failed
@@ -1358,8 +1378,9 @@ mutate_fail-wfi() { ## <wf-invocation-d> [--commit]: Sets a workflow invocation 
 			id = '$id'
 	EOF
 
-	commit=$(should_commit "$2")
-	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
+	txn_pre=$(txn_prefix  "$2")
+	txn_pos=$(txn_postfix "$2")
+	QUERY="$txn_pre $QUERY; $txn_pos"
 }
 
 mutate_oidc-by-emails() { ## <email_from> <email_to> [--commit]: Reassign OIDC account between users.
@@ -1379,6 +1400,7 @@ mutate_oidc-by-emails() { ## <email_from> <email_to> [--commit]: Reassign OIDC a
 		WHERE user_id = (SELECT id FROM galaxy_user WHERE email='$1')
 	EOF
 
-	commit=$(should_commit "$3")
-	QUERY="BEGIN TRANSACTION; $QUERY; $commit"
+	txn_pre=$(txn_prefix  "$3")
+	txn_pos=$(txn_postfix "$3")
+	QUERY="$txn_pre $QUERY; $txn_pos"
 }

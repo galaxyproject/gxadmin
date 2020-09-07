@@ -26,11 +26,14 @@ mutate anonymise-db-for-release -  This will attempt to make a database complete
 
 **SYNOPSIS**
 
-    gxadmin mutate anonymise-db-for-release
+    gxadmin mutate anonymise-db-for-release [--commit|--very-unsafe]
 
 **NOTES**
 
 THIS WILL DESTROY YOUR DATABASE.
+
+--commit will do it and wrap it in a transaction
+--very-unsafe will just run it without the transaction
 
 
 ## mutate approve-user
