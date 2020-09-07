@@ -24,7 +24,7 @@ chmod +x /usr/bin/gxadmin
 
 ## Contributing
 
-Please make PRs to the `dev` branch. The master branch will only contain releases.
+See [CONTRIBUTING.md](./CONTRIBUTING.md)
 
 ## Changelog
 
