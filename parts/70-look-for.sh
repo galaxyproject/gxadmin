@@ -97,13 +97,15 @@ wonderful_argument_parser() {
 						if [[ "$arg" == '['$a_cur'|'* ]]; then
 							val="${args[$offset+1]}"
 							offset=$(( offset + 1 ))
-							parsed_keys+=("${a_cur/--/}")
+							k="$(echo "$a_cur" | sed 's/^--//;s/-/_/g')"
+							parsed_keys+=("${k}")
 							parsed_vals+=("$val")
 						fi
 					else
 						# This is just a flag
 						if [[ "$arg" == '['$a_cur']' ]]; then
-							parsed_keys+=("${a_cur/--/}")
+							k="$(echo "$a_cur" | sed 's/^--//;s/-/_/g')"
+							parsed_keys+=("${k}")
 							parsed_vals+=(1)
 						fi
 					fi
@@ -144,7 +146,9 @@ wonderful_argument_parser() {
 	fi
 
 	if (( positional_index < positional_count )); then
-		error "More positional arguments are required"
+		for i in $(seq $positional_index $(( positional_count - 1 )) ); do
+			error "Required argument <${positional_args[$i]}> is missing"
+		done
 		exit 1;
 	fi
 
