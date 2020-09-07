@@ -47,7 +47,7 @@ After that we create a variable `QUERY` with some content. Easy peasy.
 
 ## Argument Parsing
 
-@hexylena has written a *wonderful argument parser* that is automatically activated when you use `##?` instead of `##`
+@hexylena has written a [*wonderful argument parser*](https://github.com/hexylena/wap) that is automatically activated when you use `##?` instead of `##`
 
 ```
 query_stuff() { ##? <tool_id>: Some help
