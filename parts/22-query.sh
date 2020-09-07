@@ -110,7 +110,7 @@ query_tool-popularity() { ## [months|24]: Most run tools by month (tool_predicti
 	EOF
 }
 
-query_workflow-connections() { ## [--all]: The connections of tools, from output to input, in the latest (or all) versions of user workflows (tool_predictions)
+query_workflow-connections() { ##? [--all]: The connections of tools, from output to input, in the latest (or all) versions of user workflows (tool_predictions)
 	handle_help "$@" <<-EOF
 		This is used by the usegalaxy.eu tool prediction workflow, allowing for building models out of tool connections in workflows.
 
@@ -140,7 +140,7 @@ query_workflow-connections() { ## [--all]: The connections of tools, from output
 			 workflow on stored_workflow.latest_workflow_id = workflow.id
 		)
 	EOF
-	if [[ $1 == "--all" ]]; then
+	if [[ -n "$arg_all" ]]; then
 		wf_filter=""
 	fi
 
