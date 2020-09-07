@@ -527,7 +527,7 @@ mutate_anonymise-db-for-release() { ## [--commit|--very-unsafe]: This will attem
 	EOF
 
 	commit_flag=""
-	if [[ $1 == "--commit" ]]; then
+	if [[ "$1" == "--commit" ]] || [[ "$1" == "--very-unsafe" ]]; then
 		commit_flag="$1"
 		shift;
 	fi
