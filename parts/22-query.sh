@@ -352,7 +352,7 @@ query_queue() { ## [--by (tool|destination|user)]: Brief overview of currently r
 	EOF
 }
 
-query_queue-overview() { ## [--short-tool-id]: View used mostly for monitoring
+query_queue-overview() { ##? [--short-tool-id]: View used mostly for monitoring
 	handle_help "$@" <<-EOF
 		Primarily for monitoring of queue. Optimally used with 'iquery' and passed to Telegraf.
 
@@ -363,7 +363,7 @@ query_queue-overview() { ## [--short-tool-id]: View used mostly for monitoring
 
 	# Use full tool id by default
 	tool_id="tool_id"
-	if [[ $1 = --short-tool-id ]]; then
+	if [[ -n "$arg_short_tool_id" ]]; then
 		tool_id="regexp_replace(tool_id, '.*toolshed.*/repos/', '')"
 	fi
 
@@ -409,7 +409,7 @@ query_queue-details() {
 	query_queue-detail $@
 }
 
-query_queue-detail() { ## [--all] [--seconds]: Detailed overview of running and queued jobs
+query_queue-detail() { ##? [--all] [--seconds]: Detailed overview of running and queued jobs
 	handle_help "$@" <<-EOF
 		    $ gxadmin query queue-detail
 		      state  |   id    |  extid  |                                 tool_id                                   | username | time_since_creation
@@ -430,15 +430,12 @@ query_queue-detail() { ## [--all] [--seconds]: Detailed overview of running and 
 	d=""
 	nonpretty="("
 
-	for i in "$@"; do
-		if [[ $i == "--all" ]]; then
-			d=", 'new'"
-		fi
-
-		if [[ $i == "--seconds" ]]; then
-			nonpretty="EXTRACT(EPOCH FROM "
-		fi
-	done
+	if [[ -n "$arg_all" ]]; then
+		d=", 'new'"
+	fi
+	if [[ -n "$arg_seconds" ]]; then
+		nonpretty="EXTRACT(EPOCH FROM "
+	fi
 
 	username=$(gdpr_safe galaxy_user.username username "Anonymous User")
 
@@ -463,15 +460,13 @@ query_queue-detail() { ## [--all] [--seconds]: Detailed overview of running and 
 	EOF
 }
 
-query_runtime-per-user() { ## <email>: computation time of user (by email)
+query_runtime-per-user() { ##? <email>: computation time of user (by email)
 	handle_help "$@" <<-EOF
 		    $ gxadmin query runtime-per-user hxr@informatik.uni-freiburg.de
 		       sum
 		    ----------
 		     14:07:39
 	EOF
-
-	assert_count $# 1 "Missing user"
 
 	read -r -d '' QUERY <<-EOF
 			SELECT sum((metric_value || ' second')::interval)
@@ -482,7 +477,7 @@ query_runtime-per-user() { ## <email>: computation time of user (by email)
 				WHERE user_id in (
 					SELECT id
 					FROM galaxy_user
-					where email = '$1'
+					where email = '$arg_email'
 				)
 			) AND metric_name = 'runtime_seconds'
 	EOF
@@ -541,7 +536,7 @@ query_jobs-nonterminal() { ## [username|id|email]: Job info of nonterminal jobs 
 	EOF
 }
 
-query_jobs-per-user() { ## <email>: Number of jobs run by a specific user
+query_jobs-per-user() { ##? <user>: Number of jobs run by a specific user
 	handle_help "$@" <<-EOF
 		    $ gxadmin query jobs-per-user helena
 		     count | user_id
@@ -550,9 +545,7 @@ query_jobs-per-user() { ## <email>: Number of jobs run by a specific user
 		    (1 row)
 	EOF
 
-	assert_count $# 1 "Missing user"
-
-	user_filter="(galaxy_user.email = '$1' or galaxy_user.username = '$1' or galaxy_user.id = CAST(REGEXP_REPLACE(COALESCE('$1','0'), '[^0-9]+', '0', 'g') AS INTEGER))"
+	user_filter="(galaxy_user.email = '$arg_user' or galaxy_user.username = '$arg_user' or galaxy_user.id = CAST(REGEXP_REPLACE(COALESCE('$arg_user','0'), '[^0-9]+', '0', 'g') AS INTEGER))"
 
 	read -r -d '' QUERY <<-EOF
 			SELECT count(*), user_id
@@ -566,7 +559,7 @@ query_jobs-per-user() { ## <email>: Number of jobs run by a specific user
 	EOF
 }
 
-query_recent-jobs() { ## <hours>: Jobs run in the past <hours> (in any state)
+query_recent-jobs() { ##? <hours>: Jobs run in the past <hours> (in any state)
 	handle_help "$@" <<-EOF
 		    $ gxadmin query recent-jobs 2.1
 		       id    |     create_time     |      tool_id          | state |    username
@@ -580,8 +573,6 @@ query_recent-jobs() { ## <hours>: Jobs run in the past <hours> (in any state)
 		     4383981 | 2018-10-05 16:04:00 | echo_main_handler0    | ok    |
 	EOF
 
-	assert_count $# 1 "Missing hours"
-
 	username=$(gdpr_safe galaxy_user.username username)
 
 	read -r -d '' QUERY <<-EOF
@@ -591,12 +582,12 @@ query_recent-jobs() { ## <hours>: Jobs run in the past <hours> (in any state)
 			job.tool_id,
 			job.state, $username
 		FROM job, galaxy_user
-		WHERE job.create_time > (now() AT TIME ZONE 'UTC' - '$1 hours'::interval) AND job.user_id = galaxy_user.id
+		WHERE job.create_time > (now() AT TIME ZONE 'UTC' - '$arg_hours hours'::interval) AND job.user_id = galaxy_user.id
 		ORDER BY id desc
 	EOF
 }
 
-query_training-list() { ## [--all]: List known trainings
+query_training-list() { ##? [--all]: List known trainings
 	handle_help "$@" <<-EOF
 		This module is specific to EU's implementation of Training Infrastructure as a Service. But this specifically just checks for all groups with the name prefix 'training-'
 
@@ -611,7 +602,7 @@ query_training-list() { ## [--all]: List known trainings
 
 	d1=""
 	d2="AND deleted = false"
-	if [[ $1 == "--all" ]]; then
+	if [[ -n "$arg_all" ]]; then
 		d1=", deleted"
 		d2=""
 	fi
@@ -627,7 +618,7 @@ query_training-list() { ## [--all]: List known trainings
 	EOF
 }
 
-query_training-members() { ## <tr_id>: List users in a specific training
+query_training-members() { ##? <tr_id>: List users in a specific training
 	handle_help "$@" <<-EOF
 		    $ gxadmin query training-members hts2018
 		          username      |       joined
@@ -635,9 +626,8 @@ query_training-members() { ## <tr_id>: List users in a specific training
 		     helena-rasche      | 2018-09-21 21:42:01
 	EOF
 
-	assert_count $# 1 "Missing Training ID"
 	# Remove training- if they used it.
-	ww=$(echo "$1" | sed 's/^training-//g')
+	ww=$(echo "$arg_tr_id" | sed 's/^training-//g')
 	username=$(gdpr_safe galaxy_user.username username)
 
 	read -r -d '' QUERY <<-EOF
@@ -651,15 +641,15 @@ query_training-members() { ## <tr_id>: List users in a specific training
 	EOF
 }
 
-query_training-members-remove() { ## <training> <username> [YESDOIT]: Remove a user from a training
+query_training-members-remove() { ##? <training> <username> [--yesdoit]: Remove a user from a training
 	handle_help "$@" <<-EOF
 	EOF
+	# TODO: Move to mutate
 
-	assert_count_ge $# 2 "Missing parameters"
 	# Remove training- if they used it.
-	ww=$(echo "$1" | sed 's/^training-//g')
+	ww=$(echo "$arg_training" | sed 's/^training-//g')
 
-	if (( $# == 3 )) && [[ "$3" == "YESDOIT" ]]; then
+	if [[ -n $arg_yesdoit ]]; then
 		results="$(query_tsv "$qstr")"
 		uga_id=$(echo "$results" | awk -F'\t' '{print $1}')
 		if (( uga_id > -1 )); then
@@ -678,12 +668,12 @@ query_training-members-remove() { ## <training> <username> [YESDOIT]: Remove a u
 			LEFT JOIN galaxy_group ON galaxy_group.id = user_group_association.group_id
 			WHERE
 				galaxy_group.name = 'training-$ww'
-				AND galaxy_user.username = '$2'
+				AND galaxy_user.username = '$arg_username'
 		EOF
 	fi
 }
 
-query_largest-histories() { ## [--human]: Largest histories in Galaxy
+query_largest-histories() { ##? [--human]: Largest histories in Galaxy
 	handle_help "$@" <<-EOF
 		Finds all histories and print by decreasing size
 
@@ -718,7 +708,7 @@ query_largest-histories() { ## [--human]: Largest histories in Galaxy
 	tags="id=1;name=2;username=3"
 
 	total_size="sum(coalesce(dataset.total_size, dataset.file_size, 0)) as total_size"
-	if [[ $1 == "--human" ]]; then
+	if [[ -n "$arg_human" ]]; then
 		total_size="pg_size_pretty(sum(coalesce(dataset.total_size, dataset.file_size, 0))) as total_size"
 	fi
 
@@ -738,7 +728,7 @@ query_largest-histories() { ## [--human]: Largest histories in Galaxy
 	EOF
 }
 
-query_training-queue() { ## <training_id>: Jobs currently being run by people in a given training
+query_training-queue() { ##? <training_id>: Jobs currently being run by people in a given training
 	handle_help "$@" <<-EOF
 		Finds all jobs by people in that queue (including things they are executing that are not part of a training)
 
@@ -748,9 +738,8 @@ query_training-queue() { ## <training_id>: Jobs currently being run by people in
 		     queued | 4350274 | 225743 | upload1 |               | 2018-09-26 10:00:00
 	EOF
 
-	assert_count $# 1 "Missing Training ID"
 	# Remove training- if they used it.
-	ww=$(echo "$1" | sed 's/^training-//g')
+	ww=$(echo "$arg_training_id" | sed 's/^training-//g')
 
 	username=$(gdpr_safe galaxy_user.username username)
 
@@ -783,7 +772,7 @@ query_training-queue() { ## <training_id>: Jobs currently being run by people in
 	EOF
 }
 
-query_disk-usage() { ## [--human]: Disk usage per object store.
+query_disk-usage() { ##? [--human]: Disk usage per object store.
 	handle_help "$@" <<-EOF
 		Query the different object stores referenced in your Galaxy database
 
@@ -806,7 +795,7 @@ query_disk-usage() { ## [--human]: Disk usage per object store.
 	tags="object_store_id=0"
 
 	size="sum(coalesce(dataset.total_size, dataset.file_size, 0))"
-	if [[ $1 == "--human" ]]; then
+	if [[ -n "$arg_human" ]]; then
 		size="pg_size_pretty(sum(coalesce(dataset.total_size, dataset.file_size, 0))) as sum"
 	fi
 
@@ -933,7 +922,7 @@ query_ts-repos() { ## : Counts of toolshed repositories by toolshed and owner.
 	EOF
 }
 
-query_tool-metrics() { ## <tool_id> <metric_id> [--like]: See values of a specific metric
+query_tool-metrics() { ##? <tool_id> <metric_id> [--like]: See values of a specific metric
 	handle_help "$@" <<-EOF
 		A good way to use this is to fetch the memory usage of a tool and then
 		do some aggregations. The following requires [data_hacks](https://github.com/bitly/data_hacks)
@@ -956,12 +945,9 @@ query_tool-metrics() { ## <tool_id> <metric_id> [--like]: See values of a specif
 		       95.5703 -   105.8750 [     1]: ∎ (0.23%)
 	EOF
 
-	assert_count_ge $# 1 "Missing Tool ID"
-	assert_count_ge $# 2 "Missing Metric ID (hint: tool-available-metrics)"
-
-	tool_subquery="SELECT id FROM job WHERE tool_id = '$1'"
-	if [[ "$3" == "--like" ]]; then
-		tool_subquery="SELECT id FROM job WHERE tool_id like '$1'"
+	tool_subquery="SELECT id FROM job WHERE tool_id = '$arg_tool_id'"
+	if [[ -n "$arg_like" ]]; then
+		tool_subquery="SELECT id FROM job WHERE tool_id like '$arg_tool_id'"
 	fi
 
 	read -r -d '' QUERY <<-EOF
@@ -969,7 +955,7 @@ query_tool-metrics() { ## <tool_id> <metric_id> [--like]: See values of a specif
 			metric_value
 		FROM job_metric_numeric
 		WHERE
-			metric_name = '$2'
+			metric_name = '$arg_metric_id'
 			and
 			job_id in (
 				$tool_subquery
@@ -977,7 +963,7 @@ query_tool-metrics() { ## <tool_id> <metric_id> [--like]: See values of a specif
 	EOF
 }
 
-query_tool-available-metrics() { ## <tool_id>: list all available metrics for a given tool
+query_tool-available-metrics() { ##? <tool_id>: list all available metrics for a given tool
 	handle_help "$@" <<-EOF
 		Gives a list of available metrics, which can then be used to query.
 
@@ -991,20 +977,18 @@ query_tool-available-metrics() { ## <tool_id>: list all available metrics for a 
 		     ...
 	EOF
 
-	assert_count $# 1 "Missing Tool ID"
-
 	read -r -d '' QUERY <<-EOF
 		SELECT
 			distinct metric_name
 		FROM job_metric_numeric
 		WHERE job_id in (
-			SELECT id FROM job WHERE tool_id = '$1'
+			SELECT id FROM job WHERE tool_id = '$arg_tool_id'
 		)
 		ORDER BY metric_name asc
 	EOF
 }
 
-query_monthly-cpu-stats() { ## [year] : CPU years/hours allocated to tools by month
+query_monthly-cpu-stats() { ##? [year] : CPU years/hours allocated to tools by month
 	handle_help "$@" <<-EOF
 		This uses the galaxy_slots and runtime_seconds metrics in order to
 		calculate allocated CPU years/hours. This will not be the value of what is
@@ -1021,9 +1005,9 @@ query_monthly-cpu-stats() { ## [year] : CPU years/hours allocated to tools by mo
 		     ...
 	EOF
 
-	if [ ! -z $1 ] && date -d "$1" >/dev/null
+	if [ ! -z $arg_year ] && date -d "$arg_year" >/dev/null
 	then
-	    filter_by_year="date_trunc('year', job.create_time AT TIME ZONE 'UTC') = '$1-01-01'::date"
+	    filter_by_year="date_trunc('year', job.create_time AT TIME ZONE 'UTC') = '$arg_year-01-01'::date"
 	fi
 
 	read -r -d '' QUERY <<-EOF
@@ -1093,7 +1077,7 @@ query_monthly-cpu-years() { ## : CPU years allocated to tools by month
 }
 
 
-query_monthly-data(){ ## [year] [--human]: Number of active users per month, running jobs
+query_monthly-data(){ ##? [year] [--human]: Number of active users per month, running jobs
 	handle_help "$@" <<-EOF
 		Find out how much data was ingested or created by Galaxy during the past months.
 
@@ -1114,17 +1098,14 @@ query_monthly-data(){ ## [year] [--human]: Number of active users per month, run
 		     2018-01-01 | 16 TB
 	EOF
 	size="sum(coalesce(dataset.total_size, dataset.file_size, 0))"
-	if (( $# > 0 )); then
-		for args in "$@"; do
-			if [ "$args" = "--human" ]; then
-				size="pg_size_pretty(sum(coalesce(dataset.total_size, dataset.file_size, 0)))"
-			else
-				where="WHERE date_trunc('year', dataset.create_time AT TIME ZONE 'UTC') = '$args-01-01'::date"
-			fi
-		done
+
+	if [[ -n $arg_human ]]; then
+		size="pg_size_pretty(sum(coalesce(dataset.total_size, dataset.file_size, 0)))"
 	fi
 
-
+	if [[ -n $arg_year ]]; then
+		where="WHERE date_trunc('year', dataset.create_time AT TIME ZONE 'UTC') = '$arg_year-01-01'::date"
+	fi
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
@@ -1280,7 +1261,7 @@ query_user-gpu-years() { ## : GPU years allocated to tools by user
 	EOF
 }
 
-query_user-disk-usage() { ## [--human]: Retrieve an approximation of the disk usage for users
+query_user-disk-usage() { ##? [--human]: Retrieve an approximation of the disk usage for users
 	handle_help "$@" <<-EOF
 		This uses the dataset size and the history association in order to
 		calculate total disk usage for a user. This is currently limited
@@ -1309,7 +1290,7 @@ query_user-disk-usage() { ## [--human]: Retrieve an approximation of the disk us
 	tags="userid=1;username=2"
 
 	size="sum(coalesce(dataset.total_size, dataset.file_size, 0)) as \"storage usage\""
-	if [[ $1 == "--human" ]]; then
+	if [[ -n $arg_human ]]; then
 		size="pg_size_pretty(sum(coalesce(dataset.total_size, dataset.file_size, 0))) as \"storage usage\""
 	fi
 
@@ -1531,7 +1512,7 @@ query_user-disk-quota() { ## : Retrieves the 50 users with the largest quotas
 	EOF
 }
 
-query_group-cpu-seconds() { ## [group]: Retrieve an approximation of the CPU time in seconds for group(s)
+query_group-cpu-seconds() { ##? [group]: Retrieve an approximation of the CPU time in seconds for group(s)
 	handle_help "$@" <<-EOF
 		This uses the galaxy_slots and runtime_seconds metrics in order to
 		calculate allocated CPU time in seconds. This will not be the value of
@@ -1552,9 +1533,8 @@ query_group-cpu-seconds() { ## [group]: Retrieve an approximation of the CPU tim
 	EOF
 
 	where=""
-
-	if (( $# > 0 )); then
-		where="AND galaxy_group.name = '$1'"
+	if [[ -n $arg_group ]]; then
+		where="AND galaxy_group.name = '$arg_group'"
 	fi
 
 	groupname=$(gdpr_safe galaxy_group.name group_name 'Anonymous')
@@ -1594,7 +1574,7 @@ query_group-cpu-seconds() { ## [group]: Retrieve an approximation of the CPU tim
 	EOF
 }
 
-query_group-gpu-time() { ## [group]: Retrieve an approximation of the GPU time for users
+query_group-gpu-time() { ##? [group]: Retrieve an approximation of the GPU time for users
 	handle_help "$@" <<-EOF
 		This uses the galaxy_slots and runtime_seconds metrics in order to
 		calculate allocated GPU time. This will not be the value of what is
@@ -1617,9 +1597,8 @@ query_group-gpu-time() { ## [group]: Retrieve an approximation of the GPU time f
 	EOF
 
 	where=""
-
-	if (( $# > 0 )); then
-		where="AND galaxy_group.name = '$1'"
+	if [[ -n $arg_group ]]; then
+		where="AND galaxy_group.name = '$arg_group'"
 	fi
 
 	groupname=$(gdpr_safe galaxy_group.name group_name 'Anonymous')
@@ -1833,7 +1812,7 @@ query_monthly-jobs(){ ## [year] [--by_group]: Number of jobs run each month
 	EOF
 }
 
-query_total-jobs(){ ## [year]: Total number of jobs run by galaxy instance
+query_total-jobs(){ ## : Total number of jobs run by galaxy instance
 	handle_help "$@" <<-EOF
 		Count total number of jobs
 
@@ -1849,7 +1828,6 @@ query_total-jobs(){ ## [year]: Total number of jobs run by galaxy instance
 	fields="count=1"
 	tags="state=0"
 
-
 	read -r -d '' QUERY <<-EOF
 		SELECT
 			state, count(*)
@@ -1864,7 +1842,7 @@ query_total-jobs(){ ## [year]: Total number of jobs run by galaxy instance
 
 }
 
-query_job-history() { ## <id>: Job state history for a specific job
+query_job-history() { ##? <id>: Job state history for a specific job
 	handle_help "$@" <<-EOF
 		    $ gxadmin query job-history 1
 		                 time              | state
@@ -1877,21 +1855,18 @@ query_job-history() { ## <id>: Job state history for a specific job
 		    (5 rows)
 	EOF
 
-	assert_count $# 1 "Missing Job ID"
-
 	read -r -d '' QUERY <<-EOF
 			SELECT
 				create_time AT TIME ZONE 'UTC' as time,
 				state
 			FROM job_state_history
-			WHERE job_id = $1
+			WHERE job_id = $arg_id
 	EOF
 }
 
-query_job-inputs() { ## <id>: Input datasets to a specific job
+query_job-inputs() { ##? <id>: Input datasets to a specific job
 	handle_help "$@" <<-EOF
 	EOF
-	assert_count $# 1 "Missing Job ID"
 
 	read -r -d '' QUERY <<-EOF
 			SELECT
@@ -1911,15 +1886,13 @@ query_job-inputs() { ## <id>: Input datasets to a specific job
 					ON hda.id = jtid.dataset_id
 				JOIN dataset d
 					ON hda.dataset_id = d.id
-			WHERE j.id = $1
+			WHERE j.id = $arg_id
 	EOF
 }
 
-query_job-outputs() { ## <id>: Output datasets from a specific job
+query_job-outputs() { ##? <id>: Output datasets from a specific job
 	handle_help "$@" <<-EOF
 	EOF
-
-	assert_count $# 1 "Missing Job ID"
 
 	read -r -d '' QUERY <<-EOF
 			SELECT
@@ -1939,7 +1912,7 @@ query_job-outputs() { ## <id>: Output datasets from a specific job
 					ON hda.id = jtod.dataset_id
 				JOIN dataset d
 					ON hda.dataset_id = d.id
-			WHERE j.id = $1
+			WHERE j.id = $arg_id
 	EOF
 }
 
@@ -2007,7 +1980,7 @@ query_job-info() { ## <-|job_id [job_id [...]]> : Retrieve information about job
 	EOF
 }
 
-query_old-histories(){ ## <weeks>: Lists histories that haven't been updated (used) for <weeks>
+query_old-histories(){ ##? <weeks>: Lists histories that haven't been updated (used) for <weeks>
 	handle_help "$@" <<-EOF
 		Histories and their users who haven't been updated for a specified number of weeks. Default number of weeks is 15.
 
@@ -2025,9 +1998,6 @@ query_old-histories(){ ## <weeks>: Lists histories that haven't been updated (us
 		     39523 | 2017-06-21 01:34:52.226653 |       9 | xxx@xxx | OSCC Cell Lines    | f         | f       | f      |         139
 	EOF
 
-	assert_count_ge $# 1 "Missing <weeks>"
-
-	weeks=$1
 	email=$(gdpr_safe galaxy_user.email 'email')
 
 	read -r -d '' QUERY <<-EOF
@@ -2045,7 +2015,7 @@ query_old-histories(){ ## <weeks>: Lists histories that haven't been updated (us
 			history,
 			galaxy_user
 		WHERE
-			history.update_time < (now() AT TIME ZONE 'UTC' - '$weeks weeks'::interval) AND
+			history.update_time < (now() AT TIME ZONE 'UTC' - '$arg_weeks weeks'::interval) AND
 			history.user_id = galaxy_user.id AND
 			history.deleted = FALSE AND
 			history.published = FALSE
@@ -2074,7 +2044,7 @@ query_jobs-max-by-cpu-hours() { ## : Top 10 jobs by CPU hours consumed (requires
 	EOF
 }
 
-query_errored-jobs(){ ## <hours> [--details]: Lists jobs that errored in the last N hours.
+query_errored-jobs(){ ##? <hours> [--details]: Lists jobs that errored in the last N hours.
 	handle_help "$@" <<-EOF
 		Lists details of jobs that have status = 'error' for the specified number of hours. Default = 24 hours
 
@@ -2089,11 +2059,10 @@ query_errored-jobs(){ ## <hours> [--details]: Lists jobs that errored in the las
 
 	EOF
 
-	hours=$1
 	email=$(gdpr_safe galaxy_user.email 'email')
-	details=
 
-	if [[ $2 == "--detail" ]] || [[ $2 == "--details" ]]; then
+	details=
+	if [[ -n "$arg_details" ]]; then
 		details="job.job_stderr,"
 	fi
 
@@ -2112,7 +2081,7 @@ query_errored-jobs(){ ## <hours> [--details]: Lists jobs that errored in the las
 			job,
 			galaxy_user
 		WHERE
-			job.create_time >= (now() AT TIME ZONE 'UTC' - '$hours hours'::interval) AND
+			job.create_time >= (now() AT TIME ZONE 'UTC' - '$arg_hours hours'::interval) AND
 			job.state = 'error' AND
 			job.user_id = galaxy_user.id
 		ORDER BY
@@ -2160,7 +2129,7 @@ query_workflow-invocation-totals() { ## : Report on overall workflow counts, to 
 	EOF
 }
 
-query_tool-new-errors() { ## [weeks|4]: Summarize percent of tool runs in error over the past weeks for "new tools"
+query_tool-new-errors() { ##? [weeks|4] [--short-tool-id]: Summarize percent of tool runs in error over the past weeks for "new tools"
 	handle_help "$@" <<-EOF
 		See jobs-in-error summary for recent tools (tools whose first execution is in recent weeks).
 
@@ -2177,22 +2146,17 @@ query_tool-new-errors() { ## [weeks|4]: Summarize percent of tool runs in error 
 		     iuc/rgrnastar/rna_star/2.6.0b-2   |        40 |               0.3 |              0 |            12 |            0 | handler_main_2
 	EOF
 
-	# TODO: Fix this nonsense for proper args
 	tool_id="j.tool_id"
-	if [[ "$1" = --short-tool-id ]]; then
+	if [[ -n $arg_short_tool_id ]]; then
 		tool_id="regexp_replace(j.tool_id, '.*toolshed.*/repos/', '') as tool_id"
-		weeks=${2:-4}
-	else
-		weeks=${1:-4}
 	fi
 
 	fields="tool_runs=1;percent_errored=2;percent_failed=3;count_errored=4;count_failed=5"
 	tags="tool_id=0;handler=6"
 
-
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			j.tool_id,
+			$tool_id,
 			count(*) AS tool_runs,
 			sum(CASE WHEN j.state = 'error'  THEN 1 ELSE 0 END)::float / count(*) AS percent_errored,
 			sum(CASE WHEN j.state = 'failed' THEN 1 ELSE 0 END)::float / count(*) AS percent_failed,
@@ -2205,7 +2169,7 @@ query_tool-new-errors() { ## [weeks|4]: Summarize percent of tool runs in error 
 			IN (
 					SELECT tool_id
 					FROM job AS j
-					WHERE j.create_time > (now() - '$weeks weeks'::INTERVAL)
+					WHERE j.create_time > (now() - '$arg_weeks weeks'::INTERVAL)
 					GROUP BY j.tool_id
 				)
 		GROUP BY j.tool_id, j.handler
@@ -2213,7 +2177,7 @@ query_tool-new-errors() { ## [weeks|4]: Summarize percent of tool runs in error 
 	EOF
 }
 
-query_tool-errors() { ## [--short-tool-id] [weeks|4]: Summarize percent of tool runs in error over the past weeks for all tools that have failed (most popular tools first)
+query_tool-errors() { ##? [--short-tool-id] [weeks|4]: Summarize percent of tool runs in error over the past weeks for all tools that have failed (most popular tools first)
 	handle_help "$@" <<-EOF
 		See jobs-in-error summary for recently executed tools that have failed at least 10% of the time.
 
@@ -2232,11 +2196,8 @@ query_tool-errors() { ## [--short-tool-id] [weeks|4]: Summarize percent of tool 
 
 	# TODO: Fix this nonsense for proper args
 	tool_id="j.tool_id"
-	if [[ "$1" = --short-tool-id ]]; then
+	if [[ -n $arg_short_tool_id ]]; then
 		tool_id="regexp_replace(j.tool_id, '.*toolshed.*/repos/', '') as tool_id"
-		weeks=${2:-4}
-	else
-		weeks=${1:-4}
 	fi
 
 	fields="tool_runs=1;percent_errored=2;percent_failed=3;count_errored=4;count_failed=5"
@@ -2254,7 +2215,7 @@ query_tool-errors() { ## [--short-tool-id] [weeks|4]: Summarize percent of tool 
 		FROM
 			job AS j
 		WHERE
-			j.create_time > (now() - '$weeks weeks'::INTERVAL)
+			j.create_time > (now() - '$arg_weeks weeks'::INTERVAL)
 		GROUP BY
 			j.tool_id, j.handler
 		HAVING
@@ -2264,7 +2225,7 @@ query_tool-errors() { ## [--short-tool-id] [weeks|4]: Summarize percent of tool 
 	EOF
 }
 
-query_tool-likely-broken() { ## [--short-tool-id] [weeks|4]: Find tools that have been executed in recent weeks that are (or were due to job running) likely substantially broken
+query_tool-likely-broken() { ##? [--short-tool-id] [weeks|4]: Find tools that have been executed in recent weeks that are (or were due to job running) likely substantially broken
 	handle_help "$@" <<-EOF
 		This runs an identical query to tool-errors, except filtering for tools
 		which were run more than 4 times, and have a failure rate over 95%.
@@ -2283,11 +2244,8 @@ query_tool-likely-broken() { ## [--short-tool-id] [weeks|4]: Find tools that hav
 
 	# TODO: Fix this nonsense for proper args
 	tool_id="j.tool_id"
-	if [[ "$1" = --short-tool-id ]]; then
+	if [[ -n $arg_short_tool_id ]]; then
 		tool_id="regexp_replace(j.tool_id, '.*toolshed.*/repos/', '') as tool_id"
-		weeks=${2:-4}
-	else
-		weeks=${1:-4}
 	fi
 
 	fields="tool_runs=1;percent_errored=2;percent_failed=3;count_errored=4;count_failed=5"
@@ -2305,7 +2263,7 @@ query_tool-likely-broken() { ## [--short-tool-id] [weeks|4]: Find tools that hav
 		FROM
 			job AS j
 		WHERE
-			j.create_time > (now() - '$weeks weeks'::INTERVAL)
+			j.create_time > (now() - '$arg_weeks weeks'::INTERVAL)
 		GROUP BY
 			j.tool_id, j.handler
 		HAVING
@@ -2316,15 +2274,13 @@ query_tool-likely-broken() { ## [--short-tool-id] [weeks|4]: Find tools that hav
 	EOF
 }
 
-query_user-recent-aggregate-jobs() { ## <username|id|email> [days|7]: Show aggregate information for jobs in past N days for user
+query_user-recent-aggregate-jobs() { ##? <user> [days|7]: Show aggregate information for jobs in past N days for user (by email/id/username)
 	handle_help "$@" <<-EOF
 		Obtain an overview of tools that a user has run in the past N days
 	EOF
 
 	# args
-	assert_count_ge $# 1 "Must supply <username|id|email>"
-	user_filter="(galaxy_user.email = '$1' or galaxy_user.username = '$1' or galaxy_user.id = CAST(REGEXP_REPLACE(COALESCE('$1','0'), '[^0-9]+', '0', 'g') AS INTEGER))"
-	days_filter="${2:-7}"
+	user_filter="(galaxy_user.email = '$arg_user' or galaxy_user.username = '$arg_user' or galaxy_user.id = CAST(REGEXP_REPLACE(COALESCE('$arg_user','0'), '[^0-9]+', '0', 'g') AS INTEGER))"
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
@@ -2334,7 +2290,7 @@ query_user-recent-aggregate-jobs() { ## <username|id|email> [days|7]: Show aggre
 		JOIN
 			galaxy_user on galaxy_user.id = job.user_id
 		WHERE
-			$user_filter AND create_time > (now() - '$days_filter days'::INTERVAL)
+			$user_filter AND create_time > (now() - '$arg_days days'::INTERVAL)
 		GROUP BY
 			date_trunc, tool_id, state
 		ORDER BY
@@ -2342,7 +2298,7 @@ query_user-recent-aggregate-jobs() { ## <username|id|email> [days|7]: Show aggre
 	EOF
 }
 
-query_user-history-list() { ## <username|id|email> [--size]: Shows the ID of the history, it's size and when it was last updated.
+query_user-history-list() { ##? <user> [--size]: List a user's (by email/id/username) histories.
 	handle_help "$@" <<-EOF
 		Obtain an overview of histories of a user. By default orders the histories by date.
 		When using '--size' it overrides the order to size.
@@ -2355,13 +2311,10 @@ query_user-history-list() { ## <username|id|email> [--size]: Shows the ID of the
 	EOF
 
 	# args
-	assert_count_ge $# 1 "Must supply <username|id|email>"
-	user_filter="(galaxy_user.email = '$1' or galaxy_user.username = '$1' or galaxy_user.id = CAST(REGEXP_REPLACE(COALESCE('$1','0'), '[^0-9]+', '0', 'g') AS INTEGER))"
+	user_filter="(galaxy_user.email = '$arg_user' or galaxy_user.username = '$arg_user' or galaxy_user.id = CAST(REGEXP_REPLACE(COALESCE('$arg_user','0'), '[^0-9]+', '0', 'g') AS INTEGER))"
 	order_col="uh.update_time"
-	if (( $# > 1 )); then
-		if [[ $2 == "--size" ]]; then
-			order_col="hs.hist_size"
-		fi
+	if [[ -n "$arg_size" ]]; then
+		order_col="hs.hist_size"
 	fi
 
 	read -r -d '' QUERY <<-EOF
@@ -2419,25 +2372,25 @@ query_history-contents() { ## <history_id> [--dataset|--collection]: List datase
 	EOF
 }
 
-query_hdca-info() { ## <hdca_id>: Information on a dataset collection
+query_hdca-info() { ##? <hdca_id>: Information on a dataset collection
 	handle_help "$@" <<-EOF
 	EOF
 
 	read -r -d '' QUERY <<-EOF
 		SELECT *
 		FROM dataset_collection
-		WHERE id = $1
+		WHERE id = $arg_hdca_id
 	EOF
 }
 
-query_hdca-datasets() { ## <hdca_id>: List of files in a dataset collection
+query_hdca-datasets() { ##? <hdca_id>: List of files in a dataset collection
 	handle_help "$@" <<-EOF
 	EOF
 
 	read -r -d '' QUERY <<-EOF
 		SELECT element_index, hda_id, ldda_id, child_collection_id, element_identifier
 		FROM dataset_collection_element
-		WHERE dataset_collection_id = $1
+		WHERE dataset_collection_id = $arg_hdca_id
 		ORDER by element_index asc
 	EOF
 }
@@ -2522,26 +2475,23 @@ query_users-with-oidc() { ## : How many users logged in with OIDC
 	EOF
 }
 
-query_history-runtime-system() { ## <history_id>: Sum of runtimes by all jobs in a history
+query_history-runtime-system() { ##? <history_id>: Sum of runtimes by all jobs in a history
 	handle_help "$@" <<-EOF
 	EOF
 
-	assert_count $# 1 "Missing history ID"
-}
 	read -r -d '' QUERY <<-EOF
 		SELECT
 			(sum(job_metric_numeric.metric_value)::INT8 || 'seconds')::INTERVAL
 		FROM
 			job LEFT JOIN job_metric_numeric ON job.id = job_metric_numeric.job_id
 		WHERE
-			job.history_id = $1 AND metric_name = 'runtime_seconds'
+			job.history_id = $arg_history_id AND metric_name = 'runtime_seconds'
 	EOF
+}
 
-query_history-runtime-wallclock() { ## <history_id>: Time as elapsed by a clock on the wall
+query_history-runtime-wallclock() { ##? <history_id>: Time as elapsed by a clock on the wall
 	handle_help "$@" <<-EOF
 	EOF
-
-	assert_count $# 1 "Missing history ID"
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
@@ -2549,15 +2499,13 @@ query_history-runtime-wallclock() { ## <history_id>: Time as elapsed by a clock 
 		FROM
 			job
 		WHERE
-			job.history_id = $1
+			job.history_id = $arg_history_id
 	EOF
 }
 
-query_history-runtime-system-by-tool() { ## <history_id>: Sum of runtimes by all jobs in a history, split by tool
+query_history-runtime-system-by-tool() { ##? <history_id>: Sum of runtimes by all jobs in a history, split by tool
 	handle_help "$@" <<-EOF
 	EOF
-
-	assert_count $# 1 "Missing history ID"
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
@@ -2566,7 +2514,7 @@ query_history-runtime-system-by-tool() { ## <history_id>: Sum of runtimes by all
 		FROM
 			job LEFT JOIN job_metric_numeric ON job.id = job_metric_numeric.job_id
 		WHERE
-			job.history_id = $1 AND metric_name = 'runtime_seconds'
+			job.history_id = $arg_history_id AND metric_name = 'runtime_seconds'
 		GROUP BY
 			job.tool_id
 		ORDER BY
@@ -2574,19 +2522,18 @@ query_history-runtime-system-by-tool() { ## <history_id>: Sum of runtimes by all
 	EOF
 }
 
-query_upload-gb-in-past-hour() { ## [hours|1]: Sum in bytes of files uploaded in the past hour
+query_upload-gb-in-past-hour() { ##? [hours|1]: Sum in bytes of files uploaded in the past hour
 	handle_help "$@" <<-EOF
 		Quick output, mostly useful for graphing, to produce a nice graph of how heavily are people uploading currently.
 	EOF
 
-	hours=${1:-1}
 	fields="count=0"
 	tags="hours=1"
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
 			coalesce(sum(coalesce(dataset.total_size, coalesce(dataset.file_size, 0))), 0),
-			$hours as hours
+			$arg_hours as hours
 		FROM
 			job
 			LEFT JOIN job_to_output_dataset ON job.id = job_to_output_dataset.job_id
@@ -2595,18 +2542,14 @@ query_upload-gb-in-past-hour() { ## [hours|1]: Sum in bytes of files uploaded in
 			LEFT JOIN dataset ON history_dataset_association.dataset_id = dataset.id
 		WHERE
 			job.tool_id = 'upload1'
-			AND job.create_time AT TIME ZONE 'UTC' > (now() - '$hours hours'::INTERVAL)
-EOF
+			AND job.create_time AT TIME ZONE 'UTC' > (now() - '$arg_hours hours'::INTERVAL)
+	EOF
 }
 
-query_queue-detail-by-handler() { ## <handler_id>: List jobs for a specific handler
+query_queue-detail-by-handler() { ##? <handler_id>: List jobs for a specific handler
 	handle_help "$@" <<-EOF
 		List the jobs currently being processed by a specific handler
 	EOF
-
-	assert_count_ge $# 1 "Missing handler ID"
-
-	handler_id=$1
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
@@ -2620,7 +2563,7 @@ query_queue-detail-by-handler() { ## <handler_id>: List jobs for a specific hand
 		FROM
 			job
 		WHERE
-			handler = '$handler_id' AND state IN ('new', 'queued', 'running')
+			handler = '$arg_handler_id' AND state IN ('new', 'queued', 'running')
 	EOF
 }
 
@@ -2652,13 +2595,13 @@ query_pg-cache-hit() { ## : Check postgres in-memory cache hit ratio
 
 }
 
-query_pg-table-bloat() { ## [--human]: show table and index bloat in your database ordered by most wasteful
+query_pg-table-bloat() { ##? [--human]: show table and index bloat in your database ordered by most wasteful
 	handle_help "$@" <<-EOF
 		Query from: https://www.citusdata.com/blog/2019/03/29/health-checks-for-your-postgres-database/
 		Originally from: https://github.com/heroku/heroku-pg-extras/tree/master/commands
 	EOF
 
-	if [[ $1 == "--human" ]]; then
+	if [[ -n "$arg_human" ]]; then
 		waste_query="pg_size_pretty(raw_waste)"
 	else
 		waste_query="raw_waste"
@@ -2783,12 +2726,12 @@ query_pg-index-usage() { ## : calculates your index hit rate (effective database
 	EOF
 }
 
-query_pg-index-size() { ## [--human]: show table and index bloat in your database ordered by most wasteful
+query_pg-index-size() { ##? [--human]: show table and index bloat in your database ordered by most wasteful
 	handle_help "$@" <<-EOF
 		Originally from: https://github.com/heroku/heroku-pg-extras/tree/master/commands
 	EOF
 
-	if [[ $1 == "--human" ]]; then
+	if [[ -n "$arg_human" ]]; then
 		human_size="pg_size_pretty(sum(c.relpages::bigint*8192)::bigint)"
 	else
 		human_size="sum(c.relpages::bigint*8192)::bigint"
@@ -2833,12 +2776,12 @@ query_pg-long-running-queries() { ## : show all queries longer than five minutes
 
 }
 
-query_pg-table-size() { ## [--human]: show the size of the tables (excluding indexes), descending by size
+query_pg-table-size() { ##? [--human]: show the size of the tables (excluding indexes), descending by size
 	handle_help "$@" <<-EOF
 		Originally from: https://github.com/heroku/heroku-pg-extras/tree/master/commands
 	EOF
 
-	if [[ $1 == "--human" ]]; then
+	if [[ -n "$arg_human" ]]; then
 		# TODO: there has got to be a less ugly way to do this
 		human_size="pg_size_pretty("
 		human_after=")"
@@ -2864,7 +2807,7 @@ query_pg-table-size() { ## [--human]: show the size of the tables (excluding ind
 	EOF
 }
 
-query_pg-unused-indexes() { ## [--human]: show unused and almost unused indexes
+query_pg-unused-indexes() { ##? [--human]: show unused and almost unused indexes
 	handle_help "$@" <<-EOF
 		Originally from: https://github.com/heroku/heroku-pg-extras/tree/master/commands
 
@@ -2876,7 +2819,7 @@ query_pg-unused-indexes() { ## [--human]: show unused and almost unused indexes
 		> but may not in the future as the table grows"
 	EOF
 
-	if [[ $1 == "--human" ]]; then
+	if [[ -n "$arg_human" ]]; then
 		# TODO: there has got to be a less ugly way to do this
 		human_size="pg_size_pretty("
 		human_after=")"
@@ -3032,7 +2975,7 @@ query_data-origin-distribution-merged() {
 	EOF
 }
 
-query_data-origin-distribution() { ## [--human]: data sources (uploaded vs derived)
+query_data-origin-distribution() { ## : data sources (uploaded vs derived)
 	handle_help "$@" <<-EOF
 		Break down the source of data in the server, uploaded data vs derived (created as output from a tool)
 
@@ -3056,14 +2999,8 @@ query_data-origin-distribution() { ## [--human]: data sources (uploaded vs deriv
 
 	EOF
 
-	if [[ $1 == "--human" ]]; then
-		human=1
-	else
-		human=0
-	fi
-
-	summary="$(summary_statistics data $human)"
 	username=$(gdpr_safe job.user_id galaxy_user)
+	echo "$username"
 
 	read -r -d '' QUERY <<-EOF
 		WITH asdf AS (
@@ -3085,11 +3022,11 @@ query_data-origin-distribution() { ## [--human]: data sources (uploaded vs deriv
 			created,
 			galaxy_user
 		FROM asdf
-		ORDER BY galaxy_user desc
+		ORDER BY galaxy_user, created desc
 	EOF
 }
 
-query_data-origin-distribution-summary() { ## [--human]: breakdown of data sources (uploaded vs derived)
+query_data-origin-distribution-summary() { ##? [--human]: breakdown of data sources (uploaded vs derived)
 	handle_help "$@" <<-EOF
 		Break down the source of data in the server, uploaded data vs derived (created as output from a tool)
 
@@ -3104,13 +3041,7 @@ query_data-origin-distribution-summary() { ## [--human]: breakdown of data sourc
 	tags="dataorigin=0"
 	fields="min=1;q1=2;median=3;mean=4;q3=5;p95=6;p99=7;max=8;sum=9;stddev=10"
 
-	if [[ $1 == "--human" ]]; then
-		human=1
-	else
-		human=0
-	fi
-
-	summary="$(summary_statistics data $human)"
+	summary="$(summary_statistics data $arg_human)"
 
 	read -r -d '' QUERY <<-EOF
 		WITH user_job_data AS (
@@ -3163,7 +3094,7 @@ query_q() { ## <query>: Passes a raw SQL query directly through to the database
 	handle_help "$@" <<-EOF
 	EOF
 
-	QUERY="$1"
+	QUERY="$@"
 }
 
 query_good-for-pulsar() { ## : Look for jobs EU would like to send to pulsar
