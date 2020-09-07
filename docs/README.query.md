@@ -46,7 +46,7 @@ Command | Description
 [`query pg-index-usage`](#query-pg-index-usage) | calculates your index hit rate (effective databases are at 99% and up)
 [`query pg-long-running-queries`](#query-pg-long-running-queries) | show all queries longer than five minutes by descending duration
 [`query pg-mandelbrot`](#query-pg-mandelbrot) | show the mandlebrot set
-[`query pg-rows-per-table`](#query-pg-rows-per-table) | Print rows per table 
+[`query pg-rows-per-table`](#query-pg-rows-per-table) | Print rows per table
 [`query pg-stat-bgwriter`](#query-pg-stat-bgwriter) | Stats about the behaviour of the bgwriter, checkpoints, buffers, etc.
 [`query pg-stat-user-tables`](#query-pg-stat-user-tables) | stats about tables (tuples, index scans, vacuums, analyzes)
 [`query pg-table-bloat`](#query-pg-table-bloat) | show table and index bloat in your database ordered by most wasteful
@@ -80,8 +80,8 @@ Command | Description
 [`query user-disk-quota`](#query-user-disk-quota) | Retrieves the 50 users with the largest quotas
 [`query user-disk-usage`](#query-user-disk-usage) | Retrieve an approximation of the disk usage for users
 [`query user-gpu-years`](#query-user-gpu-years) | GPU years allocated to tools by user
-[`query user-history-list`](#query-user-history-list) | Shows the ID of the history, it's size and when it was last updated.
-[`query user-recent-aggregate-jobs`](#query-user-recent-aggregate-jobs) | Show aggregate information for jobs in past N days for user
+[`query user-history-list`](#query-user-history-list) | List a user's (by email/id/username) histories.
+[`query user-recent-aggregate-jobs`](#query-user-recent-aggregate-jobs) | Show aggregate information for jobs in past N days for user (by email/id/username)
 [`query users-count`](#query-users-count) | Shows sums of active/external/deleted/purged accounts
 [`query users-total`](#query-users-total) | Total number of Galaxy users (incl deleted, purged, inactive)
 [`query users-with-oidc`](#query-users-with-oidc) | How many users logged in with OIDC
@@ -117,7 +117,7 @@ query data-origin-distribution -  data sources (uploaded vs derived)
 
 **SYNOPSIS**
 
-    gxadmin query data-origin-distribution [--human]
+    gxadmin query data-origin-distribution
 
 **NOTES**
 
@@ -534,7 +534,7 @@ query jobs-per-user -  Number of jobs run by a specific user
 
 **SYNOPSIS**
 
-    gxadmin query jobs-per-user <email>
+    gxadmin query jobs-per-user <user>
 
 **NOTES**
 
@@ -1017,7 +1017,7 @@ Copied from: https://github.com/heroku/heroku-pg-extras/tree/master/commands
 ## query pg-rows-per-table
 
 ([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_pg-rows-per-table&type=Code))
-query pg-rows-per-table -  Print rows per table 
+query pg-rows-per-table -  Print rows per table
 
 **SYNOPSIS**
 
@@ -1416,7 +1416,7 @@ query tool-new-errors -  Summarize percent of tool runs in error over the past w
 
 **SYNOPSIS**
 
-    gxadmin query tool-new-errors [weeks|4]
+    gxadmin query tool-new-errors [weeks|4] [--short-tool-id]
 
 **NOTES**
 
@@ -1494,7 +1494,7 @@ query total-jobs -  Total number of jobs run by galaxy instance
 
 **SYNOPSIS**
 
-    gxadmin query total-jobs [year]
+    gxadmin query total-jobs
 
 **NOTES**
 
@@ -1537,7 +1537,7 @@ query training-members-remove -  Remove a user from a training
 
 **SYNOPSIS**
 
-    gxadmin query training-members-remove <training> <username> [YESDOIT]
+    gxadmin query training-members-remove <training> <username> [--yesdoit]
 
 
 ## query training-members
@@ -1721,11 +1721,11 @@ rank  | user_id |  username   | gpu_years
 ## query user-history-list
 
 ([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_user-history-list&type=Code))
-query user-history-list -  Shows the ID of the history, it's size and when it was last updated.
+query user-history-list -  List a user's (by email/id/username) histories.
 
 **SYNOPSIS**
 
-    gxadmin query user-history-list <username|id|email> [--size]
+    gxadmin query user-history-list <user> [--size]
 
 **NOTES**
 
@@ -1742,11 +1742,11 @@ $ gxadmin query user-history-list <username|id|email>
 ## query user-recent-aggregate-jobs
 
 ([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_user-recent-aggregate-jobs&type=Code))
-query user-recent-aggregate-jobs -  Show aggregate information for jobs in past N days for user
+query user-recent-aggregate-jobs -  Show aggregate information for jobs in past N days for user (by email/id/username)
 
 **SYNOPSIS**
 
-    gxadmin query user-recent-aggregate-jobs <username|id|email> [days|7]
+    gxadmin query user-recent-aggregate-jobs <user> [days|7]
 
 **NOTES**
 
