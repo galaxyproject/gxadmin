@@ -10,4 +10,4 @@ before_script:
 script:
     - make test
     - x=$(git diff $TRAVIS_COMMIT_RANGE CHANGELOG.md | wc -l)
-    - if (( x == 0 )); then echo "Please update the CHANGELOG.md"; exit 1; fi
+    - if [[ "$TRAVIS_PULL_REQUEST" != "false" ]] && (( x == 0 )); then echo "Please update the CHANGELOG.md"; exit 1; fi
