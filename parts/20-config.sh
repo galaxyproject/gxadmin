@@ -1,5 +1,5 @@
 registered_subcommands="$registered_subcommands config"
-_config_short_help="config: Access Galaxy configuration and other assorted things"
+_config_short_help="Access Galaxy configuration and other assorted things"
 
 
 config_validate() { ## : validate config files

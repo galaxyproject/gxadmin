@@ -1,5 +1,5 @@
 registered_subcommands="$registered_subcommands cluster"
-_cluster_short_help="cluster: WIP"
+_cluster_short_help="WIP"
 
 
 cluster_slurm-stats() { ## : Collect stats on slurm

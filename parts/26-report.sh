@@ -1,5 +1,5 @@
 registered_subcommands="$registered_subcommands report"
-_report_short_help="report: Various (rich) reports. Consider https://github.com/ttscoff/mdless for easier reading in the terminal! Or | pandoc | lynx -stdin"
+_report_short_help="Various (rich) reports. Consider https://github.com/ttscoff/mdless for easier reading in the terminal! Or | pandoc | lynx -stdin"
 
 
 align_cols() {

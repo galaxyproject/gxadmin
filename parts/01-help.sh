@@ -50,7 +50,7 @@ usage(){
 	if (( $# == 0 )); then
 		for x in $registered_subcommands; do
 			vn="_${x}_short_help"
-			echo "    ${!vn}"
+			printf "  %10s: %s\n" "${x}" "${!vn}"
 		done
 	else
 		for x in $registered_subcommands; do
@@ -65,9 +65,7 @@ usage(){
 
 	if [[ -f "$GXADMIN_SITE_SPECIFIC" ]]; then
 		if (( $# == 0  )) || [[ "$1" == "local" ]]; then
-			cat <<-EOF
-				local:  (These can be configured in "$GXADMIN_SITE_SPECIFIC")
-			EOF
+			printf "  %10s: %s\n" "local" "(These can be configured in "$GXADMIN_SITE_SPECIFIC")"
 		fi
 	else
 		cat <<-EOF

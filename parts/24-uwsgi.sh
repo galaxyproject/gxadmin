@@ -1,5 +1,5 @@
 registered_subcommands="$registered_subcommands uwsgi"
-_uwsgi_short_help="uwsgi:  Galaxy Handler/Zergling management (SystemD only)"
+_uwsgi_short_help="Galaxy Handler/Zergling management (SystemD only)"
 
 
 uwsgi_stats-influx(){ ## <addr>: InfluxDB formatted output for the current stats

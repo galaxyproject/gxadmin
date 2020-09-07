@@ -1,5 +1,5 @@
 registered_subcommands="$registered_subcommands query"
-_query_short_help="query:  DB Queries"
+_query_short_help="DB Queries"
 _query_long_help="
 	'query' can be exchanged with 'tsvquery' or 'csvquery' for tab- and comma-separated variants.
 	In some cases 'iquery' is supported for InfluxDB compatible output.

@@ -1,5 +1,5 @@
 registered_subcommands="$registered_subcommands galaxy"
-_galaxy_short_help="galaxy: Galaxy Administration"
+_galaxy_short_help="Galaxy Administration"
 
 
 galaxy_cleanup() { ## [days]: Cleanup histories/hdas/etc for past N days (default=30)

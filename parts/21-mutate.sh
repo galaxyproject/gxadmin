@@ -1,5 +1,5 @@
 registered_subcommands="$registered_subcommands mutate"
-_mutate_short_help="mutate:  DB Mutations, CSV/TSV queries are NOT available"
+_mutate_short_help="DB Mutations, CSV/TSV queries are NOT available"
 
 txn_prefix() {
 	if [[ "$1" == "--very-unsafe" ]]; then

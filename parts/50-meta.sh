@@ -1,5 +1,5 @@
 registered_subcommands="$registered_subcommands meta"
-_meta_short_help="meta:   Miscellaneous"
+_meta_short_help="Miscellaneous"
 
 
 meta_find_slurpable() {
