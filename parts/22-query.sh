@@ -41,7 +41,7 @@ query_latest-users() { ## : 40 recently registered users
 	EOF
 }
 
-query_tool-usage() { ## [weeks]: Counts of tool runs in the past weeks (default = all)
+query_tool-usage() { ##? [weeks]: Counts of tool runs in the past weeks (default = all)
 	handle_help "$@" <<-EOF
 		    $ gxadmin tool-usage
 		                                    tool_id                                 | count
@@ -58,8 +58,8 @@ query_tool-usage() { ## [weeks]: Counts of tool runs in the past weeks (default 
 	EOF
 
 	where=
-	if (( $# > 0 )); then
-		where="WHERE j.create_time > (now() - '$1 weeks'::interval)"
+	if (( arg_weeks > 0 )); then
+		where="WHERE j.create_time > (now() - '${arg_weeks} weeks'::interval)"
 	fi
 
 	fields="count=1"
@@ -75,7 +75,7 @@ query_tool-usage() { ## [weeks]: Counts of tool runs in the past weeks (default 
 	EOF
 }
 
-query_tool-popularity() { ## [months|24]: Most run tools by month (tool_predictions)
+query_tool-popularity() { ##? [months|24]: Most run tools by month (tool_predictions)
 	handle_help "$@" <<-EOF
 		See most popular tools by month
 
@@ -96,15 +96,13 @@ query_tool-popularity() { ## [months|24]: Most run tools by month (tool_predicti
 	fields="count=2"
 	tags="tool_id=0;month=1"
 
-	months=${1:-24}
-
 	read -r -d '' QUERY <<-EOF
 		SELECT
 			tool_id,
 			date_trunc('month', create_time AT TIME ZONE 'UTC')::date as month,
 			count(*)
 		FROM job
-		WHERE create_time > (now() AT TIME ZONE 'UTC' - '$months months'::interval)
+		WHERE create_time > (now() AT TIME ZONE 'UTC' - '$arg_months months'::interval)
 		GROUP BY tool_id, month
 		ORDER BY month desc, count desc
 	EOF

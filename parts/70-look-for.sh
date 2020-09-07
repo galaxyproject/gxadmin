@@ -11,9 +11,13 @@ obtain_func() {
 	ec=$?
 
 	# ##? enables fancy argument parsing.
+	grep -s -h -o "${fn}()\s*{ ##?\? .*" "$0" | fgrep --quiet -o '##?'
 	# Nothing needs to be done, just let that function handle and auto-parse
 	# and auto-export
-	wonderful_argument_parser "$fn" "$@"
+	enable_wap=$?
+	if (( enable_wap == 0 )); then
+		wonderful_argument_parser "$fn" "$@"
+	fi
 
 	if (( ec == 0 )); then
 		$fn "$@";
@@ -119,13 +123,25 @@ wonderful_argument_parser() {
 				positional_index=$((positional_index + 1))
 			else
 				# We're past the positional and into the optional
-				parsed_keys+=("${optional_args[$optional_index]}")
+				k="${optional_args[$optional_index]}"
+				parsed_keys+=("$(echo "$k" | sed 's/|.*//g')")
 				parsed_vals+=("${a_cur}")
 				optional_index=$(( optional_index + 1 ))
 			fi
 		fi
 		offset=$(( offset + 1 ))
 	done
+
+	# Set all default optional args, if they aren't set
+	if (( optional_index < optional_count )); then
+		for i in $(seq $optional_index $((optional_count - 1)) ); do
+			if [[ "${optional_args[$i]}" == *'|'* ]]; then
+				k="${optional_args[$i]}"
+				parsed_keys+=("$(echo "$k" | sed 's/|.*//g')")
+				parsed_vals+=("$(echo "$k" | sed 's/.*|//g')")
+			fi
+		done
+	fi
 
 	if (( positional_index < positional_count )); then
 		error "More positional arguments are required"
