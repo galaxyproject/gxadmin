@@ -26,6 +26,7 @@
 	- mutate oidc-by-emails, mutate users affected by https://github.com/galaxyproject/galaxy/issues/9981
 	- mutate now supports echo/explain prefixes.
 	- very-unsafe flag to most mutate methods, avoiding the transaction.
+	- added the [wonderful argument parsing](https://github.com/hexylena/wap) for parsing function signatures into arguments automatically, making contribution easier.
 - Removed:
 	- filter hexdecodelines, this is now replaced by a built-in postgres function
 - Changed:
