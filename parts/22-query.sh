@@ -3327,7 +3327,7 @@ query_workers() { ## : Retrieve a list of Galaxy worker processes
 	EOF
 }
 
-query_pg-rows-per-table() { ## : Print rows per table 
+query_pg-rows-per-table() { ## : Print rows per table
 	handle_help "$@" <<-EOF
 		This retrieves a list of tables in the database and their size
 	EOF
