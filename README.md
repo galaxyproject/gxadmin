@@ -13,7 +13,20 @@ but you can easily add more to your installation with local functions. gxadmin
 attempts to be a very readable bash script and avoids using fancy new bash
 features.
 
-This script strictly expects a postgres database and has no plans to support
+Subcommand | Functions
+----       | ---
+query      | 87
+server     | 22
+mutate     | 16
+meta       | 12
+uwsgi      | 11
+galaxy     | 11
+report     | 3
+filter     | 3
+config     | 2
+cluster    | 1
+
+This script strictly expects a postgres database and has **no** plans to support
 mysql or sqlite3.
 
 ## Installation
