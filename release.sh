@@ -14,6 +14,9 @@ echo $CURRENT_VERSION $NEW_VERSION
 sed -i "s/# ${NEW_VERSION}-pre/# ${NEXT_VERSION}-pre\n\n# ${NEW_VERSION}/g" CHANGELOG.md
 # Update version number in gxadmin
 sed -i "s/echo ${CURRENT_VERSION}/echo ${NEW_VERSION}/" parts/00-header.sh
+# Fetch changelog
+release_body=$(mktemp)
+sed -n "/# ${NEW_VERSION}/,/# ${CURRENT_VERSION}/{/# ${CURRENT_VERSION}/b;p}" CHANGELOG.md > $release_body
 
 make test
 make docs
@@ -27,4 +30,4 @@ echo "Ok, release built. Please open a new terminal and confirm! Then come back 
 read garbage
 
 git push --follow-tags
-ghr v${NEW_VERSION} gxadmin
+ghr v${NEW_VERSION} gxadmin -b "$(cat $release_body)"
