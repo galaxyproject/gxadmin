@@ -19,7 +19,7 @@ make test
 make docs
 make gxadmin
 
-git add gxadmin parts/00-header.sh CHANGELOG.md
+git add parts/00-header.sh CHANGELOG.md
 git commit -a -m "Release v${NEW_VERSION}"
 git tag v${NEW_VERSION}
 
