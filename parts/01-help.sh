@@ -113,12 +113,11 @@ handle_help() {
 	for i in "$@"; do
 		if [[ "$i" = --help || "$i" = -h ]]; then
 
-			key="${mode}"
-			if [[ ! -z "${query_name}" ]]; then
-				key="${key}_${query_name}"
+			if [[ -n "${query_name}" ]]; then
+				key="${query_type}_${query_name}"
 			fi
 
-			invoke_desc=$(grep -s -h "${key}()\s*{" "$0" "$GXADMIN_SITE_SPECIFIC" | correct_cmd | sed "s/^/gxadmin /g")
+			invoke_desc=$(locate_cmds | grep "${key}()" | correct_cmd | sed "s/^/gxadmin /g")
 			short_desc=$(echo "$invoke_desc" | sed 's/.*://g')
 			short_parm=$(echo "$invoke_desc" | sed 's/:.*//g')
 			echo "${mode} ${query_name} - ${short_desc}"
