@@ -1262,11 +1262,11 @@ mutate_anonymise-db-for-release() { ## [--commit|--very-unsafe]: This will attem
 		COPY (SELECT 'user_address') to STDOUT;
 
 			update user_address set
-				"desc" = gxadmin_random_text(id::text, 2),
-				name = gxadmin_random_text(id::text || 'name', 3),
-				institution = gxadmin_random_text(id::text || 'inst', 4),
-				address     = gxadmin_random_text(id::text || 'addr', 4),
-				city        = gxadmin_random_text(id::text || 'city', 5),
+				"desc" = gxadmin_random_text(id::text, 1),
+				name = gxadmin_random_text(id::text || 'name', 1),
+				institution = gxadmin_random_text(id::text || 'inst', 1),
+				address     = gxadmin_random_text(id::text || 'addr', 1),
+				city        = gxadmin_random_text(id::text || 'city', 1),
 				state       = gxadmin_random_text(id::text || 'stat', 1),
 				postal_code = gxadmin_random_number(id::text, 5),
 				country     = 'Australia',
