@@ -3281,3 +3281,25 @@ query_pg-rows-per-table() { ## : Print rows per table
 		    c.reltuples DESC
 	EOF
 }
+
+query_dump-users() { ##? [--email] : Dump the list of users and their emails
+	handle_help "$@" <<-EOF
+		This retrieves a list of all users
+	EOF
+
+	if [[ -n "$arg_email"  ]]; then
+		email=",$(gdpr_safe email email)"
+	else
+		email=""
+	fi
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			username
+			$email
+		FROM
+			galaxy_user
+		ORDER BY
+		    id desc
+	EOF
+}

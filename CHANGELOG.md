@@ -1,5 +1,10 @@
 # 20-pre
 
+- Fixed:
+	- Broken things in preview anonymisation script
+- Added:
+	- query dump-users, for [@shiltemann](https://github.com/shiltemann)
+
 # 19
 
 - Fixed:
