@@ -3282,13 +3282,20 @@ query_pg-rows-per-table() { ## : Print rows per table
 	EOF
 }
 
-query_dump-users() { ##? [--email] : Dump the list of users and their emails
+query_dump-users() { ##? [--apikey] [--email] : Dump the list of users and their emails
 	handle_help "$@" <<-EOF
 		This retrieves a list of all users
 	EOF
 
 	if [[ -n "$arg_email"  ]]; then
 		email=",$(gdpr_safe email email)"
+	else
+		email=""
+	fi
+
+	if [[ -n "$arg_apikey"  ]]; then
+		apikey="apikey"
+		apikeyjoin="left join api_keys "
 	else
 		email=""
 	fi

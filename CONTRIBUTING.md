@@ -59,3 +59,10 @@ When this is provided, the WAP parsers the arguments and automatically exports t
 2. Be certain that the user has not passed too few or many arguments
 
 Super wonderful!
+
+
+# Portability
+
+This is **not** intended to be portable, it is a bash script. There is an assumption you will run it under bash. I *may or may not* accept PRs that make it more portable.
+
+Tabs are used for indentation purposes.
