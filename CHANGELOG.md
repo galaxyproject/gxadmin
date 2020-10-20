@@ -2,6 +2,7 @@
 
 - Fixed:
 	- Broken things in preview anonymisation script
+	- Unified uwsgi-status command (thanks @gmauro)
 - Added:
 	- query dump-users, for [@shiltemann](https://github.com/shiltemann)
 
