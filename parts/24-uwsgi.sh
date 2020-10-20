@@ -65,11 +65,18 @@ uwsgi_status() { ## : Current system status
 	EOF
 
 	echo "galaxy-zergpool:   $(systemctl status galaxy-zergpool | grep Active:)"
-	for i in {0..3}; do
-		echo "galaxy-zergling@$i: $(systemctl status galaxy-zergling@$i | grep Active:)"
+	for folder in $(find /sys/fs/cgroup/memory/system.slice/system-galaxy\\x2dzergling.slice/ -mindepth 1 -type d -name 'galaxy-zergling*service'); do
+		service=$(basename "$folder")
+		echo "$service $(systemctl status $service | grep Active:)"
 	done
-	for i in {0..11}; do
-		echo "galaxy-handler@$i:  $(systemctl status galaxy-handler@$i | grep Active:)"
+	for folder in $(find /sys/fs/cgroup/memory/system.slice/system-galaxy\\x2dhandler.slice/ -mindepth 1 -type d -name 'galaxy-handler*service'); do
+		service=$(basename "$folder")
+		echo "$service $(systemctl status $service | grep Active:)"
+	done
+	
+	for folder in $(find /sys/fs/cgroup/memory/system.slice/system-galaxy\\x2dworkflow\\x2dscheduler.slice/ -mindepth 1 -type d -name 'galaxy-workflow*service'); do
+		service=$(basename "$folder")
+		echo "$service $(systemctl status $service | grep Active:)"
 	done
 }
 
