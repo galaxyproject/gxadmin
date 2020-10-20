@@ -185,8 +185,7 @@ look_for() {
 	ec=$?
 
 	if (( ec != 0 )); then
-		error "Unknown command"
-		usage "${query_type}"
+		didyoumean "${query_type}" "${query_name}"
 	fi
 
 	if [[ $query_type == "query" ]]; then

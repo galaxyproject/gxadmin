@@ -5,7 +5,7 @@ wrap_time() {
 
 search() { # <term>: Search for a specific command
 	if (( $# > 0 )); then
-		locate_cmds | correct_cmd | grep $1 | colour_word $1 orange
+		locate_cmds | correct_cmd | grep "$1" | colour_word "$1" orange
 	else
 		locate_cmds | correct_cmd
 	fi
@@ -48,5 +48,5 @@ case "$mode" in
 	-h        ) usage;;
 	--help    ) usage;;
 	# anything else
-	*         ) usage;;
+	*         ) didyoumean "$mode" "$@";;
 esac
