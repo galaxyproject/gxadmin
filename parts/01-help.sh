@@ -41,6 +41,48 @@ correct_cmd() {
 	cat | sed 's/_/ /;s/()\s*{ ##?\?//;s/ :/:/'
 }
 
+
+didyoumean() {
+	# Given a query
+
+	# Is this a known subcommand
+	known_command=0
+	for x in $registered_subcommands; do
+		if [[ "$1" == "$x" ]]; then
+			known_command=1
+		fi
+	done
+
+	# If it is, we check the second part.
+	if (( known_command == 1 )); then
+		if [[ "$2" == "" ]]; then
+			usage "$1"
+			exit 1;
+		fi
+		error "Unknown subcommand: $1 $2"
+		warning "Did you mean one of the following?"
+		echo
+
+		if ! command -v fzf &> /dev/null; then
+			echo "(Top hits by levenshtein distance)"
+			locate_cmds | correct_cmd | grep "^$1 " | \
+				cut -f 2 -d' ' | sed -s "s/://g;s/\$/ $2/g" | \
+				levenshtein_filter | sed 's/^/ - [/;s/\t/]: /g'
+		else
+			locate_cmds | correct_cmd | grep "^$1 " | fzf -f "$2"
+		fi
+
+
+		exit 1;
+
+
+	else
+		error "Unknown command: $1"
+	fi
+
+	exit 1;
+}
+
 usage(){
 	cat <<-EOF
 		gxadmin usage:
