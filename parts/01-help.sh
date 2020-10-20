@@ -71,13 +71,12 @@ didyoumean() {
 		else
 			locate_cmds | correct_cmd | grep "^$1 " | fzf -f "$2"
 		fi
-
-
 		exit 1;
 
 
 	else
 		error "Unknown command: $1"
+		usage
 	fi
 
 	exit 1;

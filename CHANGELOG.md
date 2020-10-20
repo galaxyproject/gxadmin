@@ -5,6 +5,7 @@
 	- Unified uwsgi-status command (thanks @gmauro)
 - Added:
 	- query dump-users, for [@shiltemann](https://github.com/shiltemann)
+	- "did you mean" when a command isn't found.
 
 # 19
 
