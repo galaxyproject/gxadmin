@@ -3310,3 +3310,44 @@ query_dump-users() { ##? [--apikey] [--email] : Dump the list of users and their
 		    id desc
 	EOF
 }
+
+query_job-metrics() { ## : Retrieves metrics for all executed jobs
+	handle_help "$@" <<-EOF
+		This selects all jobs and returns a table with the following:
+		- job ID
+		- tool ID
+		- job state
+		- total size of input datasets in bytes
+		- number of input datasets
+		- runtime in seconds
+		- number of Galaxy slots
+		- maximum memory usage in bytes
+		- job creation time
+	EOF
+
+	read -r -d '' QUERY <<-EOF
+		WITH dataset_filesizes AS (
+			SELECT
+				job_to_input_dataset.job_id, sum(file_size) AS total_filesize,
+				count(file_size) AS num_files FROM dataset
+			LEFT JOIN job_to_input_dataset ON dataset.id = job_to_input_dataset.dataset_id
+			GROUP BY job_to_input_dataset.job_id
+		)
+
+		SELECT
+			job.id AS job_id,
+			job.tool_id,
+			job.state,
+			dataset_filesizes.total_filesize,
+			dataset_filesizes.num_files,
+			jmn1.metric_value AS runtime_seconds,
+			jmn2.metric_value AS slots,
+			jmn3.metric_value AS memory_bytes,
+			job.create_time AS create_time
+		FROM job
+		LEFT JOIN dataset_filesizes ON job.id = dataset_filesizes.job_id
+		LEFT JOIN (SELECT * FROM job_metric_numeric WHERE job_metric_numeric.metric_name = 'runtime_seconds') jmn1 ON jmn1.job_id = job.id
+		LEFT JOIN (SELECT * FROM job_metric_numeric WHERE job_metric_numeric.metric_name = 'galaxy_slots') jmn2 ON jmn2.job_id = job.id
+		LEFT JOIN (SELECT * FROM job_metric_numeric WHERE job_metric_numeric.metric_name = 'memory.memsw.max_usage_in_bytes') jmn3 ON jmn3.job_id = job.id
+	EOF
+}
