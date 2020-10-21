@@ -6,7 +6,7 @@
 - Added:
 	- query dump-users, for [@shiltemann](https://github.com/shiltemann)
 	- "did you mean" when a command isn't found.
-	- query job-metrics, by @anuprulez and @simonbray
+	- query job-metrics, by [@anuprulez](https://github.com/anuprulez) and [@simonbray](https://github.com/simonbray).
 
 # 19
 
