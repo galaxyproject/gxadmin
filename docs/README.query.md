@@ -8,6 +8,7 @@ Command | Description
 [`query data-origin-distribution-summary`](#query-data-origin-distribution-summary) | breakdown of data sources (uploaded vs derived)
 [`query datasets-created-daily`](#query-datasets-created-daily) | The min/max/average/p95/p99 of total size of datasets created in a single day.
 [`query disk-usage`](#query-disk-usage) | Disk usage per object store.
+[`query dump-users`](#query-dump-users) | Dump the list of users and their emails
 [`query errored-jobs`](#query-errored-jobs) | Lists jobs that errored in the last N hours.
 [`query good-for-pulsar`](#query-good-for-pulsar) | Look for jobs EU would like to send to pulsar
 [`query group-cpu-seconds`](#query-group-cpu-seconds) | Retrieve an approximation of the CPU time in seconds for group(s)
@@ -23,6 +24,7 @@ Command | Description
 [`query job-history`](#query-job-history) | Job state history for a specific job
 [`query job-info`](#query-job-info) | Retrieve information about jobs given some job IDs
 [`query job-inputs`](#query-job-inputs) | Input datasets to a specific job
+[`query job-metrics`](#query-job-metrics) | Retrieves metrics for all executed jobs
 [`query job-outputs`](#query-job-outputs) | Output datasets from a specific job
 [`query jobs-max-by-cpu-hours`](#query-jobs-max-by-cpu-hours) | Top 10 jobs by CPU hours consumed (requires CGroups metrics)
 [`query jobs-nonterminal`](#query-jobs-nonterminal) | Job info of nonterminal jobs separated by user
@@ -215,6 +217,20 @@ Or you can supply the --human flag, but this should not be used with iquery/Infl
     -----------------+------------
                      | 1324 MB
     (1 row)
+
+
+## query dump-users
+
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_dump-users&type=Code))
+query dump-users -  Dump the list of users and their emails
+
+**SYNOPSIS**
+
+    gxadmin query dump-users [--apikey] [--email]
+
+**NOTES**
+
+This retrieves a list of all users
 
 
 ## query errored-jobs
@@ -464,6 +480,29 @@ query job-inputs -  Input datasets to a specific job
 **SYNOPSIS**
 
     gxadmin query job-inputs <id>
+
+
+## query job-metrics
+
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_job-metrics&type=Code))
+query job-metrics -  Retrieves metrics for all executed jobs
+
+**SYNOPSIS**
+
+    gxadmin query job-metrics
+
+**NOTES**
+
+This selects all jobs and returns a table with the following:
+- job ID
+- tool ID
+- job state
+- total size of input datasets in bytes
+- number of input datasets
+- runtime in seconds
+- number of Galaxy slots
+- maximum memory usage in bytes
+- job creation time
 
 
 ## query job-outputs
