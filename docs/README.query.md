@@ -8,6 +8,7 @@ Command | Description
 [`query data-origin-distribution-summary`](#query-data-origin-distribution-summary) | breakdown of data sources (uploaded vs derived)
 [`query datasets-created-daily`](#query-datasets-created-daily) | The min/max/average/p95/p99 of total size of datasets created in a single day.
 [`query disk-usage`](#query-disk-usage) | Disk usage per object store.
+[`query dump-users`](#query-dump-users) | Dump the list of users and their emails
 [`query errored-jobs`](#query-errored-jobs) | Lists jobs that errored in the last N hours.
 [`query good-for-pulsar`](#query-good-for-pulsar) | Look for jobs EU would like to send to pulsar
 [`query group-cpu-seconds`](#query-group-cpu-seconds) | Retrieve an approximation of the CPU time in seconds for group(s)
@@ -23,6 +24,7 @@ Command | Description
 [`query job-history`](#query-job-history) | Job state history for a specific job
 [`query job-info`](#query-job-info) | Retrieve information about jobs given some job IDs
 [`query job-inputs`](#query-job-inputs) | Input datasets to a specific job
+[`query job-metrics`](#query-job-metrics) | Retrieves input size, runtime, memory for all executed jobs
 [`query job-outputs`](#query-job-outputs) | Output datasets from a specific job
 [`query jobs-max-by-cpu-hours`](#query-jobs-max-by-cpu-hours) | Top 10 jobs by CPU hours consumed (requires CGroups metrics)
 [`query jobs-nonterminal`](#query-jobs-nonterminal) | Job info of nonterminal jobs separated by user
@@ -215,6 +217,20 @@ Or you can supply the --human flag, but this should not be used with iquery/Infl
     -----------------+------------
                      | 1324 MB
     (1 row)
+
+
+## query dump-users
+
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_dump-users&type=Code))
+query dump-users -  Dump the list of users and their emails
+
+**SYNOPSIS**
+
+    gxadmin query dump-users [--apikey] [--email]
+
+**NOTES**
+
+This retrieves a list of all users
 
 
 ## query errored-jobs
@@ -464,6 +480,46 @@ query job-inputs -  Input datasets to a specific job
 **SYNOPSIS**
 
     gxadmin query job-inputs <id>
+
+
+## query job-metrics
+
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=query_job-metrics&type=Code))
+query job-metrics -  Retrieves input size, runtime, memory for all executed jobs
+
+**SYNOPSIS**
+
+    gxadmin query job-metrics
+
+**NOTES**
+
+Dump runtime stats for ALL jobs:
+
+    $ gxadmin query job-metrics
+    job_id  |               tool_id                |  state  | total_filesize | num_files | runtime_seconds |   slots   | memory_bytes |        create_time
+    --------+--------------------------------------+---------+----------------+-----------+-----------------+-----------+--------------+----------------------------
+    19      | require_format                       | ok      |           5098 |         1 |       4.0000000 | 1.0000000 |              | 2018-12-04 17:17:02.148239
+    48      | __SET_METADATA__                     | ok      |                |         0 |       4.0000000 | 1.0000000 |              | 2019-02-05 22:46:33.848141
+    49      | upload1                              | ok      |                |           |       6.0000000 | 1.0000000 |              | 2019-02-05 22:58:41.610146
+    50      | upload1                              | ok      |                |           |       5.0000000 | 1.0000000 |              | 2019-02-07 21:30:11.645826
+    51      | upload1                              | ok      |                |           |       5.0000000 | 1.0000000 |              | 2019-02-07 21:30:12.18259
+    52      | upload1                              | ok      |                |           |       7.0000000 | 1.0000000 |              | 2019-02-07 21:31:15.304868
+    54      | upload1                              | ok      |                |           |       5.0000000 | 1.0000000 |              | 2019-02-07 21:31:16.116164
+    53      | upload1                              | ok      |                |           |       7.0000000 | 1.0000000 |              | 2019-02-07 21:31:15.665948
+...
+    989     | circos                               | error   |         671523 |        12 |      14.0000000 | 1.0000000 |              | 2020-04-30 10:13:33.872872
+    990     | circos                               | error   |         671523 |        12 |      10.0000000 | 1.0000000 |              | 2020-04-30 10:19:36.72646
+    991     | circos                               | error   |         671523 |        12 |      10.0000000 | 1.0000000 |              | 2020-04-30 10:21:00.460471
+    992     | circos                               | ok      |         671523 |        12 |      21.0000000 | 1.0000000 |              | 2020-04-30 10:31:35.366913
+    993     | circos                               | error   |         588747 |         6 |       8.0000000 | 1.0000000 |              | 2020-04-30 11:12:17.340591
+    994     | circos                               | error   |         588747 |         6 |       9.0000000 | 1.0000000 |              | 2020-04-30 11:15:27.076502
+    995     | circos                               | error   |         588747 |         6 |      42.0000000 | 1.0000000 |              | 2020-04-30 11:16:41.19449
+    996     | circos                               | ok      |         588747 |         6 |      48.0000000 | 1.0000000 |              | 2020-04-30 11:21:51.49684
+    997     | circos                               | ok      |         588747 |         6 |      46.0000000 | 1.0000000 |              | 2020-04-30 11:23:52.455536
+
+**WARNING**
+
+!> This can be very slow for large databases and there is no tool filtering; every job + dataset table record are scanned.
 
 
 ## query job-outputs

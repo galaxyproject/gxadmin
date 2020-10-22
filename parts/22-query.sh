@@ -3310,3 +3310,61 @@ query_dump-users() { ##? [--apikey] [--email] : Dump the list of users and their
 		    id desc
 	EOF
 }
+
+query_job-metrics() { ## : Retrieves input size, runtime, memory for all executed jobs
+	handle_help "$@" <<-EOF
+		Dump runtime stats for ALL jobs:
+
+		    $ gxadmin query job-metrics
+		    job_id  |               tool_id                |  state  | total_filesize | num_files | runtime_seconds |   slots   | memory_bytes |        create_time
+		    --------+--------------------------------------+---------+----------------+-----------+-----------------+-----------+--------------+----------------------------
+		    19      | require_format                       | ok      |           5098 |         1 |       4.0000000 | 1.0000000 |              | 2018-12-04 17:17:02.148239
+		    48      | __SET_METADATA__                     | ok      |                |         0 |       4.0000000 | 1.0000000 |              | 2019-02-05 22:46:33.848141
+		    49      | upload1                              | ok      |                |           |       6.0000000 | 1.0000000 |              | 2019-02-05 22:58:41.610146
+		    50      | upload1                              | ok      |                |           |       5.0000000 | 1.0000000 |              | 2019-02-07 21:30:11.645826
+		    51      | upload1                              | ok      |                |           |       5.0000000 | 1.0000000 |              | 2019-02-07 21:30:12.18259
+		    52      | upload1                              | ok      |                |           |       7.0000000 | 1.0000000 |              | 2019-02-07 21:31:15.304868
+		    54      | upload1                              | ok      |                |           |       5.0000000 | 1.0000000 |              | 2019-02-07 21:31:16.116164
+		    53      | upload1                              | ok      |                |           |       7.0000000 | 1.0000000 |              | 2019-02-07 21:31:15.665948
+			...
+		    989     | circos                               | error   |         671523 |        12 |      14.0000000 | 1.0000000 |              | 2020-04-30 10:13:33.872872
+		    990     | circos                               | error   |         671523 |        12 |      10.0000000 | 1.0000000 |              | 2020-04-30 10:19:36.72646
+		    991     | circos                               | error   |         671523 |        12 |      10.0000000 | 1.0000000 |              | 2020-04-30 10:21:00.460471
+		    992     | circos                               | ok      |         671523 |        12 |      21.0000000 | 1.0000000 |              | 2020-04-30 10:31:35.366913
+		    993     | circos                               | error   |         588747 |         6 |       8.0000000 | 1.0000000 |              | 2020-04-30 11:12:17.340591
+		    994     | circos                               | error   |         588747 |         6 |       9.0000000 | 1.0000000 |              | 2020-04-30 11:15:27.076502
+		    995     | circos                               | error   |         588747 |         6 |      42.0000000 | 1.0000000 |              | 2020-04-30 11:16:41.19449
+		    996     | circos                               | ok      |         588747 |         6 |      48.0000000 | 1.0000000 |              | 2020-04-30 11:21:51.49684
+		    997     | circos                               | ok      |         588747 |         6 |      46.0000000 | 1.0000000 |              | 2020-04-30 11:23:52.455536
+
+		**WARNING**
+
+		!> This can be very slow for large databases and there is no tool filtering; every job + dataset table record are scanned.
+	EOF
+
+	read -r -d '' QUERY <<-EOF
+		WITH dataset_filesizes AS (
+			SELECT
+				job_to_input_dataset.job_id, sum(file_size) AS total_filesize,
+				count(file_size) AS num_files FROM dataset
+			LEFT JOIN job_to_input_dataset ON dataset.id = job_to_input_dataset.dataset_id
+			GROUP BY job_to_input_dataset.job_id
+		)
+
+		SELECT
+			job.id AS job_id,
+			job.tool_id,
+			job.state,
+			dataset_filesizes.total_filesize,
+			dataset_filesizes.num_files,
+			jmn1.metric_value AS runtime_seconds,
+			jmn2.metric_value AS slots,
+			jmn3.metric_value AS memory_bytes,
+			job.create_time AS create_time
+		FROM job
+		LEFT JOIN dataset_filesizes ON job.id = dataset_filesizes.job_id
+		LEFT JOIN (SELECT * FROM job_metric_numeric WHERE job_metric_numeric.metric_name = 'runtime_seconds') jmn1 ON jmn1.job_id = job.id
+		LEFT JOIN (SELECT * FROM job_metric_numeric WHERE job_metric_numeric.metric_name = 'galaxy_slots') jmn2 ON jmn2.job_id = job.id
+		LEFT JOIN (SELECT * FROM job_metric_numeric WHERE job_metric_numeric.metric_name = 'memory.memsw.max_usage_in_bytes') jmn3 ON jmn3.job_id = job.id
+	EOF
+}
