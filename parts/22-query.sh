@@ -516,7 +516,7 @@ query_jobs-nonterminal() { ## [username|id|email]: Job info of nonterminal jobs 
 	EOF
 
 	if (( $# > 0 )); then
-		user_filter="(galaxy_user.email = '$1' or galaxy_user.username = '$1' or galaxy_user.id = CAST(REGEXP_REPLACE(COALESCE('$1','0'), '[^0-9]+', '0', 'g') AS INTEGER))"
+		user_filter=$(get_user_filter "$1")
 	else
 		user_filter="true"
 	fi
@@ -545,7 +545,7 @@ query_jobs-per-user() { ##? <user>: Number of jobs run by a specific user
 		    (1 row)
 	EOF
 
-	user_filter="(galaxy_user.email = '$arg_user' or galaxy_user.username = '$arg_user' or galaxy_user.id = CAST(REGEXP_REPLACE(COALESCE('$arg_user','0'), '[^0-9]+', '0', 'g') AS INTEGER))"
+	user_filter=$(get_user_filter "$arg_user")
 
 	read -r -d '' QUERY <<-EOF
 			SELECT count(*), user_id
@@ -2280,7 +2280,7 @@ query_user-recent-aggregate-jobs() { ##? <user> [days|7]: Show aggregate informa
 	EOF
 
 	# args
-	user_filter="(galaxy_user.email = '$arg_user' or galaxy_user.username = '$arg_user' or galaxy_user.id = CAST(REGEXP_REPLACE(COALESCE('$arg_user','0'), '[^0-9]+', '0', 'g') AS INTEGER))"
+	user_filter=$(get_user_filter "$arg_user")
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
@@ -2311,7 +2311,7 @@ query_user-history-list() { ##? <user> [--size]: List a user's (by email/id/user
 	EOF
 
 	# args
-	user_filter="(galaxy_user.email = '$arg_user' or galaxy_user.username = '$arg_user' or galaxy_user.id = CAST(REGEXP_REPLACE(COALESCE('$arg_user','0'), '[^0-9]+', '0', 'g') AS INTEGER))"
+	user_filter=$(get_user_filter "$arg_user")
 	order_col="uh.update_time"
 	if [[ -n "$arg_size" ]]; then
 		order_col="hs.hist_size"

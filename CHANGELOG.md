@@ -3,6 +3,7 @@
 - Fixed:
 	- Broken things in preview anonymisation script
 	- Unified uwsgi-status command (thanks @gmauro)
+	- Unified galaxy user/email/id filtering and made it stricter in what it accepts ([#60](https://github.com/usegalaxy-eu/gxadmin/issues/60)).
 - Added:
 	- query dump-users, for [@shiltemann](https://github.com/shiltemann)
 	- "did you mean" when a command isn't found.

@@ -261,7 +261,7 @@ mutate_approve-user() { ## <username|email|user_id>: Approve a user in the datab
 
 	assert_count_ge $# 1 "Must supply a username/email/user-id"
 
-	user_filter="(galaxy_user.email = '$1' or galaxy_user.username = '$1' or galaxy_user.id = CAST(REGEXP_REPLACE(COALESCE('$1','0'), '[^0-9]+', '0', 'g') AS INTEGER))"
+	user_filter=$(get_user_filter "$1")
 
 	read -r -d '' QUERY <<-EOF
 		UPDATE galaxy_user
@@ -296,9 +296,13 @@ mutate_oidc-role-fix() { ## <username|email|user_id>: Fix permissions for users 
 		Workaround for https://github.com/galaxyproject/galaxy/issues/8244
 	EOF
 
+	user_filter=$(get_user_filter "$1")
+
 	# Coerce to user ID
 	read -r -d '' qstr <<-EOF
-		SELECT id, email FROM galaxy_user WHERE (galaxy_user.email = '$1' or galaxy_user.username = '$1' or galaxy_user.id = CAST(REGEXP_REPLACE(COALESCE('$1','0'), '[^0-9]+', '0', 'g') AS INTEGER))
+		SELECT id, email
+		FROM galaxy_user
+		WHERE $user_filter
 	EOF
 	echo "QUERY: $qstr"
 	results="$(query_tsv "$qstr")"

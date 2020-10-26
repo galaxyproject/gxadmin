@@ -143,3 +143,7 @@ summary_statistics() {
 		${human_size}stddev($v)${human_after} AS stddev
 	EOF
 }
+
+get_user_filter(){
+	echo "(galaxy_user.email = '$1' or galaxy_user.username = '$1' or galaxy_user.id = CAST('$1' AS INTEGER))"
+}
