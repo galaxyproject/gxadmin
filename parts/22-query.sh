@@ -1261,7 +1261,7 @@ query_user-gpu-years() { ## : GPU years allocated to tools by user
 	EOF
 }
 
-query_user-disk-usage() { ##? [--human]: Retrieve an approximation of the disk usage for users
+query_user-disk-usage() { ##? [--human] [--use-precalc]: Retrieve an approximation of the disk usage for users
 	handle_help "$@" <<-EOF
 		This uses the dataset size and the history association in order to
 		calculate total disk usage for a user. This is currently limited
@@ -1280,6 +1280,8 @@ query_user-disk-usage() { ##? [--human]: Retrieve an approximation of the disk u
 		8     |  432     | 66c57b41194 | 66c@7b4.194 |       6.43 GB
 		9     |  58945   | 6b1467ac118 | 6b1@67a.118 |       5.45 MB
 		10    |  10      | d755361b59a | d75@361.59a |       5.19 KB
+
+		A flag, --use-precalc, is provided which reads the disk_usage column of the galaxy_user table, using the values precisely as displayed to users in Galaxy.
 	EOF
 
 	username=$(gdpr_safe galaxy_user.username user_name 'Anonymous')
@@ -1289,32 +1291,53 @@ query_user-disk-usage() { ##? [--human]: Retrieve an approximation of the disk u
 	fields="size=4"
 	tags="userid=1;username=2"
 
-	size="sum(coalesce(dataset.total_size, dataset.file_size, 0)) as \"storage usage\""
-	if [[ -n $arg_human ]]; then
-		size="pg_size_pretty(sum(coalesce(dataset.total_size, dataset.file_size, 0))) as \"storage usage\""
-	fi
+	if [[ -n $arg_use_precalc ]]; then
+		size="disk_usage as \"storage usage\""
+		if [[ -n $arg_human ]]; then
+			size="pg_size_pretty(disk_usage) as \"storage usage\""
+		fi
 
-	read -r -d '' QUERY <<-EOF
-		SELECT
-			row_number() OVER (ORDER BY sum(coalesce(dataset.total_size, dataset.file_size, 0)) DESC) as rank,
-			galaxy_user.id as "user id",
-			$username,
-			$useremail,
-			$size
-		FROM
-			dataset,
-			galaxy_user,
-			history_dataset_association,
-			history
-		WHERE
-			NOT dataset.purged
-			AND dataset.id = history_dataset_association.dataset_id
-			AND history_dataset_association.history_id = history.id
-			AND history.user_id = galaxy_user.id
-		GROUP BY galaxy_user.id
-		ORDER BY 1
-		LIMIT 50
-	EOF
+		read -r -d '' QUERY <<-EOF
+			SELECT
+				row_number() OVER (ORDER BY galaxy_user.disk_usage DESC) as rank,
+				galaxy_user.id as "user id",
+				$username,
+				$useremail,
+				$size
+			FROM
+				galaxy_user
+			GROUP BY galaxy_user.id
+			ORDER BY 1
+			LIMIT 50
+		EOF
+	else
+		size="sum(coalesce(dataset.total_size, dataset.file_size, 0)) as \"storage usage\""
+		if [[ -n $arg_human ]]; then
+			size="pg_size_pretty(sum(coalesce(dataset.total_size, dataset.file_size, 0))) as \"storage usage\""
+		fi
+
+		read -r -d '' QUERY <<-EOF
+			SELECT
+				row_number() OVER (ORDER BY sum(coalesce(dataset.total_size, dataset.file_size, 0)) DESC) as rank,
+				galaxy_user.id as "user id",
+				$username,
+				$useremail,
+				$size
+			FROM
+				dataset,
+				galaxy_user,
+				history_dataset_association,
+				history
+			WHERE
+				NOT dataset.purged
+				AND dataset.id = history_dataset_association.dataset_id
+				AND history_dataset_association.history_id = history.id
+				AND history.user_id = galaxy_user.id
+			GROUP BY galaxy_user.id
+			ORDER BY 1
+			LIMIT 50
+		EOF
+	fi
 }
 
 query_user-disk-quota() { ## : Retrieves the 50 users with the largest quotas
