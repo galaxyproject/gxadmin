@@ -13,7 +13,6 @@ galaxy_cleanup() { ## [days]: Cleanup histories/hdas/etc for past N days (defaul
 	fi
 
 	assert_set_env GALAXY_ROOT
-	assert_set_env GALAXY_CONFIG_FILE
 	assert_set_env GALAXY_LOG_DIR
 	mkdir -p $GALAXY_LOG_DIR
 
@@ -21,9 +20,10 @@ galaxy_cleanup() { ## [days]: Cleanup histories/hdas/etc for past N days (defaul
 
 	for action in {delete_userless_histories,delete_exported_histories,purge_deleted_users,purge_deleted_histories,purge_deleted_hdas,purge_historyless_hdas,purge_hdas_of_purged_histories,delete_datasets,purge_datasets}; do
 		start_time=$(date +%s)
+		cd "$GALAXY_ROOT";
 		$GXADMIN_PYTHON \
 			"$GALAXY_ROOT/scripts/cleanup_datasets/pgcleanup.py" \
-			-c "$GALAXY_CONFIG_FILE" \
+			-U \
 			-o "$days" \
 			-l "$GALAXY_LOG_DIR" \
 			-s $action \
