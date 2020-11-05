@@ -2,6 +2,7 @@
 
 Command | Description
 ------- | -----------
+[`uwsgi active-users`](#uwsgi-active-users) | Count active users
 [`uwsgi handler-restart`](#uwsgi-handler-restart) | Restart all handlers
 [`uwsgi handler-strace`](#uwsgi-handler-strace) | Strace a handler
 [`uwsgi lastlog`](#uwsgi-lastlog) | Fetch the number of seconds since the last log message was written
@@ -13,6 +14,20 @@ Command | Description
 [`uwsgi zerg-scale-up`](#uwsgi-zerg-scale-up) | Add another zergling to deal with high load
 [`uwsgi zerg-strace`](#uwsgi-zerg-strace) | Strace a zergling
 [`uwsgi zerg-swap`](#uwsgi-zerg-swap) | Swap zerglings in order (unintelligent version)
+
+## uwsgi active-users
+
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=uwsgi_active-users&type=Code))
+uwsgi active-users -  Count active users
+
+**SYNOPSIS**
+
+    gxadmin uwsgi active-users
+
+**NOTES**
+
+Count active users and return an influx compatible measurement
+
 
 ## uwsgi handler-restart
 

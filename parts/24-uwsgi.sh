@@ -73,7 +73,7 @@ uwsgi_status() { ## : Current system status
 		service=$(basename "$folder")
 		echo "$service $(systemctl status $service | grep Active:)"
 	done
-	
+
 	for folder in $(find /sys/fs/cgroup/memory/system.slice/system-galaxy\\x2dworkflow\\x2dscheduler.slice/ -mindepth 1 -type d -name 'galaxy-workflow*service'); do
 		service=$(basename "$folder")
 		echo "$service $(systemctl status $service | grep Active:)"
@@ -266,4 +266,13 @@ uwsgi_lastlog(){ ## : Fetch the number of seconds since the last log message was
 			echo "journalctl.lastlog,service=galaxy-zergling@$i seconds=$date_diff";
 		fi
 	done
+}
+
+uwsgi_active-users() { ## : Count active users
+	handle_help "$@" <<-EOF
+		Count active users and return an influx compatible measurement
+	EOF
+
+	users=$(journalctl -u galaxy-zerg* --since '10 minutes ago' | awk '{print $6}' | grep '[0-9].[0-9]+.[0-9]' | sort -u | wc -l)
+	echo "journalctl.activeusers,service=galaxy count=${users}"
 }

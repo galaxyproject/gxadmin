@@ -1720,7 +1720,7 @@ query user-disk-usage -  Retrieve an approximation of the disk usage for users
 
 **SYNOPSIS**
 
-    gxadmin query user-disk-usage [--human]
+    gxadmin query user-disk-usage [--human] [--use-precalc]
 
 **NOTES**
 
@@ -1741,6 +1741,8 @@ rank  | user id  |  username   |  email      | storage usage
 8     |  432     | 66c57b41194 | 66c@7b4.194 |       6.43 GB
 9     |  58945   | 6b1467ac118 | 6b1@67a.118 |       5.45 MB
 10    |  10      | d755361b59a | d75@361.59a |       5.19 KB
+
+A flag, --use-precalc, is provided which reads the disk_usage column of the galaxy_user table, using the values precisely as displayed to users in Galaxy.
 
 
 ## query user-gpu-years
