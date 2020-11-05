@@ -273,6 +273,6 @@ uwsgi_active-users() { ## : Count active users
 		Count active users and return an influx compatible measurement
 	EOF
 
-	users=$(journalctl -u galaxy-zerg* --since '10 minutes ago' | awk '{print $6}' | grep '[0-9].[0-9]+.[0-9]' | sort -u | wc -l)
+	users=$(journalctl -u galaxy-zerg* --since '10 minutes ago' | grep pid: | awk '{print $10}' | sort -u | wc -l)
 	echo "journalctl.activeusers,service=galaxy count=${users}"
 }
