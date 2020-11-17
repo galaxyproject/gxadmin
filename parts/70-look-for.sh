@@ -188,6 +188,10 @@ look_for() {
 		didyoumean "${query_type}" "${query_name}"
 	fi
 
+	# Set the application name to something useful. (Makes it easier to figure
+	# out which gxadmin command is hogging resources, etc.)
+	export PGAPPNAME=gxadmin.${query_type}.${query_name}
+
 	if [[ $query_type == "query" ]]; then
 		obtain_func "$query_type" "$query_name" "$@"
 
