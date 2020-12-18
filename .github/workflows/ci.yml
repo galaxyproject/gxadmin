@@ -1,0 +1,23 @@
+name: Test
+
+on: [pull_request]
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup BATS
+        uses: mig4/setup-bats@v1
+        with:
+          bats-version: 1.2.1
+
+      - uses: actions/checkout@v2
+
+      - name: Test
+        run: |
+          make test
+
+      - name: Complain about changelog
+        run: |
+          x=$(git diff master CHANGELOG.md | wc -l)
+          if (( x == 0 )); then echo "Please update the CHANGELOG.md"; exit 1; fi

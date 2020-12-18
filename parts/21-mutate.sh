@@ -10,7 +10,7 @@ txn_prefix() {
 }
 
 txn_postfix() {
-	if [[ "$1" == "--commit" ]]; then
+	if [[ "$1" == "--commit" ]] || [[ "$1" == "1" ]]; then
 		printf "\nCOMMIT;\n"
 	elif [[ "$1" == "--very-unsafe" ]]; then
 		printf "";
@@ -1406,5 +1406,30 @@ mutate_oidc-by-emails() { ## <email_from> <email_to> [--commit]: Reassign OIDC a
 
 	txn_pre=$(txn_prefix  "$3")
 	txn_pos=$(txn_postfix "$3")
+	QUERY="$txn_pre $QUERY; $txn_pos"
+}
+
+mutate_set_quota_for_oidc_user() { ##? <provider_name> <quota_name> [--commit]: Set quota for OIDC users.
+  handle_help "$@" <<-EOF
+		Set quota for OIDC users.
+	EOF
+
+	read -r -d '' QUERY <<-EOF
+		WITH qid AS (
+		   SELECT id FROM quota WHERE name='$arg_quota_name'
+		)
+		DELETE FROM user_quota_association WHERE quota_id = ( SELECT id FROM qid );
+
+		WITH qid AS (
+			SELECT id FROM quota WHERE name='$arg_quota_name'
+		), t AS (
+			SELECT user_id, ( SELECT id FROM qid ), now(), now() FROM oidc_user_authnz_tokens WHERE provider='$arg_provider_name'
+		)
+		INSERT INTO user_quota_association (user_id, quota_id, create_time, update_time)
+		SELECT * FROM t
+	EOF
+
+	txn_pre=$(txn_prefix "$arg_commit")
+	txn_pos=$(txn_postfix "$arg_commit")
 	QUERY="$txn_pre $QUERY; $txn_pos"
 }
