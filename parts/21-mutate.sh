@@ -19,6 +19,7 @@ txn_postfix() {
 	fi
 }
 
+
 mutate_fail-terminal-datasets() { ## [--commit]: Causes the output datasets of jobs which were manually failed, to be marked as failed
 	handle_help "$@" <<-EOF
 		Whenever an admin marks a job as failed manually (e.g. by updating the
