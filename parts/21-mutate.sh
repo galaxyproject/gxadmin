@@ -10,7 +10,7 @@ txn_prefix() {
 }
 
 txn_postfix() {
-	if [[ "$1" == "--commit" ]]; then
+	if [[ "$1" == "--commit" ]] || [[ "$1" == "1" ]]; then
 		printf "\nCOMMIT;\n"
 	elif [[ "$1" == "--very-unsafe" ]]; then
 		printf "";
@@ -1415,19 +1415,18 @@ mutate_set_quota_for_oidc_user() { ##? <provider_name> <quota_name> [--commit]: 
 	EOF
 
 	read -r -d '' QUERY <<-EOF
-	     WITH qid AS (
-	     	  SELECT id FROM quota WHERE name='$arg_quota_name'
-	     )
-	     DELETE FROM user_quota_association WHERE quota_id = ( SELECT id FROM qid );
+		WITH qid AS (
+		   SELECT id FROM quota WHERE name='$arg_quota_name'
+		)
+		DELETE FROM user_quota_association WHERE quota_id = ( SELECT id FROM qid );
 
-	     WITH qid AS (
-	     	  SELECT id FROM quota WHERE name='$arg_quota_name'
-	     )
-	     , t AS (
-	       	  SELECT user_id, ( SELECT id FROM qid ), now(), now() FROM oidc_user_authnz_tokens WHERE provider='$arg_provider_name'
-	     )
-	     INSERT INTO user_quota_association (user_id, quota_id, create_time, update_time)
-	     SELECT * FROM t
+		WITH qid AS (
+			SELECT id FROM quota WHERE name='$arg_quota_name'
+		), t AS (
+			SELECT user_id, ( SELECT id FROM qid ), now(), now() FROM oidc_user_authnz_tokens WHERE provider='$arg_provider_name'
+		)
+		INSERT INTO user_quota_association (user_id, quota_id, create_time, update_time)
+		SELECT * FROM t
 	EOF
 
 	txn_pre=$(txn_prefix "$arg_commit")
