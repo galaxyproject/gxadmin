@@ -1429,7 +1429,7 @@ mutate_set_quota_for_oidc_user() { ## <provider_name> <quota_name> [--commit]: S
 	       	  SELECT user_id, ( SELECT id FROM qid ), now(), now() FROM oidc_user_authnz_tokens WHERE provider='$1'
 	     )
 	     INSERT INTO user_quota_association (user_id, quota_id, create_time, update_time)
-	     SELECT * FROM t;
+	     SELECT * FROM t
 	EOF
 
 	txn_pre=$(txn_prefix "$3")
