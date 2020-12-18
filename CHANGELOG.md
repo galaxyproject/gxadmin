@@ -13,6 +13,7 @@
 	- query job-metrics, by [@anuprulez](https://github.com/anuprulez) and [@simonbray](https://github.com/simonbray).
 	- uwsgi active-user count
 	- exports PGAPPNAME setting the application name for postgres connections. This becomes visible in pg_stat_activity.
+	- mutate set_quota_for_oidc_user, by [@gmauro](https://github.com/gmauro).
 
 # 19
 
