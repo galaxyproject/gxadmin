@@ -1408,3 +1408,31 @@ mutate_oidc-by-emails() { ## <email_from> <email_to> [--commit]: Reassign OIDC a
 	txn_pos=$(txn_postfix "$3")
 	QUERY="$txn_pre $QUERY; $txn_pos"
 }
+
+mutate_set_quota_for_oidc_user() { ## <provider_name> <quota_name> [--commit]: Set quota for OIDC users.
+  handle_help "$@" <<-EOF
+		Set quota for OIDC users.
+	EOF
+
+	assert_count_ge $# 2 "Must supply a provider_name and an quota_name";
+
+	read -r -d '' QUERY <<-EOF
+	  WITH qid AS (
+	    SELECT id FROM quota WHERE name='$2'
+	  )
+	  DELETE FROM user_quota_association WHERE quota_id = ( SELECT id FROM qid );
+
+    WITH qid AS (
+	    SELECT id FROM quota WHERE name='$2'
+	  )
+    , t AS (
+      SELECT user_id, ( SELECT id FROM qid ), now(), now() FROM oidc_user_authnz_tokens WHERE provider='$1'
+    )
+    INSERT INTO user_quota_association (user_id, quota_id, create_time, update_time)
+    SELECT * FROM t;
+  EOF
+
+	txn_pre=$(txn_prefix "$3")
+	txn_pos=$(txn_postfix "$3")
+	QUERY="$txn_pre $QUERY; $txn_pos"
+}
