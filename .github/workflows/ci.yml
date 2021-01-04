@@ -17,8 +17,7 @@ jobs:
 
       - name: Test
         run: |
-          date +%s
-          find . -type f -exec stat -c "%W %X %Y %Z %n" {} \;
+          git log --format=%cd | wc -l
           make test
 
       - name: Complain about changelog
