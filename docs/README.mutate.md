@@ -18,6 +18,7 @@ Command | Description
 [`mutate reassign-job-to-handler`](#mutate-reassign-job-to-handler) | Reassign a job to a different handler
 [`mutate reassign-workflows-to-handler`](#mutate-reassign-workflows-to-handler) | Reassign workflows in 'new' state to a different handler.
 [`mutate restart-jobs`](#mutate-restart-jobs) | Restart some jobs
+[`mutate set_quota_for_oidc_user`](#mutate-set_quota_for_oidc_user) | Set quota for OIDC users.
 
 ## mutate anonymise-db-for-release
 
@@ -307,4 +308,18 @@ mutate restart-jobs -  Restart some jobs
 **NOTES**
 
 Restart jobs
+
+
+## mutate set_quota_for_oidc_user
+
+([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=mutate_set_quota_for_oidc_user&type=Code))
+mutate set_quota_for_oidc_user -  Set quota for OIDC users.
+
+**SYNOPSIS**
+
+    gxadmin mutate set_quota_for_oidc_user <provider_name> <quota_name> [--commit]
+
+**NOTES**
+
+Set quota for OIDC users.
 

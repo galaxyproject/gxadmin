@@ -19,16 +19,16 @@ query_latest-users() { ## : 40 recently registered users
 		    (3 rows)
 	EOF
 
-	username=$(gdpr_safe username)
-	email=$(gdpr_safe email)
+	username=$(gdpr_safe galaxy_user.username username)
+	email=$(gdpr_safe galaxy_user.email email)
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
 			id,
 			create_time AT TIME ZONE 'UTC' as create_time,
 			pg_size_pretty(disk_usage) as disk_usage,
-			$username as username,
-			$email as email,
+			$username,
+			$email,
 			array_to_string(ARRAY(
 				select galaxy_group.name from galaxy_group where id in (
 					select group_id from user_group_association where user_group_association.user_id = galaxy_user.id

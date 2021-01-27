@@ -7,6 +7,7 @@
 	- Updated "query user-disk-usage" to add a "--use-precalc" flag which uses the value calculated by Galaxy.
 	- Enabled GXADMIN_PYTHON from the environment, by [@gmauro](https://github.com/gmauro).
 	- Updated "galaxy cleanup" to avoid to set update_time on updated objects, by [@gmauro](https://github.com/gmauro).
+	- fixed broken latest-users query
 - Added:
 	- query dump-users, for [@shiltemann](https://github.com/shiltemann)
 	- "did you mean" when a command isn't found.
