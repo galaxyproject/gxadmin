@@ -385,6 +385,7 @@ query_queue-overview() { ##? [--short-tool-id]: View used mostly for monitoring
 				COALESCE(destination_id, 'unknown')::TEXT AS destination_id,
 				COALESCE(handler, 'unknown')::TEXT AS handler,
 				state::TEXT,
+				update_time AT TIME ZONE 'UTC' AS updated,
 				COALESCE(job_runner_name, 'unknown')::TEXT AS job_runner_name,
 				count(*) AS count,
 				$user_id::TEXT AS user_id
