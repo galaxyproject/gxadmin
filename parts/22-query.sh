@@ -2099,7 +2099,7 @@ query_errored-jobs(){ ##? <hours> [--details]: Lists jobs that errored in the la
 			job.destination_id,
 			job.job_runner_external_id,
 			$details
-			$email AS email
+			$email
 		FROM
 			job,
 			galaxy_user
