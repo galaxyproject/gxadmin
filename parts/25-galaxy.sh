@@ -451,7 +451,6 @@ galaxy_ie-show() { ## [gie-galaxy-job-id]: Report on a GIE [HTCondor Only!]
 		    Running on: cn032.bi.uni-freiburg.de
 		    Job script: /data/dnb01/galaxy_db/pbs/galaxy_6134209.sh
 		    Working dir: /data/dnb02/galaxy_db/job_working_directory/006/134/6134209
-		    Container name: 20aa70fc1aa04d97bdc709a4c76dbcbd
 		    Runtime:
 		    {
 		      8888: {
@@ -470,6 +469,9 @@ galaxy_ie-show() { ## [gie-galaxy-job-id]: Report on a GIE [HTCondor Only!]
 
 		It's probably only going to work for us? Sorry :)
 	EOF
+
+	assert_set_env GALAXY_CONFIG_FILE
+
 	id=$1
 
 	cluster_id=$(gxadmin jsonquery queue-detail | jq ".[] | select(.id == $1) | .extid" -r)
@@ -488,11 +490,8 @@ galaxy_ie-show() { ## [gie-galaxy-job-id]: Report on a GIE [HTCondor Only!]
 	job_script=$(condor_q $cluster_id -autoformat Cmd)
 	echo "Job script: $job_script"
 
-	working_dir=$(grep ^cd $job_script | sed 's/^cd //g')
+	working_dir=$(grep ^cd $job_script | grep working_directory | sed 's/^cd //g')
 	echo "Working dir: $working_dir"
-
-	container_name=$(cat $working_dir/container_config.json | jq .container_name -r)
-	echo "Container name: $container_name"
 
 	echo "Runtime:"
 	cat $working_dir/container_runtime.json  | jq -S
@@ -505,9 +504,11 @@ galaxy_ie-show() { ## [gie-galaxy-job-id]: Report on a GIE [HTCondor Only!]
 
 	token=$(gxadmin tsvquery q "select token from interactivetool_entry_point where job_id = $id")
 
-	key=$(sqlite3 /opt/galaxy/mutable-config/interactivetools_map.sqlite 'select key from gxitproxy where token="'$token'"')
-	key_type=$(sqlite3 /opt/galaxy/mutable-config/interactivetools_map.sqlite 'select key_type from gxitproxy where token="'$token'"')
-	token=$(sqlite3 /opt/galaxy/mutable-config/interactivetools_map.sqlite 'select token from gxitproxy where token="'$token'"')
+	data_dir=$(cat "$GALAXY_CONFIG_FILE" | grep interactivetools_map |cut -f2 -d'='| tr -d " ")
+
+	key=$(sqlite3 $data_dir 'select key from gxitproxy where token="'$token'"')
+	key_type=$(sqlite3 $data_dir 'select key_type from gxitproxy where token="'$token'"')
+	token=$(sqlite3 $data_dir 'select token from gxitproxy where token="'$token'"')
 
 	echo "Key: $key"
 	echo "KeyType: $key_type"
