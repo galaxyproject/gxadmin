@@ -427,6 +427,9 @@ query_queue-detail() { ##? [--all] [--seconds]: Detailed overview of running and
 		     queued  | 4361941 | 229731  | toolshed.g2.bx.psu.edu/repos/nml/spades/spades/1.2                        | xxxx     | 4 days 21:00:00
 	EOF
 
+	fields="count=6"
+	tags="state=0;id=1;extid=2;tool_id=3;username=4;time_since_creation=5"
+
 	d=""
 	nonpretty="("
 
