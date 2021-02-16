@@ -1,7 +1,7 @@
 {
     "version": 1,
     "project": "gxadmin",
-    "project_url": "https://github.com/usegalaxy-eu/gxadmin",
+    "project_url": "https://github.com/galaxyproject/gxadmin",
     "repo": ".",
     "install_command": ["/bin/true"],
     "uninstall_command": ["/bin/true"],

@@ -16,7 +16,7 @@ Command | Description
 
 ## galaxy amqp-test
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=galaxy_amqp-test&type=Code))
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=galaxy_amqp-test&type=Code))
 galaxy amqp-test -  Test a given AMQP URL for connectivity
 
 **SYNOPSIS**
@@ -58,7 +58,7 @@ Basically any error results in a hang forever. It is recommended you run it with
 
 ## galaxy cleanup
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=galaxy_cleanup&type=Code))
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=galaxy_cleanup&type=Code))
 galaxy cleanup -  Cleanup histories/hdas/etc for past N days (default=30)
 
 **SYNOPSIS**
@@ -72,7 +72,7 @@ Cleanup histories/hdas/etc for past N days using the python objects-based method
 
 ## galaxy cleanup-jwd
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=galaxy_cleanup-jwd&type=Code))
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=galaxy_cleanup-jwd&type=Code))
 galaxy cleanup-jwd -  (NEW) Cleanup job working directories
 
 **SYNOPSIS**
@@ -92,7 +92,7 @@ long, and the for loop hangs until it's done generating the list.
 
 ## galaxy decode
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=galaxy_decode&type=Code))
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=galaxy_decode&type=Code))
 galaxy decode -  Decode an encoded ID
 
 **SYNOPSIS**
@@ -109,7 +109,7 @@ Encode an unecoded ID
 
 ## galaxy encode
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=galaxy_encode&type=Code))
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=galaxy_encode&type=Code))
 galaxy encode -  Encode an ID
 
 **SYNOPSIS**
@@ -126,7 +126,7 @@ Encode an unecoded ID
 
 ## galaxy fav_tools
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=galaxy_fav_tools&type=Code))
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=galaxy_fav_tools&type=Code))
 galaxy fav_tools -  Favourite tools in Galaxy DB
 
 **SYNOPSIS**
@@ -140,7 +140,7 @@ What are people's fav tools
 
 ## galaxy fix-conda-env
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=galaxy_fix-conda-env&type=Code))
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=galaxy_fix-conda-env&type=Code))
 galaxy fix-conda-env -  Fix broken conda environments
 
 **SYNOPSIS**
@@ -156,7 +156,7 @@ MUST end in /envs/
 
 ## galaxy ie-list
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=galaxy_ie-list&type=Code))
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=galaxy_ie-list&type=Code))
 galaxy ie-list -  List GIEs
 
 **SYNOPSIS**
@@ -173,7 +173,7 @@ List running IEs (based on output of queue-detail)
 
 ## galaxy ie-show
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=galaxy_ie-show&type=Code))
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=galaxy_ie-show&type=Code))
 galaxy ie-show -  Report on a GIE [HTCondor Only!]
 
 **SYNOPSIS**
@@ -215,7 +215,7 @@ It's probably only going to work for us? Sorry :)
 
 ## galaxy migrate-tool-install-from-sqlite
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=galaxy_migrate-tool-install-from-sqlite&type=Code))
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=galaxy_migrate-tool-install-from-sqlite&type=Code))
 galaxy migrate-tool-install-from-sqlite -  Converts SQLite version into normal potsgres toolshed repository tables
 
 **SYNOPSIS**
@@ -236,7 +236,7 @@ galaxy migrate-tool-install-from-sqlite -  Converts SQLite version into normal p
 
 ## galaxy migrate-tool-install-to-sqlite
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=galaxy_migrate-tool-install-to-sqlite&type=Code))
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=galaxy_migrate-tool-install-to-sqlite&type=Code))
 galaxy migrate-tool-install-to-sqlite -  Converts normal potsgres toolshed repository tables into the SQLite version
 
 **SYNOPSIS**

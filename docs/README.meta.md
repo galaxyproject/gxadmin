@@ -17,7 +17,7 @@ Command | Description
 
 ## meta complete-bash
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=meta_complete-bash&type=Code))
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=meta_complete-bash&type=Code))
 meta complete-bash -  export bash autocompletion
 
 **SYNOPSIS**
@@ -37,7 +37,7 @@ $ gxadmin<TAB>
 
 ## meta export-grafana-dashboards
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=meta_export-grafana-dashboards&type=Code))
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=meta_export-grafana-dashboards&type=Code))
 meta export-grafana-dashboards -  Export all dashboards from a Grafana database to CWD and commit them to git.
 
 **SYNOPSIS**
@@ -48,7 +48,7 @@ meta export-grafana-dashboards -  Export all dashboards from a Grafana database 
 
 Given a grafana database, use sqlite3 to access all of the dashboards within, and then write them out to the current working directly. Next, commit them and update a README.
 
-This script forms the basis of https://github.com/usegalaxy-eu/grafana-dashboards
+This script forms the basis of https://github.com/galaxyproject/grafana-dashboards
 
 **WARNING**
 
@@ -60,7 +60,7 @@ This script forms the basis of https://github.com/usegalaxy-eu/grafana-dashboard
 
 ## meta influx-post
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=meta_influx-post&type=Code))
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=meta_influx-post&type=Code))
 meta influx-post -  Post contents of file (in influx line protocol) to influx
 
 **SYNOPSIS**
@@ -94,7 +94,7 @@ Posting data from the output of a gxadmin command
 
 ## meta influx-query
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=meta_influx-query&type=Code))
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=meta_influx-query&type=Code))
 meta influx-query -  Query an influx DB
 
 **SYNOPSIS**
@@ -120,7 +120,7 @@ Query percentage of memory used over last hour.
 
 ## meta iquery-grt-export
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=meta_iquery-grt-export&type=Code))
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=meta_iquery-grt-export&type=Code))
 meta iquery-grt-export -  Export data from a GRT database for sending to influx
 
 **SYNOPSIS**
@@ -136,7 +136,7 @@ meta iquery-grt-export -  Export data from a GRT database for sending to influx
 
 ## meta slurp-current
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=meta_slurp-current&type=Code))
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=meta_slurp-current&type=Code))
 meta slurp-current -  Executes what used to be "Galaxy Slurp"
 
 **SYNOPSIS**
@@ -194,7 +194,7 @@ the $GXADMIN_SITE_SPECIFIC file. They must start with the prefix
 
 ## meta slurp-day
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=meta_slurp-day&type=Code))
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=meta_slurp-day&type=Code))
 meta slurp-day -  Slurps data on a specific date.
 
 **SYNOPSIS**
@@ -246,7 +246,7 @@ well, or the metrics reported here will be less useful.
 
 ## meta slurp-initial
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=meta_slurp-initial&type=Code))
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=meta_slurp-initial&type=Code))
 meta slurp-initial -  Slurps data starting at the first date until the second date.
 
 **SYNOPSIS**
@@ -263,7 +263,7 @@ It requires a start and end date. Allows to run specific slurp queries.
 
 ## meta slurp-upto
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=meta_slurp-upto&type=Code))
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=meta_slurp-upto&type=Code))
 meta slurp-upto -  Slurps data up to a specific date.
 
 **SYNOPSIS**
@@ -282,7 +282,7 @@ but with date filters for the entries' creation times.
 
 ## meta update
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=meta_update&type=Code))
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=meta_update&type=Code))
 meta update -  Update the script
 
 **SYNOPSIS**
@@ -292,7 +292,7 @@ meta update -  Update the script
 
 ## meta whatsnew
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=meta_whatsnew&type=Code))
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=meta_whatsnew&type=Code))
 meta whatsnew -  What's new in this version of gxadmin
 
 **SYNOPSIS**
@@ -306,7 +306,7 @@ Informs users of what's new in the changelog since their version
 
 ## meta wta-report Export all workflow trace archive queries
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=meta_wta-report_Export_all_workflow_trace_archive_queries&type=Code))
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=meta_wta-report_Export_all_workflow_trace_archive_queries&type=Code))
 meta wta-report - gxadmin meta wta-report Export all workflow trace archive queries
 
 **SYNOPSIS**

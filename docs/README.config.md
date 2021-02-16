@@ -7,7 +7,7 @@ Command | Description
 
 ## config dump
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=config_dump&type=Code))
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=config_dump&type=Code))
 config dump -  Dump Galaxy configuration as JSON
 
 **SYNOPSIS**
@@ -33,7 +33,7 @@ This function was added with the intention to use it internally, but it may be u
 
 ## config validate
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=config_validate&type=Code))
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=config_validate&type=Code))
 config validate -  validate config files
 
 **SYNOPSIS**

@@ -6,7 +6,7 @@ Command | Description
 
 ## cluster slurm-stats
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=cluster_slurm-stats&type=Code))
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=cluster_slurm-stats&type=Code))
 cluster slurm-stats -  Collect stats on slurm
 
 **SYNOPSIS**

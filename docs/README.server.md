@@ -27,7 +27,7 @@ Command | Description
 
 ## server allocated-cpu
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=server_allocated-cpu&type=Code))
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=server_allocated-cpu&type=Code))
 server allocated-cpu -  CPU time per job runner
 
 **SYNOPSIS**
@@ -37,7 +37,7 @@ server allocated-cpu -  CPU time per job runner
 
 ## server allocated-gpu
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=server_allocated-gpu&type=Code))
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=server_allocated-gpu&type=Code))
 server allocated-gpu -  GPU time per job runner
 
 **SYNOPSIS**
@@ -47,7 +47,7 @@ server allocated-gpu -  GPU time per job runner
 
 ## server datasets
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=server_datasets&type=Code))
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=server_datasets&type=Code))
 server datasets -  Counts of datasets
 
 **SYNOPSIS**
@@ -57,7 +57,7 @@ server datasets -  Counts of datasets
 
 ## server groups-allocated-cpu
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=server_groups-allocated-cpu&type=Code))
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=server_groups-allocated-cpu&type=Code))
 server groups-allocated-cpu -  Retrieve an approximation of the CPU allocation for groups
 
 **SYNOPSIS**
@@ -67,7 +67,7 @@ server groups-allocated-cpu -  Retrieve an approximation of the CPU allocation f
 
 ## server groups-allocated-gpu
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=server_groups-allocated-gpu&type=Code))
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=server_groups-allocated-gpu&type=Code))
 server groups-allocated-gpu -  Retrieve an approximation of the GPU allocation for groups
 
 **SYNOPSIS**
@@ -77,7 +77,7 @@ server groups-allocated-gpu -  Retrieve an approximation of the GPU allocation f
 
 ## server groups
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=server_groups&type=Code))
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=server_groups&type=Code))
 server groups -  Counts of group memberships
 
 **SYNOPSIS**
@@ -87,7 +87,7 @@ server groups -  Counts of group memberships
 
 ## server groups-disk-usage
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=server_groups-disk-usage&type=Code))
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=server_groups-disk-usage&type=Code))
 server groups-disk-usage -  Retrieve an approximation of the disk usage for groups
 
 **SYNOPSIS**
@@ -97,7 +97,7 @@ server groups-disk-usage -  Retrieve an approximation of the disk usage for grou
 
 ## server hda
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=server_hda&type=Code))
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=server_hda&type=Code))
 server hda -  Counts of HDAs
 
 **SYNOPSIS**
@@ -107,7 +107,7 @@ server hda -  Counts of HDAs
 
 ## server histories
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=server_histories&type=Code))
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=server_histories&type=Code))
 server histories -  Counts of histories and sharing
 
 **SYNOPSIS**
@@ -117,7 +117,7 @@ server histories -  Counts of histories and sharing
 
 ## server jobs
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=server_jobs&type=Code))
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=server_jobs&type=Code))
 server jobs -  Counts of jobs
 
 **SYNOPSIS**
@@ -127,7 +127,7 @@ server jobs -  Counts of jobs
 
 ## server ts-repos
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=server_ts-repos&type=Code))
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=server_ts-repos&type=Code))
 server ts-repos -  Counts of TS repos
 
 **SYNOPSIS**
@@ -137,7 +137,7 @@ server ts-repos -  Counts of TS repos
 
 ## server users
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=server_users&type=Code))
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=server_users&type=Code))
 server users -  Count of different classifications of users
 
 **SYNOPSIS**
@@ -147,7 +147,7 @@ server users -  Count of different classifications of users
 
 ## server workflow-invocations
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=server_workflow-invocations&type=Code))
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=server_workflow-invocations&type=Code))
 server workflow-invocations -  Counts of workflow invocations
 
 **SYNOPSIS**
@@ -157,7 +157,7 @@ server workflow-invocations -  Counts of workflow invocations
 
 ## server workflows
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=server_workflows&type=Code))
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=server_workflows&type=Code))
 server workflows -  Counts of workflows
 
 **SYNOPSIS**
@@ -167,7 +167,7 @@ server workflows -  Counts of workflows
 
 ## server workflow-trace-archive-jobs
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=server_workflow-trace-archive-jobs&type=Code))
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=server_workflow-trace-archive-jobs&type=Code))
 server workflow-trace-archive-jobs -  [Workflow Trace Archive] Export jobs
 
 **SYNOPSIS**
@@ -181,7 +181,7 @@ Helper for WTA
 
 ## server workflow-trace-archive-metrics
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=server_workflow-trace-archive-metrics&type=Code))
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=server_workflow-trace-archive-metrics&type=Code))
 server workflow-trace-archive-metrics -  [Workflow Trace Archive] Export numeric metrics
 
 **SYNOPSIS**
@@ -195,7 +195,7 @@ Helper for WTA
 
 ## server workflow-trace-archive-workflow-connections
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=server_workflow-trace-archive-workflow-connections&type=Code))
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=server_workflow-trace-archive-workflow-connections&type=Code))
 server workflow-trace-archive-workflow-connections -  [Workflow Trace Archive] Export workflow connections
 
 **SYNOPSIS**
@@ -209,7 +209,7 @@ Helper for WTA
 
 ## server workflow-trace-archive-workflow-invocation-steps
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=server_workflow-trace-archive-workflow-invocation-steps&type=Code))
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=server_workflow-trace-archive-workflow-invocation-steps&type=Code))
 server workflow-trace-archive-workflow-invocation-steps -  [Workflow Trace Archive] Export workflow invocation steps
 
 **SYNOPSIS**
@@ -223,7 +223,7 @@ Helper for WTA
 
 ## server workflow-trace-archive-workflow-invocations
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=server_workflow-trace-archive-workflow-invocations&type=Code))
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=server_workflow-trace-archive-workflow-invocations&type=Code))
 server workflow-trace-archive-workflow-invocations -  [Workflow Trace Archive] Export workflow invocations
 
 **SYNOPSIS**
@@ -237,7 +237,7 @@ Helper for WTA
 
 ## server workflow-trace-archive-workflow-step-input
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=server_workflow-trace-archive-workflow-step-input&type=Code))
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=server_workflow-trace-archive-workflow-step-input&type=Code))
 server workflow-trace-archive-workflow-step-input -  [Workflow Trace Archive] Export workflow step-input
 
 **SYNOPSIS**
@@ -251,7 +251,7 @@ Helper for WTA
 
 ## server workflow-trace-archive-workflow-steps
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=server_workflow-trace-archive-workflow-steps&type=Code))
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=server_workflow-trace-archive-workflow-steps&type=Code))
 server workflow-trace-archive-workflow-steps -  [Workflow Trace Archive] Export workflow steps
 
 **SYNOPSIS**
@@ -265,7 +265,7 @@ Helper for WTA
 
 ## server workflow-trace-archive-workflows
 
-([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=server_workflow-trace-archive-workflows&type=Code))
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=server_workflow-trace-archive-workflows&type=Code))
 server workflow-trace-archive-workflows -  [Workflow Trace Archive] Export workflows
 
 **SYNOPSIS**

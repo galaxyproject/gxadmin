@@ -1,4 +1,4 @@
-# Galaxy Admin Utility [![Build Status](https://travis-ci.org/usegalaxy-eu/gxadmin.svg?branch=master)](https://travis-ci.org/usegalaxy-eu/gxadmin)
+# Galaxy Admin Utility [![Build Status](https://travis-ci.org/galaxyproject/gxadmin.svg?branch=master)](https://travis-ci.org/galaxyproject/gxadmin)
 
 A command line tool for [Galaxy](https://github.com/galaxyproject/galaxy)
 administrators to run common queries against our Postgres databases. It additionally
@@ -18,7 +18,7 @@ mysql or sqlite3.
 ## Installation
 
 ```
-curl https://raw.githubusercontent.com/usegalaxy-eu/gxadmin/master/gxadmin > /usr/bin/gxadmin
+curl https://raw.githubusercontent.com/galaxyproject/gxadmin/master/gxadmin > /usr/bin/gxadmin
 chmod +x /usr/bin/gxadmin
 ```
 

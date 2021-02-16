@@ -11,7 +11,7 @@ meta_update() { ## : Update the script
 	EOF
 
 	tmp=$(mktemp);
-	curl https://raw.githubusercontent.com/usegalaxy-eu/gxadmin/master/gxadmin > "$tmp";
+	curl https://raw.githubusercontent.com/galaxyproject/gxadmin/master/gxadmin > "$tmp";
 	chmod ugo+rx "$tmp";
 	mv "$tmp" "$0";
 	exit 0;
@@ -56,7 +56,7 @@ meta_cmdlist() {
 				echo                          >> "docs/README.${section}.md"
 				echo "## $cmd_part"           >> "docs/README.${section}.md"
 				echo                          >> "docs/README.${section}.md"
-				echo "([*source*](https://github.com/usegalaxy-eu/gxadmin/search?q=${url_part}&type=Code))" >> "docs/README.${section}.md"
+				echo "([*source*](https://github.com/galaxyproject/gxadmin/search?q=${url_part}&type=Code))" >> "docs/README.${section}.md"
 				bash -c "$0 $cmd_part --help" >> "docs/README.${section}.md"
 			fi
 		done
@@ -417,7 +417,7 @@ meta_export-grafana-dashboards() { ## [grafana_db|/var/lib/grafana/grafana.db]: 
 	handle_help "$@" <<-EOF
 		Given a grafana database, use sqlite3 to access all of the dashboards within, and then write them out to the current working directly. Next, commit them and update a README.
 
-		This script forms the basis of https://github.com/usegalaxy-eu/grafana-dashboards
+		This script forms the basis of https://github.com/galaxyproject/grafana-dashboards
 
 		**WARNING**
 

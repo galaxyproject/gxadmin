@@ -3,7 +3,7 @@
 - Fixed:
 	- Broken things in preview anonymisation script
 	- Unified uwsgi-status command (thanks @gmauro)
-	- Unified galaxy user/email/id filtering and made it stricter in what it accepts ([#60](https://github.com/usegalaxy-eu/gxadmin/issues/60)).
+	- Unified galaxy user/email/id filtering and made it stricter in what it accepts ([#60](https://github.com/galaxyproject/gxadmin/issues/60)).
 	- Updated "query user-disk-usage" to add a "--use-precalc" flag which uses the value calculated by Galaxy.
 	- Enabled GXADMIN_PYTHON from the environment, by [@gmauro](https://github.com/gmauro).
 	- Updated "galaxy cleanup" to avoid to set update_time on updated objects, by [@gmauro](https://github.com/gmauro).
@@ -73,7 +73,7 @@ Testing our new release message
 
 # 15
 
-- Fancy [new docs site](https://usegalaxy-eu.github.io/gxadmin/#/)
+- Fancy [new docs site](https://galaxyproject.github.io/gxadmin/#/)
 - Added:
 	- search :(
 	- query server-groups-allocated-cpu, thanks @selten
@@ -105,7 +105,7 @@ Testing our new release message
 		- query tool-new-errors
 		- query tool-errors
 		- query tool-likely-broken
-	- Import script from https://github.com/usegalaxy-eu/grafana-dashboards
+	- Import script from https://github.com/galaxyproject/grafana-dashboards
 	- query for datasets uploaded in last N hours
 	- mutate to approve users
 	- mutate assign-unassigned-workflow: workaround for [galaxyproject/galaxy#8209](https://github.com/galaxyproject/galaxy#8209)
