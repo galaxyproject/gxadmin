@@ -11,7 +11,7 @@ meta_update() { ## : Update the script
 	EOF
 
 	tmp=$(mktemp);
-	curl https://raw.githubusercontent.com/galaxyproject/gxadmin/master/gxadmin > "$tmp";
+	curl https://raw.githubusercontent.com/galaxyproject/gxadmin/main/gxadmin > "$tmp";
 	chmod ugo+rx "$tmp";
 	mv "$tmp" "$0";
 	exit 0;
