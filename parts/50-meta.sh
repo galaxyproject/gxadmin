@@ -417,7 +417,7 @@ meta_export-grafana-dashboards() { ## [grafana_db|/var/lib/grafana/grafana.db]: 
 	handle_help "$@" <<-EOF
 		Given a grafana database, use sqlite3 to access all of the dashboards within, and then write them out to the current working directly. Next, commit them and update a README.
 
-		This script forms the basis of https://github.com/galaxyproject/grafana-dashboards
+		This script forms the basis of https://github.com/usegalaxy-eu/grafana-dashboards
 
 		**WARNING**
 
