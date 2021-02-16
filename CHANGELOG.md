@@ -17,6 +17,7 @@
 	- uwsgi active-user count
 	- exports PGAPPNAME setting the application name for postgres connections. This becomes visible in pg_stat_activity.
 	- mutate set_quota_for_oidc_user, by [@gmauro](https://github.com/gmauro).
+	- iquery support for queue-detail query
 
 # 19
 

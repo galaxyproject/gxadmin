@@ -452,7 +452,7 @@ query_queue-detail() { ##? [--all] [--seconds]: Detailed overview of running and
 			$nonpretty now() AT TIME ZONE 'UTC' - job.create_time) as time_since_creation,
 			job.handler,
 			job.job_runner_name,
-			job.destination_id,
+			COALESCE(job.destination_id, 'none') as destination_id,
 			1 as count
 		FROM job
 		FULL OUTER JOIN galaxy_user ON job.user_id = galaxy_user.id
