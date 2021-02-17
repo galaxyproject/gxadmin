@@ -428,7 +428,7 @@ query_queue-detail() { ##? [--all] [--seconds]: Detailed overview of running and
 	EOF
 
 	fields="count=9"
-	tags="state=0;id=1;extid=2;tool_id=3;username=4;time_since_creation=5;handler=6;job_runner_name=7;destination_id=8"
+	tags="state=0;id=1;extid=2;tool_id=3;username=4;handler=6;job_runner_name=7;destination_id=8"
 
 	d=""
 	nonpretty="("
@@ -437,6 +437,7 @@ query_queue-detail() { ##? [--all] [--seconds]: Detailed overview of running and
 		d=", 'new'"
 	fi
 	if [[ -n "$arg_seconds" ]]; then
+		fields="$fields;time_since_update=5"
 		nonpretty="EXTRACT(EPOCH FROM "
 	fi
 
