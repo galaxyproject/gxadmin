@@ -437,7 +437,7 @@ query_queue-detail() { ##? [--all] [--seconds]: Detailed overview of running and
 		d=", 'new'"
 	fi
 	if [[ -n "$arg_seconds" ]]; then
-		fields="$fields;time_since_update=5"
+		fields="$fields;time_since_creation=5"
 		nonpretty="EXTRACT(EPOCH FROM "
 	fi
 
