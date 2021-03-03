@@ -70,6 +70,7 @@ Command | Description
 [`query tool-metrics`](#query-tool-metrics) | See values of a specific metric
 [`query tool-new-errors`](#query-tool-new-errors) | Summarize percent of tool runs in error over the past weeks for "new tools"
 [`query tool-popularity`](#query-tool-popularity) | Most run tools by month (tool_predictions)
+[`query tool-usage-over-time`](#query-tool-usage-over-time) | Counts of tool runs by month, filtered by a tool id search
 [`query tool-usage`](#query-tool-usage) | Counts of tool runs in the past weeks (default = all)
 [`query total-jobs`](#query-total-jobs) | Total number of jobs run by galaxy instance
 [`query training-list`](#query-training-list) | List known trainings
@@ -1516,6 +1517,31 @@ See most popular tools by month
      circos_interval_to_tile   | 2019-02-01 |     1
      __SET_METADATA__          | 2019-02-01 |     1
     (8 rows)
+
+
+## query tool-usage-over-time
+
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_tool-usage-over-time&type=Code))
+query tool-usage-over-time -  Counts of tool runs by month, filtered by a tool id search
+
+**SYNOPSIS**
+
+    gxadmin query tool-usage-over-time [searchterm]
+
+**NOTES**
+
+    $ gxadmin tool-usage-over-time
+                                    tool_id                                 | count
+    ------------------------------------------------------------------------+--------
+     toolshed.g2.bx.psu.edu/repos/devteam/column_maker/Add_a_column1/1.1.0  | 958154
+     Grouping1                                                              | 638890
+     toolshed.g2.bx.psu.edu/repos/devteam/intersect/gops_intersect_1/1.0.0  | 326959
+     toolshed.g2.bx.psu.edu/repos/devteam/get_flanks/get_flanks1/1.0.0      | 320236
+     addValue                                                               | 313470
+     toolshed.g2.bx.psu.edu/repos/devteam/join/gops_join_1/1.0.0            | 312735
+     upload1                                                                | 103595
+     toolshed.g2.bx.psu.edu/repos/rnateam/graphclust_nspdk/nspdk_sparse/9.2 |  52861
+     Filter1                                                                |  43253
 
 
 ## query tool-usage

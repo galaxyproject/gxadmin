@@ -75,6 +75,49 @@ query_tool-usage() { ##? [weeks]: Counts of tool runs in the past weeks (default
 	EOF
 }
 
+query_tool-usage-over-time() { ##? [searchterm]: Counts of tool runs by month, filtered by a tool id search
+	handle_help "$@" <<-EOF
+		    $ gxadmin tool-usage-over-time
+		                                    tool_id                                 | count
+		    ------------------------------------------------------------------------+--------
+		     toolshed.g2.bx.psu.edu/repos/devteam/column_maker/Add_a_column1/1.1.0  | 958154
+		     Grouping1                                                              | 638890
+		     toolshed.g2.bx.psu.edu/repos/devteam/intersect/gops_intersect_1/1.0.0  | 326959
+		     toolshed.g2.bx.psu.edu/repos/devteam/get_flanks/get_flanks1/1.0.0      | 320236
+		     addValue                                                               | 313470
+		     toolshed.g2.bx.psu.edu/repos/devteam/join/gops_join_1/1.0.0            | 312735
+		     upload1                                                                | 103595
+		     toolshed.g2.bx.psu.edu/repos/rnateam/graphclust_nspdk/nspdk_sparse/9.2 |  52861
+		     Filter1                                                                |  43253
+	EOF
+
+	where=
+	if [[ "$arg_searchterm" != "" ]]; then
+		where="WHERE tool_id like '%$arg_searchterm%'"
+	fi
+
+	read -r -d '' QUERY <<-EOF
+		WITH
+			cte
+				AS (
+					SELECT
+						date_trunc('month', create_time),
+						tool_id
+					FROM
+						job
+					$where
+				)
+		SELECT
+			date_trunc, tool_id, count(*)
+		FROM
+			cte
+		GROUP BY
+			date_trunc, tool_id
+		ORDER BY
+			date_trunc ASC, count DESC
+	EOF
+}
+
 query_tool-popularity() { ##? [months|24]: Most run tools by month (tool_predictions)
 	handle_help "$@" <<-EOF
 		See most popular tools by month

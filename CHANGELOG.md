@@ -9,7 +9,7 @@
 	- Updated "galaxy cleanup" to avoid to set update_time on updated objects, by [@gmauro](https://github.com/gmauro).
 	- fixed broken latest-users query
 	- fixed broken errored-jobs query, by [@gmauro](https://github.com/gmauro).
-	- several fixes in galaxy ie-show command, [@gmauro](https://github.com/gmauro). 
+	- several fixes in galaxy ie-show command, [@gmauro](https://github.com/gmauro).
 - Added:
 	- query dump-users, for [@shiltemann](https://github.com/shiltemann)
 	- "did you mean" when a command isn't found.
@@ -18,6 +18,7 @@
 	- exports PGAPPNAME setting the application name for postgres connections. This becomes visible in pg_stat_activity.
 	- mutate set_quota_for_oidc_user, by [@gmauro](https://github.com/gmauro).
 	- iquery support for queue-detail query
+	- query tool-usage-over-time which can be used to make charts of specific tools over time.
 
 # 19
 

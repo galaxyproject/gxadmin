@@ -193,7 +193,6 @@ function for you to make you hate life a lil bit less.
     Running on: cn032.bi.uni-freiburg.de
     Job script: /data/dnb01/galaxy_db/pbs/galaxy_6134209.sh
     Working dir: /data/dnb02/galaxy_db/job_working_directory/006/134/6134209
-    Container name: 20aa70fc1aa04d97bdc709a4c76dbcbd
     Runtime:
     {
       8888: {

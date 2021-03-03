@@ -48,7 +48,7 @@ meta export-grafana-dashboards -  Export all dashboards from a Grafana database 
 
 Given a grafana database, use sqlite3 to access all of the dashboards within, and then write them out to the current working directly. Next, commit them and update a README.
 
-This script forms the basis of https://github.com/usegalaxye-eu/grafana-dashboards
+This script forms the basis of https://github.com/usegalaxy-eu/grafana-dashboards
 
 **WARNING**
 
