@@ -249,7 +249,7 @@ uwsgi_lastlog(){ ## : Fetch the number of seconds since the last log message was
 
 	for i in {0..11}; do
 		lines=$(journalctl -u galaxy-handler@$i -n 1 --no-pager)
-		if (( $(echo "$lines" | wc -l) > 1 )); then
+		if [[ ! $lines == *"No entries"* ]]; then
 			timestamp=$(journalctl -u galaxy-handler@$i -n 1 --no-pager | grep -v 'Logs begin' | awk '{print $1" "$2" "$3}');
 			unix=$(date -d "$timestamp" +%s)
 			date_diff=$((NOW - unix));
@@ -259,7 +259,7 @@ uwsgi_lastlog(){ ## : Fetch the number of seconds since the last log message was
 
 	for i in {0..4}; do
 		lines=$(journalctl -u galaxy-zergling@$i -n 1 --no-pager)
-		if (( $(echo "$lines" | wc -l) > 1 )); then
+		if [[ ! $lines == *"No entries"* ]]; then
 			timestamp=$(journalctl -u galaxy-zergling@$i -n 1 --no-pager | grep -v 'Logs begin' | awk '{print $1" "$2" "$3}');
 			unix=$(date -d "$timestamp" +%s)
 			date_diff=$((NOW - unix));

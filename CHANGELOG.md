@@ -10,6 +10,7 @@
 	- fixed broken latest-users query
 	- fixed broken errored-jobs query, by [@gmauro](https://github.com/gmauro).
 	- several fixes in galaxy ie-show command, [@gmauro](https://github.com/gmauro).
+	- Generalized the "uwsgi lastlog" function to proper handle journalctl's output, by [@gmauro](https://github.com/gmauro).
 - Added:
 	- query dump-users, for [@shiltemann](https://github.com/shiltemann)
 	- "did you mean" when a command isn't found.
@@ -30,7 +31,7 @@
 	- Benchmarking via ASV (preview)
 	- anonymise-db-for-release (preview)
 	- Add '--by_group' flag to several monthly queries (Thanks [@slugger70](https://github.com/Slugger70))
-	- query monthly-cpu-stats (Thanks @gmauro)
+	- query monthly-cpu-stats (Thanks [@gmauro](https://github.com/gmauro))
 	- workflow trace archive commands
 	- query queue has a new optional parameter for splitting queues by various attributes (Thanks @natefoo)
 	- query pg-rows-per-table to find out which tables have data.
