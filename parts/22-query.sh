@@ -452,7 +452,7 @@ query_queue-details() {
 	query_queue-detail $@
 }
 
-query_queue-detail() { ##? [--all] [--seconds]: Detailed overview of running and queued jobs
+query_queue-detail() { ##? [--all] [--seconds] [--since-update]: Detailed overview of running and queued jobs
 	handle_help "$@" <<-EOF
 		    $ gxadmin query queue-detail
 		      state  |   id    |  extid  |                                 tool_id                                   | username | time_since_creation
@@ -475,6 +475,8 @@ query_queue-detail() { ##? [--all] [--seconds]: Detailed overview of running and
 
 	d=""
 	nonpretty="("
+	time_column="job.create_time"
+	time_column_name="time_since_creation"
 
 	if [[ -n "$arg_all" ]]; then
 		d=", 'new'"
@@ -482,6 +484,10 @@ query_queue-detail() { ##? [--all] [--seconds]: Detailed overview of running and
 	if [[ -n "$arg_seconds" ]]; then
 		fields="$fields;time_since_creation=5"
 		nonpretty="EXTRACT(EPOCH FROM "
+	fi
+	if [[ -n "$arg_since_update" ]]; then
+		time_column="job.update_time"
+		time_column_name="time_since_update"
 	fi
 
 	username=$(gdpr_safe galaxy_user.username username "Anonymous User")
@@ -493,7 +499,7 @@ query_queue-detail() { ##? [--all] [--seconds]: Detailed overview of running and
 			job.job_runner_external_id as extid,
 			job.tool_id,
 			$username,
-			$nonpretty now() AT TIME ZONE 'UTC' - job.create_time) as time_since_creation,
+			$nonpretty now() AT TIME ZONE 'UTC' - $time_column) as $time_column_name,
 			job.handler,
 			job.job_runner_name,
 			COALESCE(job.destination_id, 'none') as destination_id,
@@ -504,7 +510,7 @@ query_queue-detail() { ##? [--all] [--seconds]: Detailed overview of running and
 			state in ('running', 'queued'$d)
 		ORDER BY
 			state desc,
-			time_since_creation desc
+			$time_column_name desc
 	EOF
 }
 
