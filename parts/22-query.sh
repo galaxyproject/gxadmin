@@ -1042,6 +1042,113 @@ query_tool-available-metrics() { ##? <tool_id>: list all available metrics for a
 	EOF
 }
 
+query_tool-memory-per-inputs() { ##? <tool_id> [--like]: See memory usage and inout size data
+	handle_help "$@" <<-EOF
+		Display details about tool input counts and sizes along with memory usage and the relation between them,
+		to aid in determining appropriate memory allocations for tools.
+
+		    $ gxadmin query tool-memory-per-inputs %/unicycler/% --like
+		        id    |                           tool_id                            | input_count | total_input_size_mb | mean_input_size_mb | median_input_size_mb | memory_used_mb | memory_used_per_input_mb | memory_mean_input_ratio | memory_median_input_ratio 
+		    ----------+--------------------------------------------------------------+-------------+---------------------+--------------------+----------------------+----------------+--------------------------+-------------------------+---------------------------
+		     34663027 | toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.8.0 |           2 |                 245 |                122 |                  122 |           4645 |                       19 |                      38 |                        38
+		     34657045 | toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.8.0 |           2 |                  51 |                 25 |                   25 |           1739 |                       34 |                      68 |                        68
+		     34655863 | toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.8.0 |           2 |                1829 |                915 |                  915 |          20635 |                       11 |                      23 |                        23
+		     34650581 | toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.8.0 |           3 |                 235 |                 78 |                  112 |          30550 |                      130 |                     391 |                       274
+		     34629187 | toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.8.0 |           2 |                2411 |               1206 |                 1206 |          50018 |                       21 |                      41 |                        41
+
+		A good way to use this is to fetch the data and then do some aggregations. The following requires
+		[data_hacks](https://github.com/bitly/data_hacks):
+
+		    $ gxadmin tsvquery tool-memory-per-inputs %/unicycler/% --like | \\
+		        awk '{print \$10}' | histogram.py --percentage --max=256
+		    # NumSamples = 870; Min = 4.00; Max = 256.00
+		    # 29 values outside of min/max
+		    # Mean = 67.804598; Variance = 15461.789404; SD = 124.345444; Median 37.000000
+		    # each ∎ represents a count of 4
+		        4.0000 -    29.2000 [   368]: ∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎ (42.30%)
+		       29.2000 -    54.4000 [   226]: ∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎ (25.98%)
+		       54.4000 -    79.6000 [   133]: ∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎ (15.29%)
+		       79.6000 -   104.8000 [    45]: ∎∎∎∎∎∎∎∎∎∎∎ (5.17%)
+		      104.8000 -   130.0000 [    28]: ∎∎∎∎∎∎∎ (3.22%)
+		      130.0000 -   155.2000 [    12]: ∎∎∎ (1.38%)
+		      155.2000 -   180.4000 [     9]: ∎∎ (1.03%)
+		      180.4000 -   205.6000 [     6]: ∎ (0.69%)
+		      205.6000 -   230.8000 [    10]: ∎∎ (1.15%)
+		      230.8000 -   256.0000 [     4]: ∎ (0.46%)
+	EOF
+
+	tool_clause="j.tool_id = '$arg_tool_id'"
+	if [[ -n "$arg_like" ]]; then
+		tool_clause="j.tool_id like '$arg_tool_id'"
+	fi
+
+	read -r -d '' QUERY <<-EOF
+		WITH job_cte AS (
+			SELECT
+				j.id,
+				j.tool_id
+			FROM
+				job j
+			WHERE
+				$tool_clause
+				AND
+					j.state = 'ok'
+		),
+		mem_cte AS (
+			SELECT
+				j.id,
+				jmn.metric_value AS memory_used
+			FROM
+				job_cte j
+			JOIN
+				job_metric_numeric jmn ON j.id = jmn.job_id
+			WHERE
+				jmn.plugin = 'cgroup'
+				AND
+					jmn.metric_name = 'memory.memsw.max_usage_in_bytes'
+		),
+		data_cte AS (
+			SELECT
+				j.id,
+				count(jtid.id) AS input_count,
+				sum(d.total_size) AS total_input_size,
+				avg(d.total_size) AS mean_input_size,
+				percentile_cont(0.5) WITHIN GROUP (ORDER BY d.total_size) AS median_input_size
+			FROM
+				job_cte j
+			JOIN
+				job_to_input_dataset jtid ON j.id = jtid.job_id
+			JOIN
+				history_dataset_association hda ON jtid.dataset_id = hda.id
+			JOIN
+				dataset d ON hda.dataset_id = d.id
+			GROUP BY
+				j.id
+		)
+		SELECT
+			j.*,
+			d.input_count,
+			(d.total_input_size/1024/1024)::bigint AS total_input_size_mb,
+			(d.mean_input_size/1024/1024)::bigint AS mean_input_size_mb,
+			(d.median_input_size/1024/1024)::bigint AS median_input_size_mb,
+			(m.memory_used/1024/1024)::bigint AS memory_used_mb,
+			(m.memory_used/d.total_input_size)::bigint AS memory_used_per_input_mb,
+			(m.memory_used/d.mean_input_size)::bigint AS memory_mean_input_ratio,
+			(m.memory_used/d.median_input_size)::bigint AS memory_median_input_ratio
+			--(data_cte.total_size_mb/data_cte.input_count)::bigint AS average_size_mb,
+			--(data_cte.mem_used_mb/data_cte.total_size_mb)::bigint AS mem_inputs_ratio,
+			--(data_cte.mem_used_mb/greatest((data_cte.total_size_mb/data_cte.input_count), 1))::bigint AS mem_avg_input_ratio
+		FROM
+			job_cte j
+		JOIN
+			mem_cte m on j.id = m.id
+		JOIN
+			data_cte d on j.id = d.id
+		ORDER BY
+			j.id DESC
+	EOF
+}
+
 query_monthly-cpu-stats() { ##? [year] : CPU years/hours allocated to tools by month
 	handle_help "$@" <<-EOF
 		This uses the galaxy_slots and runtime_seconds metrics in order to
