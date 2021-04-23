@@ -1135,9 +1135,6 @@ query_tool-memory-per-inputs() { ##? <tool_id> [--like]: See memory usage and in
 			(m.memory_used/d.total_input_size)::bigint AS memory_used_per_input_mb,
 			(m.memory_used/d.mean_input_size)::bigint AS memory_mean_input_ratio,
 			(m.memory_used/d.median_input_size)::bigint AS memory_median_input_ratio
-			--(data_cte.total_size_mb/data_cte.input_count)::bigint AS average_size_mb,
-			--(data_cte.mem_used_mb/data_cte.total_size_mb)::bigint AS mem_inputs_ratio,
-			--(data_cte.mem_used_mb/greatest((data_cte.total_size_mb/data_cte.input_count), 1))::bigint AS mem_avg_input_ratio
 		FROM
 			job_cte j
 		JOIN
