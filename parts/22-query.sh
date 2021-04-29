@@ -537,12 +537,12 @@ query_runtime-per-user() { ##? <email>: computation time of user (by email)
 	EOF
 }
 
-query_jobs-nonterminal() { ## [username|id|email]: Job info of nonterminal jobs separated by user
+query_jobs-nonterminal() { ## [--states=new,queued,running] [--update-time] [--older-than=<interval>] [username|id|email]: Job info of nonterminal jobs separated by user
 	handle_help "$@" <<-EOF
 		You can request the user information by username, id, and user email
 
 		    $ gxadmin query jobs-nonterminal helena-rasche
-		       id    | tool_id             |  state  |        create_time         | runner | id     |     handler     | user_id
+		       id    | tool_id             |  state  |        create_time         | runner | ext_id |     handler     | user_id
 		    ---------+---------------------+---------+----------------------------+--------+--------+-----------------+---------
 		     4760549 | featurecounts/1.6.3 | running | 2019-01-18 14:05:14.871711 | condor | 197549 | handler_main_7  | 599
 		     4760552 | featurecounts/1.6.3 | running | 2019-01-18 14:05:16.205867 | condor | 197552 | handler_main_7  | 599
@@ -557,7 +557,7 @@ query_jobs-nonterminal() { ## [username|id|email]: Job info of nonterminal jobs 
 		You can also query all non-terminal jobs by all users
 
 		    $ gxadmin query jobs-nonterminal | head
-		       id    |  tool_id            |  state  |        create_time         | runner | id     |     handler     | user_id
+		       id    |  tool_id            |  state  |        create_time         | runner | ext_id |     handler     | user_id
 		    ---------+---------------------+---------+----------------------------+--------+--------+-----------------+---------
 		     4760549 | featurecounts/1.6.3 | running | 2019-01-18 14:05:14.871711 | condor | 197549 | handler_main_7  |     599
 		     4760552 | featurecounts/1.6.3 | running | 2019-01-18 14:05:16.205867 | condor | 197552 | handler_main_7  |     599
@@ -567,25 +567,62 @@ query_jobs-nonterminal() { ## [username|id|email]: Job info of nonterminal jobs 
 		     4760588 | featurecounts/1.6.3 | new     | 2019-01-18 14:11:03.766558 |        |        | handler_main_9  |      11
 		     4760589 | featurecounts/1.6.3 | new     | 2019-01-18 14:11:05.895232 |        |        | handler_main_1  |      11
 		     4760590 | featurecounts/1.6.3 | new     | 2019-01-18 14:11:07.328533 |        |        | handler_main_2  |      11
+
+		By default jobs in the states 'new', 'queued', and 'running' are considered non-terminal, but this can
+		be controlled by passing a comma-separated list to the '--states=' parameter. In addition, by default,
+		all non-terminal jobs are displayed, but you can limit this to only jobs created or updated before a
+		certain time with '--older-than='. This option takes a value in the PostgreSQL date/time interval
+		format, see documentation: https://www.postgresql.org/docs/current/functions-datetime.html
+
+		Be sure to quote intervals containing spaces. Finally, by default, the column returned (and filtered
+		with in the case of '--older-than=') is 'job.create_time', but this can be changed to 'job.update_time'
+		with '--update-time'. So to return all queued and running jobs that have not been updated in the past 2
+		days:
+
+		    $ gxadmin query jobs-nonterminal --states=queued,running --older-than='2 days' --update-time | head -5
+		       id   |       tool_id        |  state  |     update_time     |     runner   | ext_id |      handler     | user_id
+		    --------+----------------------+---------+---------------------+--------------+--------+------------------+---------
+		     335897 | trinity/2.9.1        | queued  | 2021-03-10 10:44:09 | bridges      | 335897 | main_w3_handler2 | 599
+		     338554 | repeatmasker/4.0.9   | running | 2021-03-09 10:41:30 | jetstream_iu | 338554 | main_w4_handler2 | 11
+		     338699 | hisat2/2.1.0+galaxy7 | queued  | 2021-03-10 05:36:26 | jetstream_iu | 338699 | main_w3_handler2 | 42
 	EOF
 
+	states='new,queued,running'
+	interval=
+	user_filter='true'
+	time_column='create_time'
+
 	if (( $# > 0 )); then
-		user_filter=$(get_user_filter "$1")
-	else
-		user_filter="true"
+		for args in "$@"; do
+			if [ "$args" = '--update-time' ]; then
+				time_column='update_time'
+			elif [ "${args:0:9}" = '--states=' ]; then
+				states="${args:9}"
+			elif [ "${args:0:13}" = '--older-than=' ]; then
+				interval="${args:13}"
+			elif [ "${args:0:2}" != '==' ]; then
+				user_filter=$(get_user_filter "$1")
+			fi
+		done
+	fi
+
+	states="'$(echo "$states" | sed "s/,/', '/g")'"
+
+	if [ -n "$interval" ]; then
+		interval="AND job.$time_column < NOW() - interval '$interval'"
 	fi
 
 	user_id=$(gdpr_safe job.user_id user_id "anon")
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			job.id, job.tool_id, job.state, job.create_time AT TIME ZONE 'UTC', job.job_runner_name, job.job_runner_external_id, job.handler, $user_id
+			job.id, job.tool_id, job.state, job.$time_column AT TIME ZONE 'UTC' AS $time_column, job.job_runner_name, job.job_runner_external_id, job.handler, $user_id
 		FROM
 			job
 		LEFT OUTER JOIN
 			galaxy_user ON job.user_id = galaxy_user.id
 		WHERE
-			$user_filter AND job.state IN ('new', 'queued', 'running')
+			$user_filter AND job.state IN ($states) $interval
 		ORDER BY job.id ASC
 	EOF
 }
