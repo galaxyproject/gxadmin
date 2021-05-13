@@ -3586,3 +3586,40 @@ query_job-metrics() { ## : Retrieves input size, runtime, memory for all execute
 		LEFT JOIN (SELECT * FROM job_metric_numeric WHERE job_metric_numeric.metric_name = 'memory.memsw.max_usage_in_bytes') jmn3 ON jmn3.job_id = job.id
 	EOF
 }
+
+query-history-core-hours()  { ##? [history-name-ilike]: Produces the median core hour count for histories matching a name filter
+	handle_help "$@" <<-EOF
+	EOF
+
+	read -r -d '' QUERY <<-EOF
+		WITH
+			toolavg
+				AS (
+					SELECT
+						tool_id, history_id, round(sum(a.metric_value * b.metric_value / 3600), 2) AS cpu_hours
+					FROM
+						job_metric_numeric AS a, job_metric_numeric AS b, job
+					WHERE
+						b.job_id = a.job_id
+						AND a.job_id = job.id
+						AND a.metric_name = 'runtime_seconds'
+						AND b.metric_name = 'galaxy_slots'
+						AND history_id in (select id from history where name ilike '%$arg_history_name%')
+					GROUP BY
+						tool_id, history_id
+				),
+			toolmedian
+				AS (
+					SELECT
+						toolavg.tool_id, percentile_cont(0.5) WITHIN GROUP (ORDER BY cpu_hours)
+					FROM
+						toolavg
+					GROUP BY
+						toolavg.tool_id
+				)
+		SELECT
+			sum(toolmedian.percentile_cont)
+		FROM
+			toolmedian
+	EOF
+}
