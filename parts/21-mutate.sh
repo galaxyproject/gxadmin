@@ -110,7 +110,7 @@ mutate_fail-terminal-datasets() { ## [--commit]: Causes the output datasets of j
 	EOF
 
 	txn_pre=$(txn_prefix "$1")
-	txn_pos=$(txn_postfix"$1")
+	txn_pos=$(txn_postfix "$1")
 	QUERY="$txn_pre $QUERY; $txn_pos"
 }
 
