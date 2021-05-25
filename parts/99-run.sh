@@ -5,9 +5,19 @@ wrap_time() {
 
 search() { # <term>: Search for a specific command
 	if (( $# > 0 )); then
-		locate_cmds | correct_cmd | grep "$1" | colour_word "$1" orange
+		if command -v fzf &> /dev/null; then
+			res=$(locate_cmds | correct_cmd | fzf -q "$1" | sed 's/[:<\[].*//g')
+			fzf_autorun_cmd
+		else
+			locate_cmds | correct_cmd | grep "$1" | colour_word "$1" orange
+		fi
 	else
-		locate_cmds | correct_cmd
+		if command -v fzf &> /dev/null; then
+			res=$(locate_cmds | correct_cmd | fzf | sed 's/[:<\[].*//g')
+			fzf_autorun_cmd
+		else
+			locate_cmds | correct_cmd
+		fi
 	fi
 }
 

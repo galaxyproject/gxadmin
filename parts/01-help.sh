@@ -41,6 +41,13 @@ correct_cmd() {
 	cat | sed 's/_/ /;s/()\s*{ ##?\?//;s/ :/:/'
 }
 
+fzf_autorun_cmd() {
+	read -p "Would you like to run '$0 $res'? [N|y]: " choice
+	if [[ "$choice" == "y" ]] || [[ "$choice" == "Y" ]]; then
+		$0 $res
+	fi
+}
+
 
 didyoumean() {
 	# Given a query
@@ -69,7 +76,8 @@ didyoumean() {
 				cut -f 2 -d' ' | sed -s "s/://g;s/\$/ $2/g" | \
 				levenshtein_filter | sed 's/^/ - [/;s/\t/]: /g'
 		else
-			locate_cmds | correct_cmd | grep "^$1 " | fzf -f "$2"
+			res=$(locate_cmds | correct_cmd | grep "^$1 " | fzf -q "$2" --header="Unknown subcommand: $1 $2, did you mean..." | sed 's/[:<\[].*//g')
+			fzf_autorun_cmd
 		fi
 		exit 1;
 
