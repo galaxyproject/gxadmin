@@ -3623,3 +3623,21 @@ query_history-core-hours()  { ##? [history-name-ilike]: Produces the median core
 			toolmedian
 	EOF
 }
+
+query_tiaas-expired-trainings() { ## : Lists expired TIaaS trainings by training identifier, for use with mutate disassociate-training-roles
+	handle_help "$@" <<-EOF
+		TIP: This query expects the TIaaS database! You may want to override \$PGPASSFILE, \$PGDATABASE, \$PGUSER,
+		and/or \$PGHOST for this query.
+	EOF
+
+
+	# Wait until after the last timezone on the planet has entered the next day
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			training_identifier
+		FROM
+			training_training
+		WHERE
+			"end" < (NOW() AT TIME ZONE 'UTC+12')::date
+	EOF
+}
