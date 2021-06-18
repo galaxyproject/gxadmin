@@ -3587,7 +3587,7 @@ query_job-metrics() { ## : Retrieves input size, runtime, memory for all execute
 	EOF
 }
 
-query-history-core-hours()  { ##? [history-name-ilike]: Produces the median core hour count for histories matching a name filter
+query_history-core-hours()  { ##? [history-name-ilike]: Produces the median core hour count for histories matching a name filter
 	handle_help "$@" <<-EOF
 	EOF
 
