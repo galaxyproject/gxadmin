@@ -1085,7 +1085,7 @@ query_tool-memory-per-inputs() { ##? <tool_id> [--like]: See memory usage and in
 		to aid in determining appropriate memory allocations for tools.
 
 		    $ gxadmin query tool-memory-per-inputs %/unicycler/% --like
-		        id    |                           tool_id                            | input_count | total_input_size_mb | mean_input_size_mb | median_input_size_mb | memory_used_mb | memory_used_per_input_mb | memory_mean_input_ratio | memory_median_input_ratio 
+		        id    |                           tool_id                            | input_count | total_input_size_mb | mean_input_size_mb | median_input_size_mb | memory_used_mb | memory_used_per_input_mb | memory_mean_input_ratio | memory_median_input_ratio
 		    ----------+--------------------------------------------------------------+-------------+---------------------+--------------------+----------------------+----------------+--------------------------+-------------------------+---------------------------
 		     34663027 | toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.8.0 |           2 |                 245 |                122 |                  122 |           4645 |                       19 |                      38 |                        38
 		     34657045 | toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.8.0 |           2 |                  51 |                 25 |                   25 |           1739 |                       34 |                      68 |                        68
@@ -3621,23 +3621,5 @@ query_history-core-hours()  { ##? [history-name-ilike]: Produces the median core
 			sum(toolmedian.percentile_cont)
 		FROM
 			toolmedian
-	EOF
-}
-
-query_tiaas-expired-trainings() { ## : Lists expired TIaaS trainings by training identifier, for use with mutate disassociate-training-roles
-	handle_help "$@" <<-EOF
-		TIP: This query expects the TIaaS database! You may want to override \$PGPASSFILE, \$PGDATABASE, \$PGUSER,
-		and/or \$PGHOST for this query.
-	EOF
-
-
-	# Wait until after the last timezone on the planet has entered the next day
-	read -r -d '' QUERY <<-EOF
-		SELECT
-			training_identifier
-		FROM
-			training_training
-		WHERE
-			"end" < (NOW() AT TIME ZONE 'UTC+12')::date
 	EOF
 }
