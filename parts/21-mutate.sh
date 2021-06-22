@@ -1409,8 +1409,8 @@ mutate_oidc-by-emails() { ## <email_from> <email_to> [--commit]: Reassign OIDC a
 	QUERY="$txn_pre $QUERY; $txn_pos"
 }
 
-mutate_set_quota_for_oidc_user() { ##? <provider_name> <quota_name> [--commit]: Set quota for OIDC users.
-  handle_help "$@" <<-EOF
+mutate_set-quota-for-oidc-user() { ##? <provider_name> <quota_name> [--commit]: Set quota for OIDC users.
+	handle_help "$@" <<-EOF
 		Set quota for OIDC users.
 	EOF
 

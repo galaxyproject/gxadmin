@@ -1085,7 +1085,7 @@ query_tool-memory-per-inputs() { ##? <tool_id> [--like]: See memory usage and in
 		to aid in determining appropriate memory allocations for tools.
 
 		    $ gxadmin query tool-memory-per-inputs %/unicycler/% --like
-		        id    |                           tool_id                            | input_count | total_input_size_mb | mean_input_size_mb | median_input_size_mb | memory_used_mb | memory_used_per_input_mb | memory_mean_input_ratio | memory_median_input_ratio 
+		        id    |                           tool_id                            | input_count | total_input_size_mb | mean_input_size_mb | median_input_size_mb | memory_used_mb | memory_used_per_input_mb | memory_mean_input_ratio | memory_median_input_ratio
 		    ----------+--------------------------------------------------------------+-------------+---------------------+--------------------+----------------------+----------------+--------------------------+-------------------------+---------------------------
 		     34663027 | toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.8.0 |           2 |                 245 |                122 |                  122 |           4645 |                       19 |                      38 |                        38
 		     34657045 | toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.8.0 |           2 |                  51 |                 25 |                   25 |           1739 |                       34 |                      68 |                        68
@@ -3587,7 +3587,7 @@ query_job-metrics() { ## : Retrieves input size, runtime, memory for all execute
 	EOF
 }
 
-query-history-core-hours()  { ##? [history-name-ilike]: Produces the median core hour count for histories matching a name filter
+query_history-core-hours()  { ##? [history-name-ilike]: Produces the median core hour count for histories matching a name filter
 	handle_help "$@" <<-EOF
 	EOF
 
