@@ -41,7 +41,7 @@ wonderful_argument_parser() {
 	optional_index=0
 
 	# shellcheck disable=SC2207
-	signature=($(grep -s -h -o "${fn}()\s*{ ##?\? .*" "$0" | sed 's/.*##?//g;s/: .*//g;'))
+	read -r -a signature <<< $(grep -s -h -o "${fn}()\s*{ ##?\? .*" "$0" | sed 's/.*##?//g;s/: .*//g;')
 	signature+=('[--help]') # This is always available
 
 	# shellcheck disable=SC2068

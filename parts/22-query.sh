@@ -3624,9 +3624,35 @@ query_history-core-hours()  { ##? [history-name-ilike]: Produces the median core
 	EOF
 }
 
-query_pulsar-gb-transferred()  { ##? : Counts up datasets transferred and output file size produced by jobs running on destinations like pulsar_*
+query_pulsar-gb-transferred()  { ##? [--bymonth] [--byrunner] [--human]: Counts up datasets transferred and output file size produced by jobs running on destinations like pulsar_*
 	handle_help "$@" <<-EOF
 	EOF
+
+	orderby=""
+	declare -a ordering
+
+	if [[ -n "$arg_bymonth" ]]; then
+		orderby="ORDER BY sent.month DESC"
+		ordering+=("sent.month")
+	fi
+
+	if [[ -n "$arg_byrunner" ]]; then
+		if [[ ! -n "$arg_bymonth" ]]; then
+			orderby="ORDER BY sent.runner DESC"
+		fi
+		ordering+=("sent.runner")
+	fi
+
+	if [[ -n "$arg_human" ]]; then
+		pg_size_pretty_b="pg_size_pretty("
+		pg_size_pretty_a=")"
+	fi
+
+	groupby=""
+	if (( ${#ordering[@]} > 0 )); then
+		data_string="${ordering[*]}"
+		groupby="GROUP BY ${data_string//${IFS:0:1}/,}"
+	fi
 
 	read -r -d '' QUERY <<-EOF
 		WITH
@@ -3665,10 +3691,10 @@ query_pulsar-gb-transferred()  { ##? : Counts up datasets transferred and output
 						job.id DESC
 				)
 		SELECT
-			sent.month, sent.runner, pg_size_pretty(sum(sent.size)) AS sent, pg_size_pretty(sum(recv.size)) AS recv
+			$month $runner ${pg_size_pretty_a}sum(sent.size)${pg_size_pretty_b} AS sent, ${pg_size_pretty_a}sum(recv.size)${pg_size_pretty_b} AS recv
 		FROM
 			sent FULL JOIN recv ON sent.job = recv.job
-		GROUP BY
-			sent.month, sent.runner, recv.month, recv.runner;
+		$groupby
+		$orderby
 	EOF
 }
