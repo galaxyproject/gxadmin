@@ -3632,13 +3632,13 @@ query_pulsar-gb-transferred()  { ##? [--bymonth] [--byrunner] [--human]: Counts 
 	declare -a ordering
 
 	if [[ -n "$arg_bymonth" ]]; then
-		orderby="ORDER BY sent.month DESC"
+		orderby="ORDER BY sent.month ASC"
 		ordering+=("sent.month")
 	fi
 
 	if [[ -n "$arg_byrunner" ]]; then
 		if [[ ! -n "$arg_bymonth" ]]; then
-			orderby="ORDER BY sent.runner DESC"
+			orderby="ORDER BY sent.runner ASC"
 		fi
 		ordering+=("sent.runner")
 	fi
