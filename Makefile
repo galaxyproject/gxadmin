@@ -1,6 +1,8 @@
 PARTS=$(sort $(wildcard parts/*.sh))
 TMP := $(shell mktemp)
 
+defaut: gxadmin
+
 all: gxadmin test docs
 
 docs:
