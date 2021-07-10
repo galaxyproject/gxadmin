@@ -3623,3 +3623,52 @@ query_history-core-hours()  { ##? [history-name-ilike]: Produces the median core
 			toolmedian
 	EOF
 }
+
+query_pulsar-gb-transferred()  { ##? : Counts up datasets transferred and output file size produced by jobs running on destinations like pulsar_*
+	handle_help "$@" <<-EOF
+	EOF
+
+	read -r -d '' QUERY <<-EOF
+		WITH
+			sent
+				AS (
+					SELECT
+						job.id AS job,
+						date_trunc('month', job.create_time)::DATE AS month,
+						job.job_runner_name AS runner,
+						ds_in.total_size AS size
+					FROM
+						job
+						LEFT JOIN job_to_input_dataset AS jtid ON job.id = jtid.job_id
+						LEFT JOIN history_dataset_association AS hda_in ON jtid.dataset_id = hda_in.id
+						LEFT JOIN dataset AS ds_in ON hda_in.dataset_id = ds_in.id
+					WHERE
+						job_runner_name LIKE 'pulsar%'
+					ORDER BY
+						job.id DESC
+				),
+			recv
+				AS (
+					SELECT
+						job.id AS job,
+						date_trunc('month', job.create_time)::DATE AS month,
+						job.job_runner_name AS runner,
+						ds_out.total_size AS size
+					FROM
+						job
+						LEFT JOIN job_to_output_dataset AS jtid ON job.id = jtid.job_id
+						LEFT JOIN history_dataset_association AS hda_out ON jtid.dataset_id = hda_out.id
+						LEFT JOIN dataset AS ds_out ON hda_out.dataset_id = ds_out.id
+					WHERE
+						job_runner_name LIKE 'pulsar%'
+					ORDER BY
+						job.id DESC
+				)
+		SELECT
+			sent.month, sent.runner, pg_size_pretty(sum(sent.size)) AS sent, pg_size_pretty(sum(recv.size)) AS recv
+		FROM
+			sent FULL JOIN recv ON sent.job = recv.job
+		GROUP BY
+			sent.month, sent.runner, recv.month, recv.runner;
+	EOF
+}
