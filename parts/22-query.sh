@@ -3644,14 +3644,16 @@ query_pulsar-gb-transferred()  { ##? [--bymonth] [--byrunner] [--human]: Counts 
 	fi
 
 	if [[ -n "$arg_human" ]]; then
-		pg_size_pretty_b="pg_size_pretty("
-		pg_size_pretty_a=")"
+		pg_size_pretty_a="pg_size_pretty("
+		pg_size_pretty_b=")"
 	fi
 
 	groupby=""
+	data_string="${ordering[*]}"
+	csvcols="${data_string//${IFS:0:1}/,}"
 	if (( ${#ordering[@]} > 0 )); then
-		data_string="${ordering[*]}"
-		groupby="GROUP BY ${data_string//${IFS:0:1}/,}"
+		groupby="GROUP BY $csvcols"
+		csvcols="$csvcols,"
 	fi
 
 	read -r -d '' QUERY <<-EOF
@@ -3691,7 +3693,7 @@ query_pulsar-gb-transferred()  { ##? [--bymonth] [--byrunner] [--human]: Counts 
 						job.id DESC
 				)
 		SELECT
-			$month $runner ${pg_size_pretty_a}sum(sent.size)${pg_size_pretty_b} AS sent, ${pg_size_pretty_a}sum(recv.size)${pg_size_pretty_b} AS recv
+			$csvcols ${pg_size_pretty_a}sum(sent.size)${pg_size_pretty_b} AS sent, ${pg_size_pretty_a}sum(recv.size)${pg_size_pretty_b} AS recv
 		FROM
 			sent FULL JOIN recv ON sent.job = recv.job
 		$groupby
