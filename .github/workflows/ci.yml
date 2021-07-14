@@ -12,9 +12,12 @@ jobs:
           bats-version: 1.2.1
 
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
 
       - name: Test
         run: |
+          git log --format=%cd | wc -l
           make test
 
       #- name: Complain about changelog
