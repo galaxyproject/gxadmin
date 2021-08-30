@@ -3693,7 +3693,7 @@ query_pulsar-gb-transferred()  { ##? [--bymonth] [--byrunner] [--human]: Counts 
 						job.id DESC
 				)
 		SELECT
-			$csvcols ${pg_size_pretty_a}sum(sent.size)${pg_size_pretty_b} AS sent, ${pg_size_pretty_a}sum(recv.size)${pg_size_pretty_b} AS recv, count(sent.size) as job_count
+			$csvcols ${pg_size_pretty_a}sum(sent.size)${pg_size_pretty_b} AS sent, ${pg_size_pretty_a}sum(recv.size)${pg_size_pretty_b} AS recv, count(sent.size) as sent_count, count(recv.size) as recv_count
 		FROM
 			sent FULL JOIN recv ON sent.job = recv.job
 		$groupby
