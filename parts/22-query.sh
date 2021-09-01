@@ -470,8 +470,8 @@ query_queue-detail() { ##? [--all] [--seconds] [--since-update]: Detailed overvi
 		     queued  | 4361941 | 229731  | toolshed.g2.bx.psu.edu/repos/nml/spades/spades/1.2                        | xxxx     | 4 days 21:00:00
 	EOF
 
-	fields="count=9"
-	tags="state=0;id=1;extid=2;tool_id=3;username=4;handler=6;job_runner_name=7;destination_id=8"
+	fields="id=1;extid=2;count=9"
+	tags="state=0;tool_id=3;username=4;handler=6;job_runner_name=7;destination_id=8"
 
 	d=""
 	nonpretty="("
