@@ -2785,6 +2785,43 @@ query_queue-detail-by-handler() { ##? <handler_id>: List jobs for a specific han
 	EOF
 }
 
+query_pg-column-size() { ##? <table>: Estimate the size of columns in a table
+	handle_help "$@" <<-EOF
+	EOF
+
+	results="$(query_tsv "SELECT column_name FROM information_schema.columns WHERE table_name   = '$arg_table'")"
+
+	declare -a select
+	declare -a cols
+
+	for c in $results; do
+		cols+=("$c")
+		select+=("pg_size_pretty(sum(pg_column_size($c))) as size_$c")
+	done
+
+	strcol="${cols[*]}"
+	strsel="${select[*]}"
+	csvcol="${strcol//${IFS:0:1}/,}"
+	csvsel="${strsel//${IFS:0:1}/,}"
+	csvsel="$(echo "$csvsel" | sed 's/,as,/ AS /g')"
+
+	read -r -d '' QUERY <<-EOF
+		WITH
+			x AS (
+				SELECT
+				$csvcol
+				FROM $arg_table
+				ORDER BY id DESC
+				LIMIT 100000
+			)
+		SELECT
+			$csvsel
+		FROM
+			x;
+	EOF
+
+}
+
 
 query_pg-cache-hit() { ## : Check postgres in-memory cache hit ratio
 	handle_help "$@" <<-EOF
@@ -3700,3 +3737,4 @@ query_pulsar-gb-transferred()  { ##? [--bymonth] [--byrunner] [--human]: Counts 
 		$orderby
 	EOF
 }
+
