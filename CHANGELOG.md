@@ -11,6 +11,7 @@
 	- fixed broken errored-jobs query, by [@gmauro](https://github.com/gmauro).
 	- several fixes in galaxy ie-show command, [@gmauro](https://github.com/gmauro).
 	- Generalized the "uwsgi lastlog" function to proper handle journalctl's output, by [@gmauro](https://github.com/gmauro).
+	- Updated "query upload-gb-in-past-hour" to include also datasets created by the DATA_FETCH tool, by [@gmauro](https://github.com/gmauro).
 - Added:
 	- query dump-users, for [@shiltemann](https://github.com/shiltemann)
 	- "did you mean" when a command isn't found.
