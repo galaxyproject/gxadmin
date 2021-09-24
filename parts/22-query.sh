@@ -2759,7 +2759,7 @@ query_upload-gb-in-past-hour() { ##? [hours|1]: Sum in bytes of files uploaded i
 					job_to_output_dataset.dataset_id = history_dataset_association.id
 			LEFT JOIN dataset ON history_dataset_association.dataset_id = dataset.id
 		WHERE
-			job.tool_id = 'upload1'
+			job.tool_id in ('__DATA_FETCH__', 'upload1')
 			AND job.create_time AT TIME ZONE 'UTC' > (now() - '$arg_hours hours'::INTERVAL)
 	EOF
 }
