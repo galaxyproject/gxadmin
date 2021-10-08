@@ -517,3 +517,10 @@ galaxy_ie-show() { ## [gie-galaxy-job-id]: Report on a GIE [HTCondor Only!]
 	echo "URL: https://${key}-${token}.${key_type}.interactivetool.usegalaxy.eu"
 }
 
+galaxy_prune-gxit-routes() { ##? <interactivetools_map> : Prunes dead routes
+	handle_help "$@" <<-EOF
+	EOF
+
+	gxadmin tsvquery q "select token from interactivetool_entry_point left join job on job.id = job_id where job.state != 'running'" | \
+	  xargs -n 1 -I {} sqlite3 $arg_interactivetools_map "delete from gxitproxy where token = '{}'"
+}
