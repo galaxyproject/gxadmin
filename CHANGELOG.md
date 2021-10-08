@@ -23,6 +23,7 @@
 	- query tool-usage-over-time which can be used to make charts of specific tools over time.
 	- improved use of FZF for both the search and 'typo' functions, when it is available.
 	- query pulsar-gb-transferred: sums up data in/out (minus collections) of pulsar.
+	- mutate fail-misbehaving-gxits: Works aroud a gxit issue.
 
 # 19
 

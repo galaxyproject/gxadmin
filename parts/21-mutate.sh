@@ -1433,3 +1433,32 @@ mutate_set-quota-for-oidc-user() { ##? <provider_name> <quota_name> [--commit]: 
 	txn_pos=$(txn_postfix "$arg_commit")
 	QUERY="$txn_pre $QUERY; $txn_pos"
 }
+
+mutate_fail-misbehaving-gxits() { ##? [--commit]: Fails misbehaving GxITs.
+	handle_help "$@" <<-EOF
+		Set quota for OIDC users.
+	EOF
+
+	read -r -d '' QUERY <<-EOF
+		WITH qid AS (
+			SELECT host, port, count(*)
+			FROM interactivetool_entry_point
+			LEFT JOIN job on job_id = job.id
+			WHERE job.state = 'running'
+			GROUP BY host, port
+			ORDER BY count desc
+		), bad AS (
+			select host || ':' || port as hp from qid where count > 1
+		), bad_jobs AS (
+			select job_id from interactivetool_entry_point where host || ':' || port in (select hp from bad)
+		)
+		UPDATE job
+		SET state = 'error'
+		WHERE job.id IN (SELECT job_id FROM bad_jobs)
+	EOF
+
+	txn_pre=$(txn_prefix "$arg_commit")
+	txn_pos=$(txn_postfix "$arg_commit")
+	QUERY="$txn_pre $QUERY; $txn_pos"
+}
+
