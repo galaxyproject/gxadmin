@@ -1462,3 +1462,23 @@ mutate_fail-misbehaving-gxits() { ##? [--commit]: Fails misbehaving GxITs.
 	QUERY="$txn_pre $QUERY; $txn_pos"
 }
 
+mutate_force-publish-history() { ##? <history_id> [--commit]: Removes the access restriction on every dataset in a specified history
+	handle_help "$@" <<-EOF
+		Workaround for Galaxy bug https://github.com/galaxyproject/galaxy/issues/13001
+	EOF
+
+	read -r -d '' QUERY <<-EOF
+		DELETE FROM dataset_permissions
+		WHERE
+			action = 'access'
+			AND dataset_id in (
+				SELECT dataset_id
+				FROM history_dataset_association
+				WHERE history_id = $arg_history_id
+			)
+	EOF
+
+	txn_pre=$(txn_prefix "$arg_commit")
+	txn_pos=$(txn_postfix "$arg_commit")
+	QUERY="$txn_pre $QUERY; $txn_pos"
+}
