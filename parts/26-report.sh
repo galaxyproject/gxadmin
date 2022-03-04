@@ -8,6 +8,134 @@ align_cols() {
 }
 
 
+
+report_group-info(){ ## <group_id|groupname>: Quick overview of a Galaxy group in your system
+	handle_help "$@" <<-EOF
+		This command lets you quickly find out information about a Galaxy group. The output is formatted as markdown by default.
+		Consider [mdless](https://github.com/ttscoff/mdless) for easier reading in the terminal!
+		    $ gxadmin report group-info 
+			# Galaxy Group 18
+				  Property | Value
+			-------------- | -----
+			            ID | Backofen (id=1)
+			       Created | 2013-02-25 15:58:10.691672+01
+			    Properties | deleted=f
+			    Group size | 8
+			Number of jobs | 1630
+			    Disk usage | 304 GB
+			Data generated | 6894 GB
+			     CPU years | 4.07
+
+			## Member stats
+			Username | Email | User ID | Active | Disk Usage | Number of jobs | CPU years
+			---- | ---- | ---- | ---- | --- | ---- | ---- | ----
+			bgruening | bgruening@gmail.com | 25 | t | 265 GB | 1421 | 1.14
+			helena-rasche | hxr@informatik.uni-freiburg.de | 122 | t | 37 GB | 113 | 2.91
+			videmp | videmp@hxr@informatik.uni-freiburg.de | 46 | t | 1383 MB | 96 | 0.02
+	EOF
+
+	# Metada
+	read -r -d '' qstr <<-EOF
+		SELECT
+			g.name, g.id, g.create_time AT TIME ZONE 'UTC' as create_time, g.deleted, count(distinct ug.id)
+		FROM
+			galaxy_group AS g, user_group_association AS ug
+		WHERE
+			g.id=ug.group_id AND (g.name='$1' or g.id= CAST(REGEXP_REPLACE(COALESCE('$1','0'), '[^0-9]+', '0', 'g') AS INTEGER))
+		GROUP BY g.id
+	EOF
+	results=$(query_tsv "$qstr")
+	group_id=$(echo "$results" | awk '{print $2}')
+
+	if [[ -z "$group_id" ]]; then
+		error "Unknown group"
+		exit 1
+	fi
+
+	# Group total number of jobs
+	read -r -d '' qstr <<-EOF
+		SELECT
+			count(j.*)
+		FROM
+			galaxy_user u 
+			INNER JOIN job j ON u.id=j.user_id 
+			INNER JOIN user_group_association ug ON ug.user_id=j.user_id
+		WHERE
+			ug.group_id=$group_id
+	EOF
+	g_total_n_jobs=$(query_tsv "$qstr")
+
+	# Group total disk usage
+	read -r -d '' qstr <<-EOF
+		SELECT
+			pg_size_pretty(SUM(u.disk_usage))
+		FROM
+			galaxy_user u, user_group_association ug
+		WHERE
+			u.id=ug.user_id AND ug.group_id=$group_id
+	EOF
+	g_total_disk_usage=$(query_tsv "$qstr")
+
+	# Group total data generated
+	read -r -d '' qstr <<-EOF
+		SELECT
+			pg_size_pretty(COALESCE(SUM(total_size), 0))
+		FROM
+			(SELECT d.total_size FROM galaxy_user u,history_dataset_association hda JOIN history h ON h.id = hda.history_id JOIN dataset d ON hda.dataset_id = d.id  WHERE h.user_id IN (SELECT user_id FROM user_group_association WHERE group_id=$group_id) AND d.id NOT IN (SELECT dataset_id FROM library_dataset_dataset_association) GROUP BY d.id) AS sizes
+	EOF
+	g_total_data_generated=$(query_tsv "$qstr")
+
+	# Group total CPU years
+	read -r -d '' qstr <<-EOF
+		SELECT
+			round(sum((a.metric_value * b.metric_value) / 3600 / 24 / 365), 2)
+		FROM
+			job_metric_numeric a, job_metric_numeric b, job
+			FULL OUTER JOIN galaxy_user ON job.user_id = galaxy_user.id
+			INNER JOIN user_group_association ug ON ug.user_id=galaxy_user.id
+		WHERE
+			b.job_id = a.job_id AND a.job_id = job.id AND a.metric_name = 'runtime_seconds' AND b.metric_name = 'galaxy_slots' AND ug.group_id=$group_id
+	EOF
+	g_total_cup_years=$(query_tsv "$qstr")
+
+	# Group members stats
+	read -r -d '' qstr <<-EOF
+		SELECT
+			u.username, u.email, u.id, u.active, pg_size_pretty(u.disk_usage), count(j.*), round(sum((a.metric_value * b.metric_value) / 3600 / 24 / 365), 2)
+		FROM
+			 job_metric_numeric a, job_metric_numeric b, job j FULL OUTER JOIN galaxy_user u ON j.user_id = u.id INNER JOIN user_group_association ug ON u.id=ug.user_id 
+		WHERE
+			u.id=j.user_id AND j.id=a.job_id AND a.metric_name = 'runtime_seconds' AND b.job_id = a.job_id AND a.job_id = j.id AND a.metric_name = 'runtime_seconds' AND b.metric_name = 'galaxy_slots' AND group_id=$group_id
+		GROUP BY
+			u.id
+		ORDER BY
+			u.username
+	EOF
+	member_stats=$(query_tsv "$qstr")
+	member_stats_w_header=$(printf "Username\tEmail\tUser ID\tActive\tDisk Usage\tNumber of jobs\tCPU years\n----\t----\t----\t----\t---\t----\t----\t----\n%s" "$member_stats" | align_cols)
+
+	read -r -d '' template <<EOF
+# Galaxy Group $group_id
+       Property | Value
+--------------- | -----
+             ID | %s (id=%s)
+        Created | %s %s
+     Properties | deleted=%s
+     Group size | %s
+ Number of jobs | %s
+     Disk usage | %s %s
+ Data generated | %s %s
+      CPU years | %s
+
+## Individual Member stats
+%s
+\n
+EOF
+	# shellcheck disable=SC2086
+	# shellcheck disable=SC2059
+	printf "$template" $results $g_total_n_jobs $g_total_disk_usage $g_total_data_generated $g_total_cup_years "$member_stats_w_header"
+}
+
 report_user-info(){ ## <user_id|username|email>: Quick overview of a Galaxy user in your system
 	handle_help "$@" <<-EOF
 		This command lets you quickly find out information about a user. The output is formatted as markdown by default.
