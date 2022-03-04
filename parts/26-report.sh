@@ -7,13 +7,11 @@ align_cols() {
 	cat | sed 's/\t/ | /g'
 }
 
-
-
 report_group-info(){ ## <group_id|groupname>: Quick overview of a Galaxy group in your system
 	handle_help "$@" <<-EOF
 		This command lets you quickly find out information about a Galaxy group. The output is formatted as markdown by default.
 		Consider [mdless](https://github.com/ttscoff/mdless) for easier reading in the terminal!
-		    $ gxadmin report group-info 
+		    $ gxadmin report group-info Backofen
 			# Galaxy Group 18
 				  Property | Value
 			-------------- | -----
@@ -31,7 +29,7 @@ report_group-info(){ ## <group_id|groupname>: Quick overview of a Galaxy group i
 			---- | ---- | ---- | ---- | --- | ---- | ---- | ----
 			bgruening | bgruening@gmail.com | 25 | t | 265 GB | 1421 | 1.14
 			helena-rasche | hxr@informatik.uni-freiburg.de | 122 | t | 37 GB | 113 | 2.91
-			videmp | videmp@hxr@informatik.uni-freiburg.de | 46 | t | 1383 MB | 96 | 0.02
+			videmp | videmp@informatik.uni-freiburg.de | 46 | t | 1383 MB | 96 | 0.02
 	EOF
 
 	# Metada
