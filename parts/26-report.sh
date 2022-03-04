@@ -13,7 +13,7 @@ report_group-info(){ ## <group_id|groupname>: Quick overview of a Galaxy group i
 		Consider [mdless](https://github.com/ttscoff/mdless) for easier reading in the terminal!
 		    $ gxadmin report group-info Backofen
 			# Galaxy Group 18
-				  Property | Value
+			      Property | Value
 			-------------- | -----
 			            ID | Backofen (id=1)
 			       Created | 2013-02-25 15:58:10.691672+01
