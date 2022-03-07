@@ -281,12 +281,13 @@ report_user-info(){ ## <user_id|username|email>: Quick overview of a Galaxy user
 	read -r -d '' template <<EOF
 # Galaxy User $user_id
 
-  Property | Value
----------- | -----
-        ID | %s (id=%s) %s
-   Created | %s %s
-Properties | ext=%s deleted=%s purged=%s active=%s
-Disk Usage | %s %s
+       Property | Value
+     ---------- | -----
+             ID | %s (id=%s) %s
+        Created | %s %s
+     Properties | ext=%s deleted=%s purged=%s active=%s
+     Disk Usage | %s %s
+
 
 ## Groups/Roles
 
