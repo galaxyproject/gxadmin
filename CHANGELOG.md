@@ -26,6 +26,7 @@
 	- mutate fail-misbehaving-gxits: Works aroud a gxit issue.
 	- galaxy prune-gxit-routes: Prunes dead routes
 	- mutate force-publish-history: Workaround for Galaxy bug #13001
+	- report group-info, by [@pavanvidem](https://github.com/pavanvidem)
 
 # 19
 
