@@ -2817,7 +2817,7 @@ query_pg-column-size() { ##? <table>: Estimate the size of columns in a table
 		SELECT
 			$csvsel
 		FROM
-			x;
+			x
 	EOF
 
 }
