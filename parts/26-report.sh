@@ -21,6 +21,7 @@ report_group-info(){ ## <group_id|groupname>: Quick overview of a Galaxy group i
 			    Group size | 8
 			Number of jobs | 1630
 			    Disk usage | 304 GB
+		   Mean Disk usage | 43 GB
 			Data generated | 6894 GB
 			     CPU years | 4.07
 
@@ -63,10 +64,10 @@ report_group-info(){ ## <group_id|groupname>: Quick overview of a Galaxy group i
 	EOF
 	g_total_n_jobs=$(query_tsv "$qstr")
 
-	# Group total disk usage
+	# Group disk usage
 	read -r -d '' qstr <<-EOF
 		SELECT
-			pg_size_pretty(SUM(u.disk_usage))
+			pg_size_pretty(SUM(u.disk_usage)), pg_size_pretty(AVG(u.disk_usage))
 		FROM
 			galaxy_user u, user_group_association ug
 		WHERE
@@ -86,44 +87,45 @@ report_group-info(){ ## <group_id|groupname>: Quick overview of a Galaxy group i
 	# Group total CPU years
 	read -r -d '' qstr <<-EOF
 		SELECT
-			round(sum((a.metric_value * b.metric_value) / 3600 / 24 / 365), 2)
+			GREATEST(round(sum((a.metric_value * b.metric_value) / 3600 / 24 / 365), 2), 0.00)
 		FROM
-			job_metric_numeric a, job_metric_numeric b, job
-			FULL OUTER JOIN galaxy_user ON job.user_id = galaxy_user.id
-			INNER JOIN user_group_association ug ON ug.user_id=galaxy_user.id
+			job j FULL OUTER JOIN galaxy_user u ON j.user_id = u.id INNER JOIN user_group_association ug ON u.id=ug.user_id LEFT JOIN job_metric_numeric a ON a.job_id=j.id LEFT JOIN job_metric_numeric b ON a.job_id=b.job_id
 		WHERE
-			b.job_id = a.job_id AND a.job_id = job.id AND a.metric_name = 'runtime_seconds' AND b.metric_name = 'galaxy_slots' AND ug.group_id=$group_id
+			(a.metric_name = 'runtime_seconds' OR a.metric_value is NULL) AND (b.metric_name = 'galaxy_slots' OR b.metric_value is NULL) AND group_id=$group_id
 	EOF
 	g_total_cup_years=$(query_tsv "$qstr")
 
 	# Group members stats
 	read -r -d '' qstr <<-EOF
 		SELECT
-			u.username, u.email, u.id, u.active, pg_size_pretty(u.disk_usage), count(j.*), round(sum((a.metric_value * b.metric_value) / 3600 / 24 / 365), 2)
+			u.username, u.email, u.id, u.active, pg_size_pretty(u.disk_usage), count(j.*), GREATEST(round(sum((a.metric_value * b.metric_value) / 3600 / 24 / 365), 2), 0.00)
 		FROM
-			 job_metric_numeric a, job_metric_numeric b, job j FULL OUTER JOIN galaxy_user u ON j.user_id = u.id INNER JOIN user_group_association ug ON u.id=ug.user_id 
+			job j FULL OUTER JOIN galaxy_user u ON j.user_id = u.id INNER JOIN user_group_association ug ON u.id=ug.user_id LEFT JOIN job_metric_numeric a ON a.job_id=j.id LEFT JOIN job_metric_numeric b ON a.job_id=b.job_id
 		WHERE
-			u.id=j.user_id AND j.id=a.job_id AND a.metric_name = 'runtime_seconds' AND b.job_id = a.job_id AND a.job_id = j.id AND a.metric_name = 'runtime_seconds' AND b.metric_name = 'galaxy_slots' AND group_id=$group_id
+			(a.metric_name = 'runtime_seconds' OR a.metric_value is NULL) AND (b.metric_name = 'galaxy_slots' OR b.metric_value is NULL) AND group_id=$group_id
 		GROUP BY
 			u.id
 		ORDER BY
 			u.username
 	EOF
 	member_stats=$(query_tsv "$qstr")
-	member_stats_w_header=$(printf "Username\tEmail\tUser ID\tActive\tDisk Usage\tNumber of jobs\tCPU years\n----\t----\t----\t----\t---\t----\t----\t----\n%s" "$member_stats" | align_cols)
+	member_stats_w_header=$(printf "Username\tEmail\tUser ID\tActive\tDisk Usage\tNumber of jobs\tCPU years\n----\t----\t----\t----\t---\t----\t----\n%s" "$member_stats" | align_cols)
 
 	read -r -d '' template <<EOF
+
 # Galaxy Group $group_id
-       Property | Value
---------------- | -----
-             ID | %s (id=%s)
-        Created | %s %s
-     Properties | deleted=%s
-     Group size | %s
- Number of jobs | %s
-     Disk usage | %s %s
- Data generated | %s %s
-      CPU years | %s
+
+Property | Value
+-------- | -----
+ID | %s (id=%s)
+Created | %s %s
+Properties | deleted=%s
+Group size | %s
+Number of jobs | %s
+Disk usage | %s %s
+Mean Disk usage | %s %s
+Data generated | %s %s
+CPU years | %s
 
 ## Individual Member stats
 %s
@@ -283,10 +285,10 @@ report_user-info(){ ## <user_id|username|email>: Quick overview of a Galaxy user
 	read -r -d '' template <<EOF
 # Galaxy User $user_id
 
-  Property | Value
----------- | -----
-        ID | %s (id=%s) %s
-   Created | %s %s
+Property | Value
+-------- | -----
+ID | %s (id=%s) %s
+Created | %s %s
 Properties | ext=%s deleted=%s purged=%s active=%s
 Disk Usage | %s %s
 
@@ -348,12 +350,12 @@ report_job-info(){ ## <id>: Information about a specific job
 	read -r -d '' template <<EOF
 # Galaxy Job $job_id
 
-Property      | Value
-------------- | -----
-         Tool | %s
-        State | %s
-      Handler | %s
-      Created | %s %s
+Property | Value
+-------- | -----
+Tool | %s
+State | %s
+Handler | %s
+Created | %s %s
 Job Runner/ID | %s / %s
 EOF
 	# shellcheck disable=SC2059
@@ -374,7 +376,7 @@ EOF
 	job_owner=$(query_tsv "$qstr")
 	# shellcheck disable=SC2183
 	# shellcheck disable=SC2086
-	printf "\n        Owner | %s (id=%s)\n\n" $job_owner
+	printf "\nOwner | %s (id=%s)\n\n" $job_owner
 
 
 	###         ###
