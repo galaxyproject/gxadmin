@@ -21,6 +21,7 @@ report_group-info(){ ## <group_id|groupname>: Quick overview of a Galaxy group i
 			    Group size | 8
 			Number of jobs | 1630
 			    Disk usage | 304 GB
+		   Mean Disk usage | 43 GB
 			Data generated | 6894 GB
 			     CPU years | 4.07
 
@@ -113,17 +114,18 @@ report_group-info(){ ## <group_id|groupname>: Quick overview of a Galaxy group i
 	read -r -d '' template <<EOF
 
 # Galaxy Group $group_id
-           Property | Value
-           -------- | -----
-                 ID | %s (id=%s)
-            Created | %s %s
-         Properties | deleted=%s
-         Group size | %s
-     Number of jobs | %s
-         Disk usage | %s %s
-    Mean Disk usage | %s %s
-     Data generated | %s %s
-          CPU years | %s
+
+Property | Value
+-------- | -----
+ID | %s (id=%s)
+Created | %s %s
+Properties | deleted=%s
+Group size | %s
+Number of jobs | %s
+Disk usage | %s %s
+Mean Disk usage | %s %s
+Data generated | %s %s
+CPU years | %s
 
 ## Individual Member stats
 %s
@@ -283,13 +285,12 @@ report_user-info(){ ## <user_id|username|email>: Quick overview of a Galaxy user
 	read -r -d '' template <<EOF
 # Galaxy User $user_id
 
-       Property | Value
-     ---------- | -----
-             ID | %s (id=%s) %s
-        Created | %s %s
-     Properties | ext=%s deleted=%s purged=%s active=%s
-     Disk Usage | %s %s
-
+Property | Value
+-------- | -----
+ID | %s (id=%s) %s
+Created | %s %s
+Properties | ext=%s deleted=%s purged=%s active=%s
+Disk Usage | %s %s
 
 ## Groups/Roles
 
@@ -349,12 +350,12 @@ report_job-info(){ ## <id>: Information about a specific job
 	read -r -d '' template <<EOF
 # Galaxy Job $job_id
 
-Property      | Value
-------------- | -----
-         Tool | %s
-        State | %s
-      Handler | %s
-      Created | %s %s
+Property | Value
+-------- | -----
+Tool | %s
+State | %s
+Handler | %s
+Created | %s %s
 Job Runner/ID | %s / %s
 EOF
 	# shellcheck disable=SC2059
@@ -375,7 +376,7 @@ EOF
 	job_owner=$(query_tsv "$qstr")
 	# shellcheck disable=SC2183
 	# shellcheck disable=SC2086
-	printf "\n        Owner | %s (id=%s)\n\n" $job_owner
+	printf "\nOwner | %s (id=%s)\n\n" $job_owner
 
 
 	###         ###
