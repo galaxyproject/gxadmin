@@ -63,10 +63,10 @@ report_group-info(){ ## <group_id|groupname>: Quick overview of a Galaxy group i
 	EOF
 	g_total_n_jobs=$(query_tsv "$qstr")
 
-	# Group total disk usage
+	# Group disk usage
 	read -r -d '' qstr <<-EOF
 		SELECT
-			pg_size_pretty(SUM(u.disk_usage))
+			pg_size_pretty(SUM(u.disk_usage)), pg_size_pretty(AVG(u.disk_usage))
 		FROM
 			galaxy_user u, user_group_association ug
 		WHERE
@@ -111,15 +111,17 @@ report_group-info(){ ## <group_id|groupname>: Quick overview of a Galaxy group i
 	member_stats_w_header=$(printf "Username\tEmail\tUser ID\tActive\tDisk Usage\tNumber of jobs\tCPU years\n----\t----\t----\t----\t---\t----\t----\n%s" "$member_stats" | align_cols)
 
 	read -r -d '' template <<EOF
+
 # Galaxy Group $group_id
            Property | Value
-           -------- | ----
+           -------- | -----
                  ID | %s (id=%s)
             Created | %s %s
          Properties | deleted=%s
          Group size | %s
      Number of jobs | %s
          Disk usage | %s %s
+    Mean Disk usage | %s %s
      Data generated | %s %s
           CPU years | %s
 
