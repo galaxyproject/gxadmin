@@ -892,7 +892,8 @@ query_disk-usage() { ##? [--human]: Disk usage per object store.
 
 	read -r -d '' QUERY <<-EOF
 			SELECT
-				object_store_id, $size
+				CASE WHEN object_store_id IS NOT null THEN object_store_id ELSE '_null_' END,
+				$size
 			FROM dataset
 			WHERE NOT purged
 			GROUP BY object_store_id
