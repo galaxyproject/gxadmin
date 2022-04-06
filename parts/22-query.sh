@@ -365,6 +365,7 @@ query_queue() { ## [--by (tool|destination|user)]: Brief overview of currently r
 		if [[ "$2" == "user" ]]; then
 			tags="user_id=0;state=1"
 			column="user_id"
+			column_query="CASE WHEN user_id IS NOT null THEN user_id ELSE -1 END AS user_id"
 			title="user"
 			query_name="queue_by_user"
 		elif [[ "$2" == "destination" ]]; then
@@ -381,9 +382,13 @@ query_queue() { ## [--by (tool|destination|user)]: Brief overview of currently r
 		fi
 	fi
 
+	if [ -z "${column_query:-}" ]; then
+		column_query="$column"
+	fi
+
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			${column}, state, count(${column}) as ${title}_count
+			${column_query}, state, count(${column}) as ${title}_count
 		FROM
 			job
 		WHERE
@@ -892,7 +897,8 @@ query_disk-usage() { ##? [--human]: Disk usage per object store.
 
 	read -r -d '' QUERY <<-EOF
 			SELECT
-				object_store_id, $size
+				CASE WHEN object_store_id IS NOT null THEN object_store_id ELSE '_null_' END AS object_store_id,
+				$size
 			FROM dataset
 			WHERE NOT purged
 			GROUP BY object_store_id
