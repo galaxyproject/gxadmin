@@ -952,6 +952,47 @@ query_tool-last-used-date() { ## : When was the most recent invocation of every 
 	EOF
 }
 
+local_query-toolusebygroup() { ## : <year-month> <group> Lists count of tools used by all users in a group
+        handle_help "$@" <<-EOFhelp
+                Lists tools use count by users in group.
+                Requires <year-month> (2022-03) and <group> 
+
+                Example:
+                $ gxadmin local query-toolusebygroup 2022-02 CSIRO
+                tool_id                                             |             username             | count 
+                ----------------------------------------------------+----------------------------------+-------
+                CONVERTER_gz_to_uncompressed                        | erin_hahn                        |     1
+                Convert characters1                                 | Benson, Derek (IM&T, Pullenvale) |     1
+                Cut1                                                | Benson, Derek (IM&T, Pullenvale) |     1
+                Cut1                                                | jodie.vandekamp_at_csiro.au      |     1
+
+
+EOFhelp
+
+if (( $# > 0 )); then
+                wheredate=" date_trunc('month', job.create_time) = '$1-01'"
+                wheregroup="'$2'"
+fi
+        read -r -d '' QUERY <<-EOF
+                SELECT
+                        job.tool_id, galaxy_user.username, count(job.tool_id)
+                FROM
+                        job, galaxy_user, galaxy_group, user_group_association
+                WHERE
+                        job.user_id = galaxy_user.id
+                AND
+                        user_group_association.group_id = galaxy_group.id
+                AND
+                        user_group_association.user_id = galaxy_user.id
+                AND
+                        galaxy_group.name = $wheregroup
+                AND
+                        $wheredate
+                GROUP BY
+                        job.tool_id, galaxy_user.username
+EOF
+}
+
 query_users-total() { ## : Total number of Galaxy users (incl deleted, purged, inactive)
 	handle_help "$@" <<-EOF
 	EOF
