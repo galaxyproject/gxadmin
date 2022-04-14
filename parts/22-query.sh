@@ -954,18 +954,17 @@ query_tool-last-used-date() { ## : When was the most recent invocation of every 
 
 query_tool-use-by-group() { ##? <year_month> <group>: Lists count of tools used by all users in a group
 	handle_help "$@" <<-EOFhelp
-                Lists tools use count by users in group.
-                Requires <year-month> (2022-03) and <group> 
+		Lists tools use count by users in group.
+		Requires <year-month> (2022-03) and <group> 
 
-                Example:
-                $ gxadmin query tool-use-by-group 2022-02 NameOfGroup
-                tool_id                                             |             username             | count 
-                ----------------------------------------------------+----------------------------------+-------
-                CONVERTER_gz_to_uncompressed                        | user_1                           |     1
-                Convert characters1                                 | user_2                           |     1
-                Cut1                                                | user_2                           |     1
-                Cut1                                                | user_3                           |     1
-
+		Example:
+		$ gxadmin query tool-use-by-group 2022-02 NameOfGroup
+		tool_id                                             |             username             | count 
+		----------------------------------------------------+----------------------------------+-------
+		CONVERTER_gz_to_uncompressed                        | user_1                           |     1
+		Convert characters1                                 | user_2                           |     1
+		Cut1                                                | user_2                           |     1
+		Cut1                                                | user_3                           |     1
 
 EOFhelp
 	username=$(gdpr_safe galaxy_user.username username "Anonymous User")
