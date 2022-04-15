@@ -952,6 +952,42 @@ query_tool-last-used-date() { ## : When was the most recent invocation of every 
 	EOF
 }
 
+query_tool-use-by-group() { ##? <year_month> <group>: Lists count of tools used by all users in a group
+	handle_help "$@" <<-EOFhelp
+		Lists tools use count by users in group.
+		Requires <year-month> (2022-03) and <group> 
+
+		Example:
+		$ gxadmin query tool-use-by-group 2022-02 NameOfGroup
+		tool_id                                             |             username             | count 
+		----------------------------------------------------+----------------------------------+-------
+		CONVERTER_gz_to_uncompressed                        | user_1                           |     1
+		Convert characters1                                 | user_2                           |     1
+		Cut1                                                | user_2                           |     1
+		Cut1                                                | user_3                           |     1
+
+EOFhelp
+	username=$(gdpr_safe galaxy_user.username username "Anonymous User")
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			job.tool_id, $username, count(job.tool_id)
+		FROM
+			job, galaxy_user, galaxy_group, user_group_association
+		WHERE
+			job.user_id = galaxy_user.id
+		AND
+			user_group_association.group_id = galaxy_group.id
+		AND
+			user_group_association.user_id = galaxy_user.id
+		AND
+			galaxy_group.name = '$arg_group'
+		AND
+			date_trunc('month', job.create_time) = '$arg_year_month-01'
+		GROUP BY
+			job.tool_id, galaxy_user.username
+EOF
+}
+
 query_users-total() { ## : Total number of Galaxy users (incl deleted, purged, inactive)
 	handle_help "$@" <<-EOF
 	EOF

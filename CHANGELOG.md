@@ -27,6 +27,7 @@
 	- galaxy prune-gxit-routes: Prunes dead routes
 	- mutate force-publish-history: Workaround for Galaxy bug #13001
 	- report group-info, by [@pavanvidem](https://github.com/pavanvidem)
+	- query tool-use-by-group, by [@gavindi](https://github.com/gavindi)
 
 # 19
 
