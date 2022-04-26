@@ -683,6 +683,48 @@ query_recent-jobs() { ##? <hours>: Jobs run in the past <hours> (in any state)
 	EOF
 }
 
+query_job-state-stats() { ## : Shows all jobs states for the last 30 days in a table counted by state
+	handle_help "$@" <<-EOFhelp
+		Shows all job states for the last 30 days in a table counted by state
+
+		Example:
+		$ gxadmin query job-state-stats
+		    date    |  new  | running | queued | upload |  ok   | error | paused | stopped | deleted 
+		------------+-------+---------+--------+--------+-------+-------+--------+---------+---------
+ 		2022-04-26 |   921 |     564 |    799 |      0 |   581 |    21 |      1 |       0 |       2
+ 		2022-04-25 |  1412 |    1230 |   1642 |      0 |  1132 |   122 |     14 |       0 |      15
+ 		2022-04-24 |   356 |     282 |    380 |      0 |   271 |    16 |      0 |       0 |      10
+ 		2022-04-23 |   254 |     229 |    276 |      0 |   203 |    29 |      0 |       0 |       4
+		...
+		-26 days
+
+EOFhelp
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			date_trunc ('day', job.create_time)::date as date,
+			count (job_state_history.state) filter (where job_state_history.state = 'new') as new,
+			count (job_state_history.state) filter (where job_state_history.state = 'running') as running,
+			count (job_state_history.state) filter (where job_state_history.state = 'queued') as queued,
+			count (job_state_history.state) filter (where job_state_history.state = 'upload') as upload,
+			count (job_state_history.state) filter (where job_state_history.state = 'ok') as ok,
+			count (job_state_history.state) filter (where job_state_history.state = 'error') as error,
+			count (job_state_history.state) filter (where job_state_history.state = 'paused') as paused,
+			count (job_state_history.state) filter (where job_state_history.state = 'stopped') as stopped,
+			count (job_state_history.state) filter (where job_state_history.state = 'deleted') as deleted
+		FROM
+			job,
+			job_state_history
+		WHERE
+			job_state_history.job_id = job.id
+			and job.create_time >= now() - INTERVAL '30 DAYS'
+		GROUP BY
+			date
+		ORDER BY
+			date DESC
+EOF
+}
+
 query_training-list() { ##? [--all]: List known trainings
 	handle_help "$@" <<-EOF
 		This module is specific to EU's implementation of Training Infrastructure as a Service. But this specifically just checks for all groups with the name prefix 'training-'
