@@ -15,7 +15,7 @@ features.
 
 Subcommand | Functions
 ----       | ---
-query      | 87
+query      | 89
 server     | 22
 mutate     | 16
 meta       | 12
