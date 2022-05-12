@@ -118,9 +118,9 @@ query_tool-usage-over-time() { ##? [searchterm]: Counts of tool runs by month, f
 	EOF
 }
 
-query_tool-popularity() { ##? [months|24]: Most run tools by month (tool_predictions)
+query_tool-popularity() { ##? [months|24] [--error]: Most run tools by month (tool_predictions)
 	handle_help "$@" <<-EOF
-		See most popular tools by month
+		See most popular tools by month. Use --error to include error counts.
 
 		    $ ./gxadmin query tool-popularity 1
 		              tool_id          |   month    | count
@@ -138,12 +138,17 @@ query_tool-popularity() { ##? [months|24]: Most run tools by month (tool_predict
 
 	fields="count=2"
 	tags="tool_id=0;month=1"
+	if [[ -n $arg_error ]]; then
+		fields="${fields}:error_count=3"
+		error_count=", count(CASE state WHEN 'error' THEN 1 ELSE NULL END) as error_count"
+	fi
+
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
 			tool_id,
 			date_trunc('month', create_time AT TIME ZONE 'UTC')::date as month,
-			count(*)
+			count(*) as count $error_count
 		FROM job
 		WHERE create_time > (now() AT TIME ZONE 'UTC' - '$arg_months months'::interval)
 		GROUP BY tool_id, month
@@ -1097,7 +1102,7 @@ query_ts-repos() { ## : Counts of toolshed repositories by toolshed and owner.
 	EOF
 }
 
-query_tool-metrics() { ##? <tool_id> <metric_id> [--like]: See values of a specific metric
+query_tool-metrics() { ##? <tool_id> <metric_id> [--like] [--ok]: See values of a specific metric
 	handle_help "$@" <<-EOF
 		A good way to use this is to fetch the memory usage of a tool and then
 		do some aggregations. The following requires [data_hacks](https://github.com/bitly/data_hacks)
@@ -1118,11 +1123,16 @@ query_tool-metrics() { ##? <tool_id> <metric_id> [--like]: See values of a speci
 		       74.9608 -    85.2655 [    11]: ∎∎∎∎∎∎∎∎∎∎∎ (2.49%)
 		       85.2655 -    95.5703 [     3]: ∎∎∎ (0.68%)
 		       95.5703 -   105.8750 [     1]: ∎ (0.23%)
+
+		Use the --ok option to only include jobs that finished successfully
 	EOF
 
 	tool_subquery="SELECT id FROM job WHERE tool_id = '$arg_tool_id'"
 	if [[ -n "$arg_like" ]]; then
 		tool_subquery="SELECT id FROM job WHERE tool_id like '$arg_tool_id'"
+	fi
+	if [[ -n "$arg_ok" ]]; then
+		tool_subquery="$tool_subquery AND state = 'ok'"
 	fi
 
 	read -r -d '' QUERY <<-EOF
