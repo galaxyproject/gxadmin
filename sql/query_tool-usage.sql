@@ -8,8 +8,15 @@
 ---   desc: Number of weeks to search
 ---   required: false
 --- influx:
----   fields: ['count=1']
----   tags: ['tool_id=0']
+---   fields:
+---     - count=1
+---   tags:
+---     - tool_id=0
+--- bash: |
+---    where=
+---    if (( arg_weeks > 0 )); then
+---       where="WHERE j.create_time > (now() - '${arg_weeks} weeks'::interval)"
+---    fi
 --- ---
 ---
 ---    $ gxadmin tool-usage
@@ -29,10 +36,6 @@
 SELECT
 	j.tool_id, count(*) AS count
 FROM job j
-
-{% if arg_weeks %}
-WHERE j.create_time > (now() - '${arg_weeks} weeks'::interval)
-{% endif %}
-
+WHERE bash_condition is true
 GROUP BY j.tool_id
 ORDER BY count DESC
