@@ -1824,6 +1824,116 @@ query_user-disk-quota() { ## : Retrieves the 50 users with the largest quotas
 	EOF
 }
 
+query_disk-usage-library() { ##? [--library_name NAME] [--by_folder] [--human]: Retrieve an approximation of the disk usage for a data library
+	handle_help "$@" <<-EOF
+		This uses the dataset size and the library dataset association in order to
+		calculate total disk usage for a data library.  By default it prints the
+		usage in bytes...
+
+		$ gxadmin local query-disk-usage-library --library_name 'My Library'
+		 library_name  | library size
+		---------------+-------------
+		 My Library    | 25298225177
+
+		...but the --human flag displays readable formats:
+
+		$ gxadmin local query-disk-usage-library --library_name 'My Library' --human
+		 library_name  | library size
+		---------------+--------------
+		 My Library    | 24 GB
+
+		A --by_folder flag is also available for displaying disk usage for each folder.
+
+		a$ gxadmin local query-disk-usage-library --library_name 'My Library' --by_folder
+		       folder_name       | folder size 
+		-------------------------+-------------
+		 Contamination Filtering | 10798630750
+		 Metagenomes             | 12026310232
+		 Metatranscriptomes      |  2473284195
+
+		And, of course, the --human flag can be used here as well.
+
+		$ gxadmin local query-disk-usage-library --library_name 'My Library' --by_folder --human
+		       folder_name       | folder size
+		-------------------------+-------------
+		 Contamination Filtering | 10 GB
+		 Metagenomes             | 11 GB
+		 Metatranscriptomes      | 2359 MB
+	EOF
+
+	where="WHERE
+		library.name = '$2'
+		AND library_folder.id IN (SELECT id FROM library_tree)
+		AND library_folder.id = library_dataset.folder_id
+		AND library_dataset.library_dataset_dataset_association_id = library_dataset_dataset_association.id
+		AND library_dataset_dataset_association.dataset_id = dataset.id
+		AND NOT dataset.purged"
+
+	from="FROM
+		(SELECT
+			library.name as library_name,
+			library_folder.name as folder_name,
+			sum(coalesce(dataset.total_size, dataset.file_size, 0)) as folder_size
+		FROM
+			library,
+			library_folder,
+			library_dataset_dataset_association,
+			library_dataset,
+			dataset
+		$where
+		GROUP BY library_name, folder_name) lib"
+
+	group_by="GROUP BY library_name"
+
+	if [[ -n $3 ]]
+	then
+		if [[ $3 == '--by_folder' ]]
+		then
+			if [[ -n $4 && $4 == '--human' ]]
+			then
+				folder_size="pg_size_pretty(sum(coalesce(dataset.total_size, dataset.file_size, 0))) as \"folder size\""
+			else
+				folder_size="sum(coalesce(dataset.total_size, dataset.file_size, 0)) as \"folder size\""
+			fi
+			select="SELECT library_folder.name as folder_name, $folder_size"
+			from="FROM library, library_folder, library_dataset_dataset_association, library_dataset, dataset"
+			group_by="GROUP BY folder_name"
+		elif [[ $3 == '--human' ]]
+		then
+			select="SELECT lib.library_name as library_name, pg_size_pretty(sum(folder_size)) as \"library size\""
+			where=""
+		fi
+	else
+		select="SELECT lib.library_name as library_name, sum(folder_size) as \"library size\""
+		where=""
+	fi
+
+	read -r -d '' QUERY <<-EOF
+		WITH RECURSIVE library_tree AS (
+			SELECT id,
+			    name,
+			    parent_id,
+			    0 AS folder_level
+			FROM library_folder
+			WHERE parent_id IS NULL
+			AND name = '$2'
+		UNION ALL
+			SELECT child.id,
+				child.name,
+				child.parent_id,
+			folder_level+1 AS folder_level
+			FROM library_folder child
+			JOIN library_tree lt
+				ON lt.id = child.parent_id
+		)
+
+		$select
+		$from
+		$where
+		$group_by
+	EOF
+}
+
 query_group-cpu-seconds() { ##? [group]: Retrieve an approximation of the CPU time in seconds for group(s)
 	handle_help "$@" <<-EOF
 		This uses the galaxy_slots and runtime_seconds metrics in order to
