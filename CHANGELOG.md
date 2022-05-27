@@ -13,22 +13,23 @@
 	- Generalized the "uwsgi lastlog" function to proper handle journalctl's output, by [@gmauro](https://github.com/gmauro).
 	- Updated "query upload-gb-in-past-hour" to include also datasets created by the DATA_FETCH tool, by [@gmauro](https://github.com/gmauro).
 - Added:
-	- query dump-users, for [@shiltemann](https://github.com/shiltemann)
-	- "did you mean" when a command isn't found.
-	- query job-metrics, by [@anuprulez](https://github.com/anuprulez) and [@simonbray](https://github.com/simonbray).
-	- uwsgi active-user count
-	- exports PGAPPNAME setting the application name for postgres connections. This becomes visible in pg_stat_activity.
-	- mutate set_quota_for_oidc_user, by [@gmauro](https://github.com/gmauro).
-	- iquery support for queue-detail query
-	- query tool-usage-over-time which can be used to make charts of specific tools over time.
-	- improved use of FZF for both the search and 'typo' functions, when it is available.
-	- query pulsar-gb-transferred: sums up data in/out (minus collections) of pulsar.
-	- mutate fail-misbehaving-gxits: Works aroud a gxit issue.
-	- galaxy prune-gxit-routes: Prunes dead routes
-	- mutate force-publish-history: Workaround for Galaxy bug #13001
-	- report group-info, by [@pavanvidem](https://github.com/pavanvidem)
-	- query tool-use-by-group, by [@gavindi](https://github.com/gavindi)
-	- query job-state-stats, by [@gavindi] (https://github.com/gavindi)
+    - query dump-users, for [@shiltemann](https://github.com/shiltemann)
+    - "did you mean" when a command isn't found.
+    - query job-metrics, by [@anuprulez](https://github.com/anuprulez) and [@simonbray](https://github.com/simonbray).
+    - uwsgi active-user count
+    - exports PGAPPNAME setting the application name for postgres connections. This becomes visible in pg_stat_activity.
+    - mutate set_quota_for_oidc_user, by [@gmauro](https://github.com/gmauro).
+    - iquery support for queue-detail query
+    - query tool-usage-over-time which can be used to make charts of specific tools over time.
+    - improved use of FZF for both the search and 'typo' functions, when it is available.
+    - query pulsar-gb-transferred: sums up data in/out (minus collections) of pulsar.
+    - mutate fail-misbehaving-gxits: Works aroud a gxit issue.
+    - galaxy prune-gxit-routes: Prunes dead routes
+    - mutate force-publish-history: Workaround for Galaxy bug #13001
+    - report group-info, by [@pavanvidem](https://github.com/pavanvidem)
+    - query tool-use-by-group, by [@gavindi](https://github.com/gavindi)
+    - query job-state-stats, by [@gavindi] (https://github.com/gavindi)
+    - query monthly-workflow-invocations, by [@gmauro](https://github.com/gmauro).
 - Updated:
 	- Add option to include error counts in tool-popularity query, thanks [@natefoo](https://github.com/natefoo)
 	- Add option to exclude unsuccessful jobs from tool-metrics query, thanks [@natefoo](https://github.com/natefoo)
