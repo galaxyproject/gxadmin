@@ -1458,6 +1458,30 @@ query_monthly-gpu-years() { ## : GPU years allocated to tools by month
 	EOF
 }
 
+query_monthly-workflow-invocations() { ## : Workflow invocations by month
+	handle_help "$@" <<-EOF
+		Find out how many workflows has been invocated by Galaxy during the past months.
+
+		    $ gxadmin query monthly-workflow-invocations
+		       month    | count
+		    ------------+-------
+		     2022-05-01 |  4183
+		     2022-04-01 |  5043
+		     2022-03-01 |  4851
+		     2022-02-01 | 29587
+	EOF
+
+		read -r -d '' QUERY <<-EOF
+		SELECT
+			date_trunc('month', workflow_invocation.create_time)::date as month,
+			count(*)
+		FROM
+			workflow_invocation
+		GROUP BY date_trunc('month', workflow_invocation.create_time)
+		ORDER BY date_trunc('month', workflow_invocation.create_time) DESC
+	EOF
+}
+
 query_user-cpu-years() { ## : CPU years allocated to tools by user
 	handle_help "$@" <<-EOF
 		This uses the galaxy_slots and runtime_seconds metrics in order to

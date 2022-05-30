@@ -30,6 +30,7 @@
 	- query tool-use-by-group, by [@gavindi](https://github.com/gavindi)
 	- query job-state-stats, by [@gavindi] (https://github.com/gavindi)
 	- query disk-usage-library, by [@gregvonkuster] (https://github.com/gregvonkuster)
+	- query monthly-workflow-invocations, by [@gmauro](https://github.com/gmauro).
 - Updated:
 	- Add option to include error counts in tool-popularity query, thanks [@natefoo](https://github.com/natefoo)
 	- Add option to exclude unsuccessful jobs from tool-metrics query, thanks [@natefoo](https://github.com/natefoo)
