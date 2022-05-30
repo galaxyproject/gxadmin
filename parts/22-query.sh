@@ -3832,3 +3832,33 @@ query_pulsar-gb-transferred()  { ##? [--bymonth] [--byrunner] [--human]: Counts 
 	EOF
 }
 
+query_data-info() {
+	handle_help "$@" <<-EOF
+		Report some useful information about a a Galaxy dataset. Mainly useful for debugging.
+		Takes uuid or dataset id.
+
+		$ ./gxadmin query data-info <uuid|dataset_id>
+    id    |               uuid               |        create_time         |        update_time         | state | deleted |  size   |   extension    | user_id |                                  tool_id                                   | job state 
+----------+----------------------------------+----------------------------+----------------------------+-------+---------+---------+----------------+---------+----------------------------------------------------------------------------+-----------
+ 88378397 | 428d0c0095a54c1a8248e9e0937f376f | 2022-05-11 10:36:44.902173 | 2022-05-11 10:36:44.902174 | ok    | f       | 7773 MB | fastqsanger.gz |       5 | toolshed.g2.bx.psu.edu/repos/bgruening/10x_bamtofastq/10x_bamtofastq/1.4.1 | ok
+	EOF
+
+	read -r -d '' QUERY <<-EOF
+		SELECT DISTINCT d.id,
+			d.uuid,
+			d.create_time,
+			d.update_time,
+			d.state,
+			d.deleted,
+			pg_size_pretty(coalesce(d.total_size, d.file_size, 0)) as "size",
+			hda.extension,
+			j.user_id,
+			j.tool_id,
+			j.state as "job state"
+		FROM dataset d,
+			history_dataset_association hda,
+			job j 
+		WHERE hda.dataset_id=d.id AND d.job_id=j.id
+			AND (d.uuid=translate('$1','-','') OR d.id=$1
+	EOF
+}
