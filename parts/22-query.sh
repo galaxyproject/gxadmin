@@ -730,6 +730,101 @@ EOFhelp
 EOF
 }
 
+query_monthly-job-runtimes() { ##? [year] [month] : Summation of total job run times per user per destination over a period of time
+	handle_help "$@" <<-EOF
+		This query computes the total run time for all jobs per user per destination over
+		an optionally specified time period.  If no time period is specified, all years
+		and months will be displayed.  The total job run time is returned in seconds, minutes
+		and hours.
+
+		The destination id can be restricted to the first N letters in the id string by using
+		the --sub_dest flag.  This allows grouping on values like "slurm" and "front" instead
+		of "slurm_multi", "slurm_normal", "frontera_small", "frontera_large", etc., which
+		clutters the output. 
+
+		A time period can be defined using 3 options:
+
+		--year XXXX --month XX - the specified month of the specified year
+
+		$ gxadmin local query-monthly-job-runtimes --year 2022 --month 05 --sub_dest 5
+		   month    | total_jobs | destination_id | runtime_secomnds | runtime_minutes | runtime_hours |   user_email
+		------------+------------+----------------+------------------+-----------------+---------------+-----------------
+		 2022-05-01 |      20323 | front          |           502031 |         8367.18 |        139.45 | 
+		 2022-05-01 |       3013 | slurm          |            99135 |         1652.25 |         27.54 | 
+
+		--year XXXX - all months of the specified year
+
+		$ gxadmin local query-monthly-job-runtimes --year 2021 --sub_dest 5
+		   month    | total_jobs | destination_id | runtime_secomnds | runtime_minutes | runtime_hours |   user_email
+		------------+------------+----------------+------------------+-----------------+---------------+-----------------
+		 2021-12-01 |        155 | slurm          |            27981 |          466.35 |          7.77 | 
+		 2021-12-01 |        417 | slurm          |            47063 |          784.38 |         13.07 | 
+		 2021-11-01 |        113 | slurm          |             3032 |           50.53 |          0.84 | 
+		 2021-11-01 |          2 | slurm          |              142 |            2.37 |          0.04 | 
+
+		--month XX - the specified month of the current year
+
+		$ gxadmin local query-monthly-job-runtimes --month 04 --sub_dest 5
+		   month    | total_jobs | destination_id | runtime_secomnds | runtime_minutes | runtime_hours |   user_email
+		------------+------------+----------------+------------------+-----------------+---------------+-----------------
+		 2022-04-01 |         94 | front          |           333029 |         5550.48 |         92.51 | 
+		 2022-04-01 |        146 | slurm          |           278408 |         4640.13 |         77.34 | 
+	EOF
+
+	dest="job.destination_id as destination_id,"
+	group_by="GROUP BY user_email, month, destination_id"
+
+	if [[ $1 == '--year' && -n $2 ]] && [[ $3 == '--month' && -n $4 ]] && date -d "$2" >/dev/null && date -d $4 >/dev/null
+	then
+		filter_by_time_period="AND date_trunc('month', job.create_time AT TIME ZONE 'UTC') = '$2-$4-01'::date"
+		year=$(date +'%Y')
+		if [[ $5 == '--sub_dest' && -n $6 ]]
+		then
+			dest="substr(job.destination_id, 1, $6) as destination_id,"
+			group_by="GROUP BY user_email, month, substr(destination_id, 1, $6)"
+		fi
+	elif [[ $1 == '--year' && -n $2 ]] && date -d "$2" >/dev/null
+	then
+		filter_by_time_period="AND date_trunc('year', job.create_time AT TIME ZONE 'UTC') = '$2-01-01'::date"
+		if [[ $3 == '--sub_dest' && -n $4 ]]
+		then
+			dest="substr(job.destination_id, 1, $4) as destination_id,"
+			group_by="GROUP BY user_email, month, substr(destination_id, 1, $4)"
+		fi
+	elif [[ $1 == '--month' && -n $2 ]] && date -d "$2" >/dev/null
+	then
+		year=$(date +'%Y')
+		filter_by_time_period="AND date_trunc('month', job.create_time AT TIME ZONE 'UTC') = '$year-$2-01'::date"
+		if [[ $3 == '--sub_dest' && -n $4 ]]
+		then
+			dest="substr(job.destination_id, 1, $4) as destination_id,"
+			group_by="GROUP BY user_email, month, substr(destination_id, 1, $4)"
+		fi
+	fi
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			date_trunc('month', job.create_time  AT TIME ZONE 'UTC')::date as month,
+                        count(job.id) as total_jobs,
+			$dest
+			round(sum(job_metric_numeric.metric_value), 0) as runtime_secomnds,
+			round(sum(job_metric_numeric.metric_value / 60), 2) as runtime_minutes,
+			round(sum(job_metric_numeric.metric_value / 3600), 2) as runtime_hours,
+                        galaxy_user.email as user_email
+		FROM
+			job,
+			job_metric_numeric,
+                        galaxy_user
+		WHERE
+			job.id = job_metric_numeric.job_id
+			AND job.user_id = galaxy_user.id
+                        $filter_by_time_period
+			AND job_metric_numeric.metric_name = 'runtime_seconds'
+		$group_by
+		ORDER BY month DESC
+	EOF
+}
+
 query_training-list() { ##? [--all]: List known trainings
 	handle_help "$@" <<-EOF
 		This module is specific to EU's implementation of Training Infrastructure as a Service. But this specifically just checks for all groups with the name prefix 'training-'
