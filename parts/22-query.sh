@@ -730,7 +730,7 @@ EOFhelp
 EOF
 }
 
-query_monthly-job-runtimes() { ##? [year] [month] : Summation of total job run times per user per destination over a period of time
+query_monthly-job-runtimes() { ## [--year y] [--month m] : Summation of total job run times per user per destination over a period of time
 	handle_help "$@" <<-EOF
 		This query computes the total run time for all jobs per user per destination over
 		an optionally specified time period.  If no time period is specified, all years
@@ -805,20 +805,20 @@ query_monthly-job-runtimes() { ##? [year] [month] : Summation of total job run t
 	read -r -d '' QUERY <<-EOF
 		SELECT
 			date_trunc('month', job.create_time  AT TIME ZONE 'UTC')::date as month,
-                        count(job.id) as total_jobs,
+			count(job.id) as total_jobs,
 			$dest
 			round(sum(job_metric_numeric.metric_value), 0) as runtime_secomnds,
 			round(sum(job_metric_numeric.metric_value / 60), 2) as runtime_minutes,
 			round(sum(job_metric_numeric.metric_value / 3600), 2) as runtime_hours,
-                        galaxy_user.email as user_email
+			galaxy_user.email as user_email
 		FROM
 			job,
 			job_metric_numeric,
-                        galaxy_user
+			galaxy_user
 		WHERE
 			job.id = job_metric_numeric.job_id
 			AND job.user_id = galaxy_user.id
-                        $filter_by_time_period
+			$filter_by_time_period
 			AND job_metric_numeric.metric_name = 'runtime_seconds'
 		$group_by
 		ORDER BY month DESC
