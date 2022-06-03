@@ -529,3 +529,141 @@ report_assigned-to-handler(){ ## <handler>: Report what items are assigned to a 
 	output_ds=$(query_tsv "$qstr")
 	printf "ID\tCreate Time\tWorkflow ID\tHistory ID\tState\tScheduler\tUUID\n----\t----\t----\t----\t----\t----\t----\n%s" "$output_ds" | align_cols
 }
+
+report_data-info(){
+	handle_help "$@" <<-EOF
+			Report some useful information about a a Galaxy dataset. Mainly useful for debugging.
+			Takes uuid or dataset id.
+			gxadmin report data-info 428d0c00-95a5-4c1a-8248-e9e0937f376f
+			# Galaxy dataset
+
+			Property | Value
+			-------- | -----
+			ID | 88378397
+			UUID | 428d0c0095a54c1a8248e9e0937f376f
+			Created | 2022-05-11 10:36:44.902173
+			Updated | 2022-05-11 10:36:44.902174
+			Properties | dataset_state=ok deleted=f purged=f
+			Object store ID | files12
+			Size | 7773 MB
+			Extension | fastqsanger.gz
+			User id | 5
+			Tool id | toolshed.g2.bx.psu.edu/repos/bgruening/10x_bamtofastq/10x_bamtofastq/1.4.1
+			Job state | ok
+			Disk path | /data/dnb06/galaxy_db/files/4/2/8/dataset_428d0c0095a54c1a8248e9e0937f376f.dat
+	EOF
+
+	# Metada
+	read -r -d '' qstr <<-EOF
+		SELECT DISTINCT d.id,
+			d.uuid,
+			d.create_time,
+			d.update_time,
+			d.state,
+			d.deleted,
+			d.purged,
+			d.object_store_id,
+			pg_size_pretty(coalesce(d.total_size, d.file_size, 0)),
+			hda.extension,
+			j.user_id,
+			j.tool_id,
+			j.state
+		FROM dataset d,
+			history_dataset_association hda,
+			job j 
+		WHERE hda.dataset_id=d.id AND d.job_id=j.id
+			AND d.uuid=translate('$1','-','')
+	EOF
+	results=$(query_tsv "$qstr")
+
+	read -r -d '' hstr <<-EOF
+		SELECT hda.history_id
+		FROM dataset d, 
+			history_dataset_association hda 
+		WHERE hda.dataset_id=d.id 
+			AND d.uuid=translate('$1','-','')
+	EOF
+	histories=$(query_tsv "$hstr")
+
+	if [[ -z "$results" ]]; then
+		read -r -d '' qstr <<-EOF
+			SELECT DISTINCT d.id,
+				d.uuid,
+				d.create_time,
+				d.update_time,
+				d.state,
+				d.deleted,
+				d.purged,
+				d.object_store_id,
+				pg_size_pretty(coalesce(d.total_size, d.file_size, 0)),
+				hda.extension,
+				j.user_id,
+				j.tool_id,
+				j.state
+			FROM dataset d,
+				history_dataset_association hda,
+				job j 
+			WHERE hda.dataset_id=d.id AND d.job_id=j.id
+				AND (d.id=$1 oR hda.id=$1)
+		EOF
+		results=$(query_tsv "$qstr")
+
+		read -r -d '' hstr <<-EOF
+			SELECT hda.history_id
+			FROM dataset d, 
+				history_dataset_association hda 
+			WHERE hda.dataset_id=d.id 
+				AND d.uuid=translate('$1','-','')
+		EOF
+		histories=$(query_tsv "$hstr")
+	fi
+	dataset_id=$(echo "$results" | awk '{print $1}' | sort -u)
+	uuid=$(echo "$results" | awk '{print $2}' | sort -u)
+	object_store_id=$(echo "$results" | awk '{print $10}' | sort -u)
+object_store_to_path=$(cat <<EOF
+import sys
+import xml.etree.ElementTree as et
+config_file = "$2"
+
+object_store_paths = {}
+object_store_by = {}
+
+root = et.parse(config_file).getroot()
+
+for object_store in root.findall('backends/backend'):
+	object_store_by[object_store.get('id')] = object_store.get('store_by')
+	for files_dir in object_store.findall('files_dir'):
+		object_store_paths[object_store.get('id')] = files_dir.get('path')
+	  
+if object_store_by["$object_store_id"]=='uuid':
+	ref_id = "$uuid"
+elif object_store_by["$object_store_id"]=='id':
+	ref_id = "$dataset_id"
+
+print(f'{object_store_paths["$object_store_id"]}/{ref_id[0]}/{ref_id[1]}/{ref_id[2]}/dataset_{ref_id}.dat')
+EOF
+)
+	disk_path=$(python -c "$object_store_to_path")
+
+	read -r -d '' template <<-EOF
+# Galaxy dataset
+
+Property | Value
+-------- | -----
+ID | %s
+UUID | %s
+Created | %s %s
+Updated | %s %s
+Properties | dataset_state=%s deleted=%s purged=%s
+Object store ID | %s
+Size | %s %s
+Extension | %s
+User id | %s
+Tool id | %s
+Job state | %s
+Disk path | $disk_path
+\n
+EOF
+	printf "$template" $results
+	echo "Histories in selection: {${histories//$'\n'/' '}}"
+}
