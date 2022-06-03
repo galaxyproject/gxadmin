@@ -730,6 +730,101 @@ EOFhelp
 EOF
 }
 
+query_monthly-job-runtimes() { ## [--year y] [--month m] : Summation of total job run times per user per destination over a period of time
+	handle_help "$@" <<-EOF
+		This query computes the total run time for all jobs per user per destination over
+		an optionally specified time period.  If no time period is specified, all years
+		and months will be displayed.  The total job run time is returned in seconds, minutes
+		and hours.
+
+		The destination id can be restricted to the first N letters in the id string by using
+		the --sub_dest flag.  This allows grouping on values like "slurm" and "front" instead
+		of "slurm_multi", "slurm_normal", "frontera_small", "frontera_large", etc., which
+		clutters the output. 
+
+		A time period can be defined using 3 options:
+
+		--year XXXX --month XX - the specified month of the specified year
+
+		$ gxadmin local query-monthly-job-runtimes --year 2022 --month 05 --sub_dest 5
+		   month    | total_jobs | destination_id | runtime_secomnds | runtime_minutes | runtime_hours |   user_email
+		------------+------------+----------------+------------------+-----------------+---------------+-----------------
+		 2022-05-01 |      20323 | front          |           502031 |         8367.18 |        139.45 | 
+		 2022-05-01 |       3013 | slurm          |            99135 |         1652.25 |         27.54 | 
+
+		--year XXXX - all months of the specified year
+
+		$ gxadmin local query-monthly-job-runtimes --year 2021 --sub_dest 5
+		   month    | total_jobs | destination_id | runtime_secomnds | runtime_minutes | runtime_hours |   user_email
+		------------+------------+----------------+------------------+-----------------+---------------+-----------------
+		 2021-12-01 |        155 | slurm          |            27981 |          466.35 |          7.77 | 
+		 2021-12-01 |        417 | slurm          |            47063 |          784.38 |         13.07 | 
+		 2021-11-01 |        113 | slurm          |             3032 |           50.53 |          0.84 | 
+		 2021-11-01 |          2 | slurm          |              142 |            2.37 |          0.04 | 
+
+		--month XX - the specified month of the current year
+
+		$ gxadmin local query-monthly-job-runtimes --month 04 --sub_dest 5
+		   month    | total_jobs | destination_id | runtime_secomnds | runtime_minutes | runtime_hours |   user_email
+		------------+------------+----------------+------------------+-----------------+---------------+-----------------
+		 2022-04-01 |         94 | front          |           333029 |         5550.48 |         92.51 | 
+		 2022-04-01 |        146 | slurm          |           278408 |         4640.13 |         77.34 | 
+	EOF
+
+	dest="job.destination_id as destination_id,"
+	group_by="GROUP BY user_email, month, destination_id"
+
+	if [[ $1 == '--year' && -n $2 ]] && [[ $3 == '--month' && -n $4 ]] && date -d "$2" >/dev/null && date -d $4 >/dev/null
+	then
+		filter_by_time_period="AND date_trunc('month', job.create_time AT TIME ZONE 'UTC') = '$2-$4-01'::date"
+		year=$(date +'%Y')
+		if [[ $5 == '--sub_dest' && -n $6 ]]
+		then
+			dest="substr(job.destination_id, 1, $6) as destination_id,"
+			group_by="GROUP BY user_email, month, substr(destination_id, 1, $6)"
+		fi
+	elif [[ $1 == '--year' && -n $2 ]] && date -d "$2" >/dev/null
+	then
+		filter_by_time_period="AND date_trunc('year', job.create_time AT TIME ZONE 'UTC') = '$2-01-01'::date"
+		if [[ $3 == '--sub_dest' && -n $4 ]]
+		then
+			dest="substr(job.destination_id, 1, $4) as destination_id,"
+			group_by="GROUP BY user_email, month, substr(destination_id, 1, $4)"
+		fi
+	elif [[ $1 == '--month' && -n $2 ]] && date -d "$2" >/dev/null
+	then
+		year=$(date +'%Y')
+		filter_by_time_period="AND date_trunc('month', job.create_time AT TIME ZONE 'UTC') = '$year-$2-01'::date"
+		if [[ $3 == '--sub_dest' && -n $4 ]]
+		then
+			dest="substr(job.destination_id, 1, $4) as destination_id,"
+			group_by="GROUP BY user_email, month, substr(destination_id, 1, $4)"
+		fi
+	fi
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			date_trunc('month', job.create_time  AT TIME ZONE 'UTC')::date as month,
+			count(job.id) as total_jobs,
+			$dest
+			round(sum(job_metric_numeric.metric_value), 0) as runtime_secomnds,
+			round(sum(job_metric_numeric.metric_value / 60), 2) as runtime_minutes,
+			round(sum(job_metric_numeric.metric_value / 3600), 2) as runtime_hours,
+			galaxy_user.email as user_email
+		FROM
+			job,
+			job_metric_numeric,
+			galaxy_user
+		WHERE
+			job.id = job_metric_numeric.job_id
+			AND job.user_id = galaxy_user.id
+			$filter_by_time_period
+			AND job_metric_numeric.metric_name = 'runtime_seconds'
+		$group_by
+		ORDER BY month DESC
+	EOF
+}
+
 query_training-list() { ##? [--all]: List known trainings
 	handle_help "$@" <<-EOF
 		This module is specific to EU's implementation of Training Infrastructure as a Service. But this specifically just checks for all groups with the name prefix 'training-'
@@ -1458,6 +1553,30 @@ query_monthly-gpu-years() { ## : GPU years allocated to tools by month
 	EOF
 }
 
+query_monthly-workflow-invocations() { ## : Workflow invocations by month
+	handle_help "$@" <<-EOF
+		Find out how many workflows has been invocated by Galaxy during the past months.
+
+		    $ gxadmin query monthly-workflow-invocations
+		       month    | count
+		    ------------+-------
+		     2022-05-01 |  4183
+		     2022-04-01 |  5043
+		     2022-03-01 |  4851
+		     2022-02-01 | 29587
+	EOF
+
+		read -r -d '' QUERY <<-EOF
+		SELECT
+			date_trunc('month', workflow_invocation.create_time)::date as month,
+			count(*)
+		FROM
+			workflow_invocation
+		GROUP BY date_trunc('month', workflow_invocation.create_time)
+		ORDER BY date_trunc('month', workflow_invocation.create_time) DESC
+	EOF
+}
+
 query_user-cpu-years() { ## : CPU years allocated to tools by user
 	handle_help "$@" <<-EOF
 		This uses the galaxy_slots and runtime_seconds metrics in order to
@@ -1821,6 +1940,116 @@ query_user-disk-quota() { ## : Retrieves the 50 users with the largest quotas
 		GROUP BY galaxy_user.id, galaxy_user.username, computed_quotas.base_quota, computed_quotas.add_quota, computed_quotas.min_quota
 		ORDER BY (computed_quotas.base_quota + computed_quotas.add_quota - computed_quotas.min_quota) DESC
 		LIMIT 50
+	EOF
+}
+
+query_disk-usage-library() { ##? [--library_name NAME] [--by_folder] [--human]: Retrieve an approximation of the disk usage for a data library
+	handle_help "$@" <<-EOF
+		This uses the dataset size and the library dataset association in order to
+		calculate total disk usage for a data library.  By default it prints the
+		usage in bytes...
+
+		$ gxadmin local query-disk-usage-library --library_name 'My Library'
+		 library_name  | library size
+		---------------+-------------
+		 My Library    | 25298225177
+
+		...but the --human flag displays readable formats:
+
+		$ gxadmin local query-disk-usage-library --library_name 'My Library' --human
+		 library_name  | library size
+		---------------+--------------
+		 My Library    | 24 GB
+
+		A --by_folder flag is also available for displaying disk usage for each folder.
+
+		a$ gxadmin local query-disk-usage-library --library_name 'My Library' --by_folder
+		       folder_name       | folder size 
+		-------------------------+-------------
+		 Contamination Filtering | 10798630750
+		 Metagenomes             | 12026310232
+		 Metatranscriptomes      |  2473284195
+
+		And, of course, the --human flag can be used here as well.
+
+		$ gxadmin local query-disk-usage-library --library_name 'My Library' --by_folder --human
+		       folder_name       | folder size
+		-------------------------+-------------
+		 Contamination Filtering | 10 GB
+		 Metagenomes             | 11 GB
+		 Metatranscriptomes      | 2359 MB
+	EOF
+
+	where="WHERE
+		library.name = '$2'
+		AND library_folder.id IN (SELECT id FROM library_tree)
+		AND library_folder.id = library_dataset.folder_id
+		AND library_dataset.library_dataset_dataset_association_id = library_dataset_dataset_association.id
+		AND library_dataset_dataset_association.dataset_id = dataset.id
+		AND NOT dataset.purged"
+
+	from="FROM
+		(SELECT
+			library.name as library_name,
+			library_folder.name as folder_name,
+			sum(coalesce(dataset.total_size, dataset.file_size, 0)) as folder_size
+		FROM
+			library,
+			library_folder,
+			library_dataset_dataset_association,
+			library_dataset,
+			dataset
+		$where
+		GROUP BY library_name, folder_name) lib"
+
+	group_by="GROUP BY library_name"
+
+	if [[ -n $3 ]]
+	then
+		if [[ $3 == '--by_folder' ]]
+		then
+			if [[ -n $4 && $4 == '--human' ]]
+			then
+				folder_size="pg_size_pretty(sum(coalesce(dataset.total_size, dataset.file_size, 0))) as \"folder size\""
+			else
+				folder_size="sum(coalesce(dataset.total_size, dataset.file_size, 0)) as \"folder size\""
+			fi
+			select="SELECT library_folder.name as folder_name, $folder_size"
+			from="FROM library, library_folder, library_dataset_dataset_association, library_dataset, dataset"
+			group_by="GROUP BY folder_name"
+		elif [[ $3 == '--human' ]]
+		then
+			select="SELECT lib.library_name as library_name, pg_size_pretty(sum(folder_size)) as \"library size\""
+			where=""
+		fi
+	else
+		select="SELECT lib.library_name as library_name, sum(folder_size) as \"library size\""
+		where=""
+	fi
+
+	read -r -d '' QUERY <<-EOF
+		WITH RECURSIVE library_tree AS (
+			SELECT id,
+			    name,
+			    parent_id,
+			    0 AS folder_level
+			FROM library_folder
+			WHERE parent_id IS NULL
+			AND name = '$2'
+		UNION ALL
+			SELECT child.id,
+				child.name,
+				child.parent_id,
+			folder_level+1 AS folder_level
+			FROM library_folder child
+			JOIN library_tree lt
+				ON lt.id = child.parent_id
+		)
+
+		$select
+		$from
+		$where
+		$group_by
 	EOF
 }
 
