@@ -530,11 +530,11 @@ report_assigned-to-handler(){ ## <handler>: Report what items are assigned to a 
 	printf "ID\tCreate Time\tWorkflow ID\tHistory ID\tState\tScheduler\tUUID\n----\t----\t----\t----\t----\t----\t----\n%s" "$output_ds" | align_cols
 }
 
-report_data-info(){
+report_data-info(){ ##? <uuid|dataset_id> <optional object_store_config_file>: Information about a specific dataset
 	handle_help "$@" <<-EOF
 			Report some useful information about a a Galaxy dataset. Mainly useful for debugging.
-			Takes uuid or dataset id.
-			gxadmin report data-info 428d0c00-95a5-4c1a-8248-e9e0937f376f
+			Takes uuid or dataset id and optionally an object store config file 
+			gxadmin report data-info 428d0c00-95a5-4c1a-8248-e9e0937f376f object_sote_conf.xml
 			# Galaxy dataset
 
 			Property | Value
@@ -553,6 +553,9 @@ report_data-info(){
 			Disk path | /data/dnb06/galaxy_db/files/4/2/8/dataset_428d0c0095a54c1a8248e9e0937f376f.dat
 	EOF
 
+	arg_data_id=$1
+	arg_config_file=$2
+	
 	# Metada
 	read -r -d '' qstr <<-EOF
 		SELECT DISTINCT d.id,
@@ -572,7 +575,7 @@ report_data-info(){
 			history_dataset_association hda,
 			job j 
 		WHERE hda.dataset_id=d.id AND d.job_id=j.id
-			AND d.uuid=translate('$1','-','')
+			AND d.uuid=translate('$arg_data_id','-','')
 	EOF
 	results=$(query_tsv "$qstr")
 
@@ -581,7 +584,7 @@ report_data-info(){
 		FROM dataset d, 
 			history_dataset_association hda 
 		WHERE hda.dataset_id=d.id 
-			AND d.uuid=translate('$1','-','')
+			AND d.uuid=translate('$arg_data_id','-','')
 	EOF
 	histories=$(query_tsv "$hstr")
 
@@ -604,7 +607,7 @@ report_data-info(){
 				history_dataset_association hda,
 				job j 
 			WHERE hda.dataset_id=d.id AND d.job_id=j.id
-				AND (d.id=$1 oR hda.id=$1)
+				AND (d.id=$arg_data_id oR hda.id=$arg_data_id)
 		EOF
 		results=$(query_tsv "$qstr")
 
@@ -613,7 +616,7 @@ report_data-info(){
 			FROM dataset d, 
 				history_dataset_association hda 
 			WHERE hda.dataset_id=d.id 
-				AND d.uuid=translate('$1','-','')
+				AND d.uuid=translate('$arg_data_id','-','')
 		EOF
 		histories=$(query_tsv "$hstr")
 	fi
@@ -623,7 +626,7 @@ report_data-info(){
 object_store_to_path=$(cat <<EOF
 import sys
 import xml.etree.ElementTree as et
-config_file = "$2"
+config_file = "$arg_config_file"
 
 object_store_paths = {}
 object_store_by = {}
