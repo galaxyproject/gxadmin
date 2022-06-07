@@ -530,7 +530,7 @@ report_assigned-to-handler(){ ## <handler>: Report what items are assigned to a 
 	printf "ID\tCreate Time\tWorkflow ID\tHistory ID\tState\tScheduler\tUUID\n----\t----\t----\t----\t----\t----\t----\n%s" "$output_ds" | align_cols
 }
 
-report_data-info(){ ##? <uuid|dataset_id> <optional object_store_config_file>: Information about a specific dataset
+report_data-info(){ ##? <uuid|dataset_id|hda_id> <optional object_store_config_file>: Information about a specific dataset
 	handle_help "$@" <<-EOF
 			Report some useful information about a a Galaxy dataset. Mainly useful for debugging.
 			Takes uuid or dataset id and optionally an object store config file 
