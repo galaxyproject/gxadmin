@@ -534,7 +534,7 @@ report_data-info(){ ##? <uuid|dataset_id> <optional object_store_config_file>: I
 	handle_help "$@" <<-EOF
 			Report some useful information about a a Galaxy dataset. Mainly useful for debugging.
 			Takes uuid or dataset id and optionally an object store config file 
-			gxadmin report data-info 428d0c00-95a5-4c1a-8248-e9e0937f376f object_sote_conf.xml
+			gxadmin report data-info 428d0c00-95a5-4c1a-8248-e9e0937f376f object_store_conf.xml
 			# Galaxy dataset
 
 			Property | Value
