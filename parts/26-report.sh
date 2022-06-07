@@ -530,7 +530,7 @@ report_assigned-to-handler(){ ## <handler>: Report what items are assigned to a 
 	printf "ID\tCreate Time\tWorkflow ID\tHistory ID\tState\tScheduler\tUUID\n----\t----\t----\t----\t----\t----\t----\n%s" "$output_ds" | align_cols
 }
 
-report_data-info(){ ##? <uuid|dataset_id|hda_id> <optional object_store_config_file>: Information about a specific dataset
+report_data-info(){ ##? <data_id> [object_store_config_file]: Information about a specific dataset, it can be a UUID or numeric dataset ID or nuemric HDA ID
 	handle_help "$@" <<-EOF
 			Report some useful information about a a Galaxy dataset. Mainly useful for debugging.
 			Takes uuid or dataset id and optionally an object store config file 
@@ -553,9 +553,6 @@ report_data-info(){ ##? <uuid|dataset_id|hda_id> <optional object_store_config_f
 			Disk path | /data/dnb06/galaxy_db/files/4/2/8/dataset_428d0c0095a54c1a8248e9e0937f376f.dat
 	EOF
 
-	arg_data_id=$1
-	arg_config_file=$2
-	
 	# Metada
 	read -r -d '' qstr <<-EOF
 		SELECT DISTINCT d.id,
@@ -607,7 +604,7 @@ report_data-info(){ ##? <uuid|dataset_id|hda_id> <optional object_store_config_f
 				history_dataset_association hda,
 				job j 
 			WHERE hda.dataset_id=d.id AND d.job_id=j.id
-				AND (d.id=$arg_data_id oR hda.id=$arg_data_id)
+				AND (d.id=$arg_data_id OR hda.id=$arg_data_id)
 		EOF
 		results=$(query_tsv "$qstr")
 
@@ -623,10 +620,11 @@ report_data-info(){ ##? <uuid|dataset_id|hda_id> <optional object_store_config_f
 	dataset_id=$(echo "$results" | awk '{print $1}' | sort -u)
 	uuid=$(echo "$results" | awk '{print $2}' | sort -u)
 	object_store_id=$(echo "$results" | awk '{print $10}' | sort -u)
+	if [[ -n "$arg_object_store_config_file" ]]; then
 object_store_to_path=$(cat <<EOF
 import sys
 import xml.etree.ElementTree as et
-config_file = "$arg_config_file"
+config_file = "$arg_object_store_config_file"
 
 object_store_paths = {}
 object_store_by = {}
@@ -647,7 +645,7 @@ print(f'{object_store_paths["$object_store_id"]}/{ref_id[0]}/{ref_id[1]}/{ref_id
 EOF
 )
 	disk_path=$(python -c "$object_store_to_path")
-
+	fi
 	read -r -d '' template <<-EOF
 # Galaxy dataset
 
