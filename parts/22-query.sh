@@ -4060,4 +4060,3 @@ query_pulsar-gb-transferred()  { ##? [--bymonth] [--byrunner] [--human]: Counts 
 		$orderby
 	EOF
 }
-
