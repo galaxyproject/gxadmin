@@ -240,7 +240,7 @@ query_history-connections() { ## : The connections of tools, from output to inpu
 	EOF
 }
 
-query_datasets-created-daily() { ## : The min/max/average/p95/p99 of total size of datasets created in a single day.
+query_datasets-created-daily() { ##? [months|all] [--human]: The min/max/average/p95/p99 of total size of datasets created in a single day.
 	handle_help "$@" <<-EOF
 		    $ gxadmin query datasets-created-daily
 		     min | quant_1st | median  |         mean          | quant_3rd |  perc_95  |  perc_99  |    max    |    sum     |    stddev
@@ -255,12 +255,25 @@ query_datasets-created-daily() { ## : The min/max/average/p95/p99 of total size 
 		    ---------+-----------+---------+-------+-----------+---------+---------+--------+---------+--------
 		     2 bytes | 297 kB    | 6653 kB | 38 MB | 29 MB     | 169 MB  | 397 MB  | 509 MB | 1324 MB | 92 MB
 		    (1 row)
+
+		only consider datasets created in the past month:
+
+		    $ gxadmin query datasets-created-daily 1 --human
+		       min   | quant_1st | median  |  mean   | quant_3rd | perc_95 | perc_99 |  max  |  sum   | stddev
+		    ---------+-----------+---------+---------+-----------+---------+---------+-------+--------+---------
+		     1974 GB | 7651 GB   | 9705 GB | 9089 GB | 11 TB     | 13 TB   | 13 TB   | 13 TB | 284 TB | 2727 GB
 	EOF
 
-	if [[ $1 == "--human" ]]; then
+	if [[ -n $arg_human ]]; then
 		summary="$(summary_statistics sum 1)"
 	else
 		summary="$(summary_statistics sum)"
+	fi
+
+	if [[ -z $arg_months || $arg_months == 'all' ]]; then
+		since=
+	else
+		since="WHERE create_time > (now() AT TIME ZONE 'UTC' - '$arg_months months'::interval)"
 	fi
 
 	read -r -d '' QUERY <<-EOF
@@ -269,6 +282,7 @@ query_datasets-created-daily() { ## : The min/max/average/p95/p99 of total size 
 			date_trunc('day', create_time AT TIME ZONE 'UTC'),
 			sum(coalesce(total_size, file_size))
 		from dataset
+		$since
 		group by date_trunc
 		order by date_trunc desc)
 		select
