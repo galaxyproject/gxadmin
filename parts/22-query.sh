@@ -2397,6 +2397,23 @@ query_total-jobs(){ ## : Total number of jobs run by galaxy instance
 
 }
 
+query_job-state() { ##? <job_id>: Get current job state given a job ID
+	handle_help "$@" <<-EOF
+		    $ gxadmin query job-state 1
+		     state
+		    --------
+		     error
+		    (1 row)
+	EOF
+
+	read -r -d '' QUERY <<-EOF
+			SELECT
+				state
+			FROM job
+			WHERE id = $arg_id
+	EOF
+}
+
 query_job-history() { ##? <id>: Job state history for a specific job
 	handle_help "$@" <<-EOF
 		    $ gxadmin query job-history 1
