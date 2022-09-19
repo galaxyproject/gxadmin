@@ -4092,7 +4092,7 @@ query_pulsar-gb-transferred()  { ##? [--bymonth] [--byrunner] [--human]: Counts 
 	EOF
 }
 
-query_largest-dataset-users() { ##? [--human] [--deleted] [--purged]: Get largest datasets by users
+query_largest-dataset-users() { ##? [--human] [--deleted] [--purged] [--format-uuid]: Get largest datasets by users
 	handle_help "$@" <<-EOF
 		Optionally includes deleted and purged datasets
 
@@ -4127,6 +4127,12 @@ query_largest-dataset-users() { ##? [--human] [--deleted] [--purged]: Get larges
 		purged="AND dataset.purged = false"
 	fi
 
+	if [[ -n "$arg_format_uuid" ]]; then
+		uuid="REGEXP_REPLACE(dataset.uuid, '(........)(....)(....)(....)(............)', '\1-\2-\3-\4-\5')"
+	else
+		uuid="dataset.uuid"
+	fi
+
 	read -r -d '' QUERY <<-EOF
 		WITH
 			top_datasets AS (
@@ -4139,7 +4145,7 @@ query_largest-dataset-users() { ##? [--human] [--deleted] [--purged]: Get larges
 				DESC LIMIT 30
 			)
 		SELECT
-			dataset.uuid,
+			$uuid,
 			job_id as job_id,
 			$sizes,
 			$username,
