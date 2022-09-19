@@ -4091,3 +4091,95 @@ query_pulsar-gb-transferred()  { ##? [--bymonth] [--byrunner] [--human]: Counts 
 		$orderby
 	EOF
 }
+
+query_largest-dataset-users() { ##? [--human] [--deleted] [--purged]: Get largest datasets by users
+	handle_help "$@" <<-EOF
+		Optionally includes deleted and purged datasets
+
+		    $ gxadmin query largest-dataset-users --human
+		                   uuid               | job_id | file_size | total_size |  username  | id  |      history_name       |                     hda_name
+		    ----------------------------------+--------+-----------+------------+------------+-----+-------------------------+---------------------------------------------------
+		     a18fed2a9d4d4f66b301b48c4c6ed720 |   6995 | 220 GB    | 220 GB     | alice      | 269 | B1MG_Case5_IC           | EGA Download Client: EGAF00005572869
+		     a18fed2a9d4d4f66b301b48c4c6ed720 |   6995 | 220 GB    | 220 GB     | beth       | 280 | imported: B1MG_Case5_IC | EGA Download Client: EGAF00005572869
+		     a18fed2a9d4d4f66b301b48c4c6ed720 |   6995 | 220 GB    | 220 GB     | beth       | 284 | HTSGET                  | Case 5 Child BAM (EGAF00005572869)
+
+		here you can see another user has imported this single large dataset multiple times.
+
+	EOF
+
+	username=$(gdpr_safe galaxy_user.username username)
+
+	if [[ -n "$arg_human" ]]; then
+		sizes="pg_size_pretty(dataset.file_size) as file_size, pg_size_pretty(dataset.total_size) as total_size"
+	else
+		sizes="dataset.file_size as file_size, dataset.total_size as total_size"
+	fi
+
+	if [[ -n "$arg_deleted" ]]; then
+		deleted=""
+	else
+		deleted="AND dataset.deleted = false"
+	fi
+
+	if [[ -n "$arg_purged" ]]; then
+		purged=""
+	else
+		purged="AND dataset.purged = false"
+	fi
+
+	read -r -d '' QUERY <<-EOF
+		WITH
+			top_datasets AS (
+				SELECT id
+				FROM dataset
+				WHERE total_size IS NOT NULL
+					$deleted
+					$purged
+				ORDER BY total_size
+				DESC LIMIT 30
+			)
+		SELECT
+			dataset.uuid,
+			job_id as job_id,
+			$sizes,
+			$username,
+			history.id,
+			history.name as history_name,
+			history_dataset_association.name as hda_name
+		FROM
+			top_datasets
+			LEFT JOIN dataset ON top_datasets.id = dataset.id
+			LEFT JOIN history_dataset_association ON history_dataset_association.dataset_id = top_datasets.id
+			LEFT JOIN history ON history_dataset_association.history_id = history.id
+			LEFT JOIN job ON dataset.job_id = job.id
+			LEFT JOIN galaxy_user ON history.user_id = galaxy_user.id
+	EOF
+}
+
+query_dataset-usage-and-imports() { ##? <dataset_uuid>: Fetch limited information about which users and histories are using a specific dataset from disk.
+	handle_help "$@" <<-EOF
+		This has built in support for "cleaning up" paths like /data/galaxy/.../dataset_<uuid>.dat into just the properly formatted UUID. It will also strip - characters from the uuid if present.
+		    $ gxadmin query dataset-usage-and-imports /data/galaxy/b/8/4/dataset_b8482e38-0e6f-4871-92ee-a699458f18a5.dat
+		      id  | job_id | history_id | user_id | username |              name              |  name
+		    ------+--------+------------+---------+----------+--------------------------------+---------
+		     3338 |        |         93 |       6 | alice    | transient vector vs normal M14 | sources
+		    (1 row)
+
+	EOF
+
+	cleaned_dataset_uuid=$(echo "$arg_dataset_uuid" | sed 's/.*dataset_//g;s/\.dat$//g;s/-//g')
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			dataset.id, job_id, history_id, history.user_id,
+			galaxy_user.username, history.name,
+			history_dataset_association.name
+		FROM
+			dataset
+			LEFT JOIN history_dataset_association ON dataset.id = history_dataset_association.dataset_id
+			LEFT JOIN history ON history_dataset_association.history_id = history.id
+			LEFT JOIN galaxy_user ON history.user_id = galaxy_user.id
+		WHERE
+			uuid = '$cleaned_dataset_uuid';
+	EOF
+}

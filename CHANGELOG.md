@@ -32,7 +32,9 @@
 	- query disk-usage-library, by [@gregvonkuster] (https://github.com/gregvonkuster)
 	- query monthly-workflow-invocations, by [@gmauro](https://github.com/gmauro).
 	- query monthly-job-runtimes, by [@gregvonkuster] (https://github.com/gregvonkuster)
-    - query job-state, by [@natefoo](https://github.com/natefoo)
+	- query job-state, by [@natefoo](https://github.com/natefoo)
+	- query largest-dataset-users, by [@hexylena](https://github.com/hexylena)
+	- query dataset-usage-and-imports, by [@hexylena](https://github.com/hexylena)
 - Updated:
 	- Add option to include error counts in tool-popularity query, thanks [@natefoo](https://github.com/natefoo)
 	- Add option to exclude unsuccessful jobs from tool-metrics query, thanks [@natefoo](https://github.com/natefoo)
