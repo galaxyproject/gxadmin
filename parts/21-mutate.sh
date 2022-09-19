@@ -1482,3 +1482,30 @@ mutate_force-publish-history() { ##? <history_id> [--commit]: Removes the access
 	txn_pos=$(txn_postfix "$arg_commit")
 	QUERY="$txn_pre $QUERY; $txn_pos"
 }
+
+mutate_dataset-mark-purged() { ##? <dataset_uuid> [--commit]: Purge dataset and mark downstream HDAs as purged as well
+	handle_help "$@" <<-EOF
+	EOF
+
+	read -r -d '' QUERY <<-EOF
+		WITH to_delete as (
+			UPDATE dataset
+			SET
+				deleted = true,
+				purged = true
+			WHERE uuid = translate('$arg_dataset_uuid','-','')
+			RETURNING
+				id
+		)
+		UPDATE
+			history_dataset_association
+		SET
+			deleted = true,
+			purged = true
+		WHERE dataset_id IN (select * from to_delete)
+	EOF
+
+	txn_pre=$(txn_prefix "$arg_commit")
+	txn_pos=$(txn_postfix "$arg_commit")
+	QUERY="$txn_pre $QUERY; $txn_pos"
+}
