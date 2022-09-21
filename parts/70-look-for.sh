@@ -264,6 +264,14 @@ look_for() {
 		if [[ "${query_name}" == "query"* ]]; then
 			query_tbl "$QUERY"
 		fi
+	elif [[ $query_type == "galaxy" ]]; then
+		obtain_func "$query_type" "$query_name" "$@"
+
+		if [[ "${query_name}" == "query"* ]]; then
+			query_tbl "$QUERY"
+		elif [[ "${query_name}" == "iquery"* ]]; then
+			query_influx "$QUERY" "$query_name" "$fields" "$tags" "$timestamp"
+		fi
 	else
 		$fn "$@";
 
