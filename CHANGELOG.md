@@ -5,20 +5,20 @@
 	- Unified uwsgi-status command (thanks @gmauro)
 	- Unified galaxy user/email/id filtering and made it stricter in what it accepts ([#60](https://github.com/galaxyproject/gxadmin/issues/60)).
 	- Updated "query user-disk-usage" to add a "--use-precalc" flag which uses the value calculated by Galaxy.
-	- Enabled GXADMIN_PYTHON from the environment, by [@gmauro](https://github.com/gmauro).
-	- Updated "galaxy cleanup" to avoid to set update_time on updated objects, by [@gmauro](https://github.com/gmauro).
+	- Enabled GXADMIN_PYTHON from the environment, by @gmauro.
+	- Updated "galaxy cleanup" to avoid to set update_time on updated objects, by @gmauro.
 	- fixed broken latest-users query
-	- fixed broken errored-jobs query, by [@gmauro](https://github.com/gmauro).
-	- several fixes in galaxy ie-show command, [@gmauro](https://github.com/gmauro).
-	- Generalized the "uwsgi lastlog" function to proper handle journalctl's output, by [@gmauro](https://github.com/gmauro).
-	- Updated "query upload-gb-in-past-hour" to include also datasets created by the DATA_FETCH tool, by [@gmauro](https://github.com/gmauro).
+	- fixed broken errored-jobs query, by @gmauro.
+	- several fixes in galaxy ie-show command, @gmauro.
+	- Generalized the "uwsgi lastlog" function to proper handle journalctl's output, by @gmauro.
+	- Updated "query upload-gb-in-past-hour" to include also datasets created by the DATA_FETCH tool, by @gmauro.
 - Added:
-	- query dump-users, for [@shiltemann](https://github.com/shiltemann)
+	- query dump-users, for @shiltemann
 	- "did you mean" when a command isn't found.
-	- query job-metrics, by [@anuprulez](https://github.com/anuprulez) and [@simonbray](https://github.com/simonbray).
+	- query job-metrics, by @anuprulez and @simonbray.
 	- uwsgi active-user count
 	- exports PGAPPNAME setting the application name for postgres connections. This becomes visible in pg_stat_activity.
-	- mutate set_quota_for_oidc_user, by [@gmauro](https://github.com/gmauro).
+	- mutate set_quota_for_oidc_user, by @gmauro.
 	- iquery support for queue-detail query
 	- query tool-usage-over-time which can be used to make charts of specific tools over time.
 	- improved use of FZF for both the search and 'typo' functions, when it is available.
@@ -26,31 +26,31 @@
 	- mutate fail-misbehaving-gxits: Works aroud a gxit issue.
 	- galaxy prune-gxit-routes: Prunes dead routes
 	- mutate force-publish-history: Workaround for Galaxy bug #13001
-	- report group-info, by [@pavanvidem](https://github.com/pavanvidem)
-	- query tool-use-by-group, by [@gavindi](https://github.com/gavindi)
-	- query job-state-stats, by [@gavindi] (https://github.com/gavindi)
-	- query disk-usage-library, by [@gregvonkuster] (https://github.com/gregvonkuster)
-	- query monthly-workflow-invocations, by [@gmauro](https://github.com/gmauro).
-	- query monthly-job-runtimes, by [@gregvonkuster] (https://github.com/gregvonkuster)
-	- query job-state, by [@natefoo](https://github.com/natefoo)
-	- query largest-dataset-users, by [@hexylena](https://github.com/hexylena)
-	- query dataset-usage-and-imports, by [@hexylena](https://github.com/hexylena)
-	- mutate dataset-mark-purged, by [@hexylena](https://github.com/hexylena)
+	- report group-info, by @pavanvidem
+	- query tool-use-by-group, by @gavindi
+	- query job-state-stats, by @gavindi
+	- query disk-usage-library, by @gregvonkuster
+	- query monthly-workflow-invocations, by @gmauro.
+	- query monthly-job-runtimes, by @gregvonkuster
+	- query job-state, by @natefoo
+	- query largest-dataset-users, by @hexylena
+	- query dataset-usage-and-imports, by @hexylena
+	- mutate dataset-mark-purged, by @hexylena
 - Updated:
-	- Add option to include error counts in tool-popularity query, thanks [@natefoo](https://github.com/natefoo)
-	- Add option to exclude unsuccessful jobs from tool-metrics query, thanks [@natefoo](https://github.com/natefoo)
+	- Add option to include error counts in tool-popularity query, thanks @natefoo
+	- Add option to exclude unsuccessful jobs from tool-metrics query, thanks @natefoo
 
 # 19
 
 - Fixed:
-	- Fixed broken slurping from previous release (Thanks [@slugger70](https://github.com/Slugger70) for catching it.)
+	- Fixed broken slurping from previous release (Thanks @slugger70 for catching it.)
 	- Made changelog updates mandatory so I don't have to ask people for it. Finally.
 - Added:
 	- encode/decode ID
 	- Benchmarking via ASV (preview)
 	- anonymise-db-for-release (preview)
-	- Add '--by_group' flag to several monthly queries (Thanks [@slugger70](https://github.com/Slugger70))
-	- query monthly-cpu-stats (Thanks [@gmauro](https://github.com/gmauro))
+	- Add '--by_group' flag to several monthly queries (Thanks @slugger70)
+	- query monthly-cpu-stats (Thanks @gmauro)
 	- workflow trace archive commands
 	- query queue has a new optional parameter for splitting queues by various attributes (Thanks @natefoo)
 	- query pg-rows-per-table to find out which tables have data.
@@ -119,11 +119,11 @@ Testing our new release message
 	- meta slurp-day
 	- Imported jobs-queued-internal-by-handler and jobs-queued queries from main
 	- query users-with-oidc
-	- Three new queries for checking history execution time, thanks [@mmiladi](https://github.com/mmiladi)
+	- Three new queries for checking history execution time, thanks @mmiladi
 		- query history-runtime-system-by-tool
 		- query history-runtime-system
 		- query history-runtime-wallclock
-	- Three new queries for checking potentially broken tools, thanks [@jmchilton](https://github.com/jmchilton)
+	- Three new queries for checking potentially broken tools, thanks @jmchilton
 		- query tool-new-errors
 		- query tool-errors
 		- query tool-likely-broken
@@ -181,7 +181,7 @@ Testing our new release message
 	- Some basic testing of the overall script
 - Fixed:
 	- Correct time zones in all queries to be client-side time zones rather
-	  than UTC encoded timestamps as stored in db (Thanks [@slugger70](https://github.com/Slugger70))
+	  than UTC encoded timestamps as stored in db (Thanks @slugger70)
 	- Renamed: "query monthly-users" → "query monthly-users-active"
 - Removed:
 	- Removed highly EU specific handler and zerg functions
