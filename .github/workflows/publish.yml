@@ -29,4 +29,5 @@ jobs:
           artifacts: "gxadmin"
           body: "Testing automated release for gxadmin"
           commit: main
+          draft: true
           tag: ${{ steps.version.outputs.tag }}
