@@ -19,14 +19,16 @@ jobs:
         id: version
         run: |
           VERSION="$(bash gxadmin -v)"
-          echo "::set-output name=version::${VERSION}"
+          VERSION_NEXT=$(( VERSION + 1 ))
+          echo "::set-output name=version::${VERSION_NEXT}"
           TS="$(date +%s)"
           echo "::set-output name=timestamp::${TS}"
-          echo "::set-output name=tag::${VERSION}-${TS}"
+          echo "::set-output name=tag::v${VERSION}-preview-${TS}"
 
       - name: Extract changelog
         run: |
-          echo "**This is an automated pre-release**\n\n" > body.md
+          echo "**This is an automated pre-release**" > body.md
+          echo "" >> body.md
           bash gxadmin meta whatsnew >> body.md
 
       - uses: ncipollo/release-action@v1
