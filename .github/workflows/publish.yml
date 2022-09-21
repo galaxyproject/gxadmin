@@ -24,10 +24,15 @@ jobs:
           echo "::set-output name=timestamp::${TS}"
           echo "::set-output name=tag::${VERSION}-${TS}"
 
+      - name: Extract changelog
+        run: |
+          echo "**This is an automated pre-release**\n\n" > body.md
+          bash gxadmin meta whatsnew >> body.md
+
       - uses: ncipollo/release-action@v1
         with:
           artifacts: "gxadmin"
-          body: "Testing automated release for gxadmin"
+          bodyFile: main.md
           commit: main
           draft: true
           tag: ${{ steps.version.outputs.tag }}
