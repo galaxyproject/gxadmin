@@ -1,0 +1,32 @@
+name: Publish
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Compile
+        run: |
+          make
+
+      - name: Get version
+        id: version
+        run: |
+          VERSION="$(bash gxadmin -v)"
+          echo "::set-output name=version::${VERSION}"
+          TS="$(date +%s)"
+          echo "::set-output name=timestamp::${TS}"
+          echo "::set-output name=tag::${VERSION}-${TS}"
+
+      - uses: ncipollo/release-action@v1
+        with:
+          artifacts: "gxadmin"
+          body: "Testing automated release for gxadmin"
+          commit: main
+          tag: ${{ steps.version.outputs.tag }}
