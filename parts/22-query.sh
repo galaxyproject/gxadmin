@@ -4186,6 +4186,6 @@ query_dataset-usage-and-imports() { ##? <dataset_uuid>: Fetch limited informatio
 			LEFT JOIN history ON history_dataset_association.history_id = history.id
 			LEFT JOIN galaxy_user ON history.user_id = galaxy_user.id
 		WHERE
-			uuid = '$cleaned_dataset_uuid';
+			uuid = '$cleaned_dataset_uuid'
 	EOF
 }
