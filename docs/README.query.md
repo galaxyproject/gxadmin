@@ -7,7 +7,9 @@ Command | Description
 [`query data-origin-distribution`](#query-data-origin-distribution) | data sources (uploaded vs derived)
 [`query data-origin-distribution-summary`](#query-data-origin-distribution-summary) | breakdown of data sources (uploaded vs derived)
 [`query datasets-created-daily`](#query-datasets-created-daily) | The min/max/average/p95/p99 of total size of datasets created in a single day.
+[`query dataset-usage-and-imports`](#query-dataset-usage-and-imports) | Fetch limited information about which users and histories are using a specific dataset from disk.
 [`query disk-usage`](#query-disk-usage) | Disk usage per object store.
+[`query disk-usage-library`](#query-disk-usage-library) | Retrieve an approximation of the disk usage for a data library
 [`query dump-users`](#query-dump-users) | Dump the list of users and their emails
 [`query errored-jobs`](#query-errored-jobs) | Lists jobs that errored in the last N hours.
 [`query good-for-pulsar`](#query-good-for-pulsar) | Look for jobs EU would like to send to pulsar
@@ -18,6 +20,7 @@ Command | Description
 [`query hdca-info`](#query-hdca-info) | Information on a dataset collection
 [`query history-connections`](#query-history-connections) | The connections of tools, from output to input, in histories (tool_predictions)
 [`query history-contents`](#query-history-contents) | List datasets and/or collections in a history
+[`query history-core-hours`](#query-history-core-hours) | Produces the median core hour count for histories matching a name filter
 [`query history-runtime-system-by-tool`](#query-history-runtime-system-by-tool) | Sum of runtimes by all jobs in a history, split by tool
 [`query history-runtime-system`](#query-history-runtime-system) | Sum of runtimes by all jobs in a history
 [`query history-runtime-wallclock`](#query-history-runtime-wallclock) | Time as elapsed by a clock on the wall
@@ -32,18 +35,24 @@ Command | Description
 [`query jobs-queued`](#query-jobs-queued) | How many queued jobs have external cluster IDs
 [`query jobs-queued-internal-by-handler`](#query-jobs-queued-internal-by-handler) | How many queued jobs do not have external IDs, by handler
 [`query jobs-ready-to-run`](#query-jobs-ready-to-run) | Find jobs ready to run (Mostly a performance test)
+[`query job-state`](#query-job-state) | Get current job state given a job ID
+[`query job-state-stats`](#query-job-state-stats) | Shows all jobs states for the last 30 days in a table counted by state
 [`query largest-collection`](#query-largest-collection) | Returns the size of the single largest collection
+[`query largest-dataset-users`](#query-largest-dataset-users) | Get largest datasets by users
 [`query largest-histories`](#query-largest-histories) | Largest histories in Galaxy
 [`query latest-users`](#query-latest-users) | 40 recently registered users
 [`query monthly-cpu-stats`](#query-monthly-cpu-stats) | CPU years/hours allocated to tools by month
 [`query monthly-cpu-years`](#query-monthly-cpu-years) | CPU years allocated to tools by month
 [`query monthly-data`](#query-monthly-data) | Number of active users per month, running jobs
 [`query monthly-gpu-years`](#query-monthly-gpu-years) | GPU years allocated to tools by month
+[`query monthly-job-runtimes`](#query-monthly-job-runtimes) | Summation of total job run times per user per destination over a period of time
 [`query monthly-jobs`](#query-monthly-jobs) | Number of jobs run each month
 [`query monthly-users-active`](#query-monthly-users-active) | Number of active users per month, running jobs
 [`query monthly-users-registered`](#query-monthly-users-registered) | Number of users registered each month
+[`query monthly-workflow-invocations`](#query-monthly-workflow-invocations) | Workflow invocations by month
 [`query old-histories`](#query-old-histories) | Lists histories that haven't been updated (used) for <weeks>
 [`query pg-cache-hit`](#query-pg-cache-hit) | Check postgres in-memory cache hit ratio
+[`query pg-column-size`](#query-pg-column-size) | Estimate the size of columns in a table
 [`query pg-index-size`](#query-pg-index-size) | show table and index bloat in your database ordered by most wasteful
 [`query pg-index-usage`](#query-pg-index-usage) | calculates your index hit rate (effective databases are at 99% and up)
 [`query pg-long-running-queries`](#query-pg-long-running-queries) | show all queries longer than five minutes by descending duration
@@ -55,6 +64,7 @@ Command | Description
 [`query pg-table-size`](#query-pg-table-size) | show the size of the tables (excluding indexes), descending by size
 [`query pg-unused-indexes`](#query-pg-unused-indexes) | show unused and almost unused indexes
 [`query pg-vacuum-stats`](#query-pg-vacuum-stats) | show dead rows and whether an automatic vacuum is expected to be triggered
+[`query pulsar-gb-transferred`](#query-pulsar-gb-transferred) | Counts up datasets transferred and output file size produced by jobs running on destinations like pulsar_*
 [`query q`](#query-q) | Passes a raw SQL query directly through to the database
 [`query queue`](#query-queue) | Brief overview of currently running jobs grouped by tool (default) or other columns
 [`query queue-detail`](#query-queue-detail) | Detailed overview of running and queued jobs
@@ -67,11 +77,13 @@ Command | Description
 [`query tool-errors`](#query-tool-errors) | Summarize percent of tool runs in error over the past weeks for all tools that have failed (most popular tools first)
 [`query tool-last-used-date`](#query-tool-last-used-date) | When was the most recent invocation of every tool
 [`query tool-likely-broken`](#query-tool-likely-broken) | Find tools that have been executed in recent weeks that are (or were due to job running) likely substantially broken
+[`query tool-memory-per-inputs`](#query-tool-memory-per-inputs) | See memory usage and inout size data
 [`query tool-metrics`](#query-tool-metrics) | See values of a specific metric
 [`query tool-new-errors`](#query-tool-new-errors) | Summarize percent of tool runs in error over the past weeks for "new tools"
 [`query tool-popularity`](#query-tool-popularity) | Most run tools by month (tool_predictions)
 [`query tool-usage-over-time`](#query-tool-usage-over-time) | Counts of tool runs by month, filtered by a tool id search
 [`query tool-usage`](#query-tool-usage) | Counts of tool runs in the past weeks (default = all)
+[`query tool-use-by-group`](#query-tool-use-by-group) | Lists count of tools used by all users in a group
 [`query total-jobs`](#query-total-jobs) | Total number of jobs run by galaxy instance
 [`query training-list`](#query-training-list) | List known trainings
 [`query training-members-remove`](#query-training-members-remove) | Remove a user from a training
@@ -173,7 +185,7 @@ query datasets-created-daily -  The min/max/average/p95/p99 of total size of dat
 
 **SYNOPSIS**
 
-    gxadmin query datasets-created-daily
+    gxadmin query datasets-created-daily [months|all] [--human]
 
 **NOTES**
 
@@ -189,6 +201,32 @@ or more readably:
        min   | quant_1st | median  | mean  | quant_3rd | perc_95 | perc_99 |  max   |   sum   | stddev
     ---------+-----------+---------+-------+-----------+---------+---------+--------+---------+--------
      2 bytes | 297 kB    | 6653 kB | 38 MB | 29 MB     | 169 MB  | 397 MB  | 509 MB | 1324 MB | 92 MB
+    (1 row)
+
+only consider datasets created in the past month:
+
+    $ gxadmin query datasets-created-daily 1 --human
+       min   | quant_1st | median  |  mean   | quant_3rd | perc_95 | perc_99 |  max  |  sum   | stddev
+    ---------+-----------+---------+---------+-----------+---------+---------+-------+--------+---------
+     1974 GB | 7651 GB   | 9705 GB | 9089 GB | 11 TB     | 13 TB   | 13 TB   | 13 TB | 284 TB | 2727 GB
+
+
+## query dataset-usage-and-imports
+
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_dataset-usage-and-imports&type=Code))
+query dataset-usage-and-imports -  Fetch limited information about which users and histories are using a specific dataset from disk.
+
+**SYNOPSIS**
+
+    gxadmin query dataset-usage-and-imports <dataset_uuid>
+
+**NOTES**
+
+This has built in support for "cleaning up" paths like /data/galaxy/.../dataset_<uuid>.dat into just the properly formatted UUID. It will also strip - characters from the uuid if present.
+    $ gxadmin query dataset-usage-and-imports /data/galaxy/b/8/4/dataset_b8482e38-0e6f-4871-92ee-a699458f18a5.dat
+      id  | job_id | history_id | user_id | username |              name              |  name
+    ------+--------+------------+---------+----------+--------------------------------+---------
+     3338 |        |         93 |       6 | alice    | transient vector vs normal M14 | sources
     (1 row)
 
 
@@ -218,6 +256,52 @@ Or you can supply the --human flag, but this should not be used with iquery/Infl
     -----------------+------------
                      | 1324 MB
     (1 row)
+
+
+## query disk-usage-library
+
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_disk-usage-library&type=Code))
+query disk-usage-library -  Retrieve an approximation of the disk usage for a data library
+
+**SYNOPSIS**
+
+    gxadmin query disk-usage-library [--library_name NAME] [--by_folder] [--human]
+
+**NOTES**
+
+This uses the dataset size and the library dataset association in order to
+calculate total disk usage for a data library.  By default it prints the
+usage in bytes...
+
+$ gxadmin local query-disk-usage-library --library_name 'My Library'
+ library_name  | library size
+---------------+-------------
+ My Library    | 25298225177
+
+...but the --human flag displays readable formats:
+
+$ gxadmin local query-disk-usage-library --library_name 'My Library' --human
+ library_name  | library size
+---------------+--------------
+ My Library    | 24 GB
+
+A --by_folder flag is also available for displaying disk usage for each folder.
+
+a$ gxadmin local query-disk-usage-library --library_name 'My Library' --by_folder
+       folder_name       | folder size 
+-------------------------+-------------
+ Contamination Filtering | 10798630750
+ Metagenomes             | 12026310232
+ Metatranscriptomes      |  2473284195
+
+And, of course, the --human flag can be used here as well.
+
+$ gxadmin local query-disk-usage-library --library_name 'My Library' --by_folder --human
+       folder_name       | folder size
+-------------------------+-------------
+ Contamination Filtering | 10 GB
+ Metagenomes             | 11 GB
+ Metatranscriptomes      | 2359 MB
 
 
 ## query dump-users
@@ -393,6 +477,16 @@ query history-contents -  List datasets and/or collections in a history
 Obtain an overview of tools that a user has run in the past N days
 
 
+## query history-core-hours
+
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_history-core-hours&type=Code))
+query history-core-hours -  Produces the median core hour count for histories matching a name filter
+
+**SYNOPSIS**
+
+    gxadmin query history-core-hours [history-name-ilike]
+
+
 ## query history-runtime-system-by-tool
 
 ([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_history-runtime-system-by-tool&type=Code))
@@ -550,14 +644,14 @@ query jobs-nonterminal -  Job info of nonterminal jobs separated by user
 
 **SYNOPSIS**
 
-    gxadmin query jobs-nonterminal [username|id|email]
+    gxadmin query jobs-nonterminal [--states=new,queued,running] [--update-time] [--older-than=<interval>] [username|id|email]
 
 **NOTES**
 
 You can request the user information by username, id, and user email
 
     $ gxadmin query jobs-nonterminal helena-rasche
-       id    | tool_id             |  state  |        create_time         | runner | id     |     handler     | user_id
+       id    | tool_id             |  state  |        create_time         | runner | ext_id |     handler     | user_id
     ---------+---------------------+---------+----------------------------+--------+--------+-----------------+---------
      4760549 | featurecounts/1.6.3 | running | 2019-01-18 14:05:14.871711 | condor | 197549 | handler_main_7  | 599
      4760552 | featurecounts/1.6.3 | running | 2019-01-18 14:05:16.205867 | condor | 197552 | handler_main_7  | 599
@@ -572,7 +666,7 @@ You can request the user information by username, id, and user email
 You can also query all non-terminal jobs by all users
 
     $ gxadmin query jobs-nonterminal | head
-       id    |  tool_id            |  state  |        create_time         | runner | id     |     handler     | user_id
+       id    |  tool_id            |  state  |        create_time         | runner | ext_id |     handler     | user_id
     ---------+---------------------+---------+----------------------------+--------+--------+-----------------+---------
      4760549 | featurecounts/1.6.3 | running | 2019-01-18 14:05:14.871711 | condor | 197549 | handler_main_7  |     599
      4760552 | featurecounts/1.6.3 | running | 2019-01-18 14:05:16.205867 | condor | 197552 | handler_main_7  |     599
@@ -582,6 +676,24 @@ You can also query all non-terminal jobs by all users
      4760588 | featurecounts/1.6.3 | new     | 2019-01-18 14:11:03.766558 |        |        | handler_main_9  |      11
      4760589 | featurecounts/1.6.3 | new     | 2019-01-18 14:11:05.895232 |        |        | handler_main_1  |      11
      4760590 | featurecounts/1.6.3 | new     | 2019-01-18 14:11:07.328533 |        |        | handler_main_2  |      11
+
+By default jobs in the states 'new', 'queued', and 'running' are considered non-terminal, but this can
+be controlled by passing a comma-separated list to the '--states=' parameter. In addition, by default,
+all non-terminal jobs are displayed, but you can limit this to only jobs created or updated before a
+certain time with '--older-than='. This option takes a value in the PostgreSQL date/time interval
+format, see documentation: https://www.postgresql.org/docs/current/functions-datetime.html
+
+Be sure to quote intervals containing spaces. Finally, by default, the column returned (and filtered
+with in the case of '--older-than=') is 'job.create_time', but this can be changed to 'job.update_time'
+with '--update-time'. So to return all queued and running jobs that have not been updated in the past 2
+days:
+
+    $ gxadmin query jobs-nonterminal --states=queued,running --older-than='2 days' --update-time | head -5
+       id   |       tool_id        |  state  |     update_time     |     runner   | ext_id |      handler     | user_id
+    --------+----------------------+---------+---------------------+--------------+--------+------------------+---------
+     335897 | trinity/2.9.1        | queued  | 2021-03-10 10:44:09 | bridges      | 335897 | main_w3_handler2 | 599
+     338554 | repeatmasker/4.0.9   | running | 2021-03-09 10:41:30 | jetstream_iu | 338554 | main_w4_handler2 | 11
+     338699 | hisat2/2.1.0+galaxy7 | queued  | 2021-03-10 05:36:26 | jetstream_iu | 338699 | main_w3_handler2 | 42
 
 
 ## query jobs-per-user
@@ -665,6 +777,49 @@ query jobs-ready-to-run -  Find jobs ready to run (Mostly a performance test)
 Mostly a performance test
 
 
+## query job-state
+
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_job-state&type=Code))
+query job-state -  Get current job state given a job ID
+
+**SYNOPSIS**
+
+    gxadmin query job-state <job_id>
+
+**NOTES**
+
+    $ gxadmin query job-state 1
+     state
+    --------
+     error
+    (1 row)
+
+
+## query job-state-stats
+
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_job-state-stats&type=Code))
+query job-state-stats -  Shows all jobs states for the last 30 days in a table counted by state
+
+**SYNOPSIS**
+
+    gxadmin query job-state-stats
+
+**NOTES**
+
+Shows all job states for the last 30 days in a table counted by state
+
+Example:
+$ gxadmin query job-state-stats
+    date    |  new  | running | queued | upload |  ok   | error | paused | stopped | deleted 
+------------+-------+---------+--------+--------+-------+-------+--------+---------+---------
+2022-04-26 |   921 |     564 |    799 |      0 |   581 |    21 |      1 |       0 |       2
+2022-04-25 |  1412 |    1230 |   1642 |      0 |  1132 |   122 |     14 |       0 |      15
+2022-04-24 |   356 |     282 |    380 |      0 |   271 |    16 |      0 |       0 |      10
+2022-04-23 |   254 |     229 |    276 |      0 |   203 |    29 |      0 |       0 |       4
+...
+-26 days
+
+
 ## query largest-collection
 
 ([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_largest-collection&type=Code))
@@ -673,6 +828,29 @@ query largest-collection -  Returns the size of the single largest collection
 **SYNOPSIS**
 
     gxadmin query largest-collection
+
+
+## query largest-dataset-users
+
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_largest-dataset-users&type=Code))
+query largest-dataset-users -  Get largest datasets by users
+
+**SYNOPSIS**
+
+    gxadmin query largest-dataset-users [--human] [--deleted] [--purged] [--format-uuid]
+
+**NOTES**
+
+Optionally includes deleted and purged datasets
+
+    $ gxadmin query largest-dataset-users --human
+                   uuid               | job_id | file_size | total_size |  username  | id  |      history_name       |                     hda_name
+    ----------------------------------+--------+-----------+------------+------------+-----+-------------------------+---------------------------------------------------
+     a18fed2a9d4d4f66b301b48c4c6ed720 |   6995 | 220 GB    | 220 GB     | alice      | 269 | B1MG_Case5_IC           | EGA Download Client: EGAF00005572869
+     a18fed2a9d4d4f66b301b48c4c6ed720 |   6995 | 220 GB    | 220 GB     | beth       | 280 | imported: B1MG_Case5_IC | EGA Download Client: EGAF00005572869
+     a18fed2a9d4d4f66b301b48c4c6ed720 |   6995 | 220 GB    | 220 GB     | beth       | 284 | HTSGET                  | Case 5 Child BAM (EGAF00005572869)
+
+here you can see another user has imported this single large dataset multiple times.
 
 
 ## query largest-histories
@@ -867,6 +1045,56 @@ Requires Nvidia GPUs.
      2017-12-01 |      2.44
 
 
+## query monthly-job-runtimes
+
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_monthly-job-runtimes&type=Code))
+query monthly-job-runtimes -  Summation of total job run times per user per destination over a period of time
+
+**SYNOPSIS**
+
+    gxadmin query monthly-job-runtimes [--year y] [--month m]
+
+**NOTES**
+
+This query computes the total run time for all jobs per user per destination over
+an optionally specified time period.  If no time period is specified, all years
+and months will be displayed.  The total job run time is returned in seconds, minutes
+and hours.
+
+The destination id can be restricted to the first N letters in the id string by using
+the --sub_dest flag.  This allows grouping on values like "slurm" and "front" instead
+of "slurm_multi", "slurm_normal", "frontera_small", "frontera_large", etc., which
+clutters the output. 
+
+A time period can be defined using 3 options:
+
+--year XXXX --month XX - the specified month of the specified year
+
+$ gxadmin local query-monthly-job-runtimes --year 2022 --month 05 --sub_dest 5
+   month    | total_jobs | destination_id | runtime_secomnds | runtime_minutes | runtime_hours |   user_email
+------------+------------+----------------+------------------+-----------------+---------------+-----------------
+ 2022-05-01 |      20323 | front          |           502031 |         8367.18 |        139.45 | 
+ 2022-05-01 |       3013 | slurm          |            99135 |         1652.25 |         27.54 | 
+
+--year XXXX - all months of the specified year
+
+$ gxadmin local query-monthly-job-runtimes --year 2021 --sub_dest 5
+   month    | total_jobs | destination_id | runtime_secomnds | runtime_minutes | runtime_hours |   user_email
+------------+------------+----------------+------------------+-----------------+---------------+-----------------
+ 2021-12-01 |        155 | slurm          |            27981 |          466.35 |          7.77 | 
+ 2021-12-01 |        417 | slurm          |            47063 |          784.38 |         13.07 | 
+ 2021-11-01 |        113 | slurm          |             3032 |           50.53 |          0.84 | 
+ 2021-11-01 |          2 | slurm          |              142 |            2.37 |          0.04 | 
+
+--month XX - the specified month of the current year
+
+$ gxadmin local query-monthly-job-runtimes --month 04 --sub_dest 5
+   month    | total_jobs | destination_id | runtime_secomnds | runtime_minutes | runtime_hours |   user_email
+------------+------------+----------------+------------------+-----------------+---------------+-----------------
+ 2022-04-01 |         94 | front          |           333029 |         5550.48 |         92.51 | 
+ 2022-04-01 |        146 | slurm          |           278408 |         4640.13 |         77.34 | 
+
+
 ## query monthly-jobs
 
 ([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_monthly-jobs&type=Code))
@@ -964,6 +1192,28 @@ month    | Group name | count
   ...
 
 
+## query monthly-workflow-invocations
+
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_monthly-workflow-invocations&type=Code))
+query monthly-workflow-invocations -  Workflow invocations by month
+
+**SYNOPSIS**
+
+    gxadmin query monthly-workflow-invocations
+
+**NOTES**
+
+Find out how many workflows has been invocated by Galaxy during the past months.
+
+    $ gxadmin query monthly-workflow-invocations
+       month    | count
+    ------------+-------
+     2022-05-01 |  4183
+     2022-04-01 |  5043
+     2022-03-01 |  4851
+     2022-02-01 | 29587
+
+
 ## query old-histories
 
 ([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_old-histories&type=Code))
@@ -1011,6 +1261,16 @@ time?
 heap_read  | heap_hit |         ratio
 ----------- ---------- ------------------------
 29         |    64445 | 0.99955020628470391165
+
+
+## query pg-column-size
+
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_pg-column-size&type=Code))
+query pg-column-size -  Estimate the size of columns in a table
+
+**SYNOPSIS**
+
+    gxadmin query pg-column-size <table>
 
 
 ## query pg-index-size
@@ -1169,6 +1429,16 @@ query pg-vacuum-stats -  show dead rows and whether an automatic vacuum is expec
 Originally from: https://github.com/heroku/heroku-pg-extras/tree/master/commands
 
 
+## query pulsar-gb-transferred
+
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_pulsar-gb-transferred&type=Code))
+query pulsar-gb-transferred -  Counts up datasets transferred and output file size produced by jobs running on destinations like pulsar_*
+
+**SYNOPSIS**
+
+    gxadmin query pulsar-gb-transferred [--bymonth] [--byrunner] [--human]
+
+
 ## query q
 
 ([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_q&type=Code))
@@ -1225,7 +1495,7 @@ query queue-detail -  Detailed overview of running and queued jobs
 
 **SYNOPSIS**
 
-    gxadmin query queue-detail [--all] [--seconds]
+    gxadmin query queue-detail [--all] [--seconds] [--since-update]
 
 **NOTES**
 
@@ -1434,6 +1704,50 @@ which were run more than 4 times, and have a failure rate over 95%.
      rnateam/dorina/dorina_search/1.0.0                    |         6 |               1 |              0 |             6 |            0 | handler_main_8
 
 
+## query tool-memory-per-inputs
+
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_tool-memory-per-inputs&type=Code))
+query tool-memory-per-inputs -  See memory usage and inout size data
+
+**SYNOPSIS**
+
+    gxadmin query tool-memory-per-inputs <tool_id> [--like]
+
+**NOTES**
+
+Display details about tool input counts and sizes along with memory usage and the relation between them,
+to aid in determining appropriate memory allocations for tools.
+
+    $ gxadmin query tool-memory-per-inputs %/unicycler/% --like
+        id    |                           tool_id                            | input_count | total_input_size_mb | mean_input_size_mb | median_input_size_mb | memory_used_mb | memory_used_per_input_mb | memory_mean_input_ratio | memory_median_input_ratio
+    ----------+--------------------------------------------------------------+-------------+---------------------+--------------------+----------------------+----------------+--------------------------+-------------------------+---------------------------
+     34663027 | toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.8.0 |           2 |                 245 |                122 |                  122 |           4645 |                       19 |                      38 |                        38
+     34657045 | toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.8.0 |           2 |                  51 |                 25 |                   25 |           1739 |                       34 |                      68 |                        68
+     34655863 | toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.8.0 |           2 |                1829 |                915 |                  915 |          20635 |                       11 |                      23 |                        23
+     34650581 | toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.8.0 |           3 |                 235 |                 78 |                  112 |          30550 |                      130 |                     391 |                       274
+     34629187 | toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.8.0 |           2 |                2411 |               1206 |                 1206 |          50018 |                       21 |                      41 |                        41
+
+A good way to use this is to fetch the data and then do some aggregations. The following requires
+[data_hacks](https://github.com/bitly/data_hacks):
+
+    $ gxadmin tsvquery tool-memory-per-inputs %/unicycler/% --like | \
+        awk '{print $10}' | histogram.py --percentage --max=256
+    # NumSamples = 870; Min = 4.00; Max = 256.00
+    # 29 values outside of min/max
+    # Mean = 67.804598; Variance = 15461.789404; SD = 124.345444; Median 37.000000
+    # each ∎ represents a count of 4
+        4.0000 -    29.2000 [   368]: ∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎ (42.30%)
+       29.2000 -    54.4000 [   226]: ∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎ (25.98%)
+       54.4000 -    79.6000 [   133]: ∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎ (15.29%)
+       79.6000 -   104.8000 [    45]: ∎∎∎∎∎∎∎∎∎∎∎ (5.17%)
+      104.8000 -   130.0000 [    28]: ∎∎∎∎∎∎∎ (3.22%)
+      130.0000 -   155.2000 [    12]: ∎∎∎ (1.38%)
+      155.2000 -   180.4000 [     9]: ∎∎ (1.03%)
+      180.4000 -   205.6000 [     6]: ∎ (0.69%)
+      205.6000 -   230.8000 [    10]: ∎∎ (1.15%)
+      230.8000 -   256.0000 [     4]: ∎ (0.46%)
+
+
 ## query tool-metrics
 
 ([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_tool-metrics&type=Code))
@@ -1441,7 +1755,7 @@ query tool-metrics -  See values of a specific metric
 
 **SYNOPSIS**
 
-    gxadmin query tool-metrics <tool_id> <metric_id> [--like]
+    gxadmin query tool-metrics <tool_id> <metric_id> [--like] [--ok]
 
 **NOTES**
 
@@ -1464,6 +1778,8 @@ do some aggregations. The following requires [data_hacks](https://github.com/bit
        74.9608 -    85.2655 [    11]: ∎∎∎∎∎∎∎∎∎∎∎ (2.49%)
        85.2655 -    95.5703 [     3]: ∎∎∎ (0.68%)
        95.5703 -   105.8750 [     1]: ∎ (0.23%)
+
+Use the --ok option to only include jobs that finished successfully
 
 
 ## query tool-new-errors
@@ -1499,11 +1815,11 @@ query tool-popularity -  Most run tools by month (tool_predictions)
 
 **SYNOPSIS**
 
-    gxadmin query tool-popularity [months|24]
+    gxadmin query tool-popularity [months|24] [--error]
 
 **NOTES**
 
-See most popular tools by month
+See most popular tools by month. Use --error to include error counts.
 
     $ ./gxadmin query tool-popularity 1
               tool_id          |   month    | count
@@ -1567,6 +1883,30 @@ query tool-usage -  Counts of tool runs in the past weeks (default = all)
      upload1                                                                | 103595
      toolshed.g2.bx.psu.edu/repos/rnateam/graphclust_nspdk/nspdk_sparse/9.2 |  52861
      Filter1                                                                |  43253
+
+
+## query tool-use-by-group
+
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_tool-use-by-group&type=Code))
+query tool-use-by-group -  Lists count of tools used by all users in a group
+
+**SYNOPSIS**
+
+    gxadmin query tool-use-by-group <year_month> <group>
+
+**NOTES**
+
+Lists tools use count by users in group.
+Requires <year-month> (2022-03) and <group> 
+
+Example:
+$ gxadmin query tool-use-by-group 2022-02 NameOfGroup
+tool_id                                             |             username             | count 
+----------------------------------------------------+----------------------------------+-------
+CONVERTER_gz_to_uncompressed                        | user_1                           |     1
+Convert characters1                                 | user_2                           |     1
+Cut1                                                | user_2                           |     1
+Cut1                                                | user_3                           |     1
 
 
 ## query total-jobs

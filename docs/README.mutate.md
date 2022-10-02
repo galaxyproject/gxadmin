@@ -5,12 +5,15 @@ Command | Description
 [`mutate anonymise-db-for-release`](#mutate-anonymise-db-for-release) | This will attempt to make a database completely safe to release publicly.
 [`mutate approve-user`](#mutate-approve-user) | Approve a user in the database
 [`mutate assign-unassigned-workflows`](#mutate-assign-unassigned-workflows) | Randomly assigns unassigned workflows to handlers. Workaround for galaxyproject/galaxy#8209
+[`mutate dataset-mark-purged`](#mutate-dataset-mark-purged) | Purge dataset and mark downstream HDAs as purged as well
 [`mutate delete-group-role`](#mutate-delete-group-role) | Remove the group, role, and any user-group + user-role associations
 [`mutate drop-extraneous-workflow-step-output-associations`](#mutate-drop-extraneous-workflow-step-output-associations) | #8418, drop extraneous connection
 [`mutate fail-history`](#mutate-fail-history) | Mark all jobs within a history to state error
 [`mutate fail-job`](#mutate-fail-job) | Sets a job state to error
+[`mutate fail-misbehaving-gxits`](#mutate-fail-misbehaving-gxits) | Fails misbehaving GxITs.
 [`mutate fail-terminal-datasets`](#mutate-fail-terminal-datasets) | Causes the output datasets of jobs which were manually failed, to be marked as failed
 [`mutate fail-wfi`](#mutate-fail-wfi) | Sets a workflow invocation state to failed
+[`mutate force-publish-history`](#mutate-force-publish-history) | Removes the access restriction on every dataset in a specified history
 [`mutate generate-unset-api-keys`](#mutate-generate-unset-api-keys) | Generate API keys for users which do not have one set.
 [`mutate oidc-by-emails`](#mutate-oidc-by-emails) | Reassign OIDC account between users.
 [`mutate oidc-role-find-affected`](#mutate-oidc-role-find-affected) | Find users affected by galaxyproject/galaxy#8244
@@ -18,7 +21,7 @@ Command | Description
 [`mutate reassign-job-to-handler`](#mutate-reassign-job-to-handler) | Reassign a job to a different handler
 [`mutate reassign-workflows-to-handler`](#mutate-reassign-workflows-to-handler) | Reassign workflows in 'new' state to a different handler.
 [`mutate restart-jobs`](#mutate-restart-jobs) | Restart some jobs
-[`mutate set_quota_for_oidc_user`](#mutate-set_quota_for_oidc_user) | Set quota for OIDC users.
+[`mutate set-quota-for-oidc-user`](#mutate-set-quota-for-oidc-user) | Set quota for OIDC users.
 
 ## mutate anonymise-db-for-release
 
@@ -67,6 +70,16 @@ Workaround for https://github.com/galaxyproject/galaxy/issues/8209
 Handler names should have number as postfix, so "some_string_##". In
 this case handler_prefix is "some_string_" and count is however many
 handlers you want to schedule workflows across.
+
+
+## mutate dataset-mark-purged
+
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=mutate_dataset-mark-purged&type=Code))
+mutate dataset-mark-purged -  Purge dataset and mark downstream HDAs as purged as well
+
+**SYNOPSIS**
+
+    gxadmin mutate dataset-mark-purged <dataset_uuid> [--commit]
 
 
 ## mutate delete-group-role
@@ -130,6 +143,20 @@ mutate fail-job -  Sets a job state to error
 **NOTES**
 
 Sets a job's state to "error"
+
+
+## mutate fail-misbehaving-gxits
+
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=mutate_fail-misbehaving-gxits&type=Code))
+mutate fail-misbehaving-gxits -  Fails misbehaving GxITs.
+
+**SYNOPSIS**
+
+    gxadmin mutate fail-misbehaving-gxits [--commit]
+
+**NOTES**
+
+Set quota for OIDC users.
 
 
 ## mutate fail-terminal-datasets
@@ -205,6 +232,20 @@ mutate fail-wfi -  Sets a workflow invocation state to failed
 **NOTES**
 
 Sets a workflow invocation's state to "failed"
+
+
+## mutate force-publish-history
+
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=mutate_force-publish-history&type=Code))
+mutate force-publish-history -  Removes the access restriction on every dataset in a specified history
+
+**SYNOPSIS**
+
+    gxadmin mutate force-publish-history <history_id> [--commit]
+
+**NOTES**
+
+Workaround for Galaxy bug https://github.com/galaxyproject/galaxy/issues/13001
 
 
 ## mutate generate-unset-api-keys
@@ -310,14 +351,14 @@ mutate restart-jobs -  Restart some jobs
 Restart jobs
 
 
-## mutate set_quota_for_oidc_user
+## mutate set-quota-for-oidc-user
 
-([*source*](https://github.com/galaxyproject/gxadmin/search?q=mutate_set_quota_for_oidc_user&type=Code))
-mutate set_quota_for_oidc_user -  Set quota for OIDC users.
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=mutate_set-quota-for-oidc-user&type=Code))
+mutate set-quota-for-oidc-user -  Set quota for OIDC users.
 
 **SYNOPSIS**
 
-    gxadmin mutate set_quota_for_oidc_user <provider_name> <quota_name> [--commit]
+    gxadmin mutate set-quota-for-oidc-user <provider_name> <quota_name> [--commit]
 
 **NOTES**
 

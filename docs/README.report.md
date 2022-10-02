@@ -3,6 +3,8 @@
 Command | Description
 ------- | -----------
 [`report assigned-to-handler`](#report-assigned-to-handler) | Report what items are assigned to a handler currently.
+[`report data-info`](#report-data-info) | Information about a specific dataset, it can be a UUID or numeric dataset ID or nuemric HDA ID
+[`report group-info`](#report-group-info) | Quick overview of a Galaxy group in your system
 [`report job-info`](#report-job-info) | Information about a specific job
 [`report user-info`](#report-user-info) | Quick overview of a Galaxy user in your system
 
@@ -14,6 +16,73 @@ report assigned-to-handler -  Report what items are assigned to a handler curren
 **SYNOPSIS**
 
     gxadmin report assigned-to-handler <handler>
+
+
+## report data-info
+
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=report_data-info&type=Code))
+report data-info -  Information about a specific dataset, it can be a UUID or numeric dataset ID or nuemric HDA ID
+
+**SYNOPSIS**
+
+    gxadmin report data-info <data_id> [object_store_config_file]
+
+**NOTES**
+
+Report some useful information about a a Galaxy dataset. Mainly useful for debugging.
+Takes uuid or dataset id and optionally an object store config file 
+gxadmin report data-info 428d0c00-95a5-4c1a-8248-e9e0937f376f object_store_conf.xml
+# Galaxy dataset
+
+Property | Value
+-------- | -----
+ID | 88378397
+UUID | 428d0c0095a54c1a8248e9e0937f376f
+Created | 2022-05-11 10:36:44.902173
+Updated | 2022-05-11 10:36:44.902174
+Properties | dataset_state=ok deleted=f purged=f
+Object store ID | files12
+Size | 7773 MB
+Extension | fastqsanger.gz
+User id | 5
+Tool id | toolshed.g2.bx.psu.edu/repos/bgruening/10x_bamtofastq/10x_bamtofastq/1.4.1
+Job state | ok
+Disk path | /data/dnb06/galaxy_db/files/4/2/8/dataset_428d0c0095a54c1a8248e9e0937f376f.dat
+
+
+## report group-info
+
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=report_group-info&type=Code))
+report group-info -  Quick overview of a Galaxy group in your system
+
+**SYNOPSIS**
+
+    gxadmin report group-info <group_id|groupname>
+
+**NOTES**
+
+This command lets you quickly find out information about a Galaxy group. The output is formatted as markdown by default.
+Consider [mdless](https://github.com/ttscoff/mdless) for easier reading in the terminal!
+    $ gxadmin report group-info Backofen
+# Galaxy Group 18
+      Property | Value
+-------------- | -----
+            ID | Backofen (id=1)
+       Created | 2013-02-25 15:58:10.691672+01
+    Properties | deleted=f
+    Group size | 8
+Number of jobs | 1630
+    Disk usage | 304 GB
+   Mean Disk usage | 43 GB
+Data generated | 6894 GB
+     CPU years | 4.07
+
+## Member stats
+Username | Email | User ID | Active | Disk Usage | Number of jobs | CPU years
+---- | ---- | ---- | ---- | --- | ---- | ---- | ----
+bgruening | bgruening@gmail.com | 25 | t | 265 GB | 1421 | 1.14
+helena-rasche | hxr@informatik.uni-freiburg.de | 122 | t | 37 GB | 113 | 2.91
+videmp | videmp@informatik.uni-freiburg.de | 46 | t | 1383 MB | 96 | 0.02
 
 
 ## report job-info

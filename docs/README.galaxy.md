@@ -13,6 +13,7 @@ Command | Description
 [`galaxy ie-show`](#galaxy-ie-show) | Report on a GIE [HTCondor Only!]
 [`galaxy migrate-tool-install-from-sqlite`](#galaxy-migrate-tool-install-from-sqlite) | Converts SQLite version into normal potsgres toolshed repository tables
 [`galaxy migrate-tool-install-to-sqlite`](#galaxy-migrate-tool-install-to-sqlite) | Converts normal potsgres toolshed repository tables into the SQLite version
+[`galaxy prune-gxit-routes`](#galaxy-prune-gxit-routes) | Prunes dead routes
 
 ## galaxy amqp-test
 
@@ -253,4 +254,14 @@ galaxy migrate-tool-install-to-sqlite -  Converts normal potsgres toolshed repos
       export: repository_repository_dependency_association
       import: repository_repository_dependency_association
     Complete
+
+
+## galaxy prune-gxit-routes
+
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=galaxy_prune-gxit-routes&type=Code))
+galaxy prune-gxit-routes -  Prunes dead routes
+
+**SYNOPSIS**
+
+    gxadmin galaxy prune-gxit-routes <interactivetools_map>
 
