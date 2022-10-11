@@ -4235,9 +4235,9 @@ query-queue-details-drm() { ##? [--all] [--seconds] [--since-update]: Detailed o
 			$username,
 			$nonpretty now() AT TIME ZONE 'UTC' - $time_column) as $time_column_name,
 			job.handler,
-			(REGEXP_MATCHES(encode(job.destination_params, 'escape'), 'ntasks=(\d+)'))[1] as cores,
-			(REGEXP_MATCHES(encode(job.destination_params, 'escape'), 'mem=(\d+)'))[1] as mem,
-			(REGEXP_MATCHES(encode(job.destination_params, 'escape'), 'partition=(\d+)'))[1] as partition,
+			COALESCE((REGEXP_MATCHES(encode(job.destination_params, 'escape'), 'ntasks=(\d+)'))[1], (REGEXP_MATCHES(encode(job.destination_params, 'escape'), '\"request_cpus\":\s+\"(\d+)\"'))[1]) as cores,
+			COALESCE((REGEXP_MATCHES(encode(job.destination_params, 'escape'), 'mem=(\d+)'))[1], (REGEXP_MATCHES(encode(job.destination_params, 'escape'), '\"request_memory\":\s+\"([0-9.]+)G\"'))[1]) as mem,
+			COALESCE((REGEXP_MATCHES(encode(job.destination_params, 'escape'), 'partition=(\d+)'))[1], requirements) as partition,
 			COALESCE(job.destination_id, 'none') as destination_id
 			FROM job
 			FULL OUTER JOIN galaxy_user ON job.user_id = galaxy_user.id
