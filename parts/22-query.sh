@@ -4191,7 +4191,7 @@ query_dataset-usage-and-imports() { ##? <dataset_uuid>: Fetch limited informatio
 }
 
 
-query-queue-details-drm() { ##? [--all] [--seconds] [--since-update]: Detailed overview of running and queued jobs with cores/mem info
+query_queue-details-drm() { ##? [--all] [--seconds] [--since-update]: Detailed overview of running and queued jobs with cores/mem info
 	handle_help "$@" <<-EOF
 		This is a copy of gxadmin query queue-detail with job destination info (cores/mem/partition) added and runner_id, count removed
 
@@ -4227,24 +4227,44 @@ query-queue-details-drm() { ##? [--all] [--seconds] [--since-update]: Detailed o
 	username=$(gdpr_safe galaxy_user.username username "Anonymous User")
 
 	read -r -d '' QUERY <<-EOF
-		SELECT
-			job.state,
-			job.id,
-			job.job_runner_external_id as extid,
-			job.tool_id,
-			$username,
-			$nonpretty now() AT TIME ZONE 'UTC' - $time_column) as $time_column_name,
-			job.handler,
-			COALESCE((REGEXP_MATCHES(encode(job.destination_params, 'escape'), 'ntasks=(\d+)'))[1], (REGEXP_MATCHES(encode(job.destination_params, 'escape'), '\"request_cpus\":\s+\"(\d+)\"'))[1]) as cores,
-			COALESCE((REGEXP_MATCHES(encode(job.destination_params, 'escape'), 'mem=(\d+)'))[1], (REGEXP_MATCHES(encode(job.destination_params, 'escape'), '\"request_memory\":\s+\"([0-9.]+)G\"'))[1]) as mem,
-			COALESCE((REGEXP_MATCHES(encode(job.destination_params, 'escape'), 'partition=(\d+)'))[1], requirements) as partition,
-			COALESCE(job.destination_id, 'none') as destination_id
-			FROM job
-			FULL OUTER JOIN galaxy_user ON job.user_id = galaxy_user.id
-			WHERE
-			state in ('running', 'queued'$d)
-			ORDER BY
-			state desc,
-			$time_column_name desc
+		WITH
+			job_data
+				AS (
+					SELECT 
+						job.state as jobstate,
+						job.id as jobid,
+						job.job_runner_external_id as extid,
+						job.tool_id as toolid,
+						$username,
+						$nonpretty now() AT TIME ZONE 'UTC' - $time_column) as $time_column_name,
+						job.handler as handler,
+						(REGEXP_MATCHES(encode(job.destination_params, 'escape'), 'ntasks=(\d+)'))[1] as cpu_slurm,
+						(REGEXP_MATCHES(encode(job.destination_params, 'escape'), '\"request_cpus\":\s+\"(\d+)\"'))[1] as cpu_condor,
+						(REGEXP_MATCHES(encode(job.destination_params, 'escape'), 'mem=(\d+)'))[1] as mem_slurm,
+						(REGEXP_MATCHES(encode(job.destination_params, 'escape'), '\"request_memory\":\s+\"([0-9.]+)G\"'))[1] as mem_condor,
+						(REGEXP_MATCHES(encode(job.destination_params, 'escape'), 'partition=(\d+)'))[1] as partition_slurm,
+						(REGEXP_MATCHES(encode(job.destination_params, 'escape'), '\"requirements\":\s+\".*\", '))[1] as partition_condor,
+						COALESCE(job.destination_id, 'none') as destination_id
+					FROM job
+						FULL OUTER JOIN galaxy_user ON job.user_id = galaxy_user.id
+					WHERE
+						state in ('running', 'queued'$d)
+					ORDER BY
+						state desc,
+						$time_column_name desc
+				)
+		SELECT 
+			jobstate,
+			jobid,
+			extid,
+			toolid,
+			username,
+			$time_column_name,
+			handler,
+			COALESCE(mem_slurm, mem_condor) as mem,
+			COALESCE(cpu_slurm, cpu_condor) as cpu,
+			COALESCE(partition_slurm, partition_condor) as partition
+		FROM
+			job_data
 	EOF
 }
