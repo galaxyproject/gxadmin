@@ -17,6 +17,20 @@ meta_update() { ## : Update the script
 	exit 0;
 }
 
+meta_stats() {
+	$0 meta stats-generate | uniq -c
+	$0 meta stats-generate | wc -l
+}
+
+meta_stats-generate() {
+	IFS=$'\n'
+	for section in $(locate_cmds_nolocal | correct_cmd | awk '{print $1}' | sort -u); do
+		for command in $(locate_cmds_nolocal | correct_cmd | grep "^$section"); do
+			echo $section
+		done
+	done
+}
+
 meta_cmdlist() {
 	handle_help "$@" <<-EOF
 	EOF
