@@ -1,5 +1,8 @@
 # 21-pre
 
+- Added:
+	- query queue-detail-drm, from @cat-bro and @slugger70, a better version of queue-details potentially.
+
 # 20
 
 - Fixed:
