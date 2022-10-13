@@ -1242,6 +1242,7 @@ query_tool-metrics() { ##? <tool_id> <metric_id> [last|-1] [--like] [--ok] [--su
 		Use the --summary option to output summary statistics instead of the values themselves.
 	EOF
 
+	limit_clause=
 	summary='*'
 
 	tool_subquery="SELECT id FROM job WHERE tool_id = '$arg_tool_id'"
@@ -1252,7 +1253,7 @@ query_tool-metrics() { ##? <tool_id> <metric_id> [last|-1] [--like] [--ok] [--su
 		tool_subquery="$tool_subquery AND state = 'ok'"
 	fi
 	if [[ "$arg_last" -gt 0 ]]; then
-		tool_subquery="$tool_subquery ORDER BY id DESC LIMIT $arg_last"
+		limit_clause="ORDER BY id DESC LIMIT $arg_last"
 	fi
 	if [[ -n "$arg_summary" ]]; then
 		summary="$(summary_statistics metric_value 0)"
@@ -1269,6 +1270,7 @@ query_tool-metrics() { ##? <tool_id> <metric_id> [last|-1] [--like] [--ok] [--su
 				job_id in (
 					$tool_subquery
 				)
+			$limit_clause
 		)
 
 		SELECT
