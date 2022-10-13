@@ -2,6 +2,8 @@
 
 - Added:
 	- query queue-detail-drm, from @cat-bro and @slugger70, a better version of queue-details potentially.
+- Updated:
+	- Add summary and limit options to tool-metrics query, by @natefoo.
 
 # 20
 
