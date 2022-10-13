@@ -1211,7 +1211,7 @@ query_ts-repos() { ## : Counts of toolshed repositories by toolshed and owner.
 	EOF
 }
 
-query_tool-metrics() { ##? <tool_id> <metric_id> [--like] [--ok]: See values of a specific metric
+query_tool-metrics() { ##? <tool_id> <metric_id> [last|-1] [--like] [--ok] [--summary]: See values of a specific metric
 	handle_help "$@" <<-EOF
 		A good way to use this is to fetch the memory usage of a tool and then
 		do some aggregations. The following requires [data_hacks](https://github.com/bitly/data_hacks)
@@ -1233,8 +1233,16 @@ query_tool-metrics() { ##? <tool_id> <metric_id> [--like] [--ok]: See values of 
 		       85.2655 -    95.5703 [     3]: ∎∎∎ (0.68%)
 		       95.5703 -   105.8750 [     1]: ∎ (0.23%)
 
-		Use the --ok option to only include jobs that finished successfully
+		The optional 'last' argument can be used to limit the number of most recent jobs that will be checked.
+		The default is all jobs. Note that this can return zero results if your most recent jobs have not
+		returned metric data for your selected metric.
+
+		Use the --ok option to only include jobs that finished successfully.
+
+		Use the --summary option to output summary statistics instead of the values themselves.
 	EOF
+
+	summary='*'
 
 	tool_subquery="SELECT id FROM job WHERE tool_id = '$arg_tool_id'"
 	if [[ -n "$arg_like" ]]; then
@@ -1243,17 +1251,29 @@ query_tool-metrics() { ##? <tool_id> <metric_id> [--like] [--ok]: See values of 
 	if [[ -n "$arg_ok" ]]; then
 		tool_subquery="$tool_subquery AND state = 'ok'"
 	fi
+	if [[ "$arg_last" -gt 0 ]]; then
+		tool_subquery="$tool_subquery ORDER BY id DESC LIMIT $arg_last"
+	fi
+	if [[ -n "$arg_summary" ]]; then
+		summary="$(summary_statistics metric_value 0)"
+	fi
 
 	read -r -d '' QUERY <<-EOF
+		WITH runtime_data AS (
+			SELECT
+				metric_value
+			FROM job_metric_numeric
+			WHERE
+				metric_name = 'runtime_seconds'
+				and
+				job_id in (
+					$tool_subquery
+				)
+		)
+
 		SELECT
-			metric_value
-		FROM job_metric_numeric
-		WHERE
-			metric_name = '$arg_metric_id'
-			and
-			job_id in (
-				$tool_subquery
-			)
+			$summary
+		FROM runtime_data
 	EOF
 }
 
