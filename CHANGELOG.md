@@ -4,6 +4,8 @@
 	- query queue-detail-drm, from @cat-bro and @slugger70, a better version of queue-details potentially.
 - Updated:
 	- Add summary and limit options to tool-metrics query, by @natefoo.
+- Fixed:
+	- Wonderful Argument Parser arg values could not contain spaces.
 
 # 20
 
