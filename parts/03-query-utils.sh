@@ -144,6 +144,6 @@ summary_statistics() {
 	EOF
 }
 
-get_user_filter(){
-	echo "(galaxy_user.email = '$1' or galaxy_user.username = '$1' or galaxy_user.id = CAST('$1' AS INTEGER))"
+get_user_filter() {
+	echo "(galaxy_user.email = '$1' or galaxy_user.username = '$1' or galaxy_user.id = CAST(REGEXP_REPLACE('$1', '.*\D+.*', '-1') AS INTEGER))"
 }
