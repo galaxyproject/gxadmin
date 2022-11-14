@@ -2,6 +2,7 @@
 
 - Added:
 	- query queue-detail-drm, from @cat-bro and @slugger70, a better version of queue-details potentially.
+	- mutate reassign-active-workflows-to-handler, from @mira-miracoli, as workaround for [galaxyproject/galaxy#8209](https://github.com/galaxyproject/galaxy/issues/8209)
 - Updated:
 	- Add summary and limit options to tool-metrics query, by @natefoo.
 - Fixed:
@@ -34,7 +35,7 @@
 	- query pulsar-gb-transferred: sums up data in/out (minus collections) of pulsar.
 	- mutate fail-misbehaving-gxits: Works aroud a gxit issue.
 	- galaxy prune-gxit-routes: Prunes dead routes
-	- mutate force-publish-history: Workaround for Galaxy bug #13001
+	- mutate force-publish-history: Workaround for [galaxyproject/galaxy#13001](https://github.com/galaxyproject/galaxy/issues/13001)
 	- report group-info, by @pavanvidem
 	- query tool-use-by-group, by @gavindi
 	- query job-state-stats, by @gavindi
@@ -64,7 +65,7 @@
 	- query queue has a new optional parameter for splitting queues by various attributes (Thanks @natefoo)
 	- query pg-rows-per-table to find out which tables have data.
 	- mutate fail-wfi
-	- mutate oidc-by-emails, mutate users affected by https://github.com/galaxyproject/galaxy/issues/9981
+	- mutate oidc-by-emails, mutate users affected by [galaxyproject/galaxy#9981](https://github.com/galaxyproject/galaxy/issues/9981)
 	- mutate now supports echo/explain prefixes.
 	- very-unsafe flag to most mutate methods, avoiding the transaction.
 	- added the [wonderful argument parsing](https://github.com/hexylena/wap) for parsing function signatures into arguments automatically, making contribution easier.
@@ -139,9 +140,9 @@ Testing our new release message
 	- Import script from https://github.com/galaxyproject/grafana-dashboards
 	- query for datasets uploaded in last N hours
 	- mutate to approve users
-	- mutate assign-unassigned-workflow: workaround for [galaxyproject/galaxy#8209](https://github.com/galaxyproject/galaxy#8209)
-	- mutate oidc-role-find-affected: workaround for [galaxyproject/galaxy#8244](https://github.com/galaxyproject/galaxy#8244)
-	- mutate oidc-role-fix: workaround for [galaxyproject/galaxy#8244](https://github.com/galaxyproject/galaxy#8244)
+	- mutate assign-unassigned-workflow: workaround for [galaxyproject/galaxy#8209](https://github.com/galaxyproject/galaxy/issues/8209)
+	- mutate oidc-role-find-affected: workaround for [galaxyproject/galaxy#8244](https://github.com/galaxyproject/galaxy/issues/8244)
+	- mutate oidc-role-fix: workaround for [galaxyproject/galaxy#8244](https://github.com/galaxyproject/galaxy/issues/8244)
 	- query user-disk-usage, thanks @selten
 	- query group-cpu-seconds, thanks @selten
 - Fixed:
