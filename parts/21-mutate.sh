@@ -254,6 +254,28 @@ mutate_reassign-workflows-to-handler() { ## <handler_from> <handler_to> [--commi
 	QUERY="$txn_pre $QUERY; $txn_pos"
 }
 
+mutate_reassign-active-workflows-to-handler() { ## <handler_from> <handler_to> [--commit]: Reassign workflows with state 'scheduled' or 'new' to a different handler.
+	handle_help "$@" <<-EOF
+		Another workaround for https://github.com/galaxyproject/galaxy/issues/8209
+
+		Need to use the full handler names e.g. handler_main_0
+	EOF
+
+	assert_count_ge $# 1 "Must supply a handler_from"
+	assert_count_ge $# 2 "Must supply a handler_to"
+
+	read -r -d '' QUERY <<-EOF
+		UPDATE workflow_invocation
+		SET handler = '$2'
+		WHERE (state = 'scheduled' or state = 'new') and handler = '$1'
+		RETURNING workflow_invocation.id
+	EOF
+
+	txn_pre=$(txn_prefix  "$3")
+	txn_pos=$(txn_postfix "$3")
+	QUERY="$txn_pre $QUERY; $txn_pos"
+}
+
 mutate_approve-user() { ## <username|email|user_id>: Approve a user in the database
 	handle_help "$@" <<-EOF
 		There is no --commit flag on this because it is relatively safe
