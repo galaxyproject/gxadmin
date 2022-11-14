@@ -267,7 +267,7 @@ mutate_reassign-active-workflows-to-handler() { ## <handler_from> <handler_to> [
 	read -r -d '' QUERY <<-EOF
 		UPDATE workflow_invocation
 		SET handler = '$2'
-		WHERE (state = 'scheduled' or state = 'new') and handler = '$1'
+		WHERE (state = 'scheduled' or state = 'new' or state = 'ready') and handler = '$1'
 		RETURNING workflow_invocation.id
 	EOF
 
