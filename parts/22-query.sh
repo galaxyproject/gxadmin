@@ -4338,18 +4338,16 @@ query_jobs() { ##? [--tool=] [--destination=] [--limit=] [--states=] [--user=] [
 		done
 	fi
 
-	get_state_filter() {
-		if [ "$states" ]; then
-			states="'$(echo "$states" | sed "s/,/', '/g")'"
-			echo "AND job.state IN (${states})"
-		fi
-	}
+	state_filter=
+	if [ "$states" ]; then
+		states="'$(echo "$states" | sed "s/,/', '/g")'"
+		state_filter="AND job.state IN (${states})"
+	fi
 
-	get_destination_filter() {
-		if [ ! -z "$destination_id_substr" ]; then
-			echo "AND job.destination_id ~ '${destination_id_substr}'";
-		fi
-	}
+	destination_filter=
+	if [ ! -z "$destination_id_substr" ]; then
+		destination_filter="AND job.destination_id ~ '${destination_id_substr}'";
+	fi
 
 	read -r -d '' QUERY <<-EOF
 			SELECT
@@ -4365,7 +4363,7 @@ query_jobs() { ##? [--tool=] [--destination=] [--limit=] [--states=] [--user=] [
 			FROM job
 			LEFT OUTER JOIN
 				galaxy_user ON job.user_id = galaxy_user.id
-			WHERE job.tool_id ~ '$tool_id_substr' $(get_destination_filter) $(get_state_filter) $user_filter
+			WHERE job.tool_id ~ '$tool_id_substr' ${destination_filter} ${get_state_filter} $user_filter
 			ORDER BY job.update_time desc
 			LIMIT $limit
 	EOF
