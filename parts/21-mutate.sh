@@ -1531,3 +1531,19 @@ mutate_dataset-mark-purged() { ##? <dataset_uuid> [--commit]: Purge dataset and 
 	txn_pos=$(txn_postfix "$arg_commit")
 	QUERY="$txn_pre $QUERY; $txn_pos"
 }
+
+mutate_purge-old-job-metrics() { ##? : Purge job metrics older than 1 year.
+	handle_help "$@" <<-EOF
+	EOF
+
+	read -r -d '' QUERY <<-EOF
+		DELETE FROM job_metric_text USING job WHERE job_id=job.id AND (job.state='ok' OR CURRENT_TIMESTAMP - job.update_time > '1 year');
+		VACUUM FULL job_metric_text;
+		DELETE FROM job_metric_numeric USING job WHERE job_id=job.id AND job.state IN ('deleted', 'error') AND CURRENT_TIMESTAMP - job.update_time > '1 year';
+		VACUUM FULL job_metric_numeric
+	EOF
+
+	txn_pre=$(txn_prefix "$arg_commit")
+	txn_pos=$(txn_postfix "$arg_commit")
+	QUERY="$txn_pre $QUERY; $txn_pos"
+}
