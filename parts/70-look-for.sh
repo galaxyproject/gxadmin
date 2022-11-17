@@ -1,3 +1,4 @@
+# shellcheck disable=SC2001
 obtain_func() {
 	category="$1"; shift
 	query_name="$1"; shift
@@ -11,12 +12,13 @@ obtain_func() {
 	ec=$?
 
 	# ##? enables fancy argument parsing.
-	grep -s -h -o "${fn}()\s*{ ##?\? .*" "$0" | fgrep --quiet -o '##?'
+	grep -s -h -o "${fn}()\s*{ ##?\? .*" "$0" | grep -F --quiet -o '##?'
 	# Nothing needs to be done, just let that function handle and auto-parse
 	# and auto-export
 	enable_wap=$?
 	if (( enable_wap == 0 )); then
-		wonderful_argument_parser "$fn" "$@"
+		signature=$(wap_fn_signature "$fn")
+		wonderful_argument_parser "$(wap_fn_signature "$fn")" "$@"
 	fi
 
 	if (( ec == 0 )); then
@@ -26,9 +28,20 @@ obtain_func() {
 	fi
 }
 
+wap_fn_signature() {
+	grep "${1}()" "$0" | sed "s/.*##? //g;s/: .*//"
+}
+
+wap_debug_args() {
+	for x in $(compgen -v | grep ^arg_ | sort); do
+		echo "${x} = ${!x}"
+	done
+}
+
 wonderful_argument_parser() {
-	# from the top, the function to look for
-	fn=$1;
+	# from the top, parse the signature
+	# shellcheck disable=SC2206
+	signature=($1);
 	# make it drop, so we can parse the rest
 	shift;
 	declare -a parsed_keys
@@ -40,34 +53,27 @@ wonderful_argument_parser() {
 	positional_index=0
 	optional_index=0
 
-	# shellcheck disable=SC2207
-	read -r -a signature <<< $(grep -s -h -o "${fn}()\s*{ ##?\? .*" "$0" | sed 's/.*##?//g;s/: .*//g;')
 	signature+=('[--help]') # This is always available
 
 	for x in "$@"; do
 		args+=("$x");
-
-		# If the help flag is in there, we can short-circuit
-		if [[ "$x" == "--help" ]] || [[ "$x" == "-h" ]]; then
-			return
-		fi
-
 		shift;
 	done
 
+	debug "Signature: ${signature[*]}"
 	for arg in "${signature[@]}"; do
 		if [[ "$arg" == '<'* ]]; then
 			# This is a required argument
 			positional_args+=("$(echo "$arg" | sed 's/^<//;s/>$//')")
 		elif [[ "$arg" == '[--'* ]]; then
 			# This is an optional argument
-			optional_flag_args+=("$arg")
+			optional_flag_args+=("$(echo "$arg" | sed 's/^\[//;s/\]$//')")
 		elif [[ "$arg" == '['* ]]; then
 			# This is an optional argument
 			optional_args+=("$(echo "$arg" | sed 's/^\[//;s/\]$//')")
 		else
 			# This is an error
-			echo "ERROR!!! Bad argument specification: $arg"
+			error "ERROR!!! Bad argument specification: $arg"
 		fi
 	done
 
@@ -75,7 +81,44 @@ wonderful_argument_parser() {
 	positional_count=${#positional_args[@]}
 	optional_count=${#optional_args[@]}
 
+	if (( WAP_DEBUG == 1 )); then
+		debug Positional args
+		for arg in "${positional_args[@]}"; do debug "  $arg"; done;
+		debug Optional args
+		for arg in "${optional_args[@]}"; do debug "  $arg"; done;
+		debug Optional flag args
+		for arg in "${optional_flag_args[@]}"; do debug "  $arg"; done;
+	fi
+
+	# If the help flag is in there, we can short-circuit
+	if [[ "$x" == "--help" ]] || [[ "$x" == "-h" ]]; then
+		WAP_HELP=1
+		WAP_HELP_POSITIONAL=
+		for arg in "${positional_args[@]}"; do WAP_HELP_POSITIONAL="$WAP_HELP_POSITIONAL\n\t<$arg>"; done;
+		WAP_HELP_OPTIONAL_FLAGS=
+		for arg in "${optional_flag_args[@]}"; do WAP_HELP_OPTIONAL_FLAGS="$WAP_HELP_OPTIONAL_FLAGS\n\t[$arg]"; done;
+		WAP_HELP_OPTIONAL=
+		for arg in "${optional_args[@]}"; do WAP_HELP_OPTIONAL="$WAP_HELP_OPTIONAL\n\t[$arg]"; done;
+		return
+	fi
+
 	offset=0
+
+	# For every optional flag argument with a default value, we should set that.
+	for arg in "${optional_flag_args[@]}"; do
+		# Two types of args: with, without values
+		if [[ "$arg" == "--"*'='* ]]; then
+			key=$(echo "$arg" | sed 's/--//g;s/=.*//g')
+			val=$(echo "$arg" | sed 's/--//g;s/.*=//g')
+
+			# If it has <desc> then it's just a description, not a default.
+			if [[ "$val" != '<'*'>' ]]; then
+				parsed_keys+=("${key}")
+				parsed_vals+=("${val}")
+			fi
+		fi
+	done
+
 	while true; do
 		# Get the first bit of content from the arguments
 		a_cur=${args[$offset]}
@@ -87,25 +130,36 @@ wonderful_argument_parser() {
 			# This is a flag. So find the matching flag definition.
 			for arg in "${optional_flag_args[@]}"; do
 				# Two types of args: with, without values
-				if [[ "$arg" == "[--"* ]]; then
-					if [[ "$arg" == *'|'* ]]; then
-						# This has another argument.
-						# So we need to pop something else.
-						# And increment offset so we don't re-process it
-						if [[ "$arg" == '['$a_cur'|'* ]]; then
+				if [[ "$arg" == *'='* ]]; then
+					# This has another argument.
+					# So we need to pop something else.
+					# And increment offset so we don't re-process it
+					valueless_arg=$(echo "$arg" | sed 's/=.*//')
+					valueless_acr=$(echo "$a_cur" | sed 's/=.*//')
+
+					if [[ "$valueless_arg" == "$valueless_acr" ]]; then
+						#echo "HI: a_cur=${a_cur} arg=${arg} valueless_arg=${valueless_arg} valueless_acr=${valueless_acr}"
+						if [[ "${a_cur}" == "${valueless_acr}"'='* ]]; then
+							val="$(echo "${a_cur}" | sed 's/.*=//g')"
+						else
 							val="${args[$offset+1]}"
 							offset=$(( offset + 1 ))
-							k="$(echo "$a_cur" | sed 's/^--//;s/-/_/g')"
-							parsed_keys+=("${k}")
-							parsed_vals+=("$val")
 						fi
-					else
-						# This is just a flag
-						if [[ "$arg" == '['$a_cur']' ]]; then
-							k="$(echo "$a_cur" | sed 's/^--//;s/-/_/g')"
-							parsed_keys+=("${k}")
-							parsed_vals+=(1)
-						fi
+
+						k="$(echo "$valueless_acr" | sed 's/^--//;s/-/_/g')"
+						parsed_keys+=("${k}")
+						parsed_vals+=("$val")
+
+						debug "Parsed ${k} = ${val}"
+					fi
+				else
+					# This is just a flag
+					if [[ "$arg" == "$a_cur" ]]; then
+						k="$(echo "$a_cur" | sed 's/^--//;s/-/_/g')"
+						parsed_keys+=("${k}")
+						parsed_vals+=(1)
+
+						debug "Parsed ${k} = 1"
 					fi
 				fi
 			done
@@ -113,21 +167,29 @@ wonderful_argument_parser() {
 			# This is a non-flag, so maybe a positional, maybe an optional argument.
 			# So we need to find the Nth positional (via positional_index)
 			if (( (positional_index + optional_index) >= (positional_count + optional_count) )); then
-				echo "Error: more positional arguments than should be possible"
+				error "Error: more positional arguments than should be possible"
 				exit 1;
 			fi
 
 			if (( positional_index < positional_count )); then
-				parsed_keys+=("${positional_args[$positional_index]}")
+				key_fixed=$(echo "${positional_args[$positional_index]}" | sed 's/|.*//g')
+				parsed_keys+=("$key_fixed")
 				parsed_vals+=("${a_cur}")
 				positional_index=$((positional_index + 1))
 			else
 				# We're past the positional and into the optional
 				k="${optional_args[$optional_index]}"
+				if [[ "$k" == *'='* ]]; then
+					# Here there is a default supplied.
+					#k="${k//=.*//}"
+					k=$(echo "$k" | sed 's/=.*//g')
+				fi
+
 				parsed_keys+=("$(echo "$k" | sed 's/|.*//g')")
 				parsed_vals+=("${a_cur}")
 				optional_index=$(( optional_index + 1 ))
 			fi
+			debug "Parsed ${parsed_keys[*]} = ${parsed_vals[*]}"
 		fi
 		offset=$(( offset + 1 ))
 	done
@@ -135,10 +197,9 @@ wonderful_argument_parser() {
 	# Set all default optional args, if they aren't set
 	if (( optional_index < optional_count )); then
 		for i in $(seq $optional_index $((optional_count - 1)) ); do
-			if [[ "${optional_args[$i]}" == *'|'* ]]; then
-				k="${optional_args[$i]}"
-				parsed_keys+=("$(echo "$k" | sed 's/|.*//g')")
-				parsed_vals+=("$(echo "$k" | sed 's/.*|//g')")
+			if [[ "${optional_args[$i]}" == *'='* ]]; then
+				parsed_keys+=("$(echo "$optional_args" | sed 's/=.*//g')")
+				parsed_vals+=("$(echo "$optional_args" | sed 's/.*=//g')")
 			fi
 		done
 	fi
@@ -152,7 +213,8 @@ wonderful_argument_parser() {
 
 	size=${#parsed_keys[@]}
 	for i in $(seq 0 $((size - 1))); do
-		#printf "\t%10s=%-10s\n" "${parsed_keys[$i]}" "${parsed_vals[$i]}"
+		debug "$(printf "SETTING\t%10s=%-10s\n" "${parsed_keys[$i]}" "${parsed_vals[$i]}")"
+		# shellcheck disable=SC2086
 		export arg_${parsed_keys[$i]}="${parsed_vals[$i]}"
 	done
 }
