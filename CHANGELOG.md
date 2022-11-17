@@ -3,6 +3,7 @@
 - Added:
 	- query queue-detail-drm, from @cat-bro and @slugger70, a better version of queue-details potentially.
 	- mutate reassign-active-workflows-to-handler, from @mira-miracoli, as workaround for [galaxyproject/galaxy#8209](https://github.com/galaxyproject/galaxy/issues/8209)
+	- --help-man can now be used in addition to --help on specific query/function commands. It assumes that pandoc is installed, and will render the help instead as a manual page.
 - Updated:
 	- Add summary and limit options to tool-metrics query, by @natefoo.
 	- Updated the Wonderful Argument Parser with a fancier version, @hexylena

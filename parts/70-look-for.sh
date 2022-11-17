@@ -54,6 +54,7 @@ wonderful_argument_parser() {
 	optional_index=0
 
 	signature+=('[--help]') # This is always available
+	signature+=('[--help-man]')  # This is always available
 
 	for x in "$@"; do
 		args+=("$x");
