@@ -5,8 +5,9 @@
 	- mutate reassign-active-workflows-to-handler, from @mira-miracoli, as workaround for [galaxyproject/galaxy#8209](https://github.com/galaxyproject/galaxy/issues/8209)
 - Updated:
 	- Add summary and limit options to tool-metrics query, by @natefoo.
+	- Updated the Wonderful Argument Parser with a fancier version, @hexylena
 - Fixed:
-	- Wonderful Argument Parser arg values could not contain spaces.
+	- Wonderful Argument Parser arg values could not contain spaces, @natefoo
 - Removed:
 	- uwsgi series of commands are now completely deprecated, as Galaxy no longer supports uwsgi. If you need these commands, please install an older version of gxadmin.
 
