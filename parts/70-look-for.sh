@@ -81,25 +81,13 @@ wonderful_argument_parser() {
 	positional_count=${#positional_args[@]}
 	optional_count=${#optional_args[@]}
 
-	if (( WAP_DEBUG == 1 )); then
+	if (( GXADMIN_DEBUG == 1 )); then
 		debug Positional args
 		for arg in "${positional_args[@]}"; do debug "  $arg"; done;
 		debug Optional args
 		for arg in "${optional_args[@]}"; do debug "  $arg"; done;
 		debug Optional flag args
 		for arg in "${optional_flag_args[@]}"; do debug "  $arg"; done;
-	fi
-
-	# If the help flag is in there, we can short-circuit
-	if [[ "$x" == "--help" ]] || [[ "$x" == "-h" ]]; then
-		WAP_HELP=1
-		WAP_HELP_POSITIONAL=
-		for arg in "${positional_args[@]}"; do WAP_HELP_POSITIONAL="$WAP_HELP_POSITIONAL\n\t<$arg>"; done;
-		WAP_HELP_OPTIONAL_FLAGS=
-		for arg in "${optional_flag_args[@]}"; do WAP_HELP_OPTIONAL_FLAGS="$WAP_HELP_OPTIONAL_FLAGS\n\t[$arg]"; done;
-		WAP_HELP_OPTIONAL=
-		for arg in "${optional_args[@]}"; do WAP_HELP_OPTIONAL="$WAP_HELP_OPTIONAL\n\t[$arg]"; done;
-		return
 	fi
 
 	offset=0
