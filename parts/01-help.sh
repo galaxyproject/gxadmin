@@ -150,6 +150,16 @@ usage(){
 	exit 0;
 }
 
+meta() {
+	data="$(cat -)"
+	FN_AUTHORS="$(echo "$data" | grep AUTHORS)"
+	FN_AUTHORS="${FN_AUTHORS//AUTHORS: /}"
+	FN_ADDED="$(echo "$data" | grep ADDED)"
+	FN_ADDED="${FN_ADDED//ADDED: /}"
+	FN_UPDATED="$(echo "$data" | grep UPDATED)"
+	FN_UPDATED="${FN_UPDATED//UPDATED: /}"
+}
+
 handle_help() {
 	if [[ ! -z "${GXADMIN_POPCON_ENABLE}" ]]; then
 		if [[ "${query_name}" != "user-info" ]]; then

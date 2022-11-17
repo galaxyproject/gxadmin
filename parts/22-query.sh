@@ -9,6 +9,11 @@ _query_long_help="
 "
 
 query_latest-users() { ## : 40 recently registered users
+	meta <<-EOF
+		AUTHORS: hexylena
+		ADDED: 1
+		UPDATED: 1
+	EOF
 	handle_help "$@" <<-EOF
 		Returns 40 most recently registered users
 
