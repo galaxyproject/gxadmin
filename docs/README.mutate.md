@@ -18,6 +18,7 @@ Command | Description
 [`mutate oidc-by-emails`](#mutate-oidc-by-emails) | Reassign OIDC account between users.
 [`mutate oidc-role-find-affected`](#mutate-oidc-role-find-affected) | Find users affected by galaxyproject/galaxy#8244
 [`mutate oidc-role-fix`](#mutate-oidc-role-fix) | Fix permissions for users logged in via OIDC. Workaround for galaxyproject/galaxy#8244
+[`mutate reassign-active-workflows-to-handler`](#mutate-reassign-active-workflows-to-handler) | Reassign workflows with state 'scheduled' or 'new' to a different handler.
 [`mutate reassign-job-to-handler`](#mutate-reassign-job-to-handler) | Reassign a job to a different handler
 [`mutate reassign-workflows-to-handler`](#mutate-reassign-workflows-to-handler) | Reassign workflows in 'new' state to a different handler.
 [`mutate restart-jobs`](#mutate-restart-jobs) | Restart some jobs
@@ -309,6 +310,22 @@ mutate oidc-role-fix -  Fix permissions for users logged in via OIDC. Workaround
 **NOTES**
 
 Workaround for https://github.com/galaxyproject/galaxy/issues/8244
+
+
+## mutate reassign-active-workflows-to-handler
+
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=mutate_reassign-active-workflows-to-handler&type=Code))
+mutate reassign-active-workflows-to-handler -  Reassign workflows with state 'scheduled' or 'new' to a different handler.
+
+**SYNOPSIS**
+
+    gxadmin mutate reassign-active-workflows-to-handler <handler_from> <handler_to> [--commit]
+
+**NOTES**
+
+Another workaround for https://github.com/galaxyproject/galaxy/issues/8209
+
+Need to use the full handler names e.g. handler_main_0
 
 
 ## mutate reassign-job-to-handler

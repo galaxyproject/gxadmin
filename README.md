@@ -19,7 +19,6 @@ query      | 89
 server     | 22
 mutate     | 16
 meta       | 12
-uwsgi      | 11
 galaxy     | 11
 report     | 3
 filter     | 3

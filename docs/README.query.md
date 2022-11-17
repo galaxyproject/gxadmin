@@ -37,6 +37,7 @@ Command | Description
 [`query jobs-ready-to-run`](#query-jobs-ready-to-run) | Find jobs ready to run (Mostly a performance test)
 [`query job-state`](#query-job-state) | Get current job state given a job ID
 [`query job-state-stats`](#query-job-state-stats) | Shows all jobs states for the last 30 days in a table counted by state
+[`query jobs`](#query-jobs) | List jobs ordered by most recently updated. = is required.
 [`query largest-collection`](#query-largest-collection) | Returns the size of the single largest collection
 [`query largest-dataset-users`](#query-largest-dataset-users) | Get largest datasets by users
 [`query largest-histories`](#query-largest-histories) | Largest histories in Galaxy
@@ -69,6 +70,7 @@ Command | Description
 [`query queue`](#query-queue) | Brief overview of currently running jobs grouped by tool (default) or other columns
 [`query queue-detail`](#query-queue-detail) | Detailed overview of running and queued jobs
 [`query queue-detail-by-handler`](#query-queue-detail-by-handler) | List jobs for a specific handler
+[`query queue-details-drm`](#query-queue-details-drm) | Detailed overview of running and queued jobs with cores/mem info
 [`query queue-overview`](#query-queue-overview) | View used mostly for monitoring
 [`query queue-time`](#query-queue-time) | The average/95%/99% a specific tool spends in queue state.
 [`query recent-jobs`](#query-recent-jobs) | Jobs run in the past <hours> (in any state)
@@ -553,18 +555,18 @@ query job-info -  Retrieve information about jobs given some job IDs
 Retrieves information on a job, like the host it ran on,
 how long it ran for and the total memory.
 
-id    | create_time  | update_time |  tool_id     |   hostname   | handler  | runtime_seconds | memtotal
------ | ------------ | ----------- | ------------ | ------------ | -------- | --------------- | --------
-1     |              |             | 123f911b5f1  | 123f911b5f1  | handler0 |          20.35  | 20.35 GB
-2     |              |             | cb0fabc0002  | cb0fabc0002  | handler1 |          14.93  |  5.96 GB
-3     |              |             | 7e9e9b00b89  | 7e9e9b00b89  | handler1 |          14.24  |  3.53 GB
-4     |              |             | 42f211e5e87  | 42f211e5e87  | handler4 |          14.06  |  1.79 GB
-5     |              |             | 26cdba62c93  | 26cdba62c93  | handler0 |          12.97  |  1.21 GB
-6     |              |             | fa87cddfcae  | fa87cddfcae  | handler1 |           7.01  |   987 MB
-7     |              |             | 44d2a648aac  | 44d2a648aac  | handler3 |           6.70  |   900 MB
-8     |              |             | 66c57b41194  | 66c57b41194  | handler1 |           6.43  |   500 MB
-9     |              |             | 6b1467ac118  | 6b1467ac118  | handler0 |           5.45  |   250 MB
-10    |              |             | d755361b59a  | d755361b59a  | handler2 |           5.19  |   100 MB
+id    | create_time  | update_time |  tool_id     | state |   hostname   | handler  | runtime_seconds | memtotal
+----- | ------------ | ----------- | ------------ | ----- | ------------ | -------- | --------------- | --------
+1     |              |             | 123f911b5f1  | ok    | 123f911b5f1  | handler0 |          20.35  | 20.35 GB
+2     |              |             | cb0fabc0002  | ok    | cb0fabc0002  | handler1 |          14.93  |  5.96 GB
+3     |              |             | 7e9e9b00b89  | ok    | 7e9e9b00b89  | handler1 |          14.24  |  3.53 GB
+4     |              |             | 42f211e5e87  | ok    | 42f211e5e87  | handler4 |          14.06  |  1.79 GB
+5     |              |             | 26cdba62c93  | error | 26cdba62c93  | handler0 |          12.97  |  1.21 GB
+6     |              |             | fa87cddfcae  | ok    | fa87cddfcae  | handler1 |           7.01  |   987 MB
+7     |              |             | 44d2a648aac  | ok    | 44d2a648aac  | handler3 |           6.70  |   900 MB
+8     |              |             | 66c57b41194  | ok    | 66c57b41194  | handler1 |           6.43  |   500 MB
+9     |              |             | 6b1467ac118  | ok    | 6b1467ac118  | handler0 |           5.45  |   250 MB
+10    |              |             | d755361b59a  | ok    | d755361b59a  | handler2 |           5.19  |   100 MB
 
 
 ## query job-inputs
@@ -818,6 +820,38 @@ $ gxadmin query job-state-stats
 2022-04-23 |   254 |     229 |    276 |      0 |   203 |    29 |      0 |       0 |       4
 ...
 -26 days
+
+
+## query jobs
+
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_jobs&type=Code))
+query jobs -  List jobs ordered by most recently updated. = is required.
+
+**SYNOPSIS**
+
+    gxadmin query jobs [--tool=] [--destination=] [--limit=] [--states=] [--user=] [--terminal] [--nonterminal]
+
+**NOTES**
+
+Displays a list of jobs ordered from most recently updated, which can be filtered by states, destination_id,
+tool_id or user. By default up to 50 rows are returned which can be adjusted with the --limit or -l flag.
+
+    $ gxadmin query jobs --destination=pulsar-nci-test
+      id   |     create_time     |     update_time     | user_id |  state  |                                           tool_id                                           |  handler  |         destination         | external_id
+    -------+---------------------+---------------------+---------+---------+---------------------------------------------------------------------------------------------+-----------+-----------------------------+-------------
+     14701 | 2022-10-31 00:54:43 | 2022-10-31 00:55:02 |      16 | ok      | toolshed.g2.bx.psu.edu/repos/devteam/bwa/bwa_mem/0.7.17.2                                   | handler_0 | pulsar-nci-test             | 14701
+     14700 | 2022-10-31 00:53:45 | 2022-10-31 00:54:04 |      16 | ok      | toolshed.g2.bx.psu.edu/repos/devteam/fastqc/fastqc/0.71                                     | handler_0 | pulsar-nci-test             | 14700
+     14588 | 2022-10-19 10:45:42 | 2022-10-19 10:46:01 |      16 | ok      | toolshed.g2.bx.psu.edu/repos/devteam/bwa/bwa_mem/0.7.17.2                                   | handler_2 | pulsar-nci-test             | 14588
+     14584 | 2022-10-19 10:45:12 | 2022-10-19 10:45:31 |      16 | ok      | toolshed.g2.bx.psu.edu/repos/devteam/bwa/bwa_mem/0.7.17.2                                   | handler_2 | pulsar-nci-test             | 14584
+     14580 | 2022-10-19 10:44:43 | 2022-10-19 10:45:02 |      16 | ok      | toolshed.g2.bx.psu.edu/repos/devteam/bwa/bwa_mem/0.7.17.2                                   | handler_2 | pulsar-nci-test             | 14580
+    
+    $ gxadmin query jobs --destination=pulsar-nci-test --tool=bionano
+      id   |     create_time     |     update_time     | user_id | state |                                        tool_id                                         |       handler       |         destination         | external_id
+    -------+---------------------+---------------------+---------+-------+----------------------------------------------------------------------------------------+---------------------+-----------------------------+-------------
+     14085 | 2022-09-08 07:44:48 | 2022-09-08 08:21:58 |       3 | ok    | toolshed.g2.bx.psu.edu/repos/bgruening/bionano_scaffold/bionano_scaffold/3.6.1+galaxy3 | handler_2           | pulsar-nci-test             | 14085
+     14080 | 2022-09-08 07:00:14 | 2022-09-08 07:44:31 |       3 | ok    | toolshed.g2.bx.psu.edu/repos/bgruening/bionano_scaffold/bionano_scaffold/3.6.1+galaxy3 | handler_0           | pulsar-nci-test             | 14080
+     14076 | 2022-09-08 06:15:37 | 2022-09-08 06:59:59 |       3 | error | toolshed.g2.bx.psu.edu/repos/bgruening/bionano_scaffold/bionano_scaffold/3.6.1+galaxy3 | handler_2           | pulsar-nci-test             | 14076
+     14071 | 2022-09-08 05:38:25 | 2022-09-08 06:15:22 |       3 | error | toolshed.g2.bx.psu.edu/repos/bgruening/bionano_scaffold/bionano_scaffold/3.6.1+galaxy3 | handler_1           | pulsar-nci-test             | 14071
 
 
 ## query largest-collection
@@ -1529,6 +1563,28 @@ query queue-detail-by-handler -  List jobs for a specific handler
 List the jobs currently being processed by a specific handler
 
 
+## query queue-details-drm
+
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_queue-details-drm&type=Code))
+query queue-details-drm -  Detailed overview of running and queued jobs with cores/mem info
+
+**SYNOPSIS**
+
+    gxadmin query queue-details-drm [--all] [--seconds] [--since-update]
+
+**NOTES**
+
+This is a copy of gxadmin query queue-detail with job destination info (cores/mem/partition) added and runner_id, count removed
+
+    $ gxadmin query queue-details-drm
+           state  |  id  | extid |								  tool_id								  | username | time_since_creation |		 handler		 | cores | mem  | partition | destination_id
+    ---------+------+-------+-----------------------------------------------------------+----------+---------------------+---------------------+-------+------+-----------+-----------------
+     running | 4385 | 4011  | upload1																	| cat		| 00:01:01.518932	  | main.job-handlers.2 | 2	  | 6144 |			  | slurm
+     queued  | 4387 | 4012  | toolshed.g2.bx.psu.edu/repos/devteam/bwa/bwa_mem/0.7.17.2 | cat		| 00:00:24.377336	  | main.job-handlers.2 | 1	  | 3072 |			  | slurm
+     queued  | 4388 | 4388  | toolshed.g2.bx.psu.edu/repos/devteam/bwa/bwa_mem/0.7.17.2 | cat		| 00:00:13.254505	  | main.job-handlers.1 | 1	  | 3072 |			  | pulsar-nci-test
+     queued  | 4389 | 4013  | toolshed.g2.bx.psu.edu/repos/devteam/bwa/bwa_mem/0.7.17.2 | cat		| 00:00:01.834048	  | main.job-handlers.2 | 1	  | 3072 |			  | slurm
+
+
 ## query queue-overview
 
 ([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_queue-overview&type=Code))
@@ -1755,7 +1811,7 @@ query tool-metrics -  See values of a specific metric
 
 **SYNOPSIS**
 
-    gxadmin query tool-metrics <tool_id> <metric_id> [--like] [--ok]
+    gxadmin query tool-metrics <tool_id> <metric_id> [last|-1] [--like] [--ok] [--summary]
 
 **NOTES**
 
@@ -1779,7 +1835,13 @@ do some aggregations. The following requires [data_hacks](https://github.com/bit
        85.2655 -    95.5703 [     3]: ∎∎∎ (0.68%)
        95.5703 -   105.8750 [     1]: ∎ (0.23%)
 
-Use the --ok option to only include jobs that finished successfully
+The optional 'last' argument can be used to limit the number of most recent jobs that will be checked.
+The default is all jobs. Note that this can return zero results if your most recent jobs have not
+returned metric data for your selected metric.
+
+Use the --ok option to only include jobs that finished successfully.
+
+Use the --summary option to output summary statistics instead of the values themselves.
 
 
 ## query tool-new-errors

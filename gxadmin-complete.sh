@@ -45,10 +45,6 @@ _gxadmin() {
 			COMPREPLY=( $(compgen -W "$opts" -- "${cur}") )
 			return 0
 		;;
-		uwsgi)
-			COMPREPLY=( $(compgen -W "$opts" -- "${cur}") )
-			return 0
-		;;
 		meta)
 			COMPREPLY=( $(compgen -W "$opts" -- "${cur}") )
 			return 0

@@ -7,5 +7,4 @@
 - [mutate](README.mutate.md)
 - [query](README.query.md)
 - [report](README.report.md)
-- [uwsgi](README.uwsgi.md)
 - [Changelog](changelog) <!-- pulls in changelog from repo -->

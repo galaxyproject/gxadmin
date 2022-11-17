@@ -7,6 +7,8 @@
 	- Add summary and limit options to tool-metrics query, by @natefoo.
 - Fixed:
 	- Wonderful Argument Parser arg values could not contain spaces.
+- Removed:
+	- uwsgi series of commands are now completely deprecated, as Galaxy no longer supports uwsgi. If you need these commands, please install an older version of gxadmin.
 
 # 20
 
