@@ -4305,8 +4305,8 @@ query_jobs() { ##? [--tool=] [--destination=] [--limit=] [--states=] [--user=] [
 		     14588 | 2022-10-19 10:45:42 | 2022-10-19 10:46:01 |      16 | ok      | toolshed.g2.bx.psu.edu/repos/devteam/bwa/bwa_mem/0.7.17.2                                   | handler_2 | pulsar-nci-test             | 14588
 		     14584 | 2022-10-19 10:45:12 | 2022-10-19 10:45:31 |      16 | ok      | toolshed.g2.bx.psu.edu/repos/devteam/bwa/bwa_mem/0.7.17.2                                   | handler_2 | pulsar-nci-test             | 14584
 		     14580 | 2022-10-19 10:44:43 | 2022-10-19 10:45:02 |      16 | ok      | toolshed.g2.bx.psu.edu/repos/devteam/bwa/bwa_mem/0.7.17.2                                   | handler_2 | pulsar-nci-test             | 14580
-		    	
-		    $ gxadmin query jobs -d=pulsar-nci-test -t=bionano
+		    
+		    $ gxadmin query jobs --destination=pulsar-nci-test --tool=bionano
 		      id   |     create_time     |     update_time     | user_id | state |                                        tool_id                                         |       handler       |         destination         | external_id
 		    -------+---------------------+---------------------+---------+-------+----------------------------------------------------------------------------------------+---------------------+-----------------------------+-------------
 		     14085 | 2022-09-08 07:44:48 | 2022-09-08 08:21:58 |       3 | ok    | toolshed.g2.bx.psu.edu/repos/bgruening/bionano_scaffold/bionano_scaffold/3.6.1+galaxy3 | handler_2           | pulsar-nci-test             | 14085
@@ -4322,24 +4322,14 @@ query_jobs() { ##? [--tool=] [--destination=] [--limit=] [--states=] [--user=] [
 		for args in "$@"; do
 			if [ "${args:0:7}" = '--tool=' ]; then
 				tool_id_substr="${args:7}"
-			elif [ "${args:0:3}" = '-t=' ]; then
-				tool_id_substr="${args:3}"
 			elif [ "${args:0:8}" = '--limit=' ]; then
 				limit="${args:8}"
-			elif [ "${args:0:3}" = '-l=' ]; then
-				limit="${args:3}"
 			elif [ "${args:0:14}" = '--destination=' ]; then
 				destination_id_substr="${args:14}"
-			elif [ "${args:0:3}" = '-d=' ]; then
-				destination_id_substr="${args:3}"
 			elif [ "${args:0:9}" = '--states=' ]; then
 				states="${args:9}"
-			elif [ "${args:0:3}" = '-s=' ]; then
-				states="${args:3}"
 			elif [ "${args:0:7}" = '--user=' ]; then
 				user_filter=" AND $(get_user_filter ${args:7})"
-			elif [ "${args:0:3}" = '-u=' ]; then
-				user_filter=" AND $(get_user_filter ${args:3})"
 			elif [ "${args:0:10}" = '--terminal' ]; then
 				states="ok,deleted,error"
 			elif [ "${args:0:13}" = '--nonterminal' ]; then
