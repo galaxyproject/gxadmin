@@ -62,7 +62,7 @@ didyoumean() {
 
 	# If it is, we check the second part.
 	if (( known_command == 1 )); then
-		if [[ "$2" == "" ]]; then
+		if [[ "$2" == "" ]] || [[ "$2" == "help" ]] || [[ "$2" == "-h" ]] || [[ "$2" == "--help" ]]; then
 			usage "$1"
 			exit 1;
 		fi
