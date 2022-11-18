@@ -1532,7 +1532,7 @@ mutate_dataset-mark-purged() { ##? <dataset_uuid> [--commit]: Purge dataset and 
 	QUERY="$txn_pre $QUERY; $txn_pos"
 }
 
-mutate_purge-old-job-metrics() { ##? : Purge job metrics older than 1 year.
+mutate_purge-old-job-metrics() { ##? [--commit]: Purge job metrics older than 1 year.
 	handle_help "$@" <<-EOF
 	EOF
 

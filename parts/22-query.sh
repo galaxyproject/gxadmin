@@ -1,3 +1,5 @@
+# shellcheck disable=SC2154
+# shellcheck disable=SC2001
 registered_subcommands="$registered_subcommands query"
 _query_short_help="DB Queries"
 _query_long_help="
@@ -118,7 +120,7 @@ query_tool-usage-over-time() { ##? [searchterm]: Counts of tool runs by month, f
 	EOF
 }
 
-query_tool-popularity() { ##? [months|24] [--error]: Most run tools by month (tool_predictions)
+query_tool-popularity() { ##? [months=24] [--error]: Most run tools by month (tool_predictions)
 	handle_help "$@" <<-EOF
 		See most popular tools by month. Use --error to include error counts.
 
@@ -240,7 +242,7 @@ query_history-connections() { ## : The connections of tools, from output to inpu
 	EOF
 }
 
-query_datasets-created-daily() { ##? [months|all] [--human]: The min/max/average/p95/p99 of total size of datasets created in a single day.
+query_datasets-created-daily() { ##? [months=all] [--human]: The min/max/average/p95/p99 of total size of datasets created in a single day.
 	handle_help "$@" <<-EOF
 		    $ gxadmin query datasets-created-daily
 		     min | quant_1st | median  |         mean          | quant_3rd |  perc_95  |  perc_99  |    max    |    sum     |    stddev
@@ -1211,7 +1213,7 @@ query_ts-repos() { ## : Counts of toolshed repositories by toolshed and owner.
 	EOF
 }
 
-query_tool-metrics() { ##? <tool_id> <metric_id> [last|-1] [--like] [--ok] [--summary]: See values of a specific metric
+query_tool-metrics() { ##? <tool_id> <metric_id> [last=-1] [--like] [--ok] [--summary]: See values of a specific metric
 	handle_help "$@" <<-EOF
 		A good way to use this is to fetch the memory usage of a tool and then
 		do some aggregations. The following requires [data_hacks](https://github.com/bitly/data_hacks)
@@ -1979,7 +1981,7 @@ query_user-disk-quota() { ## : Retrieves the 50 users with the largest quotas
 	EOF
 }
 
-query_disk-usage-library() { ##? [--library_name NAME] [--by_folder] [--human]: Retrieve an approximation of the disk usage for a data library
+query_disk-usage-library() { ##? [--library_name=<NAME>] [--by_folder] [--human]: Retrieve an approximation of the disk usage for a data library
 	handle_help "$@" <<-EOF
 		This uses the dataset size and the library dataset association in order to
 		calculate total disk usage for a data library.  By default it prints the
@@ -2724,7 +2726,7 @@ query_workflow-invocation-totals() { ## : Report on overall workflow counts, to 
 	EOF
 }
 
-query_tool-new-errors() { ##? [weeks|4] [--short-tool-id]: Summarize percent of tool runs in error over the past weeks for "new tools"
+query_tool-new-errors() { ##? [weeks=4] [--short-tool-id]: Summarize percent of tool runs in error over the past weeks for "new tools"
 	handle_help "$@" <<-EOF
 		See jobs-in-error summary for recent tools (tools whose first execution is in recent weeks).
 
@@ -2772,7 +2774,7 @@ query_tool-new-errors() { ##? [weeks|4] [--short-tool-id]: Summarize percent of 
 	EOF
 }
 
-query_tool-errors() { ##? [--short-tool-id] [weeks|4]: Summarize percent of tool runs in error over the past weeks for all tools that have failed (most popular tools first)
+query_tool-errors() { ##? [--short-tool-id] [weeks=4]: Summarize percent of tool runs in error over the past weeks for all tools that have failed (most popular tools first)
 	handle_help "$@" <<-EOF
 		See jobs-in-error summary for recently executed tools that have failed at least 10% of the time.
 
@@ -2820,7 +2822,7 @@ query_tool-errors() { ##? [--short-tool-id] [weeks|4]: Summarize percent of tool
 	EOF
 }
 
-query_tool-likely-broken() { ##? [--short-tool-id] [weeks|4]: Find tools that have been executed in recent weeks that are (or were due to job running) likely substantially broken
+query_tool-likely-broken() { ##? [--short-tool-id] [weeks=4]: Find tools that have been executed in recent weeks that are (or were due to job running) likely substantially broken
 	handle_help "$@" <<-EOF
 		This runs an identical query to tool-errors, except filtering for tools
 		which were run more than 4 times, and have a failure rate over 95%.
@@ -2869,7 +2871,7 @@ query_tool-likely-broken() { ##? [--short-tool-id] [weeks|4]: Find tools that ha
 	EOF
 }
 
-query_user-recent-aggregate-jobs() { ##? <user> [days|7]: Show aggregate information for jobs in past N days for user (by email/id/username)
+query_user-recent-aggregate-jobs() { ##? <user> [days=7]: Show aggregate information for jobs in past N days for user (by email/id/username)
 	handle_help "$@" <<-EOF
 		Obtain an overview of tools that a user has run in the past N days
 	EOF
@@ -3117,7 +3119,7 @@ query_history-runtime-system-by-tool() { ##? <history_id>: Sum of runtimes by al
 	EOF
 }
 
-query_upload-gb-in-past-hour() { ##? [hours|1]: Sum in bytes of files uploaded in the past hour
+query_upload-gb-in-past-hour() { ##? [hours=1]: Sum in bytes of files uploaded in the past hour
 	handle_help "$@" <<-EOF
 		Quick output, mostly useful for graphing, to produce a nice graph of how heavily are people uploading currently.
 	EOF
@@ -3839,8 +3841,8 @@ query_jobs-ready-to-run() { ## : Find jobs ready to run (Mostly a performance te
 			job.dependencies AS job_dependencies,
 			job.param_filename AS job_param_filename,
 			job.runner_name AS job_runner_name_1,
-			job.stdout AS job_stdout,
-			job.stderr AS job_stderr,
+			job.job_stdout AS job_stdout,
+			job.job_stderr AS job_stderr,
 			job.exit_code AS job_exit_code,
 			job.traceback AS job_traceback,
 			job.session_id AS job_session_id,
@@ -4018,7 +4020,7 @@ query_history-core-hours()  { ##? [history-name-ilike]: Produces the median core
 						AND a.job_id = job.id
 						AND a.metric_name = 'runtime_seconds'
 						AND b.metric_name = 'galaxy_slots'
-						AND history_id in (select id from history where name ilike '%$arg_history_name%')
+						AND history_id in (select id from history where name ilike '%$arg_history_name_ilike%')
 					GROUP BY
 						tool_id, history_id
 				),
@@ -4292,7 +4294,7 @@ query_queue-details-drm() { ##? [--all] [--seconds] [--since-update]: Detailed o
 	EOF
 }
 
-query_jobs() { ##? [--tool=] [--destination=] [--limit=] [--states=] [--user=] [--terminal] [--nonterminal]: List jobs ordered by most recently updated. = is required.
+query_jobs() { ##? [--tool=] [--destination=] [--limit=50] [--states=<comma,sep,list>] [--user=] [--terminal] [--nonterminal]: List jobs ordered by most recently updated. = is required.
 	handle_help "$@" <<-EOF
 		Displays a list of jobs ordered from most recently updated, which can be filtered by states, destination_id,
 		tool_id or user. By default up to 50 rows are returned which can be adjusted with the --limit or -l flag.
@@ -4315,37 +4317,28 @@ query_jobs() { ##? [--tool=] [--destination=] [--limit=] [--states=] [--user=] [
 		     14071 | 2022-09-08 05:38:25 | 2022-09-08 06:15:22 |       3 | error | toolshed.g2.bx.psu.edu/repos/bgruening/bionano_scaffold/bionano_scaffold/3.6.1+galaxy3 | handler_1           | pulsar-nci-test             | 14071
 	EOF
 
-	tool_id_substr=''
-	limit=50
-			
-	if (( $# > 0 )); then
-		for args in "$@"; do
-			if [ "${args:0:7}" = '--tool=' ]; then
-				tool_id_substr="${args:7}"
-			elif [ "${args:0:8}" = '--limit=' ]; then
-				limit="${args:8}"
-			elif [ "${args:0:14}" = '--destination=' ]; then
-				destination_id_substr="${args:14}"
-			elif [ "${args:0:9}" = '--states=' ]; then
-				states="${args:9}"
-			elif [ "${args:0:7}" = '--user=' ]; then
-				user_filter=" AND $(get_user_filter ${args:7})"
-			elif [ "${args:0:10}" = '--terminal' ]; then
-				states="ok,deleted,error"
-			elif [ "${args:0:13}" = '--nonterminal' ]; then
-				states="new,queued,running"
-			fi
-		done
+	tool_id_substr="${arg_tool}"
+	destination_id_substr="${arg_destination}"
+	states="${arg_states}"
+
+	if [[ -n "$arg_user" ]]; then
+		user_filter=" AND $(get_user_filter "$arg_user")"
+	fi
+	if [[ -n "$arg_terminal" ]]; then
+		states="ok,deleted,error"
+	fi
+	if [[ -n "$arg_nonterminal" ]]; then
+		states="new,queued,running"
 	fi
 
 	state_filter=
-	if [ "$states" ]; then
+	if [[ "$states" ]]; then
 		states="'$(echo "$states" | sed "s/,/', '/g")'"
 		state_filter="AND job.state IN (${states})"
 	fi
 
 	destination_filter=
-	if [ ! -z "$destination_id_substr" ]; then
+	if [[ -n "$destination_id_substr" ]]; then
 		destination_filter="AND job.destination_id ~ '${destination_id_substr}'";
 	fi
 
@@ -4363,8 +4356,8 @@ query_jobs() { ##? [--tool=] [--destination=] [--limit=] [--states=] [--user=] [
 			FROM job
 			LEFT OUTER JOIN
 				galaxy_user ON job.user_id = galaxy_user.id
-			WHERE job.tool_id ~ '$tool_id_substr' ${destination_filter} ${get_state_filter} $user_filter
+			WHERE job.tool_id ~ '$tool_id_substr' ${destination_filter} ${state_filter} $user_filter
 			ORDER BY job.update_time desc
-			LIMIT $limit
+			LIMIT $arg_limit
 	EOF
 }

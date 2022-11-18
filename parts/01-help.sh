@@ -62,7 +62,7 @@ didyoumean() {
 
 	# If it is, we check the second part.
 	if (( known_command == 1 )); then
-		if [[ "$2" == "" ]]; then
+		if [[ "$2" == "" ]] || [[ "$2" == "help" ]] || [[ "$2" == "-h" ]] || [[ "$2" == "--help" ]]; then
 			usage "$1"
 			exit 1;
 		fi
@@ -183,6 +183,38 @@ handle_help() {
 			fi
 			# exit after printing the documentation!
 			exit 0;
+		elif [[ "$i" == "--help-man" ]]; then
+			if [[ -n "${query_name}" ]]; then
+				key="${query_type}_${query_name}"
+			fi
+
+			invoke_desc=$(locate_cmds | grep "${key}()" | correct_cmd | sed "s/^/gxadmin /g")
+			short_desc=$(echo "$invoke_desc" | sed 's/.*://g')
+			short_parm=$(echo "$invoke_desc" | sed 's/:.*//g')
+			manual="$(cat - | pandoc -t man)"
+			man -l - <<-EOF
+				.TH GXADMIN ${mode} ${query_name} "1" "Today" "GXADMIN" "User Commands"
+				.SH NAME
+				gxadmin ${mode} ${query_name} - ${short_desc}
+				.SH SYNOPSIS
+				${short_parm}
+				.SH DESCRIPTION
+				.br
+				$manual
+				.br
+				.SH AUTHOR
+				Gxadmin collective
+				.SH REPORTING BUGS
+				gxadmin GitHub issues board: <https://github.com/galaxyproject/gxadmin/issues>
+				.SH COPYRIGHT
+				Copyright \(co 2022 galaxyproject. License GPLv3+: GNU GPL version 3 or later. <https://gnu.org/licenses/gpl.html>.
+				.br
+				This is free software: you are free to change and redistribute it.
+				There is NO WARRANTY, to the extent permitted by law.
+				.PP
+				.br
+			EOF
+			exit 0
 		fi
 	done
 }

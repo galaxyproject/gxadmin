@@ -517,7 +517,7 @@ galaxy_ie-show() { ## [gie-galaxy-job-id]: Report on a GIE [HTCondor Only!]
 	echo "URL: https://${key}-${token}.${key_type}.interactivetool.usegalaxy.eu"
 }
 
-galaxy_prune-gxit-routes() { ##? <interactivetools_map> : Prunes dead routes
+galaxy_prune-gxit-routes() { ##? <interactivetools_map>: Prunes dead routes
 	handle_help "$@" <<-EOF
 	EOF
 
