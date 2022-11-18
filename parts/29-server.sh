@@ -8,6 +8,9 @@ _server_long_help="
 
 
 server_users() { ## : Count of different classifications of users
+	meta <<-EOF
+		ADDED: 12
+	EOF
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -36,6 +39,9 @@ server_users() { ## : Count of different classifications of users
 }
 
 server_groups() { ## : Counts of group memberships
+	meta <<-EOF
+		ADDED: 12
+	EOF
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -66,6 +72,9 @@ server_groups() { ## : Counts of group memberships
 }
 
 server_datasets() { ## : Counts of datasets
+	meta <<-EOF
+		ADDED: 12
+	EOF
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -99,6 +108,9 @@ server_datasets() { ## : Counts of datasets
 }
 
 server_hda() { ## : Counts of HDAs
+	meta <<-EOF
+		ADDED: 12
+	EOF
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -135,6 +147,9 @@ server_hda() { ## : Counts of HDAs
 }
 
 server_ts-repos() { ## : Counts of TS repos
+	meta <<-EOF
+		ADDED: 12
+	EOF
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -164,6 +179,9 @@ server_ts-repos() { ## : Counts of TS repos
 }
 
 server_histories() { ## : Counts of histories and sharing
+	meta <<-EOF
+		ADDED: 12
+	EOF
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -192,6 +210,9 @@ server_histories() { ## : Counts of histories and sharing
 
 
 server_jobs() { ## : Counts of jobs
+	meta <<-EOF
+		ADDED: 12
+	EOF
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -222,6 +243,9 @@ server_jobs() { ## : Counts of jobs
 }
 
 server_allocated-cpu() { ## : CPU time per job runner
+	meta <<-EOF
+		ADDED: 12
+	EOF
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -262,6 +286,9 @@ server_allocated-cpu() { ## : CPU time per job runner
 }
 
 server_allocated-gpu() { ## : GPU time per job runner
+	meta <<-EOF
+		ADDED: 14
+	EOF
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -298,6 +325,9 @@ server_allocated-gpu() { ## : GPU time per job runner
 }
 
 server_workflows() { ## : Counts of workflows
+	meta <<-EOF
+		ADDED: 12
+	EOF
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -326,6 +356,9 @@ server_workflows() { ## : Counts of workflows
 }
 
 server_workflow-invocations() { ## : Counts of workflow invocations
+	meta <<-EOF
+		ADDED: 12
+	EOF
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -356,6 +389,9 @@ server_workflow-invocations() { ## : Counts of workflow invocations
 }
 
 server_groups-disk-usage() { ## [YYYY-MM-DD] [=, <=, >= operators]: Retrieve an approximation of the disk usage for groups
+	meta <<-EOF
+		ADDED: 14
+	EOF
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -393,6 +429,9 @@ server_groups-disk-usage() { ## [YYYY-MM-DD] [=, <=, >= operators]: Retrieve an 
 }
 
 server_groups-allocated-cpu() { ## [YYYY-MM-DD] [=, <=, >= operators]: Retrieve an approximation of the CPU allocation for groups
+	meta <<-EOF
+		ADDED: 14
+	EOF
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -443,6 +482,9 @@ server_groups-allocated-cpu() { ## [YYYY-MM-DD] [=, <=, >= operators]: Retrieve 
 }
 
 server_groups-allocated-gpu() { ## [YYYY-MM-DD] [=, <=, >= operators]: Retrieve an approximation of the GPU allocation for groups
+	meta <<-EOF
+		ADDED: 14
+	EOF
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -492,6 +534,9 @@ server_groups-allocated-gpu() { ## [YYYY-MM-DD] [=, <=, >= operators]: Retrieve 
 }
 
 server_workflow-trace-archive-metrics() { ## : [Workflow Trace Archive] Export numeric metrics
+	meta <<-EOF
+		ADDED: 17
+	EOF
 	handle_help "$@" <<-EOF
 		Helper for WTA
 	EOF
@@ -502,6 +547,9 @@ server_workflow-trace-archive-metrics() { ## : [Workflow Trace Archive] Export n
 }
 
 server_workflow-trace-archive-jobs() { ## : [Workflow Trace Archive] Export jobs
+	meta <<-EOF
+		ADDED: 17
+	EOF
 	handle_help "$@" <<-EOF
 		Helper for WTA
 	EOF
@@ -530,6 +578,9 @@ server_workflow-trace-archive-jobs() { ## : [Workflow Trace Archive] Export jobs
 }
 
 server_workflow-trace-archive-workflows() { ## : [Workflow Trace Archive] Export workflows
+	meta <<-EOF
+		ADDED: 17
+	EOF
 	handle_help "$@" <<-EOF
 		Helper for WTA
 	EOF
@@ -549,6 +600,9 @@ server_workflow-trace-archive-workflows() { ## : [Workflow Trace Archive] Export
 }
 
 server_workflow-trace-archive-workflow-invocations() { ## : [Workflow Trace Archive] Export workflow invocations
+	meta <<-EOF
+		ADDED: 17
+	EOF
 	handle_help "$@" <<-EOF
 		Helper for WTA
 	EOF
@@ -567,6 +621,9 @@ server_workflow-trace-archive-workflow-invocations() { ## : [Workflow Trace Arch
 }
 
 server_workflow-trace-archive-workflow-steps() { ## : [Workflow Trace Archive] Export workflow steps
+	meta <<-EOF
+		ADDED: 17
+	EOF
 	handle_help "$@" <<-EOF
 		Helper for WTA
 	EOF
@@ -587,6 +644,9 @@ server_workflow-trace-archive-workflow-steps() { ## : [Workflow Trace Archive] E
 }
 
 server_workflow-trace-archive-workflow-invocation-steps() { ## : [Workflow Trace Archive] Export workflow invocation steps
+	meta <<-EOF
+		ADDED: 17
+	EOF
 	handle_help "$@" <<-EOF
 		Helper for WTA
 	EOF
@@ -600,6 +660,9 @@ server_workflow-trace-archive-workflow-invocation-steps() { ## : [Workflow Trace
 }
 
 server_workflow-trace-archive-workflow-connections() { ## : [Workflow Trace Archive] Export workflow connections
+	meta <<-EOF
+		ADDED: 17
+	EOF
 	handle_help "$@" <<-EOF
 		Helper for WTA
 	EOF
@@ -611,6 +674,9 @@ server_workflow-trace-archive-workflow-connections() { ## : [Workflow Trace Arch
 	EOF
 }
 server_workflow-trace-archive-workflow-step-input() { ## : [Workflow Trace Archive] Export workflow step-input
+	meta <<-EOF
+		ADDED: 17
+	EOF
 	handle_help "$@" <<-EOF
 		Helper for WTA
 	EOF

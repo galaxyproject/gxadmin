@@ -8,6 +8,9 @@ align_cols() {
 }
 
 report_group-info(){ ## <group_id|groupname>: Quick overview of a Galaxy group in your system
+	meta <<-EOF
+		ADDED: 19
+	EOF
 	handle_help "$@" <<-EOF
 		This command lets you quickly find out information about a Galaxy group. The output is formatted as markdown by default.
 		Consider [mdless](https://github.com/ttscoff/mdless) for easier reading in the terminal!
@@ -137,6 +140,9 @@ EOF
 }
 
 report_user-info(){ ## <user_id|username|email>: Quick overview of a Galaxy user in your system
+	meta <<-EOF
+		ADDED: 12
+	EOF
 	handle_help "$@" <<-EOF
 		This command lets you quickly find out information about a user. The output is formatted as markdown by default.
 
@@ -320,6 +326,9 @@ EOF
 }
 
 report_job-info(){ ## <id>: Information about a specific job
+	meta <<-EOF
+		ADDED: 12
+	EOF
 	handle_help "$@" <<-EOF
 		    $ gxadmin report job-info 1
 		     tool_id | state | username |        create_time         | job_runner_name | job_runner_external_id
@@ -499,6 +508,9 @@ EOF
 
 
 report_assigned-to-handler(){ ## <handler>: Report what items are assigned to a handler currently.
+	meta <<-EOF
+		ADDED: 12
+	EOF
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -531,6 +543,9 @@ report_assigned-to-handler(){ ## <handler>: Report what items are assigned to a 
 }
 
 report_data-info(){ ##? <data_id> [object_store_config_file]: Information about a specific dataset, it can be a UUID or numeric dataset ID or nuemric HDA ID
+	meta <<-EOF
+		ADDED: 19
+	EOF
 	handle_help "$@" <<-EOF
 			Report some useful information about a a Galaxy dataset. Mainly useful for debugging.
 			Takes uuid or dataset id and optionally an object store config file 

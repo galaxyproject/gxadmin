@@ -44,6 +44,9 @@ galaxy_cleanup() { ## [days]: Cleanup histories/hdas/etc for past N days (defaul
 }
 
 galaxy_encode() { ## <encoded-id>: Encode an ID
+	meta <<-EOF
+		ADDED: 17
+	EOF
 	handle_help "$@" <<-EOF
 		Encode an unecoded ID
 
@@ -61,6 +64,9 @@ galaxy_encode() { ## <encoded-id>: Encode an ID
 }
 
 galaxy_decode() { ## <encoded-id>: Decode an encoded ID
+	meta <<-EOF
+		ADDED: 17
+	EOF
 	handle_help "$@" <<-EOF
 		Encode an unecoded ID
 
@@ -78,6 +84,9 @@ galaxy_decode() { ## <encoded-id>: Decode an encoded ID
 }
 
 galaxy_migrate-tool-install-to-sqlite() { ## : Converts normal potsgres toolshed repository tables into the SQLite version
+	meta <<-EOF
+		ADDED: 12
+	EOF
 	handle_help "$@" <<-EOF
 		    $ gxadmin migrate-tool-install-to-sqlite
 		    Creating new sqlite database: galaxy_install.sqlite
@@ -402,6 +411,9 @@ galaxy_cleanup-jwd() { ## <working_dir> [1|months ago]: (NEW) Cleanup job workin
 }
 
 galaxy_fix-conda-env() { ## <conda_dir/envs/>: Fix broken conda environments
+	meta <<-EOF
+		ADDED: 15
+	EOF
 	handle_help "$@" <<-EOF
 		Fixes any broken conda environments which are missing the activate scripts in their correct locations.
 
@@ -419,6 +431,9 @@ galaxy_fix-conda-env() { ## <conda_dir/envs/>: Fix broken conda environments
 }
 
 galaxy_fav_tools() { ## : Favourite tools in Galaxy DB
+	meta <<-EOF
+		ADDED: 15
+	EOF
 	handle_help "$@" <<-EOF
 		What are people's fav tools
 	EOF
@@ -427,6 +442,9 @@ galaxy_fav_tools() { ## : Favourite tools in Galaxy DB
 }
 
 galaxy_ie-list() { ## : List GIEs
+	meta <<-EOF
+		ADDED: 15
+	EOF
 	handle_help "$@" <<-EOF
 		List running IEs (based on output of queue-detail)
 
@@ -439,6 +457,9 @@ galaxy_ie-list() { ## : List GIEs
 }
 
 galaxy_ie-show() { ## [gie-galaxy-job-id]: Report on a GIE [HTCondor Only!]
+	meta <<-EOF
+		ADDED: 15
+	EOF
 	handle_help "$@" <<-EOF
 		The new versions of IEs are IMPOSSIBLE to track down, so here's a handy
 		function for you to make you hate life a lil bit less.
@@ -518,6 +539,9 @@ galaxy_ie-show() { ## [gie-galaxy-job-id]: Report on a GIE [HTCondor Only!]
 }
 
 galaxy_prune-gxit-routes() { ##? <interactivetools_map>: Prunes dead routes
+	meta <<-EOF
+		ADDED: 19
+	EOF
 	handle_help "$@" <<-EOF
 	EOF
 

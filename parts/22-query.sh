@@ -83,6 +83,9 @@ query_tool-usage() { ##? [weeks]: Counts of tool runs in the past weeks (default
 }
 
 query_tool-usage-over-time() { ##? [searchterm]: Counts of tool runs by month, filtered by a tool id search
+	meta <<-EOF
+		ADDED: 19
+	EOF
 	handle_help "$@" <<-EOF
 		    $ gxadmin tool-usage-over-time
 		                                    tool_id                                 | count
@@ -222,6 +225,9 @@ query_workflow-connections() { ##? [--all]: The connections of tools, from outpu
 }
 
 query_history-connections() { ## : The connections of tools, from output to input, in histories (tool_predictions)
+	meta <<-EOF
+		ADDED: 15
+	EOF
 	handle_help "$@" <<-EOF
 		This is used by the usegalaxy.eu tool prediction workflow, allowing for building models out of tool connections.
 	EOF
@@ -710,6 +716,9 @@ query_recent-jobs() { ##? <hours>: Jobs run in the past <hours> (in any state)
 }
 
 query_job-state-stats() { ## : Shows all jobs states for the last 30 days in a table counted by state
+	meta <<-EOF
+		ADDED: 19
+	EOF
 	handle_help "$@" <<-EOFhelp
 		Shows all job states for the last 30 days in a table counted by state
 
@@ -752,6 +761,9 @@ EOF
 }
 
 query_monthly-job-runtimes() { ## [--year y] [--month m] : Summation of total job run times per user per destination over a period of time
+	meta <<-EOF
+		ADDED: 19
+	EOF
 	handle_help "$@" <<-EOF
 		This query computes the total run time for all jobs per user per destination over
 		an optionally specified time period.  If no time period is specified, all years
@@ -847,6 +859,9 @@ query_monthly-job-runtimes() { ## [--year y] [--month m] : Summation of total jo
 }
 
 query_training-list() { ##? [--all]: List known trainings
+	meta <<-EOF
+		ADDED: 12
+	EOF
 	handle_help "$@" <<-EOF
 		This module is specific to EU's implementation of Training Infrastructure as a Service. But this specifically just checks for all groups with the name prefix 'training-'
 
@@ -878,6 +893,9 @@ query_training-list() { ##? [--all]: List known trainings
 }
 
 query_training-members() { ##? <tr_id>: List users in a specific training
+	meta <<-EOF
+		ADDED: 12
+	EOF
 	handle_help "$@" <<-EOF
 		    $ gxadmin query training-members hts2018
 		          username      |       joined
@@ -901,6 +919,9 @@ query_training-members() { ##? <tr_id>: List users in a specific training
 }
 
 query_training-members-remove() { ##? <training> <username> [--yesdoit]: Remove a user from a training
+	meta <<-EOF
+		ADDED: 12
+	EOF
 	handle_help "$@" <<-EOF
 	EOF
 	# TODO: Move to mutate
@@ -933,6 +954,9 @@ query_training-members-remove() { ##? <training> <username> [--yesdoit]: Remove 
 }
 
 query_largest-histories() { ##? [--human]: Largest histories in Galaxy
+	meta <<-EOF
+		ADDED: 12
+	EOF
 	handle_help "$@" <<-EOF
 		Finds all histories and print by decreasing size
 
@@ -988,6 +1012,9 @@ query_largest-histories() { ##? [--human]: Largest histories in Galaxy
 }
 
 query_training-queue() { ##? <training_id>: Jobs currently being run by people in a given training
+	meta <<-EOF
+		ADDED: 12
+	EOF
 	handle_help "$@" <<-EOF
 		Finds all jobs by people in that queue (including things they are executing that are not part of a training)
 
@@ -1116,6 +1143,9 @@ query_tool-last-used-date() { ## : When was the most recent invocation of every 
 }
 
 query_tool-use-by-group() { ##? <year_month> <group>: Lists count of tools used by all users in a group
+	meta <<-EOF
+		ADDED: 19
+	EOF
 	handle_help "$@" <<-EOFhelp
 		Lists tools use count by users in group.
 		Requires <year-month> (2022-03) and <group> 
@@ -1312,6 +1342,9 @@ query_tool-available-metrics() { ##? <tool_id>: list all available metrics for a
 }
 
 query_tool-memory-per-inputs() { ##? <tool_id> [--like]: See memory usage and inout size data
+	meta <<-EOF
+		ADDED: 19
+	EOF
 	handle_help "$@" <<-EOF
 		Display details about tool input counts and sizes along with memory usage and the relation between them,
 		to aid in determining appropriate memory allocations for tools.
@@ -1416,6 +1449,9 @@ query_tool-memory-per-inputs() { ##? <tool_id> [--like]: See memory usage and in
 }
 
 query_monthly-cpu-stats() { ##? [year] : CPU years/hours allocated to tools by month
+	meta <<-EOF
+		ADDED: 17
+	EOF
 	handle_help "$@" <<-EOF
 		This uses the galaxy_slots and runtime_seconds metrics in order to
 		calculate allocated CPU years/hours. This will not be the value of what is
@@ -1458,6 +1494,9 @@ query_monthly-cpu-stats() { ##? [year] : CPU years/hours allocated to tools by m
 }
 
 query_monthly-cpu-years() { ## : CPU years allocated to tools by month
+	meta <<-EOF
+		ADDED: 12
+	EOF
 	handle_help "$@" <<-EOF
 		This uses the galaxy_slots and runtime_seconds metrics in order to
 		calculate allocated CPU years. This will not be the value of what is
@@ -1549,6 +1588,9 @@ query_monthly-data(){ ##? [year] [--human]: Number of active users per month, ru
 }
 
 query_monthly-gpu-years() { ## : GPU years allocated to tools by month
+	meta <<-EOF
+		ADDED: 14
+	EOF
 	handle_help "$@" <<-EOF
 		This uses the CUDA_VISIBLE_DEVICES and runtime_seconds metrics in order to
 		calculate allocated GPU years. This will not be the value of what is
@@ -1597,6 +1639,9 @@ query_monthly-gpu-years() { ## : GPU years allocated to tools by month
 }
 
 query_monthly-workflow-invocations() { ## : Workflow invocations by month
+	meta <<-EOF
+		ADDED: 19
+	EOF
 	handle_help "$@" <<-EOF
 		Find out how many workflows has been invocated by Galaxy during the past months.
 
@@ -1621,6 +1666,9 @@ query_monthly-workflow-invocations() { ## : Workflow invocations by month
 }
 
 query_user-cpu-years() { ## : CPU years allocated to tools by user
+	meta <<-EOF
+		ADDED: 12
+	EOF
 	handle_help "$@" <<-EOF
 		This uses the galaxy_slots and runtime_seconds metrics in order to
 		calculate allocated CPU years. This will not be the value of what is
@@ -1713,6 +1761,9 @@ query_user-gpu-years() { ## : GPU years allocated to tools by user
 }
 
 query_user-disk-usage() { ##? [--human] [--use-precalc]: Retrieve an approximation of the disk usage for users
+	meta <<-EOF
+		ADDED: 13
+	EOF
 	handle_help "$@" <<-EOF
 		This uses the dataset size and the history association in order to
 		calculate total disk usage for a user. This is currently limited
@@ -1792,6 +1843,9 @@ query_user-disk-usage() { ##? [--human] [--use-precalc]: Retrieve an approximati
 }
 
 query_user-disk-quota() { ## : Retrieves the 50 users with the largest quotas
+	meta <<-EOF
+		ADDED: 14
+	EOF
 	handle_help "$@" <<-EOF
 		This calculates the total assigned disk quota to users.
 		It only displays the top 50 quotas.
@@ -1987,6 +2041,9 @@ query_user-disk-quota() { ## : Retrieves the 50 users with the largest quotas
 }
 
 query_disk-usage-library() { ##? [--library_name=<NAME>] [--by_folder] [--human]: Retrieve an approximation of the disk usage for a data library
+	meta <<-EOF
+		ADDED: 19
+	EOF
 	handle_help "$@" <<-EOF
 		This uses the dataset size and the library dataset association in order to
 		calculate total disk usage for a data library.  By default it prints the
@@ -2097,6 +2154,9 @@ query_disk-usage-library() { ##? [--library_name=<NAME>] [--by_folder] [--human]
 }
 
 query_group-cpu-seconds() { ##? [group]: Retrieve an approximation of the CPU time in seconds for group(s)
+	meta <<-EOF
+		ADDED: 13
+	EOF
 	handle_help "$@" <<-EOF
 		This uses the galaxy_slots and runtime_seconds metrics in order to
 		calculate allocated CPU time in seconds. This will not be the value of
@@ -2159,6 +2219,9 @@ query_group-cpu-seconds() { ##? [group]: Retrieve an approximation of the CPU ti
 }
 
 query_group-gpu-time() { ##? [group]: Retrieve an approximation of the GPU time for users
+	meta <<-EOF
+		ADDED: 14
+	EOF
 	handle_help "$@" <<-EOF
 		This uses the galaxy_slots and runtime_seconds metrics in order to
 		calculate allocated GPU time. This will not be the value of what is
@@ -2280,6 +2343,9 @@ query_monthly-users-registered(){ ## [year] [--by_group]: Number of users regist
 }
 
 query_monthly-users-active(){ ## [year] [--by_group]: Number of active users per month, running jobs
+	meta <<-EOF
+		ADDED: 12
+	EOF
 	handle_help "$@" <<-EOF
 		Number of unique users each month who ran jobs. **NOTE**: does not include anonymous users.
 		Parameters:
@@ -2397,6 +2463,9 @@ query_monthly-jobs(){ ## [year] [--by_group]: Number of jobs run each month
 }
 
 query_total-jobs(){ ## : Total number of jobs run by galaxy instance
+	meta <<-EOF
+		ADDED: 17
+	EOF
 	handle_help "$@" <<-EOF
 		Count total number of jobs
 
@@ -2427,6 +2496,9 @@ query_total-jobs(){ ## : Total number of jobs run by galaxy instance
 }
 
 query_job-state() { ##? <job_id>: Get current job state given a job ID
+	meta <<-EOF
+		ADDED: 19
+	EOF
 	handle_help "$@" <<-EOF
 		    $ gxadmin query job-state 1
 		     state
@@ -2628,6 +2700,9 @@ query_old-histories(){ ##? <weeks>: Lists histories that haven't been updated (u
 
 # TODO(hxr): generic summation by metric? Leave math to consumer?
 query_jobs-max-by-cpu-hours() { ## : Top 10 jobs by CPU hours consumed (requires CGroups metrics)
+	meta <<-EOF
+		ADDED: 12
+	EOF
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -2693,6 +2768,9 @@ query_errored-jobs(){ ##? <hours> [--details]: Lists jobs that errored in the la
 
 
 query_workflow-invocation-status() { ## : Report on how many workflows are in new state by handler
+	meta <<-EOF
+		ADDED: 12
+	EOF
 	handle_help "$@" <<-EOF
 		Really only intended to be used in influx queries.
 	EOF
@@ -2715,6 +2793,9 @@ query_workflow-invocation-status() { ## : Report on how many workflows are in ne
 
 
 query_workflow-invocation-totals() { ## : Report on overall workflow counts, to ensure throughput
+	meta <<-EOF
+		ADDED: 17
+	EOF
 	handle_help "$@" <<-EOF
 		Really only intended to be used in influx queries.
 	EOF
@@ -2732,6 +2813,9 @@ query_workflow-invocation-totals() { ## : Report on overall workflow counts, to 
 }
 
 query_tool-new-errors() { ##? [weeks=4] [--short-tool-id]: Summarize percent of tool runs in error over the past weeks for "new tools"
+	meta <<-EOF
+		ADDED: 12
+	EOF
 	handle_help "$@" <<-EOF
 		See jobs-in-error summary for recent tools (tools whose first execution is in recent weeks).
 
@@ -2780,6 +2864,9 @@ query_tool-new-errors() { ##? [weeks=4] [--short-tool-id]: Summarize percent of 
 }
 
 query_tool-errors() { ##? [--short-tool-id] [weeks=4]: Summarize percent of tool runs in error over the past weeks for all tools that have failed (most popular tools first)
+	meta <<-EOF
+		ADDED: 12
+	EOF
 	handle_help "$@" <<-EOF
 		See jobs-in-error summary for recently executed tools that have failed at least 10% of the time.
 
@@ -2877,6 +2964,9 @@ query_tool-likely-broken() { ##? [--short-tool-id] [weeks=4]: Find tools that ha
 }
 
 query_user-recent-aggregate-jobs() { ##? <user> [days=7]: Show aggregate information for jobs in past N days for user (by email/id/username)
+	meta <<-EOF
+		ADDED: 12
+	EOF
 	handle_help "$@" <<-EOF
 		Obtain an overview of tools that a user has run in the past N days
 	EOF
@@ -2901,6 +2991,9 @@ query_user-recent-aggregate-jobs() { ##? <user> [days=7]: Show aggregate informa
 }
 
 query_user-history-list() { ##? <user> [--size]: List a user's (by email/id/username) histories.
+	meta <<-EOF
+		ADDED: 14
+	EOF
 	handle_help "$@" <<-EOF
 		Obtain an overview of histories of a user. By default orders the histories by date.
 		When using '--size' it overrides the order to size.
@@ -2953,6 +3046,9 @@ query_user-history-list() { ##? <user> [--size]: List a user's (by email/id/user
 }
 
 query_history-contents() { ## <history_id> [--dataset|--collection]: List datasets and/or collections in a history
+	meta <<-EOF
+		ADDED: 12
+	EOF
 	handle_help "$@" <<-EOF
 		Obtain an overview of tools that a user has run in the past N days
 	EOF
@@ -2975,6 +3071,9 @@ query_history-contents() { ## <history_id> [--dataset|--collection]: List datase
 }
 
 query_hdca-info() { ##? <hdca_id>: Information on a dataset collection
+	meta <<-EOF
+		ADDED: 12
+	EOF
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -2986,6 +3085,9 @@ query_hdca-info() { ##? <hdca_id>: Information on a dataset collection
 }
 
 query_hdca-datasets() { ##? <hdca_id>: List of files in a dataset collection
+	meta <<-EOF
+		ADDED: 12
+	EOF
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -2998,6 +3100,9 @@ query_hdca-datasets() { ##? <hdca_id>: List of files in a dataset collection
 }
 
 query_jobs-queued-internal-by-handler() { ## : How many queued jobs do not have external IDs, by handler
+	meta <<-EOF
+		ADDED: 13
+	EOF
 	handle_help "$@" <<-EOF
 		Identify which handlers have a backlog of jobs which should be
 		receiving external cluster IDs but have not yet.
@@ -3037,6 +3142,9 @@ query_jobs-queued-internal-by-handler() { ## : How many queued jobs do not have 
 
 
 query_jobs-queued() { ## : How many queued jobs have external cluster IDs
+	meta <<-EOF
+		ADDED: 13
+	EOF
 	handle_help "$@" <<-EOF
 		Shows the distribution of jobs in queued state, whether or not they have received an external ID.
 
@@ -3063,6 +3171,9 @@ query_jobs-queued() { ## : How many queued jobs have external cluster IDs
 }
 
 query_users-with-oidc() { ## : How many users logged in with OIDC
+	meta <<-EOF
+		ADDED: 13
+	EOF
 	handle_help "$@" <<-EOF
 		provider | count
 		-------- | ------
@@ -3078,6 +3189,9 @@ query_users-with-oidc() { ## : How many users logged in with OIDC
 }
 
 query_history-runtime-system() { ##? <history_id>: Sum of runtimes by all jobs in a history
+	meta <<-EOF
+		ADDED: 13
+	EOF
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -3092,6 +3206,9 @@ query_history-runtime-system() { ##? <history_id>: Sum of runtimes by all jobs i
 }
 
 query_history-runtime-wallclock() { ##? <history_id>: Time as elapsed by a clock on the wall
+	meta <<-EOF
+		ADDED: 13
+	EOF
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -3106,6 +3223,9 @@ query_history-runtime-wallclock() { ##? <history_id>: Time as elapsed by a clock
 }
 
 query_history-runtime-system-by-tool() { ##? <history_id>: Sum of runtimes by all jobs in a history, split by tool
+	meta <<-EOF
+		ADDED: 13
+	EOF
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -3125,6 +3245,9 @@ query_history-runtime-system-by-tool() { ##? <history_id>: Sum of runtimes by al
 }
 
 query_upload-gb-in-past-hour() { ##? [hours=1]: Sum in bytes of files uploaded in the past hour
+	meta <<-EOF
+		ADDED: 13
+	EOF
 	handle_help "$@" <<-EOF
 		Quick output, mostly useful for graphing, to produce a nice graph of how heavily are people uploading currently.
 	EOF
@@ -3149,6 +3272,9 @@ query_upload-gb-in-past-hour() { ##? [hours=1]: Sum in bytes of files uploaded i
 }
 
 query_queue-detail-by-handler() { ##? <handler_id>: List jobs for a specific handler
+	meta <<-EOF
+		ADDED: 14
+	EOF
 	handle_help "$@" <<-EOF
 		List the jobs currently being processed by a specific handler
 	EOF
@@ -3170,6 +3296,9 @@ query_queue-detail-by-handler() { ##? <handler_id>: List jobs for a specific han
 }
 
 query_pg-column-size() { ##? <table>: Estimate the size of columns in a table
+	meta <<-EOF
+		ADDED: 19
+	EOF
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -3208,6 +3337,9 @@ query_pg-column-size() { ##? <table>: Estimate the size of columns in a table
 
 
 query_pg-cache-hit() { ## : Check postgres in-memory cache hit ratio
+	meta <<-EOF
+		ADDED: 14
+	EOF
 	handle_help "$@" <<-EOF
 		Query from: https://www.citusdata.com/blog/2019/03/29/health-checks-for-your-postgres-database/
 
@@ -3235,6 +3367,9 @@ query_pg-cache-hit() { ## : Check postgres in-memory cache hit ratio
 }
 
 query_pg-table-bloat() { ##? [--human]: show table and index bloat in your database ordered by most wasteful
+	meta <<-EOF
+		ADDED: 14
+	EOF
 	handle_help "$@" <<-EOF
 		Query from: https://www.citusdata.com/blog/2019/03/29/health-checks-for-your-postgres-database/
 		Originally from: https://github.com/heroku/heroku-pg-extras/tree/master/commands
@@ -3314,6 +3449,9 @@ query_pg-table-bloat() { ##? [--human]: show table and index bloat in your datab
 }
 
 query_pg-mandelbrot() { ## : show the mandlebrot set
+	meta <<-EOF
+		ADDED: 14
+	EOF
 	handle_help "$@" <<-EOF
 		Copied from: https://github.com/heroku/heroku-pg-extras/tree/master/commands
 	EOF
@@ -3342,6 +3480,9 @@ query_pg-mandelbrot() { ## : show the mandlebrot set
 }
 
 query_pg-index-usage() { ## : calculates your index hit rate (effective databases are at 99% and up)
+	meta <<-EOF
+		ADDED: 14
+	EOF
 	handle_help "$@" <<-EOF
 		Originally from: https://github.com/heroku/heroku-pg-extras/tree/master/commands
 
@@ -3366,6 +3507,9 @@ query_pg-index-usage() { ## : calculates your index hit rate (effective database
 }
 
 query_pg-index-size() { ##? [--human]: show table and index bloat in your database ordered by most wasteful
+	meta <<-EOF
+		ADDED: 14
+	EOF
 	handle_help "$@" <<-EOF
 		Originally from: https://github.com/heroku/heroku-pg-extras/tree/master/commands
 	EOF
@@ -3394,6 +3538,9 @@ query_pg-index-size() { ##? [--human]: show table and index bloat in your databa
 }
 
 query_pg-long-running-queries() { ## : show all queries longer than five minutes by descending duration
+	meta <<-EOF
+		ADDED: 14
+	EOF
 	handle_help "$@" <<-EOF
 		Originally from: https://github.com/heroku/heroku-pg-extras/tree/master/commands
 	EOF
@@ -3416,6 +3563,9 @@ query_pg-long-running-queries() { ## : show all queries longer than five minutes
 }
 
 query_pg-table-size() { ##? [--human]: show the size of the tables (excluding indexes), descending by size
+	meta <<-EOF
+		ADDED: 14
+	EOF
 	handle_help "$@" <<-EOF
 		Originally from: https://github.com/heroku/heroku-pg-extras/tree/master/commands
 	EOF
@@ -3447,6 +3597,9 @@ query_pg-table-size() { ##? [--human]: show the size of the tables (excluding in
 }
 
 query_pg-unused-indexes() { ##? [--human]: show unused and almost unused indexes
+	meta <<-EOF
+		ADDED: 14
+	EOF
 	handle_help "$@" <<-EOF
 		Originally from: https://github.com/heroku/heroku-pg-extras/tree/master/commands
 
@@ -3486,6 +3639,9 @@ query_pg-unused-indexes() { ##? [--human]: show unused and almost unused indexes
 }
 
 query_pg-vacuum-stats() { ## : show dead rows and whether an automatic vacuum is expected to be triggered
+	meta <<-EOF
+		ADDED: 14
+	EOF
 	handle_help "$@" <<-EOF
 		Originally from: https://github.com/heroku/heroku-pg-extras/tree/master/commands
 	EOF
@@ -3533,6 +3689,9 @@ query_pg-vacuum-stats() { ## : show dead rows and whether an automatic vacuum is
 }
 
 query_pg-stat-bgwriter() { ## : Stats about the behaviour of the bgwriter, checkpoints, buffers, etc.
+	meta <<-EOF
+		ADDED: 14
+	EOF
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -3557,6 +3716,9 @@ query_pg-stat-bgwriter() { ## : Stats about the behaviour of the bgwriter, check
 
 
 query_pg-stat-user-tables() { ## : stats about tables (tuples, index scans, vacuums, analyzes)
+	meta <<-EOF
+		ADDED: 14
+	EOF
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -3615,6 +3777,9 @@ query_data-origin-distribution-merged() {
 }
 
 query_data-origin-distribution() { ## : data sources (uploaded vs derived)
+	meta <<-EOF
+		ADDED: 14
+	EOF
 	handle_help "$@" <<-EOF
 		Break down the source of data in the server, uploaded data vs derived (created as output from a tool)
 
@@ -3666,6 +3831,9 @@ query_data-origin-distribution() { ## : data sources (uploaded vs derived)
 }
 
 query_data-origin-distribution-summary() { ##? [--human]: breakdown of data sources (uploaded vs derived)
+	meta <<-EOF
+		ADDED: 14
+	EOF
 	handle_help "$@" <<-EOF
 		Break down the source of data in the server, uploaded data vs derived (created as output from a tool)
 
@@ -3705,6 +3873,9 @@ query_data-origin-distribution-summary() { ##? [--human]: breakdown of data sour
 }
 
 query_aq() { ## <table> <column> <-|job_id [job_id [...]]>: Given a list of IDs from a table (e.g. 'job'), access a specific column from that table
+	meta <<-EOF
+		ADDED: 15
+	EOF
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -3737,6 +3908,9 @@ query_q() { ## <query>: Passes a raw SQL query directly through to the database
 }
 
 query_good-for-pulsar() { ## : Look for jobs EU would like to send to pulsar
+	meta <<-EOF
+		ADDED: 15
+	EOF
 	handle_help "$@" <<-EOF
 		This selects all jobs and finds two things:
 		- sum of input sizes
@@ -3776,6 +3950,9 @@ query_good-for-pulsar() { ## : Look for jobs EU would like to send to pulsar
 }
 
 query_jobs-ready-to-run() { ## : Find jobs ready to run (Mostly a performance test)
+	meta <<-EOF
+		ADDED: 16
+	EOF
 	handle_help "$@" <<-EOF
 		Mostly a performance test
 	EOF
@@ -3871,6 +4048,9 @@ query_jobs-ready-to-run() { ## : Find jobs ready to run (Mostly a performance te
 }
 
 query_workers() { ## : Retrieve a list of Galaxy worker processes
+	meta <<-EOF
+		ADDED: 17
+	EOF
 	handle_help "$@" <<-EOF
 		This retrieves a list of Galaxy worker processes.
 		This functionality is only available on Galaxy
@@ -3896,6 +4076,9 @@ query_workers() { ## : Retrieve a list of Galaxy worker processes
 }
 
 query_pg-rows-per-table() { ## : Print rows per table
+	meta <<-EOF
+		ADDED: 17
+	EOF
 	handle_help "$@" <<-EOF
 		This retrieves a list of tables in the database and their size
 	EOF
@@ -3922,6 +4105,9 @@ query_pg-rows-per-table() { ## : Print rows per table
 }
 
 query_dump-users() { ##? [--apikey] [--email] : Dump the list of users and their emails
+	meta <<-EOF
+		ADDED: 19
+	EOF
 	handle_help "$@" <<-EOF
 		This retrieves a list of all users
 	EOF
@@ -3951,6 +4137,9 @@ query_dump-users() { ##? [--apikey] [--email] : Dump the list of users and their
 }
 
 query_job-metrics() { ## : Retrieves input size, runtime, memory for all executed jobs
+	meta <<-EOF
+		ADDED: 19
+	EOF
 	handle_help "$@" <<-EOF
 		Dump runtime stats for ALL jobs:
 
@@ -4009,6 +4198,9 @@ query_job-metrics() { ## : Retrieves input size, runtime, memory for all execute
 }
 
 query_history-core-hours()  { ##? [history-name-ilike]: Produces the median core hour count for histories matching a name filter
+	meta <<-EOF
+		ADDED: 19
+	EOF
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -4046,6 +4238,9 @@ query_history-core-hours()  { ##? [history-name-ilike]: Produces the median core
 }
 
 query_pulsar-gb-transferred()  { ##? [--bymonth] [--byrunner] [--human]: Counts up datasets transferred and output file size produced by jobs running on destinations like pulsar_*
+	meta <<-EOF
+		ADDED: 19
+	EOF
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -4123,6 +4318,9 @@ query_pulsar-gb-transferred()  { ##? [--bymonth] [--byrunner] [--human]: Counts 
 }
 
 query_largest-dataset-users() { ##? [--human] [--deleted] [--purged] [--format-uuid]: Get largest datasets by users
+	meta <<-EOF
+		ADDED: 19
+	EOF
 	handle_help "$@" <<-EOF
 		Optionally includes deleted and purged datasets
 
@@ -4193,6 +4391,9 @@ query_largest-dataset-users() { ##? [--human] [--deleted] [--purged] [--format-u
 }
 
 query_dataset-usage-and-imports() { ##? <dataset_uuid>: Fetch limited information about which users and histories are using a specific dataset from disk.
+	meta <<-EOF
+		ADDED: 19
+	EOF
 	handle_help "$@" <<-EOF
 		This has built in support for "cleaning up" paths like /data/galaxy/.../dataset_<uuid>.dat into just the properly formatted UUID. It will also strip - characters from the uuid if present.
 		    $ gxadmin query dataset-usage-and-imports /data/galaxy/b/8/4/dataset_b8482e38-0e6f-4871-92ee-a699458f18a5.dat
@@ -4222,6 +4423,9 @@ query_dataset-usage-and-imports() { ##? <dataset_uuid>: Fetch limited informatio
 
 
 query_queue-details-drm() { ##? [--all] [--seconds] [--since-update]: Detailed overview of running and queued jobs with cores/mem info
+	meta <<-EOF
+		ADDED: 20
+	EOF
 	handle_help "$@" <<-EOF
 		This is a copy of gxadmin query queue-detail with job destination info (cores/mem/partition) added and runner_id, count removed
 

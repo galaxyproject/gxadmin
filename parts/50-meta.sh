@@ -91,6 +91,9 @@ meta_cmdlist2() {
 }
 
 meta_slurp-current() { ## [--date] [slurp-name [2nd-slurp-name [...]]]: Executes what used to be "Galaxy Slurp"
+	meta <<-EOF
+		ADDED: 12
+	EOF
 	handle_help "$@" <<-EOF
 		Obtain influx compatible metrics regarding the current state of the
 		server. UseGalaxy.EU uses this to display things like "Current user
@@ -162,6 +165,9 @@ meta_slurp-current() { ## [--date] [slurp-name [2nd-slurp-name [...]]]: Executes
 }
 
 meta_slurp-upto() { ## <yyyy-mm-dd> [slurp-name [2nd-slurp-name [...]]]: Slurps data up to a specific date.
+	meta <<-EOF
+		ADDED: 12
+	EOF
 	handle_help "$@" <<-EOF
 		Obtain influx compatible metrics regarding the summed state of the
 		server up to a specific date. UseGalaxy.EU uses this to display things
@@ -190,6 +196,9 @@ meta_slurp-upto() { ## <yyyy-mm-dd> [slurp-name [2nd-slurp-name [...]]]: Slurps 
 }
 
 meta_slurp-day() { ## <yyyy-mm-dd> [slurp-name [2nd-slurp-name [...]]]: Slurps data on a specific date.
+	meta <<-EOF
+		ADDED: 12
+	EOF
 	handle_help "$@" <<-EOF
 		Obtain influx compatible metrics regarding the state of the
 		server on a specific date. UseGalaxy.EU uses this to display things
@@ -252,6 +261,9 @@ meta_slurp-day() { ## <yyyy-mm-dd> [slurp-name [2nd-slurp-name [...]]]: Slurps d
 }
 
 meta_slurp-initial() { ## <yyyy-mm-dd> <yyyy-mm-dd> [slurp-name [2nd-slurp-name [...]]]: Slurps data starting at the first date until the second date.
+	meta <<-EOF
+		ADDED: 14
+	EOF
 	handle_help "$@" <<-EOF
 		Obtains influx compatible metrics between dates and posts this to Influx.
 		This function calls 'gxadmin meta slurp-upto' and 'gxadmin meta slurp-day'.
@@ -316,6 +328,9 @@ meta_success() {
 
 
 meta_influx-post() { ## <db> <file>: Post contents of file (in influx line protocol) to influx
+	meta <<-EOF
+		ADDED: 12
+	EOF
 	handle_help "$@" <<-EOF
 		Post data to InfluxDB. Must be [influx line protocol formatted](https://docs.influxdata.com/influxdb/v1.7/write_protocols/line_protocol_tutorial/)
 
@@ -359,6 +374,9 @@ meta_influx-post() { ## <db> <file>: Post contents of file (in influx line proto
 }
 
 meta_influx-query() { ## <db> "<query>": Query an influx DB
+	meta <<-EOF
+		ADDED: 12
+	EOF
 	handle_help "$@" <<-EOF
 		Query an InfluxDB
 
@@ -387,6 +405,9 @@ meta_influx-query() { ## <db> "<query>": Query an influx DB
 }
 
 meta_iquery-grt-export() { ## : Export data from a GRT database for sending to influx
+	meta <<-EOF
+		ADDED: 12
+	EOF
 	handle_help "$@" <<-EOF
 		**WARNING**:
 
@@ -417,6 +438,9 @@ meta_iquery-grt-export() { ## : Export data from a GRT database for sending to i
 }
 
 meta_whatsnew() { ## : What's new in this version of gxadmin
+	meta <<-EOF
+		ADDED: 12
+	EOF
 	handle_help "$@" <<-EOF
 		Informs users of what's new in the changelog since their version
 	EOF
@@ -428,6 +452,9 @@ meta_whatsnew() { ## : What's new in this version of gxadmin
 }
 
 meta_export-grafana-dashboards() { ## [grafana_db|/var/lib/grafana/grafana.db]: Export all dashboards from a Grafana database to CWD and commit them to git.
+	meta <<-EOF
+		ADDED: 13
+	EOF
 	handle_help "$@" <<-EOF
 		Given a grafana database, use sqlite3 to access all of the dashboards within, and then write them out to the current working directly. Next, commit them and update a README.
 
@@ -478,6 +505,9 @@ meta_export-grafana-dashboards() { ## [grafana_db|/var/lib/grafana/grafana.db]: 
 }
 
 meta_wta-report() { ## Export all workflow trace archive queries
+	meta <<-EOF
+		ADDED: 17
+	EOF
 	handle_help "$@" <<-EOF
 		Run through several WTA commands and export those to CSV
 	EOF

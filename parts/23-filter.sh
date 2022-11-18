@@ -28,6 +28,10 @@ filter_pg2md() { ## : Convert postgres table format outputs to something that ca
 }
 
 filter_identicon(){ ## : Convert an input data stream into an identicon (e.g. with hostname)
+	meta <<-EOF
+		AUTHORS: hexylena
+		ADDED: 12
+	EOF
 	handle_help "$@" <<-EOF
 		Given an input data stream, digest it, and colour it using the same logic as digest-color
 
@@ -45,6 +49,11 @@ filter_identicon(){ ## : Convert an input data stream into an identicon (e.g. wi
 }
 
 filter_digest-color() { ## : Color an input stream based on the contents (e.g. hostname)
+	meta <<-EOF
+		AUTHORS: hexylena
+		ADDED: 12
+		UPDATED:
+	EOF
 	handle_help "$@" <<-EOF
 		Colors entire input stream based on digest of entire input's contents.
 		Mostly useful for colouring a hostname or some similar value.

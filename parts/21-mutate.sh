@@ -137,6 +137,9 @@ mutate_fail-job() { ## <job_id> [--commit]: Sets a job state to error
 }
 
 mutate_fail-history() { ## <history_id> [--commit]: Mark all jobs within a history to state error
+	meta <<-EOF
+		ADDED: 12
+	EOF
 	handle_help "$@" <<-EOF
 		Set all jobs within a history to error
 	EOF
@@ -176,6 +179,9 @@ mutate_fail-history() { ## <history_id> [--commit]: Mark all jobs within a histo
 }
 
 mutate_delete-group-role() { ## <group_name> [--commit]: Remove the group, role, and any user-group + user-role associations
+	meta <<-EOF
+		ADDED: 12
+	EOF
 	handle_help "$@" <<-EOF
 		Wipe out a group+role, and user associations.
 	EOF
@@ -206,6 +212,9 @@ mutate_delete-group-role() { ## <group_name> [--commit]: Remove the group, role,
 }
 
 mutate_assign-unassigned-workflows() { ## <handler_prefix> <handler_count> [--commit]: Randomly assigns unassigned workflows to handlers. Workaround for galaxyproject/galaxy#8209
+	meta <<-EOF
+		ADDED: 13
+	EOF
 	handle_help "$@" <<-EOF
 		Workaround for https://github.com/galaxyproject/galaxy/issues/8209
 
@@ -233,6 +242,9 @@ mutate_assign-unassigned-workflows() { ## <handler_prefix> <handler_count> [--co
 }
 
 mutate_reassign-workflows-to-handler() { ## <handler_from> <handler_to> [--commit]: Reassign workflows in 'new' state to a different handler.
+	meta <<-EOF
+		ADDED: 14
+	EOF
 	handle_help "$@" <<-EOF
 		Another workaround for https://github.com/galaxyproject/galaxy/issues/8209
 
@@ -255,6 +267,9 @@ mutate_reassign-workflows-to-handler() { ## <handler_from> <handler_to> [--commi
 }
 
 mutate_reassign-active-workflows-to-handler() { ## <handler_from> <handler_to> [--commit]: Reassign workflows with state 'scheduled' or 'new' to a different handler.
+	meta <<-EOF
+		ADDED: 20
+	EOF
 	handle_help "$@" <<-EOF
 		Another workaround for https://github.com/galaxyproject/galaxy/issues/8209
 
@@ -277,6 +292,9 @@ mutate_reassign-active-workflows-to-handler() { ## <handler_from> <handler_to> [
 }
 
 mutate_approve-user() { ## <username|email|user_id>: Approve a user in the database
+	meta <<-EOF
+		ADDED: 13
+	EOF
 	handle_help "$@" <<-EOF
 		There is no --commit flag on this because it is relatively safe
 	EOF
@@ -293,6 +311,9 @@ mutate_approve-user() { ## <username|email|user_id>: Approve a user in the datab
 }
 
 mutate_oidc-role-find-affected() { ## : Find users affected by galaxyproject/galaxy#8244
+	meta <<-EOF
+		ADDED: 13
+	EOF
 	handle_help "$@" <<-EOF
 		Workaround for https://github.com/galaxyproject/galaxy/issues/8244
 
@@ -314,6 +335,9 @@ mutate_oidc-role-find-affected() { ## : Find users affected by galaxyproject/gal
 }
 
 mutate_oidc-role-fix() { ## <username|email|user_id>: Fix permissions for users logged in via OIDC. Workaround for galaxyproject/galaxy#8244
+	meta <<-EOF
+		ADDED: 13
+	EOF
 	handle_help "$@" <<-EOF
 		Workaround for https://github.com/galaxyproject/galaxy/issues/8244
 	EOF
@@ -417,6 +441,9 @@ mutate_oidc-role-fix() { ## <username|email|user_id>: Fix permissions for users 
 }
 
 mutate_reassign-job-to-handler() { ## <job_id> <handler_id> [--commit]: Reassign a job to a different handler
+	meta <<-EOF
+		ADDED: 14
+	EOF
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -479,6 +506,9 @@ mutate_drop-extraneous-workflow-step-output-associations() { ## [--commit]: #841
 }
 
 mutate_restart-jobs() { ## [--commit] <-|job_id [job_id [...]]> : Restart some jobs
+	meta <<-EOF
+		ADDED: 15
+	EOF
 	handle_help "$@" <<-EOF
 		Restart jobs
 	EOF
@@ -511,6 +541,9 @@ mutate_restart-jobs() { ## [--commit] <-|job_id [job_id [...]]> : Restart some j
 }
 
 mutate_generate-unset-api-keys() { ## [--commit]: Generate API keys for users which do not have one set.
+	meta <<-EOF
+		ADDED: 15
+	EOF
 	handle_help "$@" <<-EOF
 		For some use cases (IEs), it is preferrable that everyone has an API
 		key set for them, if they don't choose to set one themselves. So we set
@@ -545,6 +578,9 @@ mutate_generate-unset-api-keys() { ## [--commit]: Generate API keys for users wh
 }
 
 mutate_anonymise-db-for-release() { ## [--commit|--very-unsafe]: This will attempt to make a database completely safe to release publicly.
+	meta <<-EOF
+		ADDED: 17
+	EOF
 	handle_help "$@" <<-EOF
 		THIS WILL DESTROY YOUR DATABASE.
 
@@ -1388,6 +1424,9 @@ mutate_anonymise-db-for-release() { ## [--commit|--very-unsafe]: This will attem
 }
 
 mutate_fail-wfi() { ## <wf-invocation-d> [--commit]: Sets a workflow invocation state to failed
+	meta <<-EOF
+		ADDED: 17
+	EOF
 	handle_help "$@" <<-EOF
 		Sets a workflow invocation's state to "failed"
 	EOF
@@ -1410,6 +1449,9 @@ mutate_fail-wfi() { ## <wf-invocation-d> [--commit]: Sets a workflow invocation 
 }
 
 mutate_oidc-by-emails() { ## <email_from> <email_to> [--commit]: Reassign OIDC account between users.
+	meta <<-EOF
+		ADDED: 17
+	EOF
 	handle_help "$@" <<-EOF
 		Workaround for users creating a new account by clicking the OIDC button, with case mismatching between existing accounts.
 		Please note that this function is case-sensitive. Fixes https://github.com/galaxyproject/galaxy/issues/9981.
@@ -1432,6 +1474,9 @@ mutate_oidc-by-emails() { ## <email_from> <email_to> [--commit]: Reassign OIDC a
 }
 
 mutate_set-quota-for-oidc-user() { ##? <provider_name> <quota_name> [--commit]: Set quota for OIDC users.
+	meta <<-EOF
+		ADDED: 19
+	EOF
 	handle_help "$@" <<-EOF
 		Set quota for OIDC users.
 	EOF
@@ -1457,6 +1502,9 @@ mutate_set-quota-for-oidc-user() { ##? <provider_name> <quota_name> [--commit]: 
 }
 
 mutate_fail-misbehaving-gxits() { ##? [--commit]: Fails misbehaving GxITs.
+	meta <<-EOF
+		ADDED: 19
+	EOF
 	handle_help "$@" <<-EOF
 		Set quota for OIDC users.
 	EOF
@@ -1485,6 +1533,9 @@ mutate_fail-misbehaving-gxits() { ##? [--commit]: Fails misbehaving GxITs.
 }
 
 mutate_force-publish-history() { ##? <history_id> [--commit]: Removes the access restriction on every dataset in a specified history
+	meta <<-EOF
+		ADDED: 19
+	EOF
 	handle_help "$@" <<-EOF
 		Workaround for Galaxy bug https://github.com/galaxyproject/galaxy/issues/13001
 	EOF
@@ -1506,6 +1557,9 @@ mutate_force-publish-history() { ##? <history_id> [--commit]: Removes the access
 }
 
 mutate_dataset-mark-purged() { ##? <dataset_uuid> [--commit]: Purge dataset and mark downstream HDAs as purged as well
+	meta <<-EOF
+		ADDED: 19
+	EOF
 	handle_help "$@" <<-EOF
 	EOF
 
@@ -1533,6 +1587,9 @@ mutate_dataset-mark-purged() { ##? <dataset_uuid> [--commit]: Purge dataset and 
 }
 
 mutate_purge-old-job-metrics() { ##? [--commit]: Purge job metrics older than 1 year.
+	meta <<-EOF
+		ADDED: 20
+	EOF
 	handle_help "$@" <<-EOF
 	EOF
 
