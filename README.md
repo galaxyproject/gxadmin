@@ -15,15 +15,16 @@ features.
 
 Subcommand | Functions
 ----       | ---
-query      | 89
+query      | 104
 server     | 22
-mutate     | 16
+mutate     | 22
 meta       | 12
-galaxy     | 11
-report     | 3
+galaxy     | 12
+report     | 5
 filter     | 3
 config     | 2
 cluster    | 1
+
 
 This script strictly expects a postgres database and has **no** plans to support
 mysql or sqlite3.
