@@ -4570,3 +4570,43 @@ query_jobs() { ##? [--tool=] [--destination=] [--limit=50] [--states=<comma,sep,
 			LIMIT $arg_limit
 	EOF
 }
+
+query_large-old-histories() { ##? [--older-than=30] [--limit=30] [--larger-than=1073741824]: Find large, old histories that probably should be deleted.
+	meta <<-EOF
+		ADDED: 21
+		AUTHORS: hexylena
+	EOF
+	handle_help "$@" <<-EOF
+		Find large, easily deletable histories. This makes a nice list to give
+		your colleagues and say "do you really need that?"
+	EOF
+
+	read -r -d '' QUERY <<-EOF
+		WITH
+			cte
+				AS (
+					SELECT
+						sum(COALESCE(dataset.total_size, dataset.file_size, 0)) AS total_size,
+						date_trunc('day', now() - history.update_time) AS untouched_in,
+						history.id AS history_id,
+						history.name AS history_name,
+						COALESCE(galaxy_user.username::text, '__UNKNOWN__') AS username
+					FROM
+						dataset
+						JOIN history_dataset_association ON dataset.id = history_dataset_association.dataset_id
+						JOIN history ON history_dataset_association.history_id = history.id
+						JOIN galaxy_user ON history.user_id = galaxy_user.id
+					WHERE
+						history.deleted = false AND total_size > ${arg_larger_than} AND (now() - history.update_time) > '${arg_older_than} days'::INTERVAL
+					GROUP BY
+						history.id, history.name, history.user_id, galaxy_user.username
+				)
+		SELECT
+			history_id, history_name, username, pg_size_pretty(total_size) AS size, untouched_in
+		FROM
+			cte
+		ORDER BY
+			total_size DESC
+		LIMIT ${arg_limit}
+	EOF
+}

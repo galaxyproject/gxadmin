@@ -202,9 +202,10 @@ wonderful_argument_parser() {
 
 	size=${#parsed_keys[@]}
 	for i in $(seq 0 $((size - 1))); do
-		debug "$(printf "SETTING\t%10s=%-10s\n" "${parsed_keys[$i]}" "${parsed_vals[$i]}")"
+		safe_key=$(echo "${parsed_keys[$i]}" | sed 's/-/_/g')
+		debug "$(printf "SETTING\t%10s=%-10s\n" "${safe_key}" "${parsed_vals[$i]}")"
 		# shellcheck disable=SC2086
-		export arg_${parsed_keys[$i]}="${parsed_vals[$i]}"
+		export arg_${safe_key}="${parsed_vals[$i]}"
 	done
 }
 
