@@ -5,6 +5,8 @@
 	- mutate reassign-active-workflows-to-handler, from @mira-miracoli, as workaround for [galaxyproject/galaxy#8209](https://github.com/galaxyproject/galaxy/issues/8209)
 	- --help-man can now be used in addition to --help on specific query/function commands. It assumes that pandoc is installed, and will render the help instead as a manual page.
 	- query large-old-histories, finds old large and probably easily removable histories, @hexylena
+	- query potentially-duplicated-datasets, finds duplicate datasets @hexylena
+	- query potentially-duplicated-reclaimable-space, finds the potential reclaimable space, @hexylena
 - Updated:
 	- Add summary and limit options to tool-metrics query, by @natefoo.
 	- Updated the Wonderful Argument Parser with a fancier version, @hexylena

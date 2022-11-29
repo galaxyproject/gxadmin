@@ -4610,3 +4610,128 @@ query_large-old-histories() { ##? [--older-than=30] [--limit=30] [--larger-than=
 		LIMIT ${arg_limit}
 	EOF
 }
+
+query_potentially-duplicated-datasets() { ##? [--show-names] [--show-uuids] [--limit=50]: Find duplicated datasets in your database "cheaply" (i.e. by unique(user+file_size))
+	meta <<-EOF
+		ADDED: 21
+		AUTHORS: hexylena
+	EOF
+	handle_help "$@" <<-EOF
+		Sometimes your colleagues will re-upload the same file over and over
+		and over again.
+
+		This will help you find the duplicated datasets. It works best for
+		larger files where the number of bytes is more likely to be a "unique"
+		identifier.
+	EOF
+
+	show_names=""
+	if [[ -n "$arg_show_names" ]]; then
+		show_names=",unique_dupe_names"
+	fi
+
+	show_uuids=""
+	if [[ -n "$arg_show_uuids" ]]; then
+		show_uuids=",unique_dupe_uuids"
+	fi
+
+	read -r -d '' QUERY <<-EOF
+		WITH
+			cte
+				AS (
+					SELECT
+						array_agg(ds.uuid) AS dupe_uuids,
+						array_agg(hda.name) AS dupe_names,
+						ds.file_size AS size,
+						job.user_id AS user_id,
+						count(*) AS count
+					FROM
+						dataset AS ds LEFT JOIN job ON ds.job_id = job.id LEFT JOIN history_dataset_association AS hda ON hda.dataset_id = ds.id
+					WHERE
+						ds.file_size > 100000000 AND ds.deleted = false
+					GROUP BY
+						ds.file_size, ds.total_size, job.user_id
+					ORDER BY
+						count DESC
+				),
+			cte2
+				AS (
+					SELECT
+						ARRAY (SELECT DISTINCT * FROM ROWS FROM (unnest(dupe_uuids))) AS unique_dupe_uuids,
+						ARRAY (SELECT DISTINCT * FROM ROWS FROM (unnest(dupe_names))) AS unique_dupe_names,
+						array_length(ARRAY (SELECT DISTINCT * FROM ROWS FROM (unnest(dupe_uuids))), 1) AS true_dupes,
+						size,
+						user_id,
+						count
+					FROM
+						cte
+					WHERE
+						array_length(ARRAY (SELECT DISTINCT * FROM ROWS FROM (unnest(dupe_uuids))), 1) > 1
+				)
+		SELECT
+			size AS bytes,
+			pg_size_pretty(size) AS size,
+			user_id,
+			true_dupes AS identical_copies,
+			pg_size_pretty((true_dupes - 1) * size) AS wasted_space
+			$show_names
+			$show_uuids
+		FROM
+			cte2
+		WHERE
+			count > 1
+		ORDER BY
+			((true_dupes - 1) * size) DESC
+		LIMIT $arg_limit
+	EOF
+}
+
+query_potentially-duplicated-reclaimable-space() { ##?
+	meta <<-EOF
+		ADDED: 21
+		AUTHORS: hexylena
+	EOF
+	handle_help "$@" <<-EOF
+		Sometimes your colleagues will re-upload the same file over and over
+		and over again.
+
+		This will help you find the total potential reclaimable space, if you de-duplicate.
+	EOF
+
+	read -r -d '' QUERY <<-EOF
+		WITH
+			cte
+				AS (
+					SELECT
+						array_agg(ds.uuid) AS dupe_uuids, array_agg(hda.name) AS dupe_names, ds.file_size AS size, job.user_id AS user_id, count(*) AS count
+					FROM
+						dataset AS ds LEFT JOIN job ON ds.job_id = job.id LEFT JOIN history_dataset_association AS hda ON hda.dataset_id = ds.id
+					WHERE
+						ds.file_size > 100000000 AND ds.deleted = false
+					GROUP BY
+						ds.file_size, ds.total_size, job.user_id
+					ORDER BY
+						count DESC
+				),
+			cte2
+				AS (
+					SELECT
+						ARRAY (SELECT DISTINCT * FROM ROWS FROM (unnest(dupe_uuids))) AS unique_dupe_uuids,
+						array_length(ARRAY (SELECT DISTINCT * FROM ROWS FROM (unnest(dupe_uuids))), 1) AS true_dupes,
+						size,
+						user_id,
+						count
+					FROM
+						cte
+					WHERE
+						array_length(ARRAY (SELECT DISTINCT * FROM ROWS FROM (unnest(dupe_uuids))), 1) > 1
+				)
+		SELECT
+				pg_size_pretty(sum((true_dupes - 1) * size)) as potentially_reclaimable_space
+		FROM
+			cte2
+		WHERE
+			true_dupes > 1
+	EOF
+}
+
