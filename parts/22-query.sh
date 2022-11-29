@@ -4611,7 +4611,7 @@ query_large-old-histories() { ##? [--older-than=30] [--limit=30] [--larger-than=
 	EOF
 }
 
-query_potentially-duplicated-datasets() { ##? [--show-names] [--show-uuids] [--limit=50]: Find duplicated datasets in your database "cheaply" (i.e. by unique(user+file_size))
+query_potentially-duplicated-datasets() { ##? [--show-names] [--show-uuids] [--limit=50] [--min-considered-size=100000000]: Find duplicated datasets in your database "cheaply" (i.e. by unique(user+file_size))
 	meta <<-EOF
 		ADDED: 21
 		AUTHORS: hexylena
@@ -4623,6 +4623,10 @@ query_potentially-duplicated-datasets() { ##? [--show-names] [--show-uuids] [--l
 		This will help you find the duplicated datasets. It works best for
 		larger files where the number of bytes is more likely to be a "unique"
 		identifier.
+
+		The minimum considered size is a first-pass filter to only find large
+		(and thus more likely to be unique based solely on byte count) files.
+		Lowering this will likely increase your false positives.
 	EOF
 
 	show_names=""
@@ -4648,7 +4652,7 @@ query_potentially-duplicated-datasets() { ##? [--show-names] [--show-uuids] [--l
 					FROM
 						dataset AS ds LEFT JOIN job ON ds.job_id = job.id LEFT JOIN history_dataset_association AS hda ON hda.dataset_id = ds.id
 					WHERE
-						ds.file_size > 100000000 AND ds.deleted = false
+						ds.file_size > $arg_min_considered_size AND ds.deleted = false
 					GROUP BY
 						ds.file_size, ds.total_size, job.user_id
 					ORDER BY
