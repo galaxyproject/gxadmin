@@ -92,3 +92,37 @@ query_cpu-tools-month() {
 			avg_cpu_time_seconds DESC
 	EOF
 }
+
+query_memory-tools-month() {
+	handle_help "$@" <<-EOF
+		Tool Performance Tracking: Memory by Month-Year.
+	EOF
+
+	assert_count $# 1 "Missing host name"
+	host="$1"
+
+	read -r -d '' QUERY <<-EOF
+		WITH totalmem as (
+			SELECT 
+				distinct job_id, 
+				metric_value 
+			FROM 
+				job_metric_numeric
+			WHERE 
+				metric_name = 'memtotal'
+		)
+		SELECT 
+			TO_CHAR(job.create_time, 'YYYY-MM') AS date,
+			tool_id,
+			AVG(metric_value) AS avgMemory
+		FROM 
+			job 
+			JOIN totalmem ON job.id = totalmem.job_id
+		GROUP BY 
+			date,
+			tool_id
+		ORDER BY 
+			date ASC, 
+			avgMemory DESC
+	EOF
+}
