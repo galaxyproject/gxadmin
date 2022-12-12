@@ -1161,6 +1161,12 @@ query_tool-use-by-group() { ##? <year_month> <group>: Lists count of tools used 
 
 EOFhelp
 	username=$(gdpr_safe galaxy_user.username username "Anonymous User")
+
+	group_filter=""
+	if (( $# > 0 )); then
+		group_filter="AND galaxy_group.name = '$arg_group'"
+	fi
+
 	read -r -d '' QUERY <<-EOF
 		SELECT
 			job.tool_id, $username, count(job.tool_id)
@@ -1172,8 +1178,7 @@ EOFhelp
 			user_group_association.group_id = galaxy_group.id
 		AND
 			user_group_association.user_id = galaxy_user.id
-		AND
-			galaxy_group.name = '$arg_group'
+		$group_filter
 		AND
 			date_trunc('month', job.create_time) = '$arg_year_month-01'
 		GROUP BY
