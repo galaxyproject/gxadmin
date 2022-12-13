@@ -1142,7 +1142,7 @@ query_tool-last-used-date() { ## : When was the most recent invocation of every 
 	EOF
 }
 
-query_tool-use-by-group() { ##? <year_month> <group>: Lists count of tools used by all users in a group
+query_tool-use-by-group() { ##? <years_month> [--group=<name>]: Lists count of tools used by all users in a group
 	meta <<-EOF
 		ADDED: 19
 	EOF
@@ -1163,9 +1163,8 @@ EOFhelp
 	username=$(gdpr_safe galaxy_user.username username "Anonymous User")
 
 	group_filter=""
-	if (( $# > 0 )); then
-		group_filter="AND galaxy_group.name = '$arg_group'"
-	fi
+		if [[ ! -n "$arg_group" ]] then
+			group_filter="AND galaxy_group.name = '$arg_group'"
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
