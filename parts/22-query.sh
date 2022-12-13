@@ -4759,7 +4759,7 @@ query_tools-cpu-month() {
 				job_metric_numeric
 		)
 		SELECT
-			TO_CHAR(job.create_time, 'YYYY-MM') AS date,
+			date_trunc('month', job.create_time) AS date,
 			job.tool_id,
 			cpu_usage.destination_id,
 			ROUND(AVG(cpu_usage.cpu_usage_seconds), 0) AS avg_cpu_time_seconds
