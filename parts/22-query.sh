@@ -22,7 +22,7 @@ query_latest-users() { ## : 40 recently registered users
 		    ----+-------------------------------+------------+----------+----------------+-----------------------------------+--------
 		      3 | 2019-03-07 13:06:37.945403+00 |            | beverly  | b@example.com  |                                   | t
 		      2 | 2019-03-07 13:06:23.369201+00 | 826 bytes  | alice    | a@example.com  |                                   | t
-		      1 | 2018-11-19 14:54:30.969713+00 | 869 MB     | helena   | hxr@local.host | training-asdf training-hogeschool | t
+		      1 | 2018-11-19 14:54:30.969713+00 | 869 MB     | helena   | hxr@local.host | training-fff training-hogeschool | t
 		    (3 rows)
 	EOF
 
@@ -859,7 +859,7 @@ query_training-list() { ##? [--all]: List known trainings
 		        name    |  created
 		    ------------+------------
 		     hogeschool | 2020-01-22
-		     asdf       | 2019-08-28
+		     ffff       | 2019-08-28
 		    (2 rows)
 
 	EOF
@@ -3743,7 +3743,7 @@ query_data-origin-distribution-merged() {
 	username=$(gdpr_safe job.user_id galaxy_user)
 
 	read -r -d '' QUERY <<-EOF
-		WITH asdf AS (
+		WITH origins AS (
 			SELECT
 				'total' as origin,
 				sum(coalesce(dataset.total_size, dataset.file_size, 0)) AS data,
@@ -3761,7 +3761,7 @@ query_data-origin-distribution-merged() {
 			round(data, 2 - length(data::text)),
 			created,
 			galaxy_user
-		FROM asdf
+		FROM origins
 		ORDER BY galaxy_user desc
 	EOF
 }
@@ -3797,7 +3797,7 @@ query_data-origin-distribution() { ## : data sources (uploaded vs derived)
 	echo "$username"
 
 	read -r -d '' QUERY <<-EOF
-		WITH asdf AS (
+		WITH data_status AS (
 			SELECT
 				case when job.tool_id = 'upload1' then 'created' else 'derived' end AS origin,
 				sum(coalesce(dataset.total_size, dataset.file_size, 0)) AS data,
@@ -3815,7 +3815,7 @@ query_data-origin-distribution() { ## : data sources (uploaded vs derived)
 			round(data, 2 - length(data::text)),
 			created,
 			galaxy_user
-		FROM asdf
+		FROM data_status
 		ORDER BY galaxy_user, created desc
 	EOF
 }
