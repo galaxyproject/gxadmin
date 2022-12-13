@@ -4774,7 +4774,7 @@ query_tool-cpu-month() {
 	EOF
 }
 
-query_tools-memory-month() {
+query_tool-memory-month() {
 	handle_help "$@" <<-EOF
 		Tool Performance Tracking: Memory by Month-Year.
 	EOF
