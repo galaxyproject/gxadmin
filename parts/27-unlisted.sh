@@ -58,41 +58,6 @@ query_memory-and-cpu-on-same-node() {
 	EOF
 }
 
-
-query_cpu-tools-month() {
-	handle_help "$@" <<-EOF
-		Tool Performance Tracking: CPU by Month-Year.
-	EOF
-
-	assert_count $# 1 "Missing host name"
-	host="$1"
-
-	read -r -d '' QUERY <<-EOF
-		WITH cpu_usage AS (
-			SELECT
-				DISTINCT job_id,
-				destination_id,
-				metric_value AS cpu_usage_seconds
-			FROM
-				job_metric_numeric
-		)
-		SELECT
-			TO_CHAR(job.create_time, 'YYYY-MM') AS date,
-			job.tool_id,
-			cpu_usage.destination_id,
-			ROUND(AVG(cpu_usage.cpu_usage_seconds), 0) AS avg_cpu_time_seconds
-		FROM
-			job
-			JOIN cpu_usage ON job.id = cpu_usage.job_id
-		GROUP BY
-			date,
-			job.tool_id
-		ORDER BY
-			date ASC,
-			avg_cpu_time_seconds DESC
-	EOF
-}
-
 query_memory-tools-month() {
 	handle_help "$@" <<-EOF
 		Tool Performance Tracking: Memory by Month-Year.
