@@ -4743,7 +4743,7 @@ query_potentially-duplicated-reclaimable-space() { ##?
 	EOF
 }
 
-query_tools-cpu-month() {
+query_tool-cpu-month() {
 	handle_help "$@" <<-EOF
 		Tool Performance Tracking: CPU by Month-Year.
 	EOF
