@@ -760,7 +760,7 @@ EOFhelp
 EOF
 }
 
-query_monthly-job-runtimes() { ## [--year y] [--month m] : Summation of total job run times per user per destination over a period of time
+query_monthly-job-runtimes() { ##? [--year=<YYYY>] [--month=<MM>] [--sub_dest=<N>]: Summation of total job run times per user per destination over a period of time
 	meta <<-EOF
 		ADDED: 19
 	EOF
@@ -807,32 +807,22 @@ query_monthly-job-runtimes() { ## [--year y] [--month m] : Summation of total jo
 	dest="job.destination_id as destination_id,"
 	group_by="GROUP BY user_email, month, destination_id"
 
-	if [[ $1 == '--year' && -n $2 ]] && [[ $3 == '--month' && -n $4 ]] && date -d "$2" >/dev/null && date -d $4 >/dev/null
+	if [[ -n "$arg_sub_dest" ]]; then
+		dest="substr(job.destination_id, 1, $arg_sub_dest) as destination_id,"
+		group_by="GROUP BY user_email, month, substr(destination_id, 1, $arg_sub_dest)"
+	fi
+
+	if [[ -n "$arg_year" ]]  && [[ -n "$arg_month" ]] && date -d "$2" >/dev/null && date -d $4 >/dev/null
 	then
-		filter_by_time_period="AND date_trunc('month', job.create_time AT TIME ZONE 'UTC') = '$2-$4-01'::date"
+		filter_by_time_period="AND date_trunc('month', job.create_time AT TIME ZONE 'UTC') = '${arg_year}-${arg_month}-01'::date"
 		year=$(date +'%Y')
-		if [[ $5 == '--sub_dest' && -n $6 ]]
-		then
-			dest="substr(job.destination_id, 1, $6) as destination_id,"
-			group_by="GROUP BY user_email, month, substr(destination_id, 1, $6)"
-		fi
-	elif [[ $1 == '--year' && -n $2 ]] && date -d "$2" >/dev/null
+	elif [[ -n "$arg_year" ]] && date -d "$2" >/dev/null
 	then
-		filter_by_time_period="AND date_trunc('year', job.create_time AT TIME ZONE 'UTC') = '$2-01-01'::date"
-		if [[ $3 == '--sub_dest' && -n $4 ]]
-		then
-			dest="substr(job.destination_id, 1, $4) as destination_id,"
-			group_by="GROUP BY user_email, month, substr(destination_id, 1, $4)"
-		fi
-	elif [[ $1 == '--month' && -n $2 ]] && date -d "$2" >/dev/null
+		filter_by_time_period="AND date_trunc('year', job.create_time AT TIME ZONE 'UTC') = '${arg_year}-01-01'::date"
+	elif [[ -n "$arg_month" ]] && date -d "$2" >/dev/null
 	then
 		year=$(date +'%Y')
-		filter_by_time_period="AND date_trunc('month', job.create_time AT TIME ZONE 'UTC') = '$year-$2-01'::date"
-		if [[ $3 == '--sub_dest' && -n $4 ]]
-		then
-			dest="substr(job.destination_id, 1, $4) as destination_id,"
-			group_by="GROUP BY user_email, month, substr(destination_id, 1, $4)"
-		fi
+		filter_by_time_period="AND date_trunc('month', job.create_time AT TIME ZONE 'UTC') = '$year-${arg_month}-01'::date"
 	fi
 
 	read -r -d '' QUERY <<-EOF
