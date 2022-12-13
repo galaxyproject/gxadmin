@@ -4791,7 +4791,7 @@ query_tools-memory-month() {
 				metric_name = 'memtotal'
 		)
 		SELECT 
-			TO_CHAR(job.create_time, 'YYYY-MM') AS date,
+			date_trunc('month', job.create_time) AS date,
 			tool_id,
 			AVG(metric_value) AS avgMemory
 		FROM 
