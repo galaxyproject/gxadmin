@@ -7,7 +7,7 @@
 	- query large-old-histories, finds old large and probably easily removable histories, @hexylena
 	- query potentially-duplicated-datasets, finds duplicate datasets @hexylena
 	- query potentially-duplicated-reclaimable-space, finds the potential reclaimable space, @hexylena
-    - CGI mode, @hexylena
+	- CGI mode, use sudo fcgiwrap -s unix:/run/cgi.sock -f -p pwd/gxadmin to activate, wrap in nginx, @hexylena
 - Updated:
 	- Add summary and limit options to tool-metrics query, by @natefoo.
 	- Updated the Wonderful Argument Parser with a fancier version, @hexylena
@@ -161,10 +161,8 @@ Testing our new release message
 
 - Added:
 	- local functions support querying when prefixed with "query-"
-	- "meta influx-post" and "meta influx-query" were added to get data into
-	  and out of Influx
-	- "explainquery" is added as an alternative to csv/tsv/etc queries, which
-	  does an "EXPLAIN ANALYZE" of the current SQL
+	- "meta influx-post" and "meta influx-query" were added to get data into and out of Influx
+	- "explainquery" is added as an alternative to csv/tsv/etc queries, which does an "EXPLAIN ANALYZE" of the current SQL
 	- "explainjsonquery" added for use with http://tatiyants.com/pev/
 	- "time" prefix for all functions added to print execution time to stderr
 	- Function to fail a specific job ID
@@ -177,13 +175,9 @@ Testing our new release message
 	- "query user-cpu-years"
 	- Shellchecking of entire script
 - Fixed:
-	- Escaped commas in influx outputs, switched to tabs to further prevent
-	  comma issues.
+	- Escaped commas in influx outputs, switched to tabs to further prevent comma issues.
 	- Correct date filter in "query {server-groups,server-datasets}"
-	- Removed unnecessary function name duplication, e.g.
-	    "query_filter() { ## query filter [id]: Does thing"
-	  can now be written as
-	    "query_filter() { ## [id]: Does thing"
+	- Removed unnecessary function name duplication, e.g. "query_filter() { ## query filter [id]: Does thing" can now be written as "query_filter() { ## [id]: Does thing"
 
 # 12
 
