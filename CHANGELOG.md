@@ -7,6 +7,7 @@
 	- query large-old-histories, finds old large and probably easily removable histories, @hexylena
 	- query potentially-duplicated-datasets, finds duplicate datasets @hexylena
 	- query potentially-duplicated-reclaimable-space, finds the potential reclaimable space, @hexylena
+    - CGI mode, @hexylena
 - Updated:
 	- Add summary and limit options to tool-metrics query, by @natefoo.
 	- Updated the Wonderful Argument Parser with a fancier version, @hexylena
