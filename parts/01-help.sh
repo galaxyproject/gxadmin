@@ -160,6 +160,30 @@ meta() {
 	FN_UPDATED="${FN_UPDATED//UPDATED: /}"
 }
 
+show_help() {
+	if [[ -n "${query_name}" ]]; then
+		key="${query_type}_${query_name}"
+	fi
+
+	invoke_desc=$(locate_cmds | grep "${key}()" | correct_cmd | sed "s/^/gxadmin /g")
+	short_desc=$(echo "$invoke_desc" | sed 's/.*://g')
+	short_parm=$(echo "$invoke_desc" | sed 's/:.*//g')
+	echo "${mode} ${query_name} - ${short_desc}"
+	echo
+	echo "**SYNOPSIS**"
+	echo
+	echo "    $short_parm"
+	echo
+	manual="$(cat -)"
+	manual_wc="${#manual}"
+	if (( manual_wc > 3 )); then
+		echo "**NOTES**"
+		echo
+		echo "$manual"
+		echo
+	fi
+}
+
 handle_help() {
 	if [[ ! -z "${GXADMIN_POPCON_ENABLE}" ]]; then
 		if [[ "${query_name}" != "user-info" ]]; then
@@ -168,32 +192,11 @@ handle_help() {
 	fi
 
 	for i in "$@"; do
-		if [[ "$i" = --help || "$i" = -h ]]; then
-
-			if [[ -n "${query_name}" ]]; then
-				key="${query_type}_${query_name}"
-			fi
-
-			invoke_desc=$(locate_cmds | grep "${key}()" | correct_cmd | sed "s/^/gxadmin /g")
-			short_desc=$(echo "$invoke_desc" | sed 's/.*://g')
-			short_parm=$(echo "$invoke_desc" | sed 's/:.*//g')
-			echo "${mode} ${query_name} - ${short_desc}"
-			echo
-			echo "**SYNOPSIS**"
-			echo
-			echo "    $short_parm"
-			echo
-			manual="$(cat -)"
-			manual_wc="${#manual}"
-			if (( manual_wc > 3 )); then
-				echo "**NOTES**"
-				echo
-				echo "$manual"
-				echo
-			fi
-			# exit after printing the documentation!
-			exit 0;
-		elif [[ "$i" == "--help-man" ]]; then
+		if [[ "$i" == "--help" || "$i" == "-h" || "$i" == "/h" ]]; then
+			show_help
+			# it's not an error to ask for help
+			exit 0
+		elif [[ "$i" == "--help-man" || "$i" == "--man" ]]; then
 			if [[ -n "${query_name}" ]]; then
 				key="${query_type}_${query_name}"
 			fi
@@ -227,4 +230,10 @@ handle_help() {
 			exit 0
 		fi
 	done
+
+	if [[ -n "$WAP_SHOULD_EXIT" ]]; then
+		echo
+		show_help
+		exit 1
+	fi
 }
