@@ -43,6 +43,7 @@ case "$mode" in
 	galaxy ) $wrapper look_for "$mode" "none"  "$@" ;;
 	meta   ) $wrapper look_for "$mode" "none"  "$@" ;;
 	report ) $wrapper look_for "$mode" "none"  "$@" ;;
+	gunicorn ) $wrapper look_for "$mode" "none"  "$@" ;;
 	local  ) $wrapper look_for "$mode" "none"  "$@" ;;
 	s      ) search "$@" ;;
 	find   ) search "$@" ;;
