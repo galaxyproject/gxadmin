@@ -41,6 +41,7 @@ case "$mode" in
 	cluster) $wrapper look_for "$mode" "none"  "$@" ;;
 	filter ) $wrapper look_for "$mode" "none"  "$@" ;;
 	galaxy ) $wrapper look_for "$mode" "none"  "$@" ;;
+	gunicorn ) $wrapper look_for "$mode" "none"  "$@" ;;
 	meta   ) $wrapper look_for "$mode" "none"  "$@" ;;
 	report ) $wrapper look_for "$mode" "none"  "$@" ;;
 	local  ) $wrapper look_for "$mode" "none"  "$@" ;;
