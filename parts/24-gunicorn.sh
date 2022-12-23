@@ -17,25 +17,25 @@ gunicorn_handler-restart() { ## : Restart all handlers
 	handle_help "$@" <<-EOF
 		Checks if service is inactive and restarts otherwise, if at least service 0 or 1 is running
 	EOF
-        for i in {0..9}; do
-                if systemctl status galaxy-gunicorn@$i | grep inactive >/dev/null
-                then
-                        echo "not restarting galaxy-gunicorn@$i, bacause it is inactive"
-                elif systemctl status galaxy-gunicorn@0 | grep "GET /history/current_history_json" >/dev/null || \
-                         systemctl status galaxy-gunicorn@1 | grep "GET /history/current_history_json" >/dev/null
-                then
-                        systemctl restart galaxy-gunicorn@$i
-                        while true
-                        do
-                                if systemctl status galaxy-gunicorn@$i | grep "GET /history/current_history_json" >/dev/null
-                                then
-                                        break
-                                else
-                                        sleep 10
-                                fi
-                        done
-                fi
-        done
+	for i in {0..9}; do
+		if systemctl status galaxy-gunicorn@$i | grep inactive >/dev/null
+		then
+			echo "not restarting galaxy-gunicorn@$i, bacause it is inactive"
+		elif systemctl status galaxy-gunicorn@0 | grep "GET /history/current_history_json" >/dev/null || \
+			systemctl status galaxy-gunicorn@1 | grep "GET /history/current_history_json" >/dev/null
+		then
+			systemctl restart galaxy-gunicorn@$i
+			while true
+			do
+				if systemctl status galaxy-gunicorn@$i | grep "GET /history/current_history_json" >/dev/null
+				then
+					break
+				else
+					sleep 10
+				fi
+			done
+		fi
+	done
 
 }
 
