@@ -68,9 +68,17 @@ GXADMIN=./.tmpgxadmin
 }
 
 @test "Ensure no incorrect spacings before EOF" {
-	result=$(grep -P '\t[^\t]EOF' ${GXADMIN} | wc -l)
+	result=$(grep -P '\t+[ ]+EOF' ${GXADMIN} | wc -l)
 	if (( result > 0 )); then
-		grep -n -P '\t[^\t]EOF' parts/*
+		grep -n -P '\t+[ ]+EOF' parts/*
+	fi
+	[ "$result" -eq 0 ]
+}
+
+@test "Ensure no incorrect spacings before handle_help" {
+	result=$(grep -P '\t+[ ]+handle_help' ${GXADMIN} | wc -l)
+	if (( result > 0 )); then
+		grep -n -P '\t+[ ]+handle_help' parts/*
 	fi
 	[ "$result" -eq 0 ]
 }
