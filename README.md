@@ -88,6 +88,20 @@ a few environment variables to be set. Namely
 *  `INFLUX_USER`
 *  `INFLUX_DB`
 
+### Other Environment Variables
+
+Some subcommands may ask you to set these environment variables, if they aren't already.
+
+Variable | Example Value
+--- | --- 
+`GALAXY_CONFIG_DIR` | `/srv/galaxy/config/`
+`GALAXY_CONFIG_FILE` | `/srv/galaxy/config/galaxy.yml` 
+`GALAXY_LOG_DIR` | `/var/log/galaxy/` 
+`GALAXY_MUTABLE_CONFIG_DIR` |  `/srv/galaxy/var/`
+`GALAXY_ROOT` | `/srv/galaxy/server/` 
+`VIRTUAL_ENV` | `/srv/galaxy/venv/` 
+
+
 ### GDPR
 
 You may want to set `GDPR_MODE=1`. Please determine your own legal responsibilities, the authors take no responsibility for anything you may have done wrong.
