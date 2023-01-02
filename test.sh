@@ -18,7 +18,7 @@ GXADMIN=./.tmpgxadmin
 }
 
 @test "Ensure no trailing semicolons in queries (fix: remove semicolon from before EOF)" {
-	result=$(grep -Pzl '(?s);\n\tEOF' parts/* | wc -l)
+	result=$(grep -Pzl '(?s);\n\tEOF' ${GXADMIN} | wc -l)
 	if (( $result > 0 )); then
 		grep -Pzl '(?s);\n\t*EOF' parts/*
 	fi
@@ -52,17 +52,25 @@ GXADMIN=./.tmpgxadmin
 #}
 
 @test "Ensure correct separator used in influx fields" {
-	result=$(grep -Pzl 'fields=".*,' parts/* | wc -l)
+	result=$(grep -Pzl 'fields=".*,' ${GXADMIN} | wc -l)
 	if (( result > 0 )); then
-		grep 'fields=".*,' parts/*
+		grep -n 'fields=".*,' parts/*
 	fi
 	[ "$result" -eq 0 ]
 }
 
 @test "Ensure correct separator used in influx tags" {
-	result=$(grep -Pzl 'tags=".*,' parts/* | wc -l)
+	result=$(grep -Pzl 'tags=".*,' ${GXADMIN} | wc -l)
 	if (( result > 0 )); then
-		grep 'tags=".*,' parts/*
+		grep -n 'tags=".*,' parts/*
+	fi
+	[ "$result" -eq 0 ]
+}
+
+@test "Ensure no incorrect spacings before EOF" {
+	result=$(grep -P '\t[^\t]EOF' ${GXADMIN} | wc -l)
+	if (( result > 0 )); then
+		grep -n -P '\t[^\t]EOF' parts/*
 	fi
 	[ "$result" -eq 0 ]
 }
