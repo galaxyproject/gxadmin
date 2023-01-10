@@ -46,7 +46,7 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md)
 
 ## Contributors
 
-- Helena Rasche, BDFL ([@hexylena](https://github.com/hexylena))
+- Helena Rasche, BDFL ([@hexylena](https://github.com/hexylena)) 🏳️‍🌈🏳️‍⚧️
 - Nate Coraor ([@natefoo](https://github.com/natefoo))
 - Simon Gladman ([@slugger70](https://github.com/slugger70))
 - Anthony Bretaudeau ([@abretaud](https://github.com/abretaud))
