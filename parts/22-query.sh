@@ -4466,7 +4466,7 @@ query_queue-details-drm() { ##? [--all] [--seconds] [--since-update]: Detailed o
 						(REGEXP_MATCHES(encode(job.destination_params, 'escape'), '\"request_cpus\":\s+\"(\d+)\"'))[1] as cpu_condor,
 						(REGEXP_MATCHES(encode(job.destination_params, 'escape'), 'mem=(\d+)'))[1] as mem_slurm,
 						(REGEXP_MATCHES(encode(job.destination_params, 'escape'), '\"request_memory\":\s+\"([0-9.]+)G\"'))[1] as mem_condor,
-						(REGEXP_MATCHES(encode(job.destination_params, 'escape'), 'partition=(\d+)'))[1] as partition_slurm,
+						(REGEXP_MATCHES(encode(job.destination_params, 'escape'), 'partition=(\w+)'))[1] as partition_slurm,
 						(REGEXP_MATCHES(encode(job.destination_params, 'escape'), '\"requirements\":\s+\".*\", '))[1] as partition_condor,
 						COALESCE(job.destination_id, 'none') as destination_id
 					FROM job
