@@ -1,4 +1,4 @@
-# Galaxy Admin Utility
+# gxadmin: Make Galaxy administration magical 🌈
 
 A command line tool for [Galaxy](https://github.com/galaxyproject/galaxy)
 administrators to run common queries against our Postgres databases. It additionally
