@@ -2,14 +2,13 @@
 
 A command line tool for [Galaxy](https://github.com/galaxyproject/galaxy)
 administrators to run common queries against our Postgres databases. It additionally
-includes some code for managing zerglings under systemd, and other utilities.
+includes some code for managing Galaxy and associated features, and other utilities.
 
 Mostly gxadmin acts as a repository for the common queries we all run regularly
-but fail to share with each other. We even include some [unlisted
-queries](./parts/27-unlisted.sh) which may be useful as examples, but are not generically useful.
+but fail to share with each other.
 
-It comes with around 90 commonly useful queries included (180+ commands total),
-but you can easily add more to your installation with local functions. gxadmin
+It comes with a wide array of useful queries that you might want to run,
+but you can also easily add more to your installation with local functions. gxadmin
 attempts to be a very readable bash script and avoids using fancy new bash
 features.
 
