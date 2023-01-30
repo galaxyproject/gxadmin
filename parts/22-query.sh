@@ -4775,6 +4775,10 @@ query_tpt-tool-cpu-month() {
 }
 
 query_tool-memory-month() {
+	meta <<-EOF
+		ADDED: 21
+		AUTHORS: hujambo-dunia
+	EOF
 	handle_help "$@" <<-EOF
 		Tool Performance Tracking: Memory by Month-Year.
 	EOF
