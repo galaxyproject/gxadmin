@@ -26,8 +26,10 @@ config     | 2
 cluster    | 1
 
 
-This script strictly expects a postgres database and has **no** plans to support
+This script **requires a postgres database** and has **no** plans to support
 mysql or sqlite3.
+
+If we do support sqlite3 in the future, it will be on a "if you're lucky" type basis, we won't be modifying queries to remove postgres-ism.
 
 ## Installation
 
