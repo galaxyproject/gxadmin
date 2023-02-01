@@ -40,7 +40,7 @@ server_users() { ## : Count of different classifications of users
 
 server_oidc() { ## : How many users logged in with OIDC
 	meta <<-EOF
-		ADDED: 22
+		ADDED: 21
 	EOF
 	handle_help "$@" <<-EOF
 	EOF
