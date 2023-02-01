@@ -38,6 +38,38 @@ server_users() { ## : Count of different classifications of users
 	EOF
 }
 
+server_oidc() { ## : How many users logged in with OIDC
+	meta <<-EOF
+		ADDED: 22
+	EOF
+	handle_help "$@" <<-EOF
+	EOF
+
+	op="="
+	if (( $# > 1 )); then
+		op="$2"
+	fi
+
+	date_filter=""
+	if (( $# > 0 )); then
+		date_filter="WHERE date_trunc('day', galaxy_user.create_time AT TIME ZONE 'UTC') $op '$1'::date"
+	fi
+
+	fields="count=1"
+	tags="provider=0"
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			provider, count(distinct user_id)
+		FROM
+			oidc_user_authnz_tokens
+			JOIN
+				galaxy_user ON oidc_user_authnz_tokens.user_id = galaxy_user.id
+		$date_filter
+		GROUP BY provider
+	EOF
+}
+
 server_groups() { ## : Counts of group memberships
 	meta <<-EOF
 		ADDED: 12
