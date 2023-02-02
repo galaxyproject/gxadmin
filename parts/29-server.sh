@@ -52,8 +52,8 @@ server_oidc() { ##? [--op=<=,!=,...>] [--date=<yyyy-mm-dd>] : How many users log
 	fi
 
 	date_filter=""
-	if (( $# > 0 )); then
-		date_filter="WHERE date_trunc('day', galaxy_user.create_time AT TIME ZONE 'UTC') $op '$1'::date"
+	if [[ -z "$arg_date" ]] then
+		date_filter="WHERE date_trunc('day', galaxy_user.create_time AT TIME ZONE 'UTC') $op '$arg_date'::date"
 	fi
 
 	fields="count=1"
