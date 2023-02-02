@@ -47,8 +47,8 @@ server_oidc() { ##? [--op=<=,!=,...>] [--date=<yyyy-mm-dd>] : How many users log
 	EOF
 
 	op="="
-	if (( $# > 1 )); then
-		op="$2"
+	if [[ -z "$arg_op" ]]; then
+		op="$arg_op"
 	fi
 
 	date_filter=""
