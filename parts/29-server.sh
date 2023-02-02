@@ -38,7 +38,7 @@ server_users() { ## : Count of different classifications of users
 	EOF
 }
 
-server_oidc() { ## : How many users logged in with OIDC
+server_oidc() { ##? [--op=<=,!=,...>] [--date=<yyyy-mm-dd>] : How many users logged in with OIDC
 	meta <<-EOF
 		ADDED: 21
 		AUTHORS: abretaud
