@@ -49,8 +49,8 @@ jobs:
           make docs
           make gxadmin
 
-          git config user.email "gxadmin@galaxians.org"
-          git config user.name "GXADMIN"
+          git config user.email "hexylena@galaxians.org"
+          git config user.name "Helena (Bot)"
 
           # Update release
           git add parts/00-header.sh CHANGELOG.md
