@@ -259,3 +259,9 @@ galaxy migrate-tool-install-to-sqlite -  Converts normal potsgres toolshed repos
 ## galaxy prune-gxit-routes
 
 ([*source*](https://github.com/galaxyproject/gxadmin/search?q=galaxy_prune-gxit-routes&type=Code))
+galaxy prune-gxit-routes -  Prunes dead routes
+
+**SYNOPSIS**
+
+    gxadmin galaxy prune-gxit-routes <interactivetools_map>
+

@@ -7,5 +7,5 @@
 # Thanks to everyone for their contributions
 # https://github.com/galaxyproject/gxadmin/graphs/contributors
 version() {
-	echo 20
+	echo 21
 }
