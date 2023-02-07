@@ -34,7 +34,7 @@ jobs:
 
           #echo "::set-output name=timestamp::${TS}"
           #echo "::set-output name=tag::v${VERSION}-preview-${TS}"
-          echo "tag=v${VERSION}" >> $GITHUB_ENV
+          echo "tag=v${NEW_VERSION}" >> $GITHUB_ENV
 
 
           # Update version number in changelog
