@@ -44,6 +44,10 @@ jobs:
           # Fetch changelog
           sed -n "/# ${NEW_VERSION}/,/# ${CURRENT_VERSION}/{/# ${CURRENT_VERSION}/b;p}" CHANGELOG.md > body.md
 
+          TODAY=$(date -I)
+          sed -i "s/version: v.*/version: v${NEW_VERSION}/" CITATION.cff
+          sed -i "s/date-released: .*/date-released: ${TODAY}/" CITATION.cff
+
           # Check AGAIN
           make test
           make docs
@@ -53,7 +57,7 @@ jobs:
           git config user.name "Helena (Bot)"
 
           # Update release
-          git add parts/00-header.sh CHANGELOG.md
+          git add parts/00-header.sh CHANGELOG.md CITATION.cff
           git commit -a -m "Release v${NEW_VERSION}"
           git push
           #git tag v${NEW_VERSION}
