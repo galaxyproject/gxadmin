@@ -256,7 +256,7 @@ look_for() {
 		case "$group_name" in
 			tsvquery         ) query_tsv "$QUERY";;
 			csvquery         ) query_csv "$QUERY";;
-			query            ) query_tbl "$QUERY";;
+			query            ) query_tbl_wrapper "$QUERY";;
 			jsonquery        ) query_json "$QUERY";;
 			iquery           ) query_influx "$QUERY" "$query_name" "$fields" "$tags" "$timestamp";;
 			explainquery     ) query_exp "$QUERY";;
@@ -277,7 +277,7 @@ look_for() {
 		case "$group_name" in
 			tsvserver         ) query_tsv "$QUERY";;
 			csvserver         ) query_csv "$QUERY";;
-			server            ) query_tbl "$QUERY";;
+			server            ) query_tbl_wrapper "$QUERY";;
 			jsonserver        ) query_json "$QUERY";;
 			iserver           ) query_influx "$QUERY" "$query_name" "$fields" "$tags" "$timestamp";;
 			explainserver     ) query_exp "$QUERY";;
@@ -297,7 +297,7 @@ look_for() {
 
 		# Run the queries
 		case "$group_name" in
-			mutate            ) query_tbl "$QUERY";;
+			mutate            ) query_tbl_wrapper "$QUERY";;
 			explainmutate     ) query_exp "$QUERY";;
 			explainjsonmutate ) query_expj "$QUERY";;
 			echomutate        ) query_echo "$QUERY";;
@@ -313,13 +313,13 @@ look_for() {
 		$fn "$@";
 
 		if [[ "${query_name}" == "query"* ]]; then
-			query_tbl "$QUERY"
+			query_tbl_wrapper "$QUERY"
 		fi
 	elif [[ $query_type == "galaxy" ]]; then
 		obtain_func "$query_type" "$query_name" "$@"
 
 		if [[ "${query_name}" == "query"* ]]; then
-			query_tbl "$QUERY"
+			query_tbl_wrapper "$QUERY"
 		elif [[ "${query_name}" == "iquery"* ]]; then
 			query_influx "$QUERY" "$query_name" "$fields" "$tags" "$timestamp"
 		fi
@@ -327,7 +327,7 @@ look_for() {
 		$fn "$@";
 
 		if [[ "${query_name}" == "query"* ]]; then
-			query_tbl "$QUERY"
+			query_tbl_wrapper "$QUERY"
 		elif [[ "${query_name}" == "iquery"* ]]; then
 			query_influx "$QUERY" "$query_name" "$fields" "$tags" "$timestamp"
 		fi

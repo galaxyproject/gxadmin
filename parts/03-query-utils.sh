@@ -4,6 +4,18 @@ query_tbl() {
 	EOF
 }
 
+query_tbl_sqlite() {
+	echo "$1" | sed "s/AT TIME ZONE 'UTC'//g;s/::text//g" | sqlite3 database/universe.sqlite
+}
+
+query_tbl_wrapper() {
+	if (( GXADMIN_EXPERIMENT_SQLITE3 == 1 )) then
+		query_tbl_sqlite "$1"
+	else
+		query_tbl "$1"
+	fi
+}
+
 query_tsv() {
 	psql <<-EOF
 	COPY ($1) to STDOUT with CSV DELIMITER E'\t'
