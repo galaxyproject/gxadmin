@@ -1,0 +1,67 @@
+name: Create Release
+
+on:
+  #schedule:
+    #- cron:  '0 0 1 * *'
+  workflow_dispatch:
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Compile
+        run: |
+          make test
+          make docs
+
+      - name: Get version
+        id: version
+        run: |
+          # Get current version number
+          rm -f gxadmin
+          make gxadmin
+          CURRENT_VERSION=$(./gxadmin --version)
+          NEW_VERSION=$(( CURRENT_VERSION + 1 ))
+          NEXT_VERSION=$(( CURRENT_VERSION + 2 ))
+          echo $CURRENT_VERSION $NEW_VERSION
+
+          #echo "::set-output name=timestamp::${TS}"
+          #echo "::set-output name=tag::v${VERSION}-preview-${TS}"
+
+
+          # Update version number in changelog
+          sed -i "s/# ${NEW_VERSION}-pre/# ${NEXT_VERSION}-pre\n\n# ${NEW_VERSION}/g" CHANGELOG.md
+          # Update version number in gxadmin
+          sed -i "s/echo ${CURRENT_VERSION}/echo ${NEW_VERSION}/" parts/00-header.sh
+          # Fetch changelog
+          sed -n "/# ${NEW_VERSION}/,/# ${CURRENT_VERSION}/{/# ${CURRENT_VERSION}/b;p}" CHANGELOG.md > body.md
+
+          # Check AGAIN
+          make test
+          make docs
+          make gxadmin
+
+          git config user.email "gxadmin@galaxians.org"
+          git config user.name "GXADMIN"
+
+          # Update release
+          git add parts/00-header.sh CHANGELOG.md
+          git commit -a -m "Release v${NEW_VERSION}"
+          git push
+          #git tag v${NEW_VERSION}
+          #git push --follow-tags
+
+      #- name: Extract changelog
+        #run: |
+          #bash gxadmin meta whatsnew >> body.md
+
+      - uses: ncipollo/release-action@v1
+        with:
+          artifacts: "gxadmin"
+          artifactContentType: text/x-shellscript
+          bodyFile: body.md
+          commit: main
+          draft: false
+          tag: ${{ steps.version.outputs.tag }}
