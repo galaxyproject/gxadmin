@@ -33,8 +33,8 @@ identifiers:
   - type: url
     value: 'https://github.com/galaxyproject/gxadmin'
     description: Source Code
-  #- type: doi
-  #  value: '10123.124'
+  - type: doi
+    value: '10.5281/zenodo.7615030'
 repository-code: 'https://github.com/galaxyproject/gxadmin'
 url: 'https://galaxyproject.github.io/gxadmin/'
 keywords:
@@ -43,5 +43,5 @@ keywords:
   - galaxy
   - galaxyproject
 license: GPL-3.0-or-later
-version: v20
-date-released: '2022-10-02'
+version: v21
+date-released: '2023-02-07'
