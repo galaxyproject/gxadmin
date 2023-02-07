@@ -1,0 +1,47 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: gxadmin
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Helena
+    family-names: Rasche
+    email: hexylena@galaxians.org
+    affiliation: Erasmus Medical Center
+    orcid: 'https://orcid.org/0000-0001-9760-8992'
+  - given-names: Nate
+    family-names: Coraor
+  - given-names: Simon
+    family-names: Gladman
+  - given-names: Anthony
+    family-names: Bretaudaeu
+  - given-names: John
+    family-names: Chilton
+  - given-names: Gianmauro
+    family-names: Cuccuru
+  - given-names: Lucille
+    family-names: Delisle
+  - given-names: Manuel
+    family-names: Messner
+  - given-names: Kim
+    family-names: Brügger
+identifiers:
+  - type: url
+    value: 'https://github.com/galaxyproject/gxadmin'
+    description: Source Code
+  #- type: doi
+  #  value: '10123.124'
+repository-code: 'https://github.com/galaxyproject/gxadmin'
+url: 'https://galaxyproject.github.io/gxadmin/'
+keywords:
+  - sql
+  - bash
+  - galaxy
+  - galaxyproject
+license: GPL-3.0-or-later
+version: v20
+date-released: '2022-10-02'
