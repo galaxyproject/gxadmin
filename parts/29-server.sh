@@ -38,7 +38,7 @@ server_users() { ## : Count of different classifications of users
 	EOF
 }
 
-server_oidc() { ##? [--op=<=,!=,...>] [--date=<yyyy-mm-dd>] : How many users logged in with OIDC
+server_oidc() { ##? [--op=<...>] [--date=<yyyy-mm-dd>] : How many users logged in with OIDC
 	meta <<-EOF
 		ADDED: 21
 		AUTHORS: abretaud
@@ -46,13 +46,13 @@ server_oidc() { ##? [--op=<=,!=,...>] [--date=<yyyy-mm-dd>] : How many users log
 	handle_help "$@" <<-EOF
 	EOF
 
-	op="="
-	if [[ -z "$arg_op" ]]; then
+	op="<="
+	if [[ -n "$arg_op" ]]; then
 		op="$arg_op"
 	fi
 
 	date_filter=""
-	if [[ -z "$arg_date" ]]; then
+	if [[ -n "$arg_date" ]]; then
 		date_filter="WHERE date_trunc('day', galaxy_user.create_time AT TIME ZONE 'UTC') $op '$arg_date'::date"
 	fi
 
