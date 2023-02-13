@@ -6,8 +6,7 @@ _server_long_help="
 	In all cases 'explainquery' will show you the query plan, in case you need to optimise or index data. 'explainjsonquery' is useful with PEV: http://tatiyants.com/pev/
 "
 
-
-server_users() { ## : Count of different classifications of users
+server_users() { ##? [--op=<...>] [--date=<yyyy-mm-dd>]: Count of different classifications of users
 	meta <<-EOF
 		ADDED: 12
 	EOF
@@ -15,13 +14,13 @@ server_users() { ## : Count of different classifications of users
 	EOF
 
 	op="="
-	if (( $# > 1 )); then
-		op="$2"
+	if [[ -n "$arg_op" ]]; then
+		op="$arg_op"
 	fi
 
 	date_filter=""
-	if (( $# > 0 )); then
-		date_filter="WHERE date_trunc('day', create_time AT TIME ZONE 'UTC') $op '$1'::date"
+	if [[ -n "$arg_date" ]]; then
+		date_filter="WHERE date_trunc('day', create_time AT TIME ZONE 'UTC') $op '$arg_date'::date"
 	fi
 
 	fields="count=4"
@@ -71,7 +70,7 @@ server_users-with-oidc() { ##? [--op=<...>] [--date=<yyyy-mm-dd>] : How many use
 	EOF
 }
 
-server_groups() { ## : Counts of group memberships
+server_groups() { ##? [--op=<...>] [--date=<yyyy-mm-dd>] : Counts of group memberships
 	meta <<-EOF
 		ADDED: 12
 	EOF
@@ -79,13 +78,13 @@ server_groups() { ## : Counts of group memberships
 	EOF
 
 	op="="
-	if (( $# > 1 )); then
-		op="$2"
+	if [[ -n "$arg_op" ]]; then
+		op="$arg_op"
 	fi
 
 	date_filter=""
-	if (( $# > 0 )); then
-		date_filter="AND galaxy_group.create_time AT TIME ZONE 'UTC' <= '$1'::date AND date_trunc('day', user_group_association.create_time AT TIME ZONE 'UTC') $op '$1'::date"
+	if [[ -n "$arg_date" ]]; then
+		date_filter="AND galaxy_group.create_time AT TIME ZONE 'UTC' <= '$arg_date'::date AND date_trunc('day', user_group_association.create_time AT TIME ZONE 'UTC') $op '$arg_date'::date"
 	fi
 
 
@@ -104,7 +103,7 @@ server_groups() { ## : Counts of group memberships
 	EOF
 }
 
-server_datasets() { ## : Counts of datasets
+server_datasets() { ##? [--op=<...>] [--date=<yyyy-mm-dd>] : Counts of datasets
 	meta <<-EOF
 		ADDED: 12
 	EOF
@@ -112,13 +111,13 @@ server_datasets() { ## : Counts of datasets
 	EOF
 
 	op="="
-	if (( $# > 1 )); then
-		op="$2"
+	if [[ -n "$arg_op" ]]; then
+		op="$arg_op"
 	fi
 
 	date_filter=""
-	if (( $# > 0 )); then
-		date_filter="WHERE date_trunc('day', create_time AT TIME ZONE 'UTC') $op '$1'::date"
+	if [[ -n "$arg_date" ]]; then
+		date_filter="WHERE date_trunc('day', create_time AT TIME ZONE 'UTC') $op '$arg_date'::date"
 	fi
 
 	fields="count=4;size=5"
@@ -140,7 +139,7 @@ server_datasets() { ## : Counts of datasets
 	EOF
 }
 
-server_hda() { ## : Counts of HDAs
+server_hda() { ##? [--op=<...>] [--date=<yyyy-mm-dd>] : Counts of HDAs
 	meta <<-EOF
 		ADDED: 12
 	EOF
@@ -148,13 +147,13 @@ server_hda() { ## : Counts of HDAs
 	EOF
 
 	op="="
-	if (( $# > 1 )); then
-		op="$2"
+	if [[ -n "$arg_op" ]]; then
+		op="$arg_op"
 	fi
 
 	date_filter=""
-	if (( $# > 0 )); then
-		date_filter="AND date_trunc('day', history_dataset_association.create_time AT TIME ZONE 'UTC') $op '$1'::date"
+	if [[ -n "$arg_date" ]]; then
+		date_filter="AND date_trunc('day', history_dataset_association.create_time AT TIME ZONE 'UTC') $op '$arg_date'::date"
 	fi
 
 	fields="sum=2;avg=3;min=4;max=5;count=6"
@@ -179,7 +178,7 @@ server_hda() { ## : Counts of HDAs
 	EOF
 }
 
-server_ts-repos() { ## : Counts of TS repos
+server_ts-repos() { ##? [--op=<...>] [--date=<yyyy-mm-dd>] : Counts of TS repos
 	meta <<-EOF
 		ADDED: 12
 	EOF
@@ -187,13 +186,13 @@ server_ts-repos() { ## : Counts of TS repos
 	EOF
 
 	op="="
-	if (( $# > 1 )); then
-		op="$2"
+	if [[ -n "$arg_op" ]]; then
+		op="$arg_op"
 	fi
 
 	date_filter=""
-	if (( $# > 0 )); then
-		date_filter="WHERE date_trunc('day', create_time AT TIME ZONE 'UTC') $op '$1'::date"
+	if [[ -n "$arg_date" ]]; then
+		date_filter="WHERE date_trunc('day', create_time AT TIME ZONE 'UTC') $op '$arg_date'::date"
 	fi
 
 	fields="count=2"
@@ -211,7 +210,7 @@ server_ts-repos() { ## : Counts of TS repos
 	EOF
 }
 
-server_histories() { ## : Counts of histories and sharing
+server_histories() { ##? [--op=<...>] [--date=<yyyy-mm-dd>] : Counts of histories and sharing
 	meta <<-EOF
 		ADDED: 12
 	EOF
@@ -219,13 +218,13 @@ server_histories() { ## : Counts of histories and sharing
 	EOF
 
 	op="="
-	if (( $# > 1 )); then
-		op="$2"
+	if [[ -n "$arg_op" ]]; then
+		op="$arg_op"
 	fi
 
 	date_filter=""
-	if (( $# > 0 )); then
-		date_filter="WHERE date_trunc('day', create_time AT TIME ZONE 'UTC') $op '$1'::date"
+	if [[ -n "$arg_date" ]]; then
+		date_filter="WHERE date_trunc('day', create_time AT TIME ZONE 'UTC') $op '$arg_date'::date"
 	fi
 
 	fields="count=6"
@@ -242,7 +241,7 @@ server_histories() { ## : Counts of histories and sharing
 }
 
 
-server_jobs() { ## : Counts of jobs
+server_jobs() { ##? [--op=<...>] [--date=<yyyy-mm-dd>] : Counts of jobs
 	meta <<-EOF
 		ADDED: 12
 	EOF
@@ -250,13 +249,13 @@ server_jobs() { ## : Counts of jobs
 	EOF
 
 	op="="
-	if (( $# > 1 )); then
-		op="$2"
+	if [[ -n "$arg_op" ]]; then
+		op="$arg_op"
 	fi
 
 	date_filter=""
-	if (( $# > 0 )); then
-		date_filter="WHERE date_trunc('day', create_time AT TIME ZONE 'UTC') $op '$1'::date"
+	if [[ -n "$arg_date" ]]; then
+		date_filter="WHERE date_trunc('day', create_time AT TIME ZONE 'UTC') $op '$arg_date'::date"
 	fi
 
 	fields="count=3"
@@ -275,7 +274,7 @@ server_jobs() { ## : Counts of jobs
 	EOF
 }
 
-server_allocated-cpu() { ## : CPU time per job runner
+server_allocated-cpu() { ##? [--op=<...>] [--date=<yyyy-mm-dd>] : CPU time per job runner
 	meta <<-EOF
 		ADDED: 12
 	EOF
@@ -283,13 +282,13 @@ server_allocated-cpu() { ## : CPU time per job runner
 	EOF
 
 	op="="
-	if (( $# > 1 )); then
-		op="$2"
+	if [[ -n "$arg_op" ]]; then
+		op="$arg_op"
 	fi
 
 	date_filter=""
-	if (( $# > 0 )); then
-		date_filter="AND date_trunc('day', job.create_time AT TIME ZONE 'UTC') $op '$1'::date"
+	if [[ -n "$arg_date" ]]; then
+		date_filter="AND date_trunc('day', job.create_time AT TIME ZONE 'UTC') $op '$arg_date'::date"
 	fi
 
 	# TODO: here we select the hostname, don't do that.
@@ -318,7 +317,7 @@ server_allocated-cpu() { ## : CPU time per job runner
 	EOF
 }
 
-server_allocated-gpu() { ## : GPU time per job runner
+server_allocated-gpu() { ##? [--op=<...>] [--date=<yyyy-mm-dd>] : GPU time per job runner
 	meta <<-EOF
 		ADDED: 14
 	EOF
@@ -326,13 +325,13 @@ server_allocated-gpu() { ## : GPU time per job runner
 	EOF
 
 	op="="
-	if (( $# > 1 )); then
-		op="$2"
+	if [[ -n "$arg_op" ]]; then
+		op="$arg_op"
 	fi
 
 	date_filter=""
-	if (( $# > 0 )); then
-		date_filter="AND date_trunc('day', job.create_time AT TIME ZONE 'UTC') $op '$1'::date"
+	if [[ -n "$arg_date" ]]; then
+		date_filter="AND date_trunc('day', job.create_time AT TIME ZONE 'UTC') $op '$arg_date'::date"
 	fi
 
 	fields="gpu_seconds=1"
@@ -357,7 +356,7 @@ server_allocated-gpu() { ## : GPU time per job runner
 	EOF
 }
 
-server_workflows() { ## : Counts of workflows
+server_workflows() { ##? [--op=<...>] [--date=<yyyy-mm-dd>] : Counts of workflows
 	meta <<-EOF
 		ADDED: 12
 	EOF
@@ -365,13 +364,13 @@ server_workflows() { ## : Counts of workflows
 	EOF
 
 	op="="
-	if (( $# > 1 )); then
-		op="$2"
+	if [[ -n "$arg_op" ]]; then
+		op="$arg_op"
 	fi
 
 	date_filter=""
-	if (( $# > 0 )); then
-		date_filter="WHERE date_trunc('day', create_time AT TIME ZONE 'UTC') $op '$1'::date"
+	if [[ -n "$arg_date" ]]; then
+		date_filter="WHERE date_trunc('day', create_time AT TIME ZONE 'UTC') $op '$arg_date'::date"
 	fi
 
 	fields="count=3"
@@ -388,7 +387,7 @@ server_workflows() { ## : Counts of workflows
 	EOF
 }
 
-server_workflow-invocations() { ## : Counts of workflow invocations
+server_workflow-invocations() { ##? [--op=<...>] [--date=<yyyy-mm-dd>] : Counts of workflow invocations
 	meta <<-EOF
 		ADDED: 12
 	EOF
@@ -396,13 +395,13 @@ server_workflow-invocations() { ## : Counts of workflow invocations
 	EOF
 
 	op="="
-	if (( $# > 1 )); then
-		op="$2"
+	if [[ -n "$arg_op" ]]; then
+		op="$arg_op"
 	fi
 
 	date_filter=""
-	if (( $# > 0 )); then
-		date_filter="WHERE date_trunc('day', create_time AT TIME ZONE 'UTC') $op '$1'::date"
+	if [[ -n "$arg_date" ]]; then
+		date_filter="WHERE date_trunc('day', create_time AT TIME ZONE 'UTC') $op '$arg_date'::date"
 	fi
 
 	fields="count=2"
@@ -421,7 +420,7 @@ server_workflow-invocations() { ## : Counts of workflow invocations
 	EOF
 }
 
-server_groups-disk-usage() { ## [YYYY-MM-DD] [=, <=, >= operators]: Retrieve an approximation of the disk usage for groups
+server_groups-disk-usage() { ##? [--op=<...>] [--date=<yyyy-mm-dd>] : Retrieve an approximation of the disk usage for groups
 	meta <<-EOF
 		ADDED: 14
 	EOF
@@ -429,13 +428,13 @@ server_groups-disk-usage() { ## [YYYY-MM-DD] [=, <=, >= operators]: Retrieve an 
 	EOF
 
 	op="="
-	if (( $# > 1 )); then
-		op="$2"
+	if [[ -n "$arg_op" ]]; then
+		op="$arg_op"
 	fi
 
 	date_filter=""
-	if (( $# > 0 )); then
-		date_filter="AND date_trunc('day', dataset.create_time AT TIME ZONE 'UTC') $op '$1'::date"
+	if [[ -n "$arg_date" ]]; then
+		date_filter="AND date_trunc('day', dataset.create_time AT TIME ZONE 'UTC') $op '$arg_date'::date"
 	fi
 
 	groupname=$(gdpr_safe galaxy_group.name group_name 'Anonymous')
@@ -461,7 +460,7 @@ server_groups-disk-usage() { ## [YYYY-MM-DD] [=, <=, >= operators]: Retrieve an 
 	EOF
 }
 
-server_groups-allocated-cpu() { ## [YYYY-MM-DD] [=, <=, >= operators]: Retrieve an approximation of the CPU allocation for groups
+server_groups-allocated-cpu() { ##? [--op=<...>] [--date=<yyyy-mm-dd>] : Retrieve an approximation of the CPU allocation for groups
 	meta <<-EOF
 		ADDED: 14
 	EOF
@@ -469,13 +468,13 @@ server_groups-allocated-cpu() { ## [YYYY-MM-DD] [=, <=, >= operators]: Retrieve 
 	EOF
 
 	op="="
-	if (( $# > 1 )); then
-		op="$2"
+	if [[ -n "$arg_op" ]]; then
+		op="$arg_op"
 	fi
 
 	date_filter=""
-	if (( $# > 0 )); then
-		date_filter="AND date_trunc('day', job.create_time AT TIME ZONE 'UTC') $op '$1'::date"
+	if [[ -n "$arg_date" ]]; then
+		date_filter="AND date_trunc('day', job.create_time AT TIME ZONE 'UTC') $op '$arg_date'::date"
 	fi
 
 	groupname=$(gdpr_safe galaxy_group.name group_name 'Anonymous')
@@ -514,7 +513,7 @@ server_groups-allocated-cpu() { ## [YYYY-MM-DD] [=, <=, >= operators]: Retrieve 
 	EOF
 }
 
-server_groups-allocated-gpu() { ## [YYYY-MM-DD] [=, <=, >= operators]: Retrieve an approximation of the GPU allocation for groups
+server_groups-allocated-gpu() { ##? [--op=<...>] [--date=<yyyy-mm-dd>] : Retrieve an approximation of the GPU allocation for groups
 	meta <<-EOF
 		ADDED: 14
 	EOF
@@ -522,13 +521,13 @@ server_groups-allocated-gpu() { ## [YYYY-MM-DD] [=, <=, >= operators]: Retrieve 
 	EOF
 
 	op="="
-	if (( $# > 1 )); then
-		op="$2"
+	if [[ -n "$arg_op" ]]; then
+		op="$arg_op"
 	fi
 
 	date_filter=""
-	if (( $# > 0 )); then
-		date_filter="AND date_trunc('day', job.create_time AT TIME ZONE 'UTC') $op '$1'::date"
+	if [[ -n "$arg_date" ]]; then
+		date_filter="AND date_trunc('day', job.create_time AT TIME ZONE 'UTC') $op '$arg_date'::date"
 	fi
 
 	groupname=$(gdpr_safe galaxy_group.name group_name 'Anonymous')
