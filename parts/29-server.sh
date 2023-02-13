@@ -420,6 +420,39 @@ server_workflow-invocations() { ##? [--op=<...>] [--date=<yyyy-mm-dd>] : Counts 
 	EOF
 }
 
+server_disk-usage() { ##? [--op=<...>] [--date=<yyyy-mm-dd>] : Retrieve an approximation of the global disk usage
+	handle_help "$@" <<-EOF
+		ADDED: 21
+		AUTHORS: abretaud
+	EOF
+	handle_help "$@" <<-EOF
+	EOF
+
+	op="="
+	if [[ -n "$arg_op" ]]; then
+		op="$arg_op"
+	fi
+
+	date_filter=""
+	if [[ -n "$arg_date" ]]; then
+		date_filter="AND date_trunc('day', dataset.create_time AT TIME ZONE 'UTC') $op '$arg_date'::date"
+	fi
+
+	fields="count=1"
+	tags="object_store_id=0"
+
+	read -r -d '' QUERY <<-EOF
+			SELECT
+				CASE WHEN object_store_id IS NOT null THEN object_store_id ELSE '_null_' END AS object_store_id,
+				sum(coalesce(dataset.total_size, dataset.file_size, 0))
+			FROM dataset
+			WHERE NOT purged
+			$date_filter
+			GROUP BY object_store_id
+			ORDER BY sum(coalesce(dataset.total_size, dataset.file_size, 0)) DESC
+	EOF
+}
+
 server_groups-disk-usage() { ##? [--op=<...>] [--date=<yyyy-mm-dd>] : Retrieve an approximation of the disk usage for groups
 	meta <<-EOF
 		ADDED: 14

@@ -8,7 +8,8 @@
 	- query potentially-duplicated-datasets, finds duplicate datasets @hexylena
 	- query potentially-duplicated-reclaimable-space, finds the potential reclaimable space, @hexylena
 	- CGI mode, use sudo fcgiwrap -s unix:/run/cgi.sock -f -p pwd/gxadmin to activate, wrap in nginx, @hexylena
-	- server oidc command to get history of OIDC user creations, thanks @abretaud
+	- server users-with-oidc command to get history of OIDC user creations, thanks @abretaud
+	- server disk-usage command to get history of disk usage, thanks @abretaud
 - Updated:
 	- Add summary and limit options to tool-metrics query, by @natefoo.
 	- Updated the Wonderful Argument Parser with a fancier version, @hexylena
