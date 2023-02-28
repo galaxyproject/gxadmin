@@ -152,7 +152,7 @@ meta_slurp-current() { ## [--date] [slurp-name [2nd-slurp-name [...]]]: Executes
 	num_slurps=${#specific_slurp[@]}
 
 	if (( num_slurps > 0 )); then
-		funcs="${specific_slurp[@]}"
+		funcs=("${specific_slurp[@]}")
 	else
 		funcs=($(meta_find_slurpable | paste -s -d' '))
 	fi
@@ -181,7 +181,7 @@ meta_slurp-upto() { ## <yyyy-mm-dd> [slurp-name [2nd-slurp-name [...]]]: Slurps 
 	num_slurps=${#specific_slurp[@]}
 
 	if (( num_slurps > 0 )); then
-		funcs="${specific_slurp[@]}"
+		funcs=("${specific_slurp[@]}")
 	else
 		funcs=($(meta_find_slurpable | paste -s -d' '))
 	fi
@@ -245,7 +245,7 @@ meta_slurp-day() { ## <yyyy-mm-dd> [slurp-name [2nd-slurp-name [...]]]: Slurps d
 	num_slurps=${#specific_slurp[@]}
 
 	if (( num_slurps > 0 )); then
-		funcs="${specific_slurp[@]}"
+		funcs=("${specific_slurp[@]}")
 	else
 		funcs=($(meta_find_slurpable | paste -s -d' '))
 	fi
