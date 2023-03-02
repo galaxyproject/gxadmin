@@ -9,7 +9,7 @@ query_tbl_sqlite() {
 }
 
 query_tbl_wrapper() {
-	if (( GXADMIN_EXPERIMENT_SQLITE3 == 1 )) then
+	if (( GXADMIN_EXPERIMENT_SQLITE3 == 1 )); then
 		query_tbl_sqlite "$1"
 	else
 		query_tbl "$1"
