@@ -578,7 +578,7 @@ query_jobs-nonterminal() { ## [--states=new,queued,running] [--update-time] [--o
 	handle_help "$@" <<-EOF
 		You can request the user information by username, id, and user email
 
-		    $ gxadmin query jobs-nonterminal helena-rasche
+		    $ gxadmin query jobs-nonterminal helena-Rasche
 		       id    | tool_id             |  state  |        create_time         | runner | ext_id |     handler     | user_id
 		    ---------+---------------------+---------+----------------------------+--------+--------+-----------------+---------
 		     4760549 | featurecounts/1.6.3 | running | 2019-01-18 14:05:14.871711 | condor | 197549 | handler_main_7  | 599
@@ -890,7 +890,7 @@ query_training-members() { ##? <tr_id>: List users in a specific training
 		    $ gxadmin query training-members hts2018
 		          username      |       joined
 		    --------------------+---------------------
-		     helena-rasche      | 2018-09-21 21:42:01
+		     helena-Rasche      | 2018-09-21 21:42:01
 	EOF
 
 	# Remove training- if they used it.
@@ -1245,20 +1245,21 @@ query_tool-metrics() { ##? <tool_id> <metric_id> [last=-1] [--like] [--ok] [--su
 
 		    $ gxadmin tsvquery tool-metrics %rgrnastar/rna_star% memory.max_usage_in_bytes --like | \\
 		        awk '{print \$1 / 1024 / 1024 / 1024}' | \\
-		        histogram.py --percentage
-		    # NumSamples = 441; Min = 2.83; Max = 105.88
-		    # Mean = 45.735302; Variance = 422.952289; SD = 20.565804; Median 51.090900
-		    # each ∎ represents a count of 1
-		        2.8277 -    13.1324 [    15]: ∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎ (3.40%)
-		       13.1324 -    23.4372 [    78]: ∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎ (17.69%)
-		       23.4372 -    33.7419 [    47]: ∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎ (10.66%)
-		       33.7419 -    44.0466 [    31]: ∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎ (7.03%)
-		       44.0466 -    54.3514 [    98]: ∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎ (22.22%)
-		       54.3514 -    64.6561 [   102]: ∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎ (23.13%)
-		       64.6561 -    74.9608 [    55]: ∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎ (12.47%)
-		       74.9608 -    85.2655 [    11]: ∎∎∎∎∎∎∎∎∎∎∎ (2.49%)
-		       85.2655 -    95.5703 [     3]: ∎∎∎ (0.68%)
-		       95.5703 -   105.8750 [     1]: ∎ (0.23%)
+		        | gxadmin filter histogram
+		    (   0.104,   12.614) n=23228 **************
+		    [  12.614,   25.124) n=15873 *********
+		    [  25.124,   37.634) n=80849 **************************************************
+		    [  37.634,   50.144) n=45171 ***************************
+		    [  50.144,   62.654) n=37672 ***********************
+		    [  62.654,   75.163) n=20549 ************
+		    [  75.163,   87.673) n=7726  ****
+		    [  87.673,  100.183) n=7390  ****
+		    [ 100.183,  112.693) n=4309  **
+		    [ 112.693,  125.203) n=1686  *
+		    [ 125.203,  137.713) n=975
+		    [ 137.713,  150.223) n=970
+		    [ 150.223,  162.733) n=746
+
 
 		The optional 'last' argument can be used to limit the number of most recent jobs that will be checked.
 		The default is all jobs. Note that this can return zero results if your most recent jobs have not
