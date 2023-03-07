@@ -1292,7 +1292,7 @@ query_tool-metrics() { ##? <tool_id> <metric_id> [last=-1] [--like] [--ok] [--su
 				metric_value
 			FROM job_metric_numeric
 			WHERE
-				metric_name = 'runtime_seconds'
+				metric_name = '$arg_metric_id'
 				and
 				job_id in (
 					$tool_subquery

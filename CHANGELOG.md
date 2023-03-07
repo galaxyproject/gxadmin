@@ -2,6 +2,8 @@
 
 - Added:
     - filter histogram: replaces bit.ly's data_hacks with a built-in AWK program to calculate a histogram. May not be entirely portable @hexylena.
+- Fixed:
+	- Replaced hardcoded metric_name with the variable in query_tool-metrics function @sanjaysrikakulam
 
 # 21
 
