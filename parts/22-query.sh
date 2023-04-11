@@ -2690,7 +2690,7 @@ query_old-histories(){ ##? <weeks>: Lists histories that haven't been updated (u
 }
 
 # TODO(hxr): generic summation by metric? Leave math to consumer?
-query_jobs-max-by-cpu-hours() { ## : Top 10 jobs by CPU hours consumed (requires CGroups metrics)
+query_jobs-max-by-cpu-days() { ## : Top 10 jobs by CPU days consumed (requires CGroups metrics)
 	meta <<-EOF
 		ADDED: 12
 	EOF
@@ -2707,7 +2707,7 @@ query_jobs-max-by-cpu-hours() { ## : Top 10 jobs by CPU hours consumed (requires
 		WHERE
 			job.id = job_metric_numeric.job_id
 			AND metric_name = 'cpuacct.usage'
-		ORDER BY cpu_hours desc
+		ORDER BY cpu_days desc
 		LIMIT 30
 	EOF
 }
