@@ -2707,7 +2707,7 @@ query_jobs-max-by-cpu-hours() { ## : Top 10 jobs by CPU hours consumed (requires
 		WHERE
 			job.id = job_metric_numeric.job_id
 			AND metric_name = 'cpuacct.usage'
-		ORDER BY cpu_hours desc
+		ORDER BY cpu_days desc
 		LIMIT 30
 	EOF
 }
