@@ -4743,69 +4743,182 @@ query_potentially-duplicated-reclaimable-space() { ##?
 	EOF
 }
 
-query_tpt-tool-cpu-month() {
+query_tpt-tool-cpu() { ##? --startyear=YYYY [--endyear=YYYY] [--formula=avg] Start year is required. Formula returns sum if blank.
+	meta <<-EOF
+		AUTHORS: hujambo-dunia
+	EOF
 	handle_help "$@" <<-EOF
 		Tool Performance Tracking: CPU by Month-Year.
+
+		    $ gxadmin tpt-tool-cpu
+		              tool_id          |   month    | seconds | destination_id
+		    ---------------------------+------------+--------------------------
+		     circos                    | 2019-02-01 | 2329342 | multicore
+		     upload1                   | 2019-02-01 | 1243878 | multicore
+		     require_format            | 2019-02-01 |  933630 | multicore
+		     circos_gc_skew            | 2019-02-01 |  752233 | multicore
+		     circos_wiggle_to_scatter  | 2019-02-01 |  337924 | normal
+		     test_history_sanitization | 2019-02-01 |  246521 | normal
+		     circos_interval_to_tile   | 2019-02-01 |  109382 | normal
+		     __SET_METADATA__          | 2019-02-01 |   82791 | normal
+		    (8 rows)
 	EOF
+	
+	filter_by_time_period = ""
+	if [ ! -z $arg_startyear ] && date -d "$arg_startyear" then
+		filter_by_time_period="date_trunc('year', job.create_time AT TIME ZONE 'UTC') >= '$arg_startyear-01-01'::date"
+	fi
+	if [ ! -z $arg_endyear ] && date -d "$arg_endyear" then
+		arg_endyear = $arg_endyear + 1
+		filter_by_time_period=$filter_by_time_period "AND date_trunc('year', job.create_time AT TIME ZONE 'UTC') < '$arg_endyear-01-01'::date"
+	fi
+
+	if [[ "$arg_formula" == "avg" ]] then
+		sql_formula="AVG"
+	else
+		sql_formula="SUM"
+	fi
 
 	read -r -d '' QUERY <<-EOF
 		WITH cpu_usage AS (
 			SELECT
 				DISTINCT job_id,
 				destination_id,
-				metric_value AS cpu_usage_seconds
+				metric_value / 1000000000 AS cpu_usage_seconds
 			FROM
 				job_metric_numeric
+			WHERE
+				metric_name = 'cpuacct.usage'
 		)
 		SELECT
-			date_trunc('month', job.create_time) AS date,
 			job.tool_id,
+			date_trunc('month', job.create_time) AS month,
 			cpu_usage.destination_id,
-			ROUND(AVG(cpu_usage.cpu_usage_seconds), 0) AS avg_cpu_time_seconds
+			ROUND($sql_formula(cpu_usage.cpu_usage_seconds), 0) AS seconds
 		FROM
 			job
 			JOIN cpu_usage ON job.id = cpu_usage.job_id
+		WHERE
+			$filter_by_time_period
 		GROUP BY
-			date,
+			month,
 			job.tool_id
 		ORDER BY
-			date ASC,
-			avg_cpu_time_seconds DESC
+			month ASC,
+			seconds DESC
 	EOF
 }
 
-query_tool-memory-month() {
+query_tpt-tool-users() { ##? --startyear=YYYY [--endyear=YYYY] Start year is required.
 	meta <<-EOF
-		ADDED: 21
+		AUTHORS: hujambo-dunia
+	EOF
+	handle_help "$@" <<-EOF
+		Tool Performance Tracking: Users by Month-Year.
+
+		    $ gxadmin tpt-tool-users
+		              tool_id          |   month    | count
+		    ---------------------------+------------+-------
+		     circos                    | 2019-02-01 |    20
+		     upload1                   | 2019-02-01 |    12
+		     require_format            | 2019-02-01 |     9
+		     circos_gc_skew            | 2019-02-01 |     7
+		     circos_wiggle_to_scatter  | 2019-02-01 |     3
+		     test_history_sanitization | 2019-02-01 |     2
+		     circos_interval_to_tile   | 2019-02-01 |     1
+		     __SET_METADATA__          | 2019-02-01 |     1
+		    (8 rows)
+	EOF
+	
+	filter_by_time_period = ""
+	if [ ! -z $arg_startyear ] && date -d "$arg_startyear" then
+		filter_by_time_period="date_trunc('year', job.create_time AT TIME ZONE 'UTC') >= '$arg_startyear-01-01'::date"
+	fi
+	if [ ! -z $arg_endyear ] && date -d "$arg_endyear" then
+		arg_endyear = $arg_endyear + 1
+		filter_by_time_period=$filter_by_time_period "AND date_trunc('year', job.create_time AT TIME ZONE 'UTC') < '$arg_endyear-01-01'::date"
+	fi
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			tool_id,
+			date_trunc('month', job.create_time AT TIME ZONE 'UTC') AS month,
+			COUNT(DISTINCT galaxy_user.username) AS count
+		FROM
+			job
+		FULL OUTER JOIN galaxy_user ON job.user_id = galaxy_user.id
+		WHERE
+			$filter_by_time_period
+		GROUP BY
+			month,
+			tool_id
+		ORDER BY
+			month ASC,
+			count DESC
+	EOF
+}
+
+query_tpt-tool-memory() { ##? --startyear=YYYY [--endyear=YYYY] [--formula=avg] Start year is required. Formula returns sum if blank.
+	meta <<-EOF
 		AUTHORS: hujambo-dunia
 	EOF
 	handle_help "$@" <<-EOF
 		Tool Performance Tracking: Memory by Month-Year.
+
+		    $ gxadmin tpt-tool-users
+		              tool_id          |   month    | consumed_gigabytes
+		    ---------------------------+------------+-------------------
+		     circos                    | 2019-02-01 |              24234
+		     upload1                   | 2019-02-01 |              12435
+		     require_format            | 2019-02-01 |               9535
+		     circos_gc_skew            | 2019-02-01 |               7163
+		     circos_wiggle_to_scatter  | 2019-02-01 |               3053
+		     test_history_sanitization | 2019-02-01 |               2390
+		     circos_interval_to_tile   | 2019-02-01 |               1315
+		     __SET_METADATA__          | 2019-02-01 |               1623
+		    (8 rows)
 	EOF
+	
+	filter_by_time_period = ""
+	if [ ! -z $arg_startyear ] && date -d "$arg_startyear" then
+		filter_by_time_period="date_trunc('year', job.create_time AT TIME ZONE 'UTC') >= '$arg_startyear-01-01'::date"
+	fi
+	if [ ! -z $arg_endyear ] && date -d "$arg_endyear" then
+		arg_endyear = $arg_endyear + 1
+		filter_by_time_period=$filter_by_time_period "AND date_trunc('year', job.create_time AT TIME ZONE 'UTC') < '$arg_endyear-01-01'::date"
+	fi
+
+	if [[ "$arg_formula" == "avg" ]] then
+		sql_formula="AVG"
+	else
+		sql_formula="SUM"
+	fi
 
 	read -r -d '' QUERY <<-EOF
-		WITH totalmem as (
-			SELECT 
-				distinct job_id, 
-				metric_value 
-			FROM 
+		WITH consumed_mem AS (
+			SELECT
+				DISTINCT job_id,
+				metric_value
+			FROM
 				job_metric_numeric
-			WHERE 
-				metric_name = 'memtotal'
+			WHERE
+				metric_name = 'memory.memsw.max_usage_in_bytes'
 		)
-		SELECT 
-			date_trunc('month', job.create_time) AS date,
+		SELECT
 			tool_id,
-			AVG(metric_value) AS avgMemory
-		FROM 
-			job 
-			JOIN totalmem ON job.id = totalmem.job_id
-		GROUP BY 
-			date,
+			date_trunc('month', job.create_time AT TIME ZONE 'UTC') AS month,
+			ROUND($sql_formula(metric_value) * 0.000000001, 0) AS consumed_gigabytes
+		FROM
+			job
+			JOIN consumed_mem ON job.id = consumed_mem.job_id
+		WHERE
+			$filter_by_time_period
+		GROUP BY
+			month,
 			tool_id
-		ORDER BY 
-			date ASC, 
-			avgMemory DESC
+		ORDER BY
+			month ASC,
+			consumed_gigabytes DESC
 	EOF
 }
 
