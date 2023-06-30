@@ -1161,11 +1161,6 @@ query_tool-use-by-group() { ##? <years_month> [--group=<name>]: Lists count of t
 
 EOFhelp
 	username=$(gdpr_safe galaxy_user.username username "Anonymous User")
-
-	group_filter=""
-		if [[ ! -n "$arg_group" ]] then
-			group_filter="AND galaxy_group.name = '$arg_group'"
-
 	read -r -d '' QUERY <<-EOF
 		SELECT
 			job.tool_id, $username, count(job.tool_id)
@@ -1177,7 +1172,6 @@ EOFhelp
 			user_group_association.group_id = galaxy_group.id
 		AND
 			user_group_association.user_id = galaxy_user.id
-		$group_filter
 		AND
 			date_trunc('month', job.create_time) = '$arg_year_month-01'
 		GROUP BY
