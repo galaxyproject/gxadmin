@@ -1,5 +1,5 @@
 assert_restart_lock(){
-	if [ -f "$HOME/.restart-lock" ]; then
+	if [[ -f "$HOME/.restart-lock" ]]; then
 		echo "A restart lock exists. This means someone is probably already restarting galaxy."
 		exit 3
 	fi

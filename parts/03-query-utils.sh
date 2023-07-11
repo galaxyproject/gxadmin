@@ -112,7 +112,7 @@ gdpr_safe() {
 		coalesce_to="__UNKNOWN__"
 	fi
 
-	if [ -z "$GDPR_MODE" ]; then
+	if [[ -z "$GDPR_MODE" ]]; then
 		echo "COALESCE($1::text, '$coalesce_to') as $2"
 	else
 		# Try and be privacy respecting while generating numbers that can allow
