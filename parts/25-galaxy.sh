@@ -424,7 +424,7 @@ galaxy_fix-conda-env() { ## <conda_dir/envs/>: Fix broken conda environments
 
 	for i in $(find ${conda_dir}/envs/ -mindepth 1 -maxdepth 1 -type d);
 	do
-		if [ ! -f $i/bin/conda ]; then
+		if [[ ! -f $i/bin/conda ]]; then
 			${conda_dir}/bin/conda ..checkenv bash $i
 		fi
 	done

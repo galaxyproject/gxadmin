@@ -414,7 +414,7 @@ query_queue() { ## [--by (tool|destination|user)]: Brief overview of currently r
 		fi
 	fi
 
-	if [ -z "${column_query:-}" ]; then
+	if [[ -z "${column_query:-}" ]]; then
 		column_query="$column"
 	fi
 
@@ -448,7 +448,7 @@ query_queue-overview() { ##? [--short-tool-id]: View used mostly for monitoring
 	fi
 
 	# Include by default
-	if [ -z "$GDPR_MODE"  ]; then
+	if [[ -z "$GDPR_MODE" ]]; then
 		user_id='user_id'
 	else
 		user_id="'0'"
@@ -631,13 +631,13 @@ query_jobs-nonterminal() { ## [--states=new,queued,running] [--update-time] [--o
 
 	if (( $# > 0 )); then
 		for args in "$@"; do
-			if [ "$args" = '--update-time' ]; then
+			if [[ "$args" = '--update-time' ]]; then
 				time_column='update_time'
-			elif [ "${args:0:9}" = '--states=' ]; then
+			elif [[ "${args:0:9}" = '--states=' ]]; then
 				states="${args:9}"
-			elif [ "${args:0:13}" = '--older-than=' ]; then
+			elif [[ "${args:0:13}" = '--older-than=' ]]; then
 				interval="${args:13}"
-			elif [ "${args:0:2}" != '==' ]; then
+			elif [[ "${args:0:2}" != '==' ]]; then
 				user_filter=$(get_user_filter "$1")
 			fi
 		done
@@ -645,7 +645,7 @@ query_jobs-nonterminal() { ## [--states=new,queued,running] [--update-time] [--o
 
 	states="'$(echo "$states" | sed "s/,/', '/g")'"
 
-	if [ -n "$interval" ]; then
+	if [[ -n "$interval" ]]; then
 		interval="AND job.$time_column < NOW() - interval '$interval'"
 	fi
 
@@ -2306,7 +2306,7 @@ query_monthly-users-registered(){ ## [year] [--by_group]: Number of users regist
 
 	if (( $# > 0 )); then
 		for args in "$@"; do
-			if [ "$args" = "--by_group" ]; then
+			if [[ "$args" = "--by_group" ]]; then
 				where_g="galaxy_user.id = user_group_association.user_id and galaxy_group.id = user_group_association.group_id"
 				select="galaxy_group.name,"
 				from="galaxy_group, user_group_association,"
@@ -2368,7 +2368,7 @@ query_monthly-users-active(){ ## [year] [--by_group]: Number of active users per
 
 	if (( $# > 0 )); then
 		for args in "$@"; do
-			if [ "$args" = "--by_group" ]; then
+			if [[ "$args" = "--by_group" ]]; then
 				where_g="job.user_id = user_group_association.user_id and user_group_association.group_id = galaxy_group.id"
 				select="galaxy_group.name,"
 				from=", user_group_association, galaxy_group"
@@ -2426,7 +2426,7 @@ query_monthly-jobs(){ ## [year] [--by_group]: Number of jobs run each month
 
 	if (( $# > 0 )); then
 		for args in "$@"; do
-			if [ "$args" = "--by_group" ]; then
+			if [[ "$args" = "--by_group" ]]; then
 				where_g="job.user_id = user_group_association.user_id and galaxy_group.id = user_group_association.group_id"
 				select="galaxy_group.name,"
 				from="galaxy_group, user_group_association,"
