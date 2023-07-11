@@ -4736,9 +4736,10 @@ query_potentially-duplicated-reclaimable-space() { ##?
 	EOF
 }
 
-query_tpt-tool-cpu() { ##? [--startyear=YYYY] [--endyear=YYYY] [--formula=avg]: Start year is required. Formula returns sum if blank.
+query_tpt-tool-cpu() { ##? [--startyear=<YYYY>] [--endyear=<YYYY>] [--formula=avg]: Start year is required. Formula returns sum if blank.
 	meta <<-EOF
 		AUTHORS: hujambo-dunia
+		ADDED: 20
 	EOF
 	handle_help "$@" <<-EOF
 		Tool Performance Tracking: CPU by Month-Year.
@@ -4804,9 +4805,10 @@ query_tpt-tool-cpu() { ##? [--startyear=YYYY] [--endyear=YYYY] [--formula=avg]: 
 	EOF
 }
 
-query_tpt-tool-users() { ##? [--startyear=YYYY] [--endyear=YYYY]: Start year is required.
+query_tpt-tool-users() { ##? [--startyear=<YYYY>] [--endyear=<YYYY>]: Start year is required.
 	meta <<-EOF
 		AUTHORS: hujambo-dunia
+		ADDED: 20
 	EOF
 	handle_help "$@" <<-EOF
 		Tool Performance Tracking: Users by Month-Year.
@@ -4855,9 +4857,10 @@ query_tpt-tool-users() { ##? [--startyear=YYYY] [--endyear=YYYY]: Start year is 
 	EOF
 }
 
-query_tpt-tool-memory() { ##? [--startyear=YYYY] [--endyear=] [--formula=avg]: Start year is required. Formula returns sum if blank.
+query_tpt-tool-memory() { ##? [--startyear=<YYYY>] [--endyear=<YYYY>] [--formula=avg]: Start year is required. Formula returns sum if blank.
 	meta <<-EOF
 		AUTHORS: hujambo-dunia
+		ADDED: 20
 	EOF
 	handle_help "$@" <<-EOF
 		Tool Performance Tracking: Memory by Month-Year.
