@@ -1457,7 +1457,7 @@ query_monthly-cpu-stats() { ##? [year] : CPU years/hours allocated to tools by m
 		     ...
 	EOF
 
-	if [[ ! -z $arg_year ]] then
+	if [[ ! -z $arg_year ]]; then
 	    filter_by_year="date_trunc('year', job.create_time AT TIME ZONE 'UTC') = '$arg_year-01-01'::date"
 	fi
 
