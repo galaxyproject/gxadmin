@@ -4758,14 +4758,14 @@ query_tpt-tool-cpu() { ##? --startyear=YYYY [--endyear=YYYY] [--formula=avg] Sta
 		    (8 rows)
 	EOF
 	
-	filter_by_time_period = ""
+	filter_by_time_period=""
 	if [[ ! -z $arg_startyear ]] then
 		date -d "$arg_startyear" || exit
 		filter_by_time_period="date_trunc('year', job.create_time AT TIME ZONE 'UTC') >= '$arg_startyear-01-01'::date"
 	fi
 	if [[ ! -z $arg_endyear ]] then
 		date -d "$arg_endyear" || exit
-		arg_endyear = $arg_endyear + 1
+		arg_endyear=$arg_endyear + 1
 		filter_by_time_period=$filter_by_time_period "AND date_trunc('year', job.create_time AT TIME ZONE 'UTC') < '$arg_endyear-01-01'::date"
 	fi
 
@@ -4826,14 +4826,14 @@ query_tpt-tool-users() { ##? --startyear=YYYY [--endyear=YYYY] Start year is req
 		    (8 rows)
 	EOF
 	
-	filter_by_time_period = ""
+	filter_by_time_period=""
 	if [[ ! -z $arg_startyear ]] then
 		date -d "$arg_startyear" || exit
 		filter_by_time_period="date_trunc('year', job.create_time AT TIME ZONE 'UTC') >= '$arg_startyear-01-01'::date"
 	fi
 	if [[ ! -z $arg_endyear ]] then
 		date -d "$arg_endyear" || exit
-		arg_endyear = $arg_endyear + 1
+		arg_endyear=$arg_endyear + 1
 		filter_by_time_period=$filter_by_time_period "AND date_trunc('year', job.create_time AT TIME ZONE 'UTC') < '$arg_endyear-01-01'::date"
 	fi
 
@@ -4877,14 +4877,14 @@ query_tpt-tool-memory() { ##? --startyear=YYYY [--endyear=YYYY] [--formula=avg] 
 		    (8 rows)
 	EOF
 	
-	filter_by_time_period = ""
+	filter_by_time_period=""
 	if [[ ! -z $arg_startyear ]] then
 		date -d "$arg_startyear" || exit
 		filter_by_time_period="date_trunc('year', job.create_time AT TIME ZONE 'UTC') >= '$arg_startyear-01-01'::date"
 	fi
 	if [[ ! -z $arg_endyear ]] then
 		date -d "$arg_endyear" || exit
-		arg_endyear = $arg_endyear + 1
+		arg_endyear=$arg_endyear + 1
 		filter_by_time_period=$filter_by_time_period "AND date_trunc('year', job.create_time AT TIME ZONE 'UTC') < '$arg_endyear-01-01'::date"
 	fi
 
