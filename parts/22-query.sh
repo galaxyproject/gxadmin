@@ -4737,7 +4737,7 @@ query_potentially-duplicated-reclaimable-space() { ##?
 	EOF
 }
 
-query_tpt-tool-cpu() { ##? --startyear=YYYY [--endyear=YYYY] [--formula=avg] Start year is required. Formula returns sum if blank.
+query_tpt-tool-cpu() { ##? --startyear=YYYY [--endyear=YYYY] [--formula=avg]: Start year is required. Formula returns sum if blank.
 	meta <<-EOF
 		AUTHORS: hujambo-dunia
 	EOF
@@ -4805,7 +4805,7 @@ query_tpt-tool-cpu() { ##? --startyear=YYYY [--endyear=YYYY] [--formula=avg] Sta
 	EOF
 }
 
-query_tpt-tool-users() { ##? --startyear=YYYY [--endyear=YYYY] Start year is required.
+query_tpt-tool-users() { ##? --startyear=YYYY [--endyear=YYYY]: Start year is required.
 	meta <<-EOF
 		AUTHORS: hujambo-dunia
 	EOF
@@ -4856,7 +4856,7 @@ query_tpt-tool-users() { ##? --startyear=YYYY [--endyear=YYYY] Start year is req
 	EOF
 }
 
-query_tpt-tool-memory() { ##? --startyear=YYYY [--endyear=YYYY] [--formula=avg] Start year is required. Formula returns sum if blank.
+query_tpt-tool-memory() { ##? --startyear=YYYY [--endyear=YYYY] [--formula=avg]: Start year is required. Formula returns sum if blank.
 	meta <<-EOF
 		AUTHORS: hujambo-dunia
 	EOF
