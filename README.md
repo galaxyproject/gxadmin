@@ -57,6 +57,7 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md)
 - Manuel Messner (mm@skellet.io)
 - Kim Brügger ([@bruggerk](https://github.com/bruggerk))
 - Catherine Bromhead ([@cat-bro](https://github.com/cat-bro))
+- Michelle Savage ([@hujambo-dunia](https://github.com/hujambo-dunia))
 
 ## License
 
