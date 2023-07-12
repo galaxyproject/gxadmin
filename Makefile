@@ -16,6 +16,7 @@ gxadmin: $(PARTS)
 	chmod +x gxadmin
 
 test:
+	shellcheck --exclude SC2148 parts/22-query.sh
 	@cat $(PARTS) > .tmpgxadmin
 	@chmod +x .tmpgxadmin
 	./test.sh

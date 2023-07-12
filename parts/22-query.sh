@@ -1457,7 +1457,7 @@ query_monthly-cpu-stats() { ##? [year] : CPU years/hours allocated to tools by m
 		     ...
 	EOF
 
-	if [[ ! -z $arg_year ]]; then
+	if [[ -n $arg_year ]]; then
 	    filter_by_year="date_trunc('year', job.create_time AT TIME ZONE 'UTC') = '$arg_year-01-01'::date"
 	fi
 
@@ -4241,7 +4241,7 @@ query_pulsar-gb-transferred()  { ##? [--bymonth] [--byrunner] [--human]: Counts 
 	fi
 
 	if [[ -n "$arg_byrunner" ]]; then
-		if [[ ! -n "$arg_bymonth" ]]; then
+		if [[ -z "$arg_bymonth" ]]; then
 			orderby="ORDER BY sent.runner ASC"
 		fi
 		ordering+=("sent.runner")
@@ -4750,11 +4750,11 @@ query_tpt-tool-cpu() { ##? [--startyear=<YYYY>] [--endyear=<YYYY>] [--formula=av
 	EOF
 	
 	filter_by_time_period=""
-	if [[ ! -z $arg_startyear ]]; then
+	if [[ -n $arg_startyear ]]; then
 		filter_by_time_period="date_trunc('year', job.create_time AT TIME ZONE 'UTC') >= '$arg_startyear-01-01'::date"
 	fi
-	if [[ ! -z $arg_endyear ]]; then
-		arg_endyear=$arg_endyear + 1
+	if [[ -n $arg_endyear ]]; then
+		arg_endyear=$((arg_endyear + 1))
 		filter_by_time_period=$filter_by_time_period "AND date_trunc('year', job.create_time AT TIME ZONE 'UTC') < '$arg_endyear-01-01'::date"
 	fi
 
@@ -4817,11 +4817,11 @@ query_tpt-tool-users() { ##? [--startyear=<YYYY>] [--endyear=<YYYY>]: Start year
 	EOF
 	
 	filter_by_time_period=""
-	if [[ ! -z $arg_startyear ]]; then
+	if [[ -n $arg_startyear ]]; then
 		filter_by_time_period="date_trunc('year', job.create_time AT TIME ZONE 'UTC') >= '$arg_startyear-01-01'::date"
 	fi
-	if [[ ! -z $arg_endyear ]]; then
-		arg_endyear=$arg_endyear + 1
+	if [[ -n $arg_endyear ]]; then
+		arg_endyear=$((arg_endyear + 1))
 		filter_by_time_period=$filter_by_time_period "AND date_trunc('year', job.create_time AT TIME ZONE 'UTC') < '$arg_endyear-01-01'::date"
 	fi
 
@@ -4867,11 +4867,11 @@ query_tpt-tool-memory() { ##? [--startyear=<YYYY>] [--endyear=<YYYY>] [--formula
 	EOF
 	
 	filter_by_time_period=""
-	if [[ ! -z $arg_startyear ]]; then
+	if [[ -n $arg_startyear ]]; then
 		filter_by_time_period="date_trunc('year', job.create_time AT TIME ZONE 'UTC') >= '$arg_startyear-01-01'::date"
 	fi
-	if [[ ! -z $arg_endyear ]]; then
-		arg_endyear=$arg_endyear + 1
+	if [[ -n $arg_endyear ]]; then
+		arg_endyear=$((arg_endyear + 1))
 		filter_by_time_period=$filter_by_time_period "AND date_trunc('year', job.create_time AT TIME ZONE 'UTC') < '$arg_endyear-01-01'::date"
 	fi
 
