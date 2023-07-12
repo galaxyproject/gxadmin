@@ -32,7 +32,7 @@ Command | Description
 [`query job-state`](#query-job-state) | Get current job state given a job ID
 [`query job-state-stats`](#query-job-state-stats) | Shows all jobs states for the last 30 days in a table counted by state
 [`query jobs`](#query-jobs) | List jobs ordered by most recently updated. = is required.
-[`query jobs-max-by-cpu-hours`](#query-jobs-max-by-cpu-hours) | Top 10 jobs by CPU hours consumed (requires CGroups metrics)
+[`query jobs-max-by-cpu-days`](#query-jobs-max-by-cpu-days) | Top 10 jobs by CPU days consumed (requires CGroups metrics)
 [`query jobs-nonterminal`](#query-jobs-nonterminal) | Job info of nonterminal jobs separated by user
 [`query jobs-per-user`](#query-jobs-per-user) | Number of jobs run by a specific user
 [`query jobs-queued`](#query-jobs-queued) | How many queued jobs have external cluster IDs
@@ -89,6 +89,9 @@ Command | Description
 [`query tool-usage-over-time`](#query-tool-usage-over-time) | Counts of tool runs by month, filtered by a tool id search
 [`query tool-use-by-group`](#query-tool-use-by-group) | Lists count of tools used by all users in a group
 [`query total-jobs`](#query-total-jobs) | Total number of jobs run by galaxy instance
+[`query tpt-tool-cpu`](#query-tpt-tool-cpu) | Start year is required. Formula returns sum if blank.
+[`query tpt-tool-memory`](#query-tpt-tool-memory) | Start year is required. Formula returns sum if blank.
+[`query tpt-tool-users`](#query-tpt-tool-users) | Start year is required.
 [`query training-list`](#query-training-list) | List known trainings
 [`query training-members`](#query-training-members) | List users in a specific training
 [`query training-members-remove`](#query-training-members-remove) | Remove a user from a training
@@ -706,14 +709,14 @@ tool_id or user. By default up to 50 rows are returned which can be adjusted wit
      14071 | 2022-09-08 05:38:25 | 2022-09-08 06:15:22 |       3 | error | toolshed.g2.bx.psu.edu/repos/bgruening/bionano_scaffold/bionano_scaffold/3.6.1+galaxy3 | handler_1           | pulsar-nci-test             | 14071
 
 
-## query jobs-max-by-cpu-hours
+## query jobs-max-by-cpu-days
 
-([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_jobs-max-by-cpu-hours&type=Code))
-query jobs-max-by-cpu-hours -  Top 10 jobs by CPU hours consumed (requires CGroups metrics)
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_jobs-max-by-cpu-days&type=Code))
+query jobs-max-by-cpu-days -  Top 10 jobs by CPU days consumed (requires CGroups metrics)
 
 **SYNOPSIS**
 
-    gxadmin query jobs-max-by-cpu-hours
+    gxadmin query jobs-max-by-cpu-days
 
 
 ## query jobs-nonterminal
@@ -729,7 +732,7 @@ query jobs-nonterminal -  Job info of nonterminal jobs separated by user
 
 You can request the user information by username, id, and user email
 
-    $ gxadmin query jobs-nonterminal helena-rasche
+    $ gxadmin query jobs-nonterminal helena-Rasche
        id    | tool_id             |  state  |        create_time         | runner | ext_id |     handler     | user_id
     ---------+---------------------+---------+----------------------------+--------+--------+-----------------+---------
      4760549 | featurecounts/1.6.3 | running | 2019-01-18 14:05:14.871711 | condor | 197549 | handler_main_7  | 599
@@ -1860,20 +1863,21 @@ do some aggregations. The following requires [data_hacks](https://github.com/bit
 
     $ gxadmin tsvquery tool-metrics %rgrnastar/rna_star% memory.max_usage_in_bytes --like | \
         awk '{print $1 / 1024 / 1024 / 1024}' | \
-        histogram.py --percentage
-    # NumSamples = 441; Min = 2.83; Max = 105.88
-    # Mean = 45.735302; Variance = 422.952289; SD = 20.565804; Median 51.090900
-    # each ∎ represents a count of 1
-        2.8277 -    13.1324 [    15]: ∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎ (3.40%)
-       13.1324 -    23.4372 [    78]: ∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎ (17.69%)
-       23.4372 -    33.7419 [    47]: ∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎ (10.66%)
-       33.7419 -    44.0466 [    31]: ∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎ (7.03%)
-       44.0466 -    54.3514 [    98]: ∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎ (22.22%)
-       54.3514 -    64.6561 [   102]: ∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎ (23.13%)
-       64.6561 -    74.9608 [    55]: ∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎ (12.47%)
-       74.9608 -    85.2655 [    11]: ∎∎∎∎∎∎∎∎∎∎∎ (2.49%)
-       85.2655 -    95.5703 [     3]: ∎∎∎ (0.68%)
-       95.5703 -   105.8750 [     1]: ∎ (0.23%)
+        | gxadmin filter histogram
+    (   0.104,   12.614) n=23228 **************
+    [  12.614,   25.124) n=15873 *********
+    [  25.124,   37.634) n=80849 **************************************************
+    [  37.634,   50.144) n=45171 ***************************
+    [  50.144,   62.654) n=37672 ***********************
+    [  62.654,   75.163) n=20549 ************
+    [  75.163,   87.673) n=7726  ****
+    [  87.673,  100.183) n=7390  ****
+    [ 100.183,  112.693) n=4309  **
+    [ 112.693,  125.203) n=1686  *
+    [ 125.203,  137.713) n=975
+    [ 137.713,  150.223) n=970
+    [ 150.223,  162.733) n=746
+
 
 The optional 'last' argument can be used to limit the number of most recent jobs that will be checked.
 The default is all jobs. Note that this can return zero results if your most recent jobs have not
@@ -1994,7 +1998,7 @@ query tool-use-by-group -  Lists count of tools used by all users in a group
 
 **SYNOPSIS**
 
-    gxadmin query tool-use-by-group <year_month> <group>
+    gxadmin query tool-use-by-group <years_month> [--group=<name>]
 
 **NOTES**
 
@@ -2033,6 +2037,87 @@ Count total number of jobs
     (3 rows)
 
 
+## query tpt-tool-cpu
+
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_tpt-tool-cpu&type=Code))
+query tpt-tool-cpu -  Start year is required. Formula returns sum if blank.
+
+**SYNOPSIS**
+
+    gxadmin query tpt-tool-cpu [--startyear=<YYYY>] [--endyear=<YYYY>] [--formula=avg]
+
+**NOTES**
+
+Tool Performance Tracking: CPU by Month-Year.
+
+    $ gxadmin tpt-tool-cpu
+              tool_id          |   month    | seconds | destination_id
+    ---------------------------+------------+--------------------------
+     circos                    | 2019-02-01 | 2329342 | multicore
+     upload1                   | 2019-02-01 | 1243878 | multicore
+     require_format            | 2019-02-01 |  933630 | multicore
+     circos_gc_skew            | 2019-02-01 |  752233 | multicore
+     circos_wiggle_to_scatter  | 2019-02-01 |  337924 | normal
+     test_history_sanitization | 2019-02-01 |  246521 | normal
+     circos_interval_to_tile   | 2019-02-01 |  109382 | normal
+     __SET_METADATA__          | 2019-02-01 |   82791 | normal
+    (8 rows)
+
+
+## query tpt-tool-memory
+
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_tpt-tool-memory&type=Code))
+query tpt-tool-memory -  Start year is required. Formula returns sum if blank.
+
+**SYNOPSIS**
+
+    gxadmin query tpt-tool-memory [--startyear=<YYYY>] [--endyear=<YYYY>] [--formula=avg]
+
+**NOTES**
+
+Tool Performance Tracking: Memory by Month-Year.
+
+    $ gxadmin tpt-tool-users
+              tool_id          |   month    | consumed_gigabytes
+    ---------------------------+------------+-------------------
+     circos                    | 2019-02-01 |              24234
+     upload1                   | 2019-02-01 |              12435
+     require_format            | 2019-02-01 |               9535
+     circos_gc_skew            | 2019-02-01 |               7163
+     circos_wiggle_to_scatter  | 2019-02-01 |               3053
+     test_history_sanitization | 2019-02-01 |               2390
+     circos_interval_to_tile   | 2019-02-01 |               1315
+     __SET_METADATA__          | 2019-02-01 |               1623
+    (8 rows)
+
+
+## query tpt-tool-users
+
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_tpt-tool-users&type=Code))
+query tpt-tool-users -  Start year is required.
+
+**SYNOPSIS**
+
+    gxadmin query tpt-tool-users [--startyear=<YYYY>] [--endyear=<YYYY>]
+
+**NOTES**
+
+Tool Performance Tracking: Users by Month-Year.
+
+    $ gxadmin tpt-tool-users
+              tool_id          |   month    | count
+    ---------------------------+------------+-------
+     circos                    | 2019-02-01 |    20
+     upload1                   | 2019-02-01 |    12
+     require_format            | 2019-02-01 |     9
+     circos_gc_skew            | 2019-02-01 |     7
+     circos_wiggle_to_scatter  | 2019-02-01 |     3
+     test_history_sanitization | 2019-02-01 |     2
+     circos_interval_to_tile   | 2019-02-01 |     1
+     __SET_METADATA__          | 2019-02-01 |     1
+    (8 rows)
+
+
 ## query training-list
 
 ([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_training-list&type=Code))
@@ -2068,7 +2153,7 @@ query training-members -  List users in a specific training
     $ gxadmin query training-members hts2018
           username      |       joined
     --------------------+---------------------
-     helena-rasche      | 2018-09-21 21:42:01
+     helena-Rasche      | 2018-09-21 21:42:01
 
 
 ## query training-members-remove

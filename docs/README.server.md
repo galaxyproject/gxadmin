@@ -5,6 +5,7 @@ Command | Description
 [`server allocated-cpu`](#server-allocated-cpu) | CPU time per job runner
 [`server allocated-gpu`](#server-allocated-gpu) | GPU time per job runner
 [`server datasets`](#server-datasets) | Counts of datasets
+[`server disk-usage`](#server-disk-usage) | Retrieve an approximation of the global disk usage
 [`server groups`](#server-groups) | Counts of group memberships
 [`server groups-allocated-cpu`](#server-groups-allocated-cpu) | Retrieve an approximation of the CPU allocation for groups
 [`server groups-allocated-gpu`](#server-groups-allocated-gpu) | Retrieve an approximation of the GPU allocation for groups
@@ -14,6 +15,7 @@ Command | Description
 [`server jobs`](#server-jobs) | Counts of jobs
 [`server ts-repos`](#server-ts-repos) | Counts of TS repos
 [`server users`](#server-users) | Count of different classifications of users
+[`server users-with-oidc`](#server-users-with-oidc) | How many users logged in with OIDC
 [`server workflow-invocations`](#server-workflow-invocations) | Counts of workflow invocations
 [`server workflow-trace-archive-jobs`](#server-workflow-trace-archive-jobs) | [Workflow Trace Archive] Export jobs
 [`server workflow-trace-archive-metrics`](#server-workflow-trace-archive-metrics) | [Workflow Trace Archive] Export numeric metrics
@@ -32,7 +34,7 @@ server allocated-cpu -  CPU time per job runner
 
 **SYNOPSIS**
 
-    gxadmin server allocated-cpu
+    gxadmin server allocated-cpu [--op=<...>] [--date=<yyyy-mm-dd>]
 
 
 ## server allocated-gpu
@@ -42,7 +44,7 @@ server allocated-gpu -  GPU time per job runner
 
 **SYNOPSIS**
 
-    gxadmin server allocated-gpu
+    gxadmin server allocated-gpu [--op=<...>] [--date=<yyyy-mm-dd>]
 
 
 ## server datasets
@@ -52,7 +54,22 @@ server datasets -  Counts of datasets
 
 **SYNOPSIS**
 
-    gxadmin server datasets
+    gxadmin server datasets [--op=<...>] [--date=<yyyy-mm-dd>]
+
+
+## server disk-usage
+
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=server_disk-usage&type=Code))
+server disk-usage -  Retrieve an approximation of the global disk usage
+
+**SYNOPSIS**
+
+    gxadmin server disk-usage [--op=<...>] [--date=<yyyy-mm-dd>]
+
+**NOTES**
+
+ADDED: 21
+AUTHORS: abretaud
 
 
 ## server groups
@@ -62,7 +79,7 @@ server groups -  Counts of group memberships
 
 **SYNOPSIS**
 
-    gxadmin server groups
+    gxadmin server groups [--op=<...>] [--date=<yyyy-mm-dd>]
 
 
 ## server groups-allocated-cpu
@@ -72,7 +89,7 @@ server groups-allocated-cpu -  Retrieve an approximation of the CPU allocation f
 
 **SYNOPSIS**
 
-    gxadmin server groups-allocated-cpu [YYYY-MM-DD] [=, <=, >= operators]
+    gxadmin server groups-allocated-cpu [--op=<...>] [--date=<yyyy-mm-dd>]
 
 
 ## server groups-allocated-gpu
@@ -82,7 +99,7 @@ server groups-allocated-gpu -  Retrieve an approximation of the GPU allocation f
 
 **SYNOPSIS**
 
-    gxadmin server groups-allocated-gpu [YYYY-MM-DD] [=, <=, >= operators]
+    gxadmin server groups-allocated-gpu [--op=<...>] [--date=<yyyy-mm-dd>]
 
 
 ## server groups-disk-usage
@@ -92,7 +109,7 @@ server groups-disk-usage -  Retrieve an approximation of the disk usage for grou
 
 **SYNOPSIS**
 
-    gxadmin server groups-disk-usage [YYYY-MM-DD] [=, <=, >= operators]
+    gxadmin server groups-disk-usage [--op=<...>] [--date=<yyyy-mm-dd>]
 
 
 ## server hda
@@ -102,7 +119,7 @@ server hda -  Counts of HDAs
 
 **SYNOPSIS**
 
-    gxadmin server hda
+    gxadmin server hda [--op=<...>] [--date=<yyyy-mm-dd>]
 
 
 ## server histories
@@ -112,7 +129,7 @@ server histories -  Counts of histories and sharing
 
 **SYNOPSIS**
 
-    gxadmin server histories
+    gxadmin server histories [--op=<...>] [--date=<yyyy-mm-dd>]
 
 
 ## server jobs
@@ -122,7 +139,7 @@ server jobs -  Counts of jobs
 
 **SYNOPSIS**
 
-    gxadmin server jobs
+    gxadmin server jobs [--op=<...>] [--date=<yyyy-mm-dd>]
 
 
 ## server ts-repos
@@ -132,7 +149,7 @@ server ts-repos -  Counts of TS repos
 
 **SYNOPSIS**
 
-    gxadmin server ts-repos
+    gxadmin server ts-repos [--op=<...>] [--date=<yyyy-mm-dd>]
 
 
 ## server users
@@ -142,7 +159,17 @@ server users -  Count of different classifications of users
 
 **SYNOPSIS**
 
-    gxadmin server users
+    gxadmin server users [--op=<...>] [--date=<yyyy-mm-dd>]
+
+
+## server users-with-oidc
+
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=server_users-with-oidc&type=Code))
+server users-with-oidc -  How many users logged in with OIDC
+
+**SYNOPSIS**
+
+    gxadmin server users-with-oidc [--op=<...>] [--date=<yyyy-mm-dd>]
 
 
 ## server workflow-invocations
@@ -152,7 +179,7 @@ server workflow-invocations -  Counts of workflow invocations
 
 **SYNOPSIS**
 
-    gxadmin server workflow-invocations
+    gxadmin server workflow-invocations [--op=<...>] [--date=<yyyy-mm-dd>]
 
 
 ## server workflow-trace-archive-jobs
@@ -274,5 +301,5 @@ server workflows -  Counts of workflows
 
 **SYNOPSIS**
 
-    gxadmin server workflows
+    gxadmin server workflows [--op=<...>] [--date=<yyyy-mm-dd>]
 
