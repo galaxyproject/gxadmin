@@ -1,5 +1,6 @@
 # shellcheck disable=SC2154
 # shellcheck disable=SC2001
+# shellcheck disable=SC2034
 registered_subcommands="$registered_subcommands query"
 _query_short_help="DB Queries"
 _query_long_help="
@@ -485,10 +486,6 @@ query_queue-overview() { ##? [--short-tool-id]: View used mostly for monitoring
 	EOF
 }
 
-query_queue-details() {
-	query_queue-detail $@
-}
-
 query_queue-detail() { ##? [--all] [--seconds] [--since-update]: Detailed overview of running and queued jobs
 	handle_help "$@" <<-EOF
 		    $ gxadmin query queue-detail
@@ -812,15 +809,12 @@ query_monthly-job-runtimes() { ##? [--year=<YYYY>] [--month=<MM>] [--sub_dest=<N
 		group_by="GROUP BY user_email, month, substr(destination_id, 1, $arg_sub_dest)"
 	fi
 
-	if [[ -n "$arg_year" ]]  && [[ -n "$arg_month" ]] && date -d "$2" >/dev/null && date -d $4 >/dev/null
-	then
+	if [[ -n "$arg_year" ]]  && [[ -n "$arg_month" ]]; then
 		filter_by_time_period="AND date_trunc('month', job.create_time AT TIME ZONE 'UTC') = '${arg_year}-${arg_month}-01'::date"
 		year=$(date +'%Y')
-	elif [[ -n "$arg_year" ]] && date -d "$2" >/dev/null
-	then
+	elif [[ -n "$arg_year" ]]; then
 		filter_by_time_period="AND date_trunc('year', job.create_time AT TIME ZONE 'UTC') = '${arg_year}-01-01'::date"
-	elif [[ -n "$arg_month" ]] && date -d "$2" >/dev/null
-	then
+	elif [[ -n "$arg_month" ]]; then
 		year=$(date +'%Y')
 		filter_by_time_period="AND date_trunc('month', job.create_time AT TIME ZONE 'UTC') = '$year-${arg_month}-01'::date"
 	fi
@@ -2603,9 +2597,10 @@ query_job-info() { ## <-|job_id [job_id [...]]> : Retrieve information about job
 		job_ids=$(cat | paste -s -d' ')
 	else
 		# read from $@
-		job_ids=$@;
+		job_ids=$*;
 	fi
 
+	# shellcheck disable=SC2068
 	job_ids_string=$(join_by ',' ${job_ids[@]})
 
 	read -r -d '' QUERY <<-EOF
@@ -3737,7 +3732,7 @@ query_pg-stat-user-tables() { ## : stats about tables (tuples, index scans, vacu
 }
 
 query_data-origin-distribution-merged() {
-	summary="$(summary_statistics data $human)"
+	summary="$(summary_statistics data "$human")"
 	username=$(gdpr_safe job.user_id galaxy_user)
 
 	read -r -d '' QUERY <<-EOF
@@ -3836,7 +3831,7 @@ query_data-origin-distribution-summary() { ##? [--human]: breakdown of data sour
 	tags="dataorigin=0"
 	fields="min=1;q1=2;median=3;mean=4;q3=5;p95=6;p99=7;max=8;sum=9;stddev=10"
 
-	summary="$(summary_statistics data $arg_human)"
+	summary="$(summary_statistics data "$arg_human")"
 
 	read -r -d '' QUERY <<-EOF
 		WITH user_job_data AS (
@@ -3875,9 +3870,10 @@ query_aq() { ## <table> <column> <-|job_id [job_id [...]]>: Given a list of IDs 
 		ids=$(cat | paste -s -d' ')
 	else
 		# read from $@
-		ids=$@;
+		ids=$*;
 	fi
 
+	# shellcheck disable=SC2068
 	ids_string=$(join_by ',' ${ids[@]})
 
 	read -r -d '' QUERY <<-EOF
@@ -3892,7 +3888,7 @@ query_q() { ## <query>: Passes a raw SQL query directly through to the database
 	handle_help "$@" <<-EOF
 	EOF
 
-	QUERY="$@"
+	QUERY="$*"
 }
 
 query_good-for-pulsar() { ## : Look for jobs EU would like to send to pulsar

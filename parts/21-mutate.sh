@@ -527,6 +527,7 @@ mutate_restart-jobs() { ## [--commit] <-|job_id [job_id [...]]> : Restart some j
 		job_ids=$@;
 	fi
 
+	# shellcheck disable=SC2068
 	job_ids_string=$(join_by ',' ${job_ids[@]})
 
 	read -r -d '' QUERY <<-EOF
