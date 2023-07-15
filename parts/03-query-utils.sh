@@ -159,3 +159,14 @@ summary_statistics() {
 get_user_filter() {
 	echo "(galaxy_user.email = '$1' or galaxy_user.username = '$1' or galaxy_user.id = CAST(REGEXP_REPLACE('$1', '.*\D+.*', '-1') AS INTEGER))"
 }
+
+function create_sql_parameters_select() { 
+    #TODO do need "function" and "return" ?
+    #TODO insert cut CLI here
+    return "";
+}
+
+function create_sql_parameters_where() {
+    #TODO insert cut CLI here
+    return "";
+}

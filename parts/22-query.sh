@@ -4723,7 +4723,17 @@ query_potentially-duplicated-reclaimable-space() { ##?
 	EOF
 }
 
-query_tpt-tool-cpu() { ##? [--startyear=<YYYY>] [--endyear=<YYYY>] [--formula=avg]: Start year is required. Formula returns sum if blank.
+query_tpt-tool-cpu() { ##? [--startyear=<YYYY>] [--endyear=<YYYY>] [--formula=avg] [--arrSelect1={type};{hypothesis};{conclusion}] [--arrSelect2=...] [--arrWhere1={hypothesis};{conclusion}] [--arrWhere2=...]: Start year is required. Formula returns sum if blank. arrSelect maximum inputs is 5. arrWhere maximum inputs is 5.
+
+# Example arguments: 
+#	--startyear=2022 
+#	--endyear=2024 
+#	--formula=sum 
+#	--arrSelect1="when;destination_id LIKE 'stampede%';metric_value" 
+#	--arrSelect2="else; null;metric_value / 1000000000" 
+#	--arrWhere1="destination_id LIKE 'stampede%';metric_name = 'runtime_seconds'" 
+#	--arrWhere2="metric_name = 'cpuacct.usage';null"
+
 	meta <<-EOF
 		AUTHORS: hujambo-dunia
 		ADDED: 20
@@ -4760,16 +4770,24 @@ query_tpt-tool-cpu() { ##? [--startyear=<YYYY>] [--endyear=<YYYY>] [--formula=av
 		sql_formula="SUM"
 	fi
 
+	if [[ -n $arg_arrSelect1 ]]; then
+		sql_select=$(create_sql_parameters_select "$arg_arrSelect1" "$arg_arrSelect2" "$arg_arrSelect3" "$arg_arrSelect4" "$arg_arrSelect5")
+	fi
+
+	if [[ -n $arg_arrWhere1 ]]; then
+		sql_where=$(create_sql_parameters_where "$arg_arrWhere1" "$arg_arrWhere2" "$arg_arrWhere3" "$arg_arrWhere4" "$arg_arrWhere5")
+	fi
+
 	read -r -d '' QUERY <<-EOF
 		WITH cpu_usage AS (
 			SELECT
 				DISTINCT job_id,
 				destination_id,
-				metric_value / 1000000000 AS cpu_usage_seconds
+				$sql_select cpu_usage_seconds
 			FROM
 				job_metric_numeric
 			WHERE
-				metric_name = 'cpuacct.usage'
+				$sql_where
 		)
 		SELECT
 			job.tool_id,
