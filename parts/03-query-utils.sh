@@ -160,13 +160,74 @@ get_user_filter() {
 	echo "(galaxy_user.email = '$1' or galaxy_user.username = '$1' or galaxy_user.id = CAST(REGEXP_REPLACE('$1', '.*\D+.*', '-1') AS INTEGER))"
 }
 
-function create_sql_parameters_select() { 
-    #TODO do need "function" and "return" ?
-    #TODO insert cut CLI here
-    return "";
+function create_sql_parameters_select() {
+	local strSelect = ""
+
+	if [[ -n $arg_arrSelect1 ]]; then
+		if [[ $(echo "$arg_arrSelect1" | cut -d';' -f1) == "when" ]]; then
+			strSelect+=" WHEN" $(echo "$arg_arrSelect1" | cut -d';' -f2) "THEN" $(echo "$arg_arrSelect1" | cut -d';' -f3)
+		else
+			strSelect+="ELSE" $(echo "$arg_arrSelect1" | cut -d';' -f3)
+		fi
+		if [[ $(echo "$arg_arrSelect2" | cut -d';' -f1) == "when" ]]; then
+			strSelect+=" WHEN" $(echo "$arg_arrSelect2" | cut -d';' -f2) "THEN" $(echo "$arg_arrSelect2" | cut -d';' -f3)
+		else
+			strSelect+=" ELSE" $(echo "$arg_arrSelect2" | cut -d';' -f3)
+		fi
+		if [[ $(echo "$arg_arrSelect3" | cut -d';' -f1) == "when" ]]; then
+			strSelect+=" WHEN" $(echo "$arg_arrSelect3" | cut -d';' -f2) "THEN" $(echo "$arg_arrSelect3" | cut -d';' -f3)
+		else
+			strSelect+=" ELSE" $(echo "$arg_arrSelect3" | cut -d';' -f3)
+		fi
+		if [[ $(echo "$arg_arrSelect4" | cut -d';' -f1) == "when" ]]; then
+			strSelect+=" WHEN" $(echo "$arg_arrSelect4" | cut -d';' -f2) "THEN" $(echo "$arg_arrSelect4" | cut -d';' -f3)
+		else
+			strSelect+=" ELSE" $(echo "$arg_arrSelect4" | cut -d';' -f3)
+		fi
+		if [[ $(echo "$arg_arrSelect5" | cut -d';' -f1) == "when" ]]; then
+			strSelect+=" WHEN" $(echo "$arg_arrSelect5" | cut -d';' -f2) "THEN" $(echo "$arg_arrSelect5" | cut -d';' -f3)
+		else
+			strSelect+=" ELSE" $(echo "$arg_arrSelect5" | cut -d';' -f3)
+		fi
+
+		strSelect="CASE" $strSelect "END"
+	fi
+
+    return $strSelect;
 }
 
 function create_sql_parameters_where() {
-    #TODO insert cut CLI here
-    return "";
+	local strWhere = ""
+
+	if [[ -n $arg_arrWhere1 ]]; then
+		if [[ $(echo "$arg_arrWhere1" | cut -d';' -f1) == "when" ]]; then
+			strWhere+=" WHEN" $(echo "$arg_arrWhere1" | cut -d';' -f2) "THEN" $(echo "$arg_arrWhere1" | cut -d';' -f3)
+		else
+			strWhere+="ELSE" $(echo "$arg_arrWhere1" | cut -d';' -f3)
+		fi
+		if [[ $(echo "$arg_arrWhere2" | cut -d';' -f1) == "when" ]]; then
+			strWhere+=" WHEN" $(echo "$arg_arrWhere2" | cut -d';' -f2) "THEN" $(echo "$arg_arrWhere2" | cut -d';' -f3)
+		else
+			strWhere+=" ELSE" $(echo "$arg_arrWhere2" | cut -d';' -f3)
+		fi
+		if [[ $(echo "$arg_arrWhere3" | cut -d';' -f1) == "when" ]]; then
+			strWhere+=" WHEN" $(echo "$arg_arrWhere3" | cut -d';' -f2) "THEN" $(echo "$arg_arrWhere3" | cut -d';' -f3)
+		else
+			strWhere+=" ELSE" $(echo "$arg_arrWhere3" | cut -d';' -f3)
+		fi
+		if [[ $(echo "$arg_arrWhere4" | cut -d';' -f1) == "when" ]]; then
+			strWhere+=" WHEN" $(echo "$arg_arrWhere4" | cut -d';' -f2) "THEN" $(echo "$arg_arrWhere4" | cut -d';' -f3)
+		else
+			strWhere+=" ELSE" $(echo "$arg_arrWhere4" | cut -d';' -f3)
+		fi
+		if [[ $(echo "$arg_arrWhere5" | cut -d';' -f1) == "when" ]]; then
+			strWhere+=" WHEN" $(echo "$arg_arrWhere5" | cut -d';' -f2) "THEN" $(echo "$arg_arrWhere5" | cut -d';' -f3)
+		else
+			strWhere+=" ELSE" $(echo "$arg_arrWhere5" | cut -d';' -f3)
+		fi
+
+		strWhere="CASE" $strWhere "END"
+	fi
+	
+    return $strWhere;
 }
