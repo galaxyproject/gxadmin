@@ -1,7 +1,8 @@
 # 22-pre
 
 - Added:
-    - filter histogram: replaces bit.ly's data_hacks with a built-in AWK program to calculate a histogram. May not be entirely portable @hexylena.
+	- filter histogram: replaces bit.ly's data_hacks with a built-in AWK program to calculate a histogram. May not be entirely portable @hexylena.
+	- mutate scale-table-autovacuum: Dynamically update autovacuum and autoanalyze scale for large tables. @natefoo
 - Fixed:
 	- Replaced hardcoded metric_name with the variable in query_tool-metrics function @sanjaysrikakulam
 
