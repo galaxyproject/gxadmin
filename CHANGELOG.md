@@ -5,6 +5,7 @@
 	- mutate scale-table-autovacuum: Dynamically update autovacuum and autoanalyze scale for large tables. @natefoo
 - Fixed:
 	- Replaced hardcoded metric_name with the variable in query_tool-metrics function @sanjaysrikakulam
+	- improved man pages a tad
 
 # 21
 

@@ -1609,6 +1609,7 @@ mutate_purge-old-job-metrics() { ##? [--commit]: Purge job metrics older than 1 
 mutate_scale-table-autovacuum() { ##? [--shift=16] [--commit]: Update autovacuum and autoanalyze scale for large tables.
 	meta <<-EOF
 		ADDED: 22
+		AUTHORS: natefoo
 	EOF
 	handle_help "$@" <<-EOF
 		Set autovacuum_vacuum_scale_factor and autovacuum_analyze_scale_factor dynamically based on size for
