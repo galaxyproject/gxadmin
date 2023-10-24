@@ -1605,3 +1605,49 @@ mutate_purge-old-job-metrics() { ##? [--commit]: Purge job metrics older than 1 
 	txn_pos=$(txn_postfix "$arg_commit")
 	QUERY="$txn_pre $QUERY; $txn_pos"
 }
+
+mutate_scale-table-autovacuum() { ##? [--shift=16] [--commit]: Update autovacuum and autoanalyze scale for large tables.
+	meta <<-EOF
+		ADDED: 22
+	EOF
+	handle_help "$@" <<-EOF
+		Set autovacuum_vacuum_scale_factor and autovacuum_analyze_scale_factor dynamically based on size for
+		large tables. See https://www.enterprisedb.com/blog/postgresql-vacuum-and-analyze-best-practice-tips
+
+		Table row counts are shifted right by --shift, any shifted value over 1 will have its autovacuum scale
+		adjusted to 0.2/log(rows >> [shift]) and autoanalyze scale adjusted to 0.1/log(rows >> [shift]).
+	EOF
+
+	local qstr table vacscale anscale
+
+	read -r -d '' qstr <<-EOF
+		SELECT
+			s.oid,
+			to_char(0.2 / s.shiftlog, 'FM0.9999') AS vacscale,
+			to_char(0.1 / s.shiftlog, 'FM0.9999') AS anscale
+		FROM (
+			SELECT
+				oid::REGCLASS,
+				reltuples::INT8,
+				log(reltuples::INT8 >> $arg_shift) AS shiftlog
+			FROM
+				pg_class
+			WHERE
+				relkind = 'r'
+				AND relowner = (SELECT usesysid FROM pg_user WHERE usename = (SELECT current_user))
+				AND (reltuples::INT8 >> $arg_shift) > 0
+				AND log(reltuples::INT8 >> $arg_shift) > 1
+		) AS s
+		ORDER BY
+			s.reltuples
+	EOF
+
+	while read table vacscale anscale; do
+		QUERY="$(printf '%s;\n%s' "$QUERY" \
+			"ALTER TABLE $table SET (autovacuum_vacuum_scale_factor = $vacscale, autovacuum_analyze_scale_factor = $anscale)")"
+	done< <(query_tsv "$qstr")
+
+	txn_pre=$(txn_prefix "$arg_commit")
+	txn_pos=$(txn_postfix "$arg_commit")
+	QUERY="$txn_pre $QUERY; $txn_pos"
+}
