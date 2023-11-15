@@ -1299,7 +1299,7 @@ query_tool-metrics() { ##? <tool_id> <metric_id> [last=-1] [--like] [--ok] [--su
 	EOF
 }
 
-query_tool-input-to-memory-ratio() { ##? <tool_id> [last=-1] [--like] [--ok] [--min-used=0.5] [--max-input=-1] [--input-name=none] [--summary]: Calculate tool-input-to-memory-usage ratio
+query_tool-input-to-memory-ratio() { ##? <tool_id> [last=-1] [--like] [--ok] [--min-used=0.5] [--min-input=-1] [--max-input=-1] [--input-name=none] [--summary]: Calculate tool-input-to-memory-usage ratio
 	meta <<-EOF
 		ADDED: 22
 		AUTHORS: natefoo
@@ -1358,7 +1358,10 @@ query_tool-input-to-memory-ratio() { ##? <tool_id> [last=-1] [--like] [--ok] [--
 	if [[ -n "$arg_ok" ]]; then
 		tool_subquery="$tool_subquery AND j.state = 'ok'"
 	fi
-	if [[ "$arg_max_input" -gt 0 ]]; then
+	if [[ "$arg_min_input" != '-1' ]]; then
+		tool_subquery="$tool_subquery AND d.total_size >= ${arg_min_input}::float*1024*1024*1024"
+	fi
+	if [[ "$arg_max_input" != '-1' ]]; then
 		tool_subquery="$tool_subquery AND d.total_size <= ${arg_max_input}::float*1024*1024*1024"
 	fi
 	if [[ "$arg_input_name" != 'none' ]]; then
