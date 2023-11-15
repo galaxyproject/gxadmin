@@ -1299,6 +1299,104 @@ query_tool-metrics() { ##? <tool_id> <metric_id> [last=-1] [--like] [--ok] [--su
 	EOF
 }
 
+query_tool-input-to-memory-ratio() { ##? <tool_id> [last=-1] [--like] [--ok] [--min-used=0.5] [--summary]: Calculate tool-input-to-memory-usage ratio
+	meta <<-EOF
+		ADDED: 22
+		AUTHORS: natefoo
+	EOF
+	handle_help "$@" <<-EOF
+		This can be useful for determining if and how input sizes affect memory consumption of a tool.
+
+		$ gxadmin query tool-input-to-memory-ratio %/genrich/% 5 --like
+		    id    |  bytes_used |       gb_used       | input_bytes |      input_gb      |   used_per_input
+		----------+-------------+---------------------+-------------+--------------------+---------------------
+		 53559706 | 10435952640 |  9.7192382812500000 |   558986135 | 0.5205964064225554 | 18.6694302176206929
+		 53383034 | 10523262976 |  9.8005523681640625 |  3932595451 |  3.662514920346439 |  2.6759078341821537
+		 53383035 | 10563473408 |  9.8380012512207031 |  4243466180 | 3.9520358480513096 |  2.4893502056849196
+		 53383033 | 10579628032 |  9.8530464172363281 |  4294959575 | 3.9999928092584014 |  2.4632660324864641
+		 53383032 | 14949408768 | 13.9227218627929688 |  4377419515 |  4.076789612881839 |  3.4151190482824902
+		(5 rows)
+
+		$ gxadmin query tool-input-to-memory-ratio %/genrich/% --like --ok --min-used=1 --summary
+		  min | quant_1st | median |   mean  | quant_3rd | perc_95 | perc_99 |    max     |    sum     |  stddev
+		------+-----------+------------------+-----------+---------+---------+------------+------------+----------
+		 0.15 |         2 |      4 | 3259.54 |         9 |     580 |   30263 | 1388868.84 | 3976650.06 | 49024.87
+		(1 row)
+
+		This query depends on your Galaxy server collecting cgroup metrics; specifically, the
+		'memory.max_usage_in_bytes' metric.
+
+		The optional 'last' argument can be used to limit the number of most recent jobs that will be checked.
+
+		Use the --ok option to only include jobs that finished successfully.
+
+		Use the --min-used option (value in GB) to exclude memory usage less than this amount. This data can be
+		misleading and uselessly skew summary statistics since smaller jobs will use a baseline amount of memory
+		regardless of input size.
+
+		Use the --summary option to output summary statistics of the ratio instead of the values themselves.
+	EOF
+
+	read -r -d '' summary <<-EOF
+		j.id,
+		jmn.metric_value AS bytes_used,
+		jmn.metric_value/1024/1024/1024 AS gb_used,
+		isz.bytes AS input_bytes, isz.bytes::float/1024/1024/1024 AS input_gb,
+		(jmn.metric_value / isz.bytes) AS used_per_input
+	EOF
+	order_by='ORDER BY isz.bytes'
+	limit_clause=
+
+	tool_subquery="j.tool_id = '$arg_tool_id'"
+	if [[ -n "$arg_like" ]]; then
+		tool_subquery="j.tool_id LIKE '$arg_tool_id'"
+	fi
+	if [[ -n "$arg_ok" ]]; then
+		tool_subquery="$tool_subquery AND j.state = 'ok'"
+	fi
+	if [[ "$arg_last" -gt 0 ]]; then
+		limit_clause="ORDER BY j.id DESC LIMIT $arg_last"
+	fi
+	if [[ -n "$arg_summary" ]]; then
+		summary="$(summary_statistics 'jmn.metric_value / isz.bytes' 0)"
+		order_by=
+	fi
+
+	read -r -d '' QUERY <<-EOF
+		WITH input_sizes AS (
+			SELECT
+				j.id AS job_id,
+				sum(d.total_size) AS bytes
+			FROM
+				job j
+			JOIN
+				job_to_input_dataset jtid on j.id = jtid.job_id
+			JOIN
+				history_dataset_association hda on jtid.dataset_id = hda.id
+			JOIN
+				dataset d on hda.dataset_id = d.id
+			WHERE
+				$tool_subquery
+			GROUP BY j.id
+			$limit_clause
+		)
+
+		SELECT
+			$summary
+		FROM
+			job j
+		JOIN
+			job_metric_numeric jmn ON j.id = jmn.job_id
+		JOIN
+			input_sizes isz ON j.id = isz.job_id
+		WHERE
+			jmn.metric_name = 'memory.max_usage_in_bytes'
+			AND isz.bytes > 0
+			AND jmn.metric_value >= ${arg_min_used}*1024*1024*1024
+		$order_by
+	EOF
+}
+
 query_tool-available-metrics() { ##? <tool_id>: list all available metrics for a given tool
 	handle_help "$@" <<-EOF
 		Gives a list of available metrics, which can then be used to query.
