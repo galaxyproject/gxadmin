@@ -1299,7 +1299,7 @@ query_tool-metrics() { ##? <tool_id> <metric_id> [last=-1] [--like] [--ok] [--su
 	EOF
 }
 
-query_tool-input-to-memory-ratio() { ##? <tool_id> [last=-1] [--like] [--ok] [--min-used=0.5] [--summary]: Calculate tool-input-to-memory-usage ratio
+query_tool-input-to-memory-ratio() { ##? <tool_id> [last=-1] [--like] [--ok] [--min-used=0.5] [--max-input=-1] [--input-name=none] [--summary]: Calculate tool-input-to-memory-usage ratio
 	meta <<-EOF
 		ADDED: 22
 		AUTHORS: natefoo
@@ -1328,11 +1328,15 @@ query_tool-input-to-memory-ratio() { ##? <tool_id> [last=-1] [--like] [--ok] [--
 
 		The optional 'last' argument can be used to limit the number of most recent jobs that will be checked.
 
-		Use the --ok option to only include jobs that finished successfully.
+		The '--ok' option includes only jobs that finished successfully.
 
-		Use the --min-used option (value in GB) to exclude memory usage less than this amount. This data can be
+		The '--min-used' option (value in GB) excludes memory usage less than this amount. This data can be
 		misleading and uselessly skew summary statistics since smaller jobs will use a baseline amount of memory
 		regardless of input size.
+
+		The '--max-input' option (value in GB) excludes input sizes larger than this amount.
+
+		The '--input-name' can be used to limit input selection to a single tool input with the given name.
 
 		Use the --summary option to output summary statistics of the ratio instead of the values themselves.
 	EOF
@@ -1353,6 +1357,12 @@ query_tool-input-to-memory-ratio() { ##? <tool_id> [last=-1] [--like] [--ok] [--
 	fi
 	if [[ -n "$arg_ok" ]]; then
 		tool_subquery="$tool_subquery AND j.state = 'ok'"
+	fi
+	if [[ "$arg_max_input" -gt 0 ]]; then
+		tool_subquery="$tool_subquery AND d.total_size <= ${arg_max_input}::float*1024*1024*1024"
+	fi
+	if [[ "$arg_input_name" != 'none' ]]; then
+		tool_subquery="$tool_subquery AND jtid.name = '$arg_input_name'"
 	fi
 	if [[ "$arg_last" -gt 0 ]]; then
 		limit_clause="ORDER BY j.id DESC LIMIT $arg_last"
