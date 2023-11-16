@@ -1405,7 +1405,7 @@ query_tool-input-to-memory-ratio() { ##? <tool_id> [last=-1] [--like] [--ok] [--
 		WHERE
 			jmn.metric_name = 'memory.max_usage_in_bytes'
 			AND isz.bytes > 0
-			AND jmn.metric_value >= ${arg_min_used}*1024*1024*1024
+			AND jmn.metric_value >= ${arg_min_used}::float*1024*1024*1024
 		$order_by
 	EOF
 }
