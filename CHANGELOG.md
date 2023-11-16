@@ -3,7 +3,7 @@
 - Added:
 	- filter histogram: replaces bit.ly's data_hacks with a built-in AWK program to calculate a histogram. May not be entirely portable @hexylena.
 	- mutate scale-table-autovacuum: Dynamically update autovacuum and autoanalyze scale for large tables. @natefoo
-	- query tool-input-to-memory-ratio: Calculate tool-input-to-memory-usage ratio
+	- query tool-input-to-memory-ratio: Calculate tool-input-to-memory-usage ratio @natefoo
 - Fixed:
 	- Replaced hardcoded metric_name with the variable in query_tool-metrics function @sanjaysrikakulam
 	- improved man pages a tad
