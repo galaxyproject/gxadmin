@@ -4943,7 +4943,7 @@ query_tools-usage-per-month() { ##? [--startmonth=<YYYY>-<MM>] [--endmonth=<YYYY
 	if [[ -n $arg_startmonth ]]; then
 		filter_by_time_period="date_trunc('month', job.create_time AT TIME ZONE 'UTC') >= '$arg_startmonth-01'::date"
 	else
-		filter_by_time_period="job.create_time < NOW() - interval '1 year'"
+		filter_by_time_period="job.create_time > NOW() - interval '1 year'"
 	fi
 	if [[ -n $arg_endmonth ]]; then
 		filter_by_time_period=$filter_by_time_period "AND date_trunc('month', job.create_time AT TIME ZONE 'UTC') <= '$arg_endmonth-01'::date"
