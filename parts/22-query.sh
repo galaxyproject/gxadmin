@@ -4905,3 +4905,70 @@ query_tpt-tool-memory() { ##? [--startyear=<YYYY>] [--endyear=<YYYY>] [--formula
 	EOF
 }
 
+query_tools-usage-per-month() { ##? [--startmonth=<YYYY>-<MM>] [--endmonth=<YYYY>-<MM>] [--toolnames=<tool1>,<tool2>,...]: toolnames is required. startmonth is 1 year ago and end month is current month by default
+	meta <<-EOF
+		AUTHORS: lldelisle
+		ADDED: 22
+	EOF
+	handle_help "$@" <<-EOF
+		Tools Usage Tracking: cpu-hours and nb_users by Month-Year.
+
+		    $ gxadmin query tools-usage-per-month --toolnames=bowtie2,cufflinks
+		       month    | cpu_hours | tool_name | nb_users 
+			------------+-----------+-----------+----------
+			 2022-12-01 |    677.77 | cufflinks |        2
+			 2022-11-01 |    126.07 | cufflinks |        2
+			 2022-10-01 |     38.76 | bowtie2   |        1
+			 2022-10-01 |    201.80 | cufflinks |        2
+			 2022-09-01 |     19.50 | bowtie2   |        1
+			 2022-09-01 |    170.50 | cufflinks |        1
+			 2022-08-01 |    296.15 | cufflinks |        2
+			 2022-07-01 |     74.68 | bowtie2   |        1
+			 2022-07-01 |    479.67 | cufflinks |        3
+			 2022-06-01 |     11.17 | bowtie2   |        1
+			 2022-05-01 |      9.39 | bowtie2   |        1
+			 2022-04-01 |    110.71 | bowtie2   |        2
+			 2022-03-01 |    168.50 | bowtie2   |        4
+			 2022-03-01 |    139.28 | cufflinks |        3
+			 2022-02-01 |    594.63 | bowtie2   |        2
+			 2022-02-01 |    644.94 | cufflinks |        4
+			 2022-01-01 |      8.65 | bowtie2   |        1
+			 2022-01-01 |      7.16 | cufflinks |        1
+			 2021-12-01 |    436.57 | bowtie2   |        2
+			 2021-12-01 |      6.87 | cufflinks |        1
+			 2021-11-01 |   2765.07 | bowtie2   |        3
+	EOF
+	
+	filter_by_time_period=""
+	if [[ -n $arg_startmonth ]]; then
+		filter_by_time_period="date_trunc('month', job.create_time AT TIME ZONE 'UTC') >= '$arg_startmonth-01'::date"
+	else
+		filter_by_time_period="job.create_time < NOW() - interval '1 year'"
+	fi
+	if [[ -n $arg_endmonth ]]; then
+		filter_by_time_period=$filter_by_time_period "AND date_trunc('month', job.create_time AT TIME ZONE 'UTC') <= '$arg_endmonth-01'::date"
+	fi
+	tool_list=$(echo $arg_toolnames | sed -e "s/^/('/" -e "s/,/', '/g" -e "s/$/')/")
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			date_trunc('month', job.create_time  AT TIME ZONE 'UTC')::date as month,
+			round(sum((a.metric_value * b.metric_value) / 3600 ), 2) as cpu_hours,
+			regexp_replace(regexp_replace(job.tool_id, '/[0-9.a-z+-]+$', '')::TEXT, '.*toolshed.*/repos/[^/]*/[^/]*/', '') as tool_name,
+			COUNT (DISTINCT job.user_id) as nb_users
+		FROM
+			job_metric_numeric a,
+			job_metric_numeric b,
+			job
+		WHERE
+			b.job_id = a.job_id
+			AND a.job_id = job.id
+			AND a.metric_name = 'runtime_seconds'
+			AND b.metric_name = 'galaxy_slots'
+			AND $filter_by_time_period
+			AND regexp_replace(regexp_replace(job.tool_id, '/[0-9.a-z+-]+$', '')::TEXT, '.*toolshed.*/repos/[^/]*/[^/]*/', '') in $tool_list
+		GROUP BY
+			month, tool_name
+		ORDER BY
+			month DESC
+	EOF
+}
