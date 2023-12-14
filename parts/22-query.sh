@@ -4916,27 +4916,24 @@ query_tools-usage-per-month() { ##? [--startmonth=<YYYY>-<MM>] [--endmonth=<YYYY
 		    $ gxadmin query tools-usage-per-month --toolnames=bowtie2,cufflinks
 		       month    | cpu_hours | tool_name | nb_users 
 			------------+-----------+-----------+----------
-			 2022-12-01 |    677.77 | cufflinks |        2
-			 2022-11-01 |    126.07 | cufflinks |        2
-			 2022-10-01 |     38.76 | bowtie2   |        1
-			 2022-10-01 |    201.80 | cufflinks |        2
-			 2022-09-01 |     19.50 | bowtie2   |        1
-			 2022-09-01 |    170.50 | cufflinks |        1
-			 2022-08-01 |    296.15 | cufflinks |        2
-			 2022-07-01 |     74.68 | bowtie2   |        1
-			 2022-07-01 |    479.67 | cufflinks |        3
-			 2022-06-01 |     11.17 | bowtie2   |        1
-			 2022-05-01 |      9.39 | bowtie2   |        1
-			 2022-04-01 |    110.71 | bowtie2   |        2
-			 2022-03-01 |    168.50 | bowtie2   |        4
-			 2022-03-01 |    139.28 | cufflinks |        3
-			 2022-02-01 |    594.63 | bowtie2   |        2
-			 2022-02-01 |    644.94 | cufflinks |        4
-			 2022-01-01 |      8.65 | bowtie2   |        1
-			 2022-01-01 |      7.16 | cufflinks |        1
-			 2021-12-01 |    436.57 | bowtie2   |        2
-			 2021-12-01 |      6.87 | cufflinks |        1
-			 2021-11-01 |   2765.07 | bowtie2   |        3
+			 2023-12-01 |    135.08 | cufflinks |        3
+			 2023-11-01 |    105.13 | bowtie2   |        1
+			 2023-10-01 |   1085.34 | bowtie2   |        2
+			 2023-10-01 |    248.37 | cufflinks |        1
+			 2023-09-01 |     11.78 | bowtie2   |        1
+			 2023-09-01 |    233.03 | cufflinks |        1
+			 2023-08-01 |    796.15 | bowtie2   |        2
+			 2023-08-01 |     18.84 | cufflinks |        1
+			 2023-07-01 |     20.04 | bowtie2   |        1
+			 2023-06-01 |    271.16 | bowtie2   |        3
+			 2023-06-01 |    188.25 | cufflinks |        2
+			 2023-05-01 |    732.74 | bowtie2   |        3
+			 2023-05-01 |     23.14 | cufflinks |        1
+			 2023-04-01 |    426.32 | bowtie2   |        2
+			 2023-03-01 |    944.02 | bowtie2   |        2
+			 2023-02-01 |     52.95 | bowtie2   |        2
+			 2022-12-01 |    135.82 | bowtie2   |        1
+			 (17 rows)
 	EOF
 	
 	filter_by_time_period=""
@@ -4948,7 +4945,7 @@ query_tools-usage-per-month() { ##? [--startmonth=<YYYY>-<MM>] [--endmonth=<YYYY
 	if [[ -n $arg_endmonth ]]; then
 		filter_by_time_period=$filter_by_time_period "AND date_trunc('month', job.create_time AT TIME ZONE 'UTC') <= '$arg_endmonth-01'::date"
 	fi
-	tool_list=$(echo $arg_toolnames | sed -e "s/^/('/" -e "s/,/', '/g" -e "s/$/')/")
+	tool_list=$(echo "$arg_toolnames" | sed -e "s/^/('/" -e "s/,/', '/g" -e "s/$/')/")
 	read -r -d '' QUERY <<-EOF
 		SELECT
 			date_trunc('month', job.create_time  AT TIME ZONE 'UTC')::date as month,
