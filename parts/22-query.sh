@@ -1431,7 +1431,7 @@ query_tool-memory-per-inputs() { ##? <tool_id> [--like]: See memory usage and in
 	EOF
 }
 
-query_monthly-cpu-stats() { ##? [year] : CPU years/hours allocated to tools by month
+query_monthly-cpu-stats() { ##? [year]: CPU years/hours allocated to tools by month
 	meta <<-EOF
 		ADDED: 17
 	EOF
@@ -1452,7 +1452,7 @@ query_monthly-cpu-stats() { ##? [year] : CPU years/hours allocated to tools by m
 	EOF
 
 	if [[ -n $arg_year ]]; then
-	    filter_by_year="date_trunc('year', job.create_time AT TIME ZONE 'UTC') = '$arg_year-01-01'::date"
+	    filter_by_year="AND date_trunc('year', job.create_time AT TIME ZONE 'UTC') = '$arg_year-01-01'::date"
 	fi
 
 	read -r -d '' QUERY <<-EOF
