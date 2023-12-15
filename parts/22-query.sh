@@ -4943,7 +4943,7 @@ query_tools-usage-per-month() { ##? [--startmonth=<YYYY>-<MM>] [--endmonth=<YYYY
 		filter_by_time_period="job.create_time > NOW() - interval '1 year'"
 	fi
 	if [[ -n $arg_endmonth ]]; then
-		filter_by_time_period=$filter_by_time_period "AND date_trunc('month', job.create_time AT TIME ZONE 'UTC') <= '$arg_endmonth-01'::date"
+		filter_by_time_period="$filter_by_time_period AND date_trunc('month', job.create_time AT TIME ZONE 'UTC') <= '$arg_endmonth-01'::date"
 	fi
 	tool_list=$(echo "$arg_toolnames" | sed -e "s/^/('/" -e "s/,/', '/g" -e "s/$/')/")
 	read -r -d '' QUERY <<-EOF
