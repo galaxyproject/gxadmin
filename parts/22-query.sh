@@ -721,7 +721,7 @@ query_job-state-stats() { ## : Shows all jobs states for the last 30 days in a t
 
 		Example:
 		$ gxadmin query job-state-stats
-		    date    |  new  | running | queued | upload |  ok   | error | paused | stopped | deleted 
+		    date    |  new  | running | queued | upload |  ok   | error | paused | stopped | deleted
 		------------+-------+---------+--------+--------+-------+-------+--------+---------+---------
 		2022-04-26 |   921 |     564 |    799 |      0 |   581 |    21 |      1 |       0 |       2
 		2022-04-25 |  1412 |    1230 |   1642 |      0 |  1132 |   122 |     14 |       0 |      15
@@ -770,7 +770,7 @@ query_monthly-job-runtimes() { ##? [--year=<YYYY>] [--month=<MM>] [--sub_dest=<N
 		The destination id can be restricted to the first N letters in the id string by using
 		the --sub_dest flag.  This allows grouping on values like "slurm" and "front" instead
 		of "slurm_multi", "slurm_normal", "frontera_small", "frontera_large", etc., which
-		clutters the output. 
+		clutters the output.
 
 		A time period can be defined using 3 options:
 
@@ -779,26 +779,26 @@ query_monthly-job-runtimes() { ##? [--year=<YYYY>] [--month=<MM>] [--sub_dest=<N
 		$ gxadmin local query-monthly-job-runtimes --year 2022 --month 05 --sub_dest 5
 		   month    | total_jobs | destination_id | runtime_secomnds | runtime_minutes | runtime_hours |   user_email
 		------------+------------+----------------+------------------+-----------------+---------------+-----------------
-		 2022-05-01 |      20323 | front          |           502031 |         8367.18 |        139.45 | 
-		 2022-05-01 |       3013 | slurm          |            99135 |         1652.25 |         27.54 | 
+		 2022-05-01 |      20323 | front          |           502031 |         8367.18 |        139.45 |
+		 2022-05-01 |       3013 | slurm          |            99135 |         1652.25 |         27.54 |
 
 		--year XXXX - all months of the specified year
 
 		$ gxadmin local query-monthly-job-runtimes --year 2021 --sub_dest 5
 		   month    | total_jobs | destination_id | runtime_secomnds | runtime_minutes | runtime_hours |   user_email
 		------------+------------+----------------+------------------+-----------------+---------------+-----------------
-		 2021-12-01 |        155 | slurm          |            27981 |          466.35 |          7.77 | 
-		 2021-12-01 |        417 | slurm          |            47063 |          784.38 |         13.07 | 
-		 2021-11-01 |        113 | slurm          |             3032 |           50.53 |          0.84 | 
-		 2021-11-01 |          2 | slurm          |              142 |            2.37 |          0.04 | 
+		 2021-12-01 |        155 | slurm          |            27981 |          466.35 |          7.77 |
+		 2021-12-01 |        417 | slurm          |            47063 |          784.38 |         13.07 |
+		 2021-11-01 |        113 | slurm          |             3032 |           50.53 |          0.84 |
+		 2021-11-01 |          2 | slurm          |              142 |            2.37 |          0.04 |
 
 		--month XX - the specified month of the current year
 
 		$ gxadmin local query-monthly-job-runtimes --month 04 --sub_dest 5
 		   month    | total_jobs | destination_id | runtime_secomnds | runtime_minutes | runtime_hours |   user_email
 		------------+------------+----------------+------------------+-----------------+---------------+-----------------
-		 2022-04-01 |         94 | front          |           333029 |         5550.48 |         92.51 | 
-		 2022-04-01 |        146 | slurm          |           278408 |         4640.13 |         77.34 | 
+		 2022-04-01 |         94 | front          |           333029 |         5550.48 |         92.51 |
+		 2022-04-01 |        146 | slurm          |           278408 |         4640.13 |         77.34 |
 	EOF
 
 	dest="job.destination_id as destination_id,"
@@ -1132,11 +1132,11 @@ query_tool-use-by-group() { ##? <years_month> [--group=<name>]: Lists count of t
 	EOF
 	handle_help "$@" <<-EOFhelp
 		Lists tools use count by users in group.
-		Requires <year-month> (2022-03) and <group> 
+		Requires <year-month> (2022-03) and <group>
 
 		Example:
 		$ gxadmin query tool-use-by-group 2022-02 NameOfGroup
-		tool_id                                             |             username             | count 
+		tool_id                                             |             username             | count
 		----------------------------------------------------+----------------------------------+-------
 		CONVERTER_gz_to_uncompressed                        | user_1                           |     1
 		Convert characters1                                 | user_2                           |     1
@@ -2046,7 +2046,7 @@ query_disk-usage-library() { ##? [--library_name=<NAME>] [--by_folder] [--human]
 		A --by_folder flag is also available for displaying disk usage for each folder.
 
 		a$ gxadmin local query-disk-usage-library --library_name 'My Library' --by_folder
-		       folder_name       | folder size 
+		       folder_name       | folder size
 		-------------------------+-------------
 		 Contamination Filtering | 10798630750
 		 Metagenomes             | 12026310232
@@ -4448,7 +4448,7 @@ query_queue-details-drm() { ##? [--all] [--seconds] [--since-update]: Detailed o
 		WITH
 			job_data
 				AS (
-					SELECT 
+					SELECT
 						job.state as jobstate,
 						job.id as jobid,
 						job.job_runner_external_id as extid,
@@ -4471,7 +4471,7 @@ query_queue-details-drm() { ##? [--all] [--seconds] [--since-update]: Detailed o
 						state desc,
 						$time_column_name desc
 				)
-		SELECT 
+		SELECT
 			jobstate,
 			jobid,
 			extid,
@@ -4500,7 +4500,7 @@ query_jobs() { ##? [--tool=] [--destination=] [--limit=50] [--states=<comma,sep,
 		     14588 | 2022-10-19 10:45:42 | 2022-10-19 10:46:01 |      16 | ok      | toolshed.g2.bx.psu.edu/repos/devteam/bwa/bwa_mem/0.7.17.2                                   | handler_2 | pulsar-nci-test             | 14588
 		     14584 | 2022-10-19 10:45:12 | 2022-10-19 10:45:31 |      16 | ok      | toolshed.g2.bx.psu.edu/repos/devteam/bwa/bwa_mem/0.7.17.2                                   | handler_2 | pulsar-nci-test             | 14584
 		     14580 | 2022-10-19 10:44:43 | 2022-10-19 10:45:02 |      16 | ok      | toolshed.g2.bx.psu.edu/repos/devteam/bwa/bwa_mem/0.7.17.2                                   | handler_2 | pulsar-nci-test             | 14580
-		    
+		
 		    $ gxadmin query jobs --destination=pulsar-nci-test --tool=bionano
 		      id   |     create_time     |     update_time     | user_id | state |                                        tool_id                                         |       handler       |         destination         | external_id
 		    -------+---------------------+---------------------+---------+-------+----------------------------------------------------------------------------------------+---------------------+-----------------------------+-------------
@@ -4905,7 +4905,7 @@ query_tpt-tool-memory() { ##? [--startyear=<YYYY>] [--endyear=<YYYY>] [--formula
 	EOF
 }
 
-query_tools-usage-per-month() { ##? [--startmonth=<YYYY>-<MM>] [--endmonth=<YYYY>-<MM>] [--toolnames=<tool1>,<tool2>,...]: toolnames is required. startmonth is 1 year ago and end month is current month by default
+query_tools-usage-per-month() { ##? [--startmonth=<YYYY>-<MM>] [--endmonth=<YYYY>-<MM>] [--tools=<tool1,tool2,...>] [--short_tool_id] [--super_short_tool_id] [--no_version]: By default, startmonth is 1 year ago and end month is current month. tool1, tool2 etc. should correspond to the tool_id with the same format as requested: toolshed.g2.bx.psu.edu/repos/devteam/bowtie2/bowtie2/2.5.0+galaxy0,Cut1 for default, devteam/bowtie2/bowtie2/2.5.0+galaxy0,Cut1 for --short_tool_id, bowtie2/2.5.0+galaxy0,Cut1 for --super_short_tool_id etc...
 	meta <<-EOF
 		AUTHORS: lldelisle
 		ADDED: 22
@@ -4913,27 +4913,22 @@ query_tools-usage-per-month() { ##? [--startmonth=<YYYY>-<MM>] [--endmonth=<YYYY
 	handle_help "$@" <<-EOF
 		Tools Usage Tracking: cpu-hours and nb_users by Month-Year.
 
-		    $ gxadmin query tools-usage-per-month --toolnames=bowtie2,cufflinks
-		       month    | cpu_hours | tool_name | nb_users 
-			------------+-----------+-----------+----------
-			 2023-12-01 |    135.08 | cufflinks |        3
-			 2023-11-01 |    105.13 | bowtie2   |        1
-			 2023-10-01 |   1085.34 | bowtie2   |        2
-			 2023-10-01 |    248.37 | cufflinks |        1
-			 2023-09-01 |     11.78 | bowtie2   |        1
-			 2023-09-01 |    233.03 | cufflinks |        1
-			 2023-08-01 |    796.15 | bowtie2   |        2
-			 2023-08-01 |     18.84 | cufflinks |        1
-			 2023-07-01 |     20.04 | bowtie2   |        1
-			 2023-06-01 |    271.16 | bowtie2   |        3
-			 2023-06-01 |    188.25 | cufflinks |        2
-			 2023-05-01 |    732.74 | bowtie2   |        3
-			 2023-05-01 |     23.14 | cufflinks |        1
-			 2023-04-01 |    426.32 | bowtie2   |        2
-			 2023-03-01 |    944.02 | bowtie2   |        2
-			 2023-02-01 |     52.95 | bowtie2   |        2
-			 2022-12-01 |    135.82 | bowtie2   |        1
-			 (17 rows)
+		    $ gxadmin query tools-usage-per-month --super_short_tool_id --no_version --tools bowtie2,Cut1 --startmonth=2023-03 --endmonth 2023-08
+			   month    | cpu_hours | tool_id | nb_users 
+			------------+-----------+---------+----------
+			 2023-08-01 |    326.88 | bowtie2 |        1
+			 2023-08-01 |    469.27 | bowtie2 |        1
+			 2023-07-01 |      0.01 | Cut1    |        2
+			 2023-07-01 |     20.04 | bowtie2 |        1
+			 2023-06-01 |      0.04 | Cut1    |        2
+			 2023-06-01 |    271.16 | bowtie2 |        3
+			 2023-05-01 |    732.74 | bowtie2 |        3
+			 2023-04-01 |      1.55 | Cut1    |        2
+			 2023-04-01 |    426.32 | bowtie2 |        2
+			 2023-03-01 |      0.00 | Cut1    |        1
+			 2023-03-01 |    437.31 | bowtie2 |        1
+			 2023-03-01 |    506.71 | bowtie2 |        2
+			(12 rows)
 	EOF
 	
 	filter_by_time_period=""
@@ -4945,12 +4940,28 @@ query_tools-usage-per-month() { ##? [--startmonth=<YYYY>-<MM>] [--endmonth=<YYYY
 	if [[ -n $arg_endmonth ]]; then
 		filter_by_time_period="$filter_by_time_period AND date_trunc('month', job.create_time AT TIME ZONE 'UTC') <= '$arg_endmonth-01'::date"
 	fi
-	tool_list=$(echo "$arg_toolnames" | sed -e "s/^/('/" -e "s/,/', '/g" -e "s/$/')/")
+	tool_id="job.tool_id"
+	if [[ -n $arg_short_tool_id ]]; then
+		tool_id="regexp_replace(job.tool_id, '.*toolshed.*/repos/', '')"
+	fi
+	if [[ -n $arg_super_short_tool_id ]]; then
+		tool_id="regexp_replace(job.tool_id, '.*toolshed.*/repos/[^/]*/[^/]*/', '')"
+	fi
+
+	if [[ -n $arg_no_version ]]; then
+		tool_id="regexp_replace(${tool_id}::TEXT, '/[0-9.a-z+-]+$', '')"
+	fi
+	filter_tool=""
+	if [[ -n $arg_tools ]]; then
+		tool_list=$(echo "$arg_tools" | sed -e "s/^/('/" -e "s/,/', '/g" -e "s/$/')/")
+		filter_tool="AND $tool_id in $tool_list"
+	fi
+
 	read -r -d '' QUERY <<-EOF
 		SELECT
 			date_trunc('month', job.create_time  AT TIME ZONE 'UTC')::date as month,
 			round(sum((a.metric_value * b.metric_value) / 3600 ), 2) as cpu_hours,
-			regexp_replace(regexp_replace(job.tool_id, '/[0-9.a-z+-]+$', '')::TEXT, '.*toolshed.*/repos/[^/]*/[^/]*/', '') as tool_name,
+			$tool_id as tool_id,
 			COUNT (DISTINCT job.user_id) as nb_users
 		FROM
 			job_metric_numeric a,
@@ -4961,10 +4972,9 @@ query_tools-usage-per-month() { ##? [--startmonth=<YYYY>-<MM>] [--endmonth=<YYYY
 			AND a.job_id = job.id
 			AND a.metric_name = 'runtime_seconds'
 			AND b.metric_name = 'galaxy_slots'
-			AND $filter_by_time_period
-			AND regexp_replace(regexp_replace(job.tool_id, '/[0-9.a-z+-]+$', '')::TEXT, '.*toolshed.*/repos/[^/]*/[^/]*/', '') in $tool_list
+			AND $filter_by_time_period $filter_tool
 		GROUP BY
-			month, tool_name
+			month, tool_id
 		ORDER BY
 			month DESC
 	EOF
