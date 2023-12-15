@@ -20,7 +20,7 @@ test:
 	@cat $(PARTS) > .tmpgxadmin
 	@chmod +x .tmpgxadmin
 	./test.sh
-	shellcheck --severity error gxadmin
+	shellcheck --severity error .tmpgxadmin
 	@rm -f .tmpgxadmin
 
 shellcheck: gxadmin
