@@ -1431,45 +1431,64 @@ query_tool-memory-per-inputs() { ##? <tool_id> [--like]: See memory usage and in
 	EOF
 }
 
-query_monthly-cpu-stats() { ##? [year]: CPU years/hours allocated to tools by month
+query_monthly-cpu-stats() { ##? [--nb_users] [--filter_email=<domain>] [year]: CPU years/hours allocated to tools by month (+ nb of users)
 	meta <<-EOF
 		ADDED: 17
+		UPDATED: 22
 	EOF
 	handle_help "$@" <<-EOF
 		This uses the galaxy_slots and runtime_seconds metrics in order to
 		calculate allocated CPU years/hours. This will not be the value of what is
-		actually consumed by your jobs, you should use cgroups.
+		actually consumed by your jobs, you should use cgroups. It can also display the number of users that ran jobs. You can also filter for email domain.
 
-		    $ gxadmin query monthly-cpu-stats
-		       month    | cpu_years | cpu_hours
-		    ------------+-----------+-----------
-		     2020-05-01 |     53.55 | 469088.02
-		     2020-04-01 |     59.55 | 521642.60
-		     2020-03-01 |     57.04 | 499658.86
-		     2020-02-01 |     53.93 | 472390.31
-		     2020-01-01 |     56.49 | 494887.37
+		    $ gxadmin query monthly-cpu-stats --nb_users --filter_email epfl.ch 2022
+			   month    | cpu_years | cpu_hours | nb_users                                                                                              
+			------------+-----------+-----------+----------                                                                                             
+			 2022-12-01 |      0.44 |   3894.59 |        4                                                                                              
+			 2022-11-01 |      0.06 |    558.50 |        6                                                                                              
+			 2022-10-01 |      0.10 |    903.05 |        5                                                                                              
+			 2022-09-01 |      0.14 |   1198.12 |        5                                                                                              
+			 2022-08-01 |      0.19 |   1650.16 |        6                                                                                              
+			 2022-07-01 |      0.13 |   1142.43 |        5                                                                                              
+			 2022-06-01 |      0.01 |     65.51 |        3                                                                                              
+			 2022-05-01 |      0.01 |     50.95 |        2                                                                                              
+			 2022-04-01 |      0.02 |    216.83 |        4                                                                                              
+			 2022-03-01 |      0.09 |    802.63 |        7                                                                                              
+			 2022-02-01 |      0.20 |   1764.14 |        6                                                                                              
+			 2022-01-01 |      0.01 |     71.66 |        8
+			(12 rows)
+
 		     ...
 	EOF
 
 	if [[ -n $arg_year ]]; then
 	    filter_by_year="AND date_trunc('year', job.create_time AT TIME ZONE 'UTC') = '$arg_year-01-01'::date"
 	fi
-
+	if [[ -n $arg_nb_users ]]; then
+	    nb_users=", COUNT (DISTINCT job.user_id) as nb_users"
+	fi
+	if [[ -n $arg_filter_email ]]; then
+		filter_email_from=", galaxy_user"
+	    filter_email="AND job.user_id = galaxy_user.id AND galaxy_user.email LIKE '%${arg_filter_email}'"
+	fi
 	read -r -d '' QUERY <<-EOF
 		SELECT
 			date_trunc('month', job.create_time  AT TIME ZONE 'UTC')::date as month,
 			round(sum((a.metric_value * b.metric_value) / 3600 / 24 / 365 ), 2) as cpu_years,
 			round(sum((a.metric_value * b.metric_value) / 3600 ), 2) as cpu_hours
+			$nb_users
 		FROM
 			job_metric_numeric a,
 			job_metric_numeric b,
 			job
+			$filter_email_from
 		WHERE
 			b.job_id = a.job_id
 			AND a.job_id = job.id
 			AND a.metric_name = 'runtime_seconds'
 			AND b.metric_name = 'galaxy_slots'
 			$filter_by_year
+			$filter_email
 		GROUP BY month
 		ORDER BY month DESC
 	EOF
