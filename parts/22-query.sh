@@ -1431,17 +1431,18 @@ query_tool-memory-per-inputs() { ##? <tool_id> [--like]: See memory usage and in
 	EOF
 }
 
-query_monthly-cpu-stats() { ##? [--nb_users] [--filter_email=<domain>] [year]: CPU years/hours allocated to tools by month (+ nb of users)
+query_monthly-cpu-stats() { ##? [--nb-users] [--filter-email=<domain>] [year]: CPU years/hours allocated to tools by month (+ nb of users)
 	meta <<-EOF
 		ADDED: 17
 		UPDATED: 22
+		AUTHORS: gmauro, lldelisle
 	EOF
 	handle_help "$@" <<-EOF
 		This uses the galaxy_slots and runtime_seconds metrics in order to
 		calculate allocated CPU years/hours. This will not be the value of what is
 		actually consumed by your jobs, you should use cgroups. It can also display the number of users that ran jobs. You can also filter for email domain.
 
-		    $ gxadmin query monthly-cpu-stats --nb_users --filter_email epfl.ch 2022
+		    $ gxadmin query monthly-cpu-stats --nb-users --filter-email epfl.ch 2022
 			   month    | cpu_years | cpu_hours | nb_users                                                                                              
 			------------+-----------+-----------+----------                                                                                             
 			 2022-12-01 |      0.44 |   3894.59 |        4                                                                                              
