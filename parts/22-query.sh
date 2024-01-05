@@ -5011,7 +5011,7 @@ query_archivable-histories() { ##? [--user-last-active=360] [--history-last-acti
 	group_by=
 	if [[ -n $arg_size ]]; then
 		extra_selects=',
-			sum(dataset.id) AS size
+			sum(dataset.total_size) AS size
 		'
 		extra_joins='JOIN history_dataset_association on history.id = history_dataset_association.history_id
 			JOIN dataset on history_dataset_association.dataset_id = dataset.id'
