@@ -4999,3 +4999,71 @@ query_tools-usage-per-month() { ##? [--startmonth=<YYYY>-<MM>] [--endmonth=<YYYY
 			month DESC
 	EOF
 }
+
+query_archivable-histories() { ##? [--user-last-active=360] [--history-last-active=360] [--size]
+	meta <<-EOF
+		AUTHORS: natefoo
+		ADDED: 22
+	EOF
+	handle_help "$@" <<-EOF
+		Get a list of archivable histories based on user and history age.
+
+		    $ gxadmin query archivable-histories
+		    ...
+
+		The --size option can be used to show the size of the histories returned, but can significantly slow the
+		query.
+
+		One useful way to use this function is like so:
+
+		    $ gxadmin tsvquery archivable-histories --size | \\
+		        awk -F'\\t' '{print \$1; sum+=\$NF;} END {print "Total: " sum/1024^3 " GB" > "/dev/stderr";}' | \\
+			GALAXY_CONFIG_FILE=/gx/config/galaxy.yml xargs /gx/venv/bin/python3 | \\
+			  /gx/galaxy/scripts/secret_decoder_ring.py encode
+
+		This outputs the total size to archive to stderr while encoding all history IDs on stdout for
+		consumption by API-based archival tools.
+	EOF
+
+	extra_selects=
+	extra_joins=
+	extra_conds=
+	group_by=
+	if [[ -n $arg_size ]]; then
+		extra_selects=',
+			sum(dataset.total_size) AS size
+		'
+		extra_joins='JOIN history_dataset_association on history.id = history_dataset_association.history_id
+			JOIN dataset on history_dataset_association.dataset_id = dataset.id'
+		extra_conds='AND NOT history_dataset_association.purged
+			AND NOT dataset.purged'
+		group_by='GROUP BY
+			history.id, galaxy_user.id
+		'
+	fi
+
+	email=$(gdpr_safe galaxy_user.email email)
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			history.id,
+			$email,
+			date(galaxy_user.update_time) user_age,
+			date(history.update_time) history_age
+			$extra_selects
+		FROM
+			history
+			JOIN galaxy_user ON history.user_id = galaxy_user.id
+			$extra_joins
+		WHERE
+			NOT history.published
+			AND history.update_time < now() - interval '$arg_history_last_active days'
+			AND galaxy_user.update_time < now() - interval '$arg_user_last_active days'
+			$extra_conds
+		$group_by
+		ORDER BY
+			user_age ASC,
+			galaxy_user.email ASC,
+			history_age ASC
+	EOF
+}
