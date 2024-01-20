@@ -1606,6 +1606,64 @@ mutate_purge-old-job-metrics() { ##? [--commit]: Purge job metrics older than 1 
 	QUERY="$txn_pre $QUERY; $txn_pos"
 }
 
+mutate_derive_missing_username_from_email() { ##? [--commit]: Set empty username to email address for users created before 2011
+	meta <<-EOF
+		ADDED: 22
+	EOF
+	handle_help "$@" <<-EOF
+		Galaxy did not require setting a username for users registered prior to 2011.
+		This will set the username to the lowercased substring of the email addres before the first @.
+		The username for a user with the email address "Jane.DoE@example.com"
+		will be set to "jane.doe" if the the user did not have a username and no other user
+		has been registered with that username.
+		It is recommended that usernames that could not be changed due to conflicts are fixed
+		using mutate_set_missing_username_to_random_uuid()
+	EOF
+
+	read -r -d '' QUERY <<-EOF
+		WITH extracted_emails AS (
+		    SELECT LOWER(SPLIT_PART(email, '@', 1)) AS extracted_email
+		    FROM galaxy_user gu
+		    WHERE username IS NULL
+		    AND NOT EXISTS (
+		        SELECT 1
+		        FROM galaxy_user
+		        WHERE LOWER(SPLIT_PART(email, '@', 1)) = LOWER(SPLIT_PART(gu.email, '@', 1))
+		        AND username IS NOT NULL
+		    )
+		)
+		UPDATE galaxy_user gu
+		SET username = e.extracted_email
+		FROM extracted_emails e
+		WHERE gu.username IS NULL
+		AND LOWER(SPLIT_PART(gu.email, '@', 1)) = e.extracted_email
+	EOF
+
+	txn_pre=$(txn_prefix "$arg_commit")
+	txn_pos=$(txn_postfix "$arg_commit")
+	QUERY="$txn_pre $QUERY; $txn_pos"
+}
+
+mutate_set_missing_username_to_random_uuid() { ##? [--commit]: Set empty username to random uuid
+	meta <<-EOF
+		ADDED: 22
+	EOF
+	handle_help "$@" <<-EOF
+		Galaxy did not require setting a username for users registered prior to 2011.
+		This will set the username column to a random uuid.
+	EOF
+
+	read -r -d '' QUERY <<-EOF
+		UPDATE galaxy_user gu
+		SET username = gen_random_uuid()
+		WHERE gu.username IS NULL
+	EOF
+
+	txn_pre=$(txn_prefix "$arg_commit")
+	txn_pos=$(txn_postfix "$arg_commit")
+	QUERY="$txn_pre $QUERY; $txn_pos"
+}
+
 mutate_scale-table-autovacuum() { ##? [--shift=16] [--commit]: Update autovacuum and autoanalyze scale for large tables.
 	meta <<-EOF
 		ADDED: 22
