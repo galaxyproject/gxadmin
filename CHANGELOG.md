@@ -4,6 +4,7 @@
 	- filter histogram: replaces bit.ly's data_hacks with a built-in AWK program to calculate a histogram. May not be entirely portable @hexylena.
 	- mutate scale-table-autovacuum: Dynamically update autovacuum and autoanalyze scale for large tables. @natefoo
 	- query tools-usage-per-month from @lldelisle
+	- mutate derive-missing-username-from-email and mutate set-missing-username-to-random-uuid from @mvdbeek
 - Updated:
 	- query monthly-cpu-stats to add --nb_users --filter_email by @lldelisle
 - Fixed:
