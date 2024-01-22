@@ -1606,9 +1606,10 @@ mutate_purge-old-job-metrics() { ##? [--commit]: Purge job metrics older than 1 
 	QUERY="$txn_pre $QUERY; $txn_pos"
 }
 
-mutate_derive_missing_username_from_email() { ##? [--commit]: Set empty username to email address for users created before 2011
+mutate_derive-missing-username-from-email() { ##? [--commit]: Set empty username to email address for users created before 2011
 	meta <<-EOF
 		ADDED: 22
+		AUTHORS: mvdbeek
 	EOF
 	handle_help "$@" <<-EOF
 		Galaxy did not require setting a username for users registered prior to 2011.
@@ -1617,7 +1618,7 @@ mutate_derive_missing_username_from_email() { ##? [--commit]: Set empty username
 		will be set to "jane.doe" if the the user did not have a username and no other user
 		has been registered with that username.
 		It is recommended that usernames that could not be changed due to conflicts are fixed
-		using mutate_set_missing_username_to_random_uuid()
+		using mutate set-missing-username-to-random-uuid()
 	EOF
 
 	read -r -d '' QUERY <<-EOF
@@ -1644,9 +1645,10 @@ mutate_derive_missing_username_from_email() { ##? [--commit]: Set empty username
 	QUERY="$txn_pre $QUERY; $txn_pos"
 }
 
-mutate_set_missing_username_to_random_uuid() { ##? [--commit]: Set empty username to random uuid
+mutate_set-missing-username-to-random-uuid() { ##? [--commit]: Set empty username to random uuid
 	meta <<-EOF
 		ADDED: 22
+		AUTHORS: mvdbeek
 	EOF
 	handle_help "$@" <<-EOF
 		Galaxy did not require setting a username for users registered prior to 2011.
