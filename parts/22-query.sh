@@ -5028,18 +5028,14 @@ query_archivable-histories() { ##? [--user-last-active=360] [--history-last-acti
 	extra_selects=
 	extra_joins=
 	extra_conds=
-	group_by=
 	if [[ -n $arg_size ]]; then
 		extra_selects=',
 			sum(dataset.total_size) AS size
 		'
-		extra_joins='JOIN history_dataset_association on history.id = history_dataset_association.history_id
+		extra_joins='
 			JOIN dataset on history_dataset_association.dataset_id = dataset.id'
-		extra_conds='AND NOT history_dataset_association.purged
+		extra_conds='AND NOT dataset.deleted
 			AND NOT dataset.purged'
-		group_by='GROUP BY
-			history.id, galaxy_user.id
-		'
 	fi
 
 	email=$(gdpr_safe galaxy_user.email email)
@@ -5054,13 +5050,19 @@ query_archivable-histories() { ##? [--user-last-active=360] [--history-last-acti
 		FROM
 			history
 			JOIN galaxy_user ON history.user_id = galaxy_user.id
+			JOIN history_dataset_association on history.id = history_dataset_association.history_id
 			$extra_joins
 		WHERE
 			NOT history.published
-			AND history.update_time < now() - interval '$arg_history_last_active days'
-			AND galaxy_user.update_time < now() - interval '$arg_user_last_active days'
+			AND NOT history.deleted
+			AND NOT history.purged
+			AND NOT history_dataset_association.deleted
+			AND NOT history_dataset_association.purged
+			AND history.update_time < now() - interval '$arg_history_last_active minutes'
+			AND galaxy_user.update_time < now() - interval '$arg_user_last_active minutes'
 			$extra_conds
-		$group_by
+		GROUP BY
+			history.id, galaxy_user.id
 		ORDER BY
 			user_age ASC,
 			galaxy_user.email ASC,
