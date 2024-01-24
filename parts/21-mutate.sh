@@ -532,7 +532,12 @@ mutate_restart-jobs() { ## [--commit] <-|job_id [job_id [...]]> : Restart some j
 
 	read -r -d '' QUERY <<-EOF
 		UPDATE job
-		SET state = 'new'
+		SET
+			state = 'new',
+			destination_id = null,
+			destination_params = null,
+			job_runner_name = null,
+			job_runner_external_id = null
 		WHERE job.id in ($job_ids_string)
 	EOF
 
