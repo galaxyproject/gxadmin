@@ -2536,6 +2536,7 @@ query_job-history() { ##? <id>: Job state history for a specific job
 				state
 			FROM job_state_history
 			WHERE job_id = $arg_id
+   			ORDER BY create_time ASC
 	EOF
 }
 
