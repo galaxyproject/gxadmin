@@ -1443,19 +1443,19 @@ query_monthly-cpu-stats() { ##? [--nb-users] [--filter-email=<domain>] [year]: C
 		actually consumed by your jobs, you should use cgroups. It can also display the number of users that ran jobs. You can also filter for email domain.
 
 		    $ gxadmin query monthly-cpu-stats --nb-users --filter-email epfl.ch 2022
-			   month    | cpu_years | cpu_hours | nb_users                                                                                              
-			------------+-----------+-----------+----------                                                                                             
-			 2022-12-01 |      0.44 |   3894.59 |        4                                                                                              
-			 2022-11-01 |      0.06 |    558.50 |        6                                                                                              
-			 2022-10-01 |      0.10 |    903.05 |        5                                                                                              
-			 2022-09-01 |      0.14 |   1198.12 |        5                                                                                              
-			 2022-08-01 |      0.19 |   1650.16 |        6                                                                                              
-			 2022-07-01 |      0.13 |   1142.43 |        5                                                                                              
-			 2022-06-01 |      0.01 |     65.51 |        3                                                                                              
-			 2022-05-01 |      0.01 |     50.95 |        2                                                                                              
-			 2022-04-01 |      0.02 |    216.83 |        4                                                                                              
-			 2022-03-01 |      0.09 |    802.63 |        7                                                                                              
-			 2022-02-01 |      0.20 |   1764.14 |        6                                                                                              
+			   month    | cpu_years | cpu_hours | nb_users
+			------------+-----------+-----------+----------
+			 2022-12-01 |      0.44 |   3894.59 |        4
+			 2022-11-01 |      0.06 |    558.50 |        6
+			 2022-10-01 |      0.10 |    903.05 |        5
+			 2022-09-01 |      0.14 |   1198.12 |        5
+			 2022-08-01 |      0.19 |   1650.16 |        6
+			 2022-07-01 |      0.13 |   1142.43 |        5
+			 2022-06-01 |      0.01 |     65.51 |        3
+			 2022-05-01 |      0.01 |     50.95 |        2
+			 2022-04-01 |      0.02 |    216.83 |        4
+			 2022-03-01 |      0.09 |    802.63 |        7
+			 2022-02-01 |      0.20 |   1764.14 |        6
 			 2022-01-01 |      0.01 |     71.66 |        8
 			(12 rows)
 
@@ -2464,35 +2464,45 @@ query_monthly-jobs(){ ## [year] [--by_group]: Number of jobs run each month
 	EOF
 }
 
-query_total-jobs(){ ## : Total number of jobs run by galaxy instance
+query_total-jobs(){ ##? [date] [--total]: Total number of jobs run by Galaxy instance.
 	meta <<-EOF
 		ADDED: 17
 	EOF
 	handle_help "$@" <<-EOF
-		Count total number of jobs
+		Count total number of jobs. Providing date (eg. 2024-01-01) counts jobs up to that date.
+		Adding '--total' does not break jobs down by job state.
 
 		    $ gxadmin query total-jobs
-		      state  | count
-		    ---------+-------
+		      state  | num_jobs
+		    ---------+---------
 		     deleted |    21
 		     error   |   197
 		     ok      |   798
 		    (3 rows)
 	EOF
 
+	state="state,"
+	group_by_order_by="GROUP BY state ORDER BY state"
+	if [[ -n $arg_total ]]; then
+		state=""
+		group_by_order_by=""
+	fi
+
+	if [[ -n $arg_date ]]; then
+		where="WHERE create_time < '$arg_date'"
+	fi
+
 	fields="count=1"
 	tags="state=0"
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			state, count(*)
+			$state
+			count(*) AS num_jobs
 		FROM
 			job
-
-		GROUP BY
-			state
-		ORDER BY
-			state
+		$where
+		$group_by_order_by
 	EOF
 
 }
@@ -4521,7 +4531,7 @@ query_jobs() { ##? [--tool=] [--destination=] [--limit=50] [--states=<comma,sep,
 		     14588 | 2022-10-19 10:45:42 | 2022-10-19 10:46:01 |      16 | ok      | toolshed.g2.bx.psu.edu/repos/devteam/bwa/bwa_mem/0.7.17.2                                   | handler_2 | pulsar-nci-test             | 14588
 		     14584 | 2022-10-19 10:45:12 | 2022-10-19 10:45:31 |      16 | ok      | toolshed.g2.bx.psu.edu/repos/devteam/bwa/bwa_mem/0.7.17.2                                   | handler_2 | pulsar-nci-test             | 14584
 		     14580 | 2022-10-19 10:44:43 | 2022-10-19 10:45:02 |      16 | ok      | toolshed.g2.bx.psu.edu/repos/devteam/bwa/bwa_mem/0.7.17.2                                   | handler_2 | pulsar-nci-test             | 14580
-		
+
 		    $ gxadmin query jobs --destination=pulsar-nci-test --tool=bionano
 		      id   |     create_time     |     update_time     | user_id | state |                                        tool_id                                         |       handler       |         destination         | external_id
 		    -------+---------------------+---------------------+---------+-------+----------------------------------------------------------------------------------------+---------------------+-----------------------------+-------------
@@ -4765,7 +4775,7 @@ query_tpt-tool-cpu() { ##? [--startyear=<YYYY>] [--endyear=<YYYY>] [--formula=av
 		     __SET_METADATA__          | 2019-02-01 |   82791 | normal
 		    (8 rows)
 	EOF
-	
+
 	filter_by_time_period=""
 	if [[ -n $arg_startyear ]]; then
 		filter_by_time_period="date_trunc('year', job.create_time AT TIME ZONE 'UTC') >= '$arg_startyear-01-01'::date"
@@ -4832,7 +4842,7 @@ query_tpt-tool-users() { ##? [--startyear=<YYYY>] [--endyear=<YYYY>]: Start year
 		     __SET_METADATA__          | 2019-02-01 |     1
 		    (8 rows)
 	EOF
-	
+
 	filter_by_time_period=""
 	if [[ -n $arg_startyear ]]; then
 		filter_by_time_period="date_trunc('year', job.create_time AT TIME ZONE 'UTC') >= '$arg_startyear-01-01'::date"
@@ -4882,7 +4892,7 @@ query_tpt-tool-memory() { ##? [--startyear=<YYYY>] [--endyear=<YYYY>] [--formula
 		     __SET_METADATA__          | 2019-02-01 |               1623
 		    (8 rows)
 	EOF
-	
+
 	filter_by_time_period=""
 	if [[ -n $arg_startyear ]]; then
 		filter_by_time_period="date_trunc('year', job.create_time AT TIME ZONE 'UTC') >= '$arg_startyear-01-01'::date"
@@ -4935,7 +4945,7 @@ query_tools-usage-per-month() { ##? [--startmonth=<YYYY>-<MM>] [--endmonth=<YYYY
 		Tools Usage Tracking: cpu-hours and nb_users by Month-Year.
 
 		    $ gxadmin query tools-usage-per-month --super_short_tool_id --no_version --tools bowtie2,Cut1 --startmonth=2023-03 --endmonth 2023-08
-			   month    | cpu_hours | tool_id | nb_users 
+			   month    | cpu_hours | tool_id | nb_users
 			------------+-----------+---------+----------
 			 2023-08-01 |    326.88 | bowtie2 |        1
 			 2023-08-01 |    469.27 | bowtie2 |        1
@@ -4951,7 +4961,7 @@ query_tools-usage-per-month() { ##? [--startmonth=<YYYY>-<MM>] [--endmonth=<YYYY
 			 2023-03-01 |    506.71 | bowtie2 |        2
 			(12 rows)
 	EOF
-	
+
 	filter_by_time_period=""
 	if [[ -n $arg_startmonth ]]; then
 		filter_by_time_period="date_trunc('month', job.create_time AT TIME ZONE 'UTC') >= '$arg_startmonth-01'::date"
