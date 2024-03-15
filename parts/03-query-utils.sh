@@ -57,6 +57,58 @@ query_expj() {
 	EOF
 }
 
+query_exp_pub() {
+	date=$(date --rfc-3339=seconds)
+	sql_query="$1"
+	explain_json=$(
+		psql -qAt <<-EOF
+			EXPLAIN (ANALYZE, COSTS, VERBOSE, BUFFERS, FORMAT JSON) $sql_query
+		EOF
+	)
+
+	if [[ "$explain_json" == "" ]]; then
+		exit 1;
+	fi
+
+	data=$(jq -n \
+		--arg PLAN "$explain_json" \
+		--arg TITLE "$USER's gxadmin plan $date" \
+		--arg QUERY "$sql_query" \
+		'{"title": $ARGS.named.TITLE, "query": $ARGS.named.QUERY, "plan": $ARGS.named.PLAN}')
+
+	echo "⚠️ WARNING ⚠️ "
+	echo "We will be sending the data to a PUBLIC service that we do not control!"
+	echo "Are you sure you want to do this? And no user IDs or emails are present in the query?"
+	echo "[N/y]"
+	read -r answer
+	if [[ "$answer" != "y" ]]; then
+		echo "Aborting"
+		exit 1;
+	fi
+	
+	resp=$(curl --silent 'https://explain.dalibo.com/new.json' \
+		-X POST \
+		-H 'User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:123.0) Gecko/20100101 Firefox/123.0' \
+		-H 'Accept: application/json, text/plain, */*' \
+		-H 'Accept-Language: en-US,en;q=0.5' -H 'Accept-Encoding: gzip, deflate, br' \
+		-H 'Content-Type: application/json;charset=utf-8' \
+		-H 'Origin: https://explain.dalibo.com' \
+		-H 'DNT: 1' -H 'Connection: keep-alive' \
+		-H 'Referer: https://explain.dalibo.com/' \
+		-H 'Sec-Fetch-Dest: empty' \
+		-H 'Sec-Fetch-Mode: cors' \
+		-H 'Sec-Fetch-Site: same-origin' \
+		-H 'Pragma: no-cache' \
+		-H 'Cache-Control: no-cache' \
+		-H 'Accept: application/json' \
+		--data-raw "$data")
+
+	echo "Here is the delete key, I haven't found the URL to make it work yet: "
+	echo "$resp" | jq .deleteKey
+	echo "Here is your nice-to-view plan:"
+	echo "$resp" | jq '"https://explain.dalibo.com/plan/" + .id' -r
+}
+
 query_echo() {
 	echo "$1"
 }

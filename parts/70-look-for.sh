@@ -261,6 +261,7 @@ look_for() {
 			iquery           ) query_influx "$QUERY" "$query_name" "$fields" "$tags" "$timestamp";;
 			explainquery     ) query_exp "$QUERY";;
 			explainjsonquery ) query_expj "$QUERY";;
+			publicexplainquery     ) query_exp_pub "$QUERY";;
 			echoquery        ) query_echo "$QUERY";;
 			# default
 			*                )  usage "Error";;
