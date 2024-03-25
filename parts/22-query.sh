@@ -2414,10 +2414,10 @@ query_monthly-jobs(){ ## [year] [YYYY-MM] [--by_group]: Number of jobs run each 
 		year: Will return number of monthly jobs run from the start of [year] till now
 		month: Will return number of jobs for the given month
 		    $ gxadmin query monthly-jobs 2024
-		       month  | count
+		      month  | count
 			---------+--------
-			2024-02 |  71238
-			2024-01 | 589359
+			 2024-02 |  71238
+			 2024-01 | 589359
 	EOF
 
 	if (( $# > 0 )); then
@@ -2465,13 +2465,62 @@ query_monthly-jobs(){ ## [year] [YYYY-MM] [--by_group]: Number of jobs run each 
 	EOF
 }
 
-query_total-jobs(){ ##? [YYYY-MM-DD] [--total]: Total number of jobs run by Galaxy instance.
+query_monthly-jobs-by-new-users() { ##? [month] [--no_state]: Number of jobs run by new users in the given month
+	meta <<-EOF
+		ADDED: 24
+	EOF
+	handle_help "$@" <<-EOF
+		Count jobs run by users that registered in the given month
+		month: Month to count jobs for, provided as YYYY-MM. If month is not provided, defaults to current month.
+		no_state: Do not break down jobs by state
+
+		    $ gxadmin query jobs-by-new-users 2024-02
+		      state   | jobs_by_new_users
+			----------+-------------------
+			 deleted  |               340
+			 deleting |                 2
+			 error    |              1092
+			 new      |                41
+			 ok       |              4688
+			 paused   |                87
+			 stopped  |                 1
+	EOF
+
+	state="state,"
+	group_by_order_by="GROUP BY month, state ORDER BY month, state"
+
+	if [ $# -eq 0 ]; then
+		arg_month=$(date +%Y-%m)
+	fi
+
+	if [[ -n $arg_no_state ]]; then
+		state=""
+		group_by_order_by="GROUP BY month ORDER BY month"
+	fi
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			TO_CHAR(date_trunc('month', j.create_time AT TIME ZONE 'UTC')::DATE, 'YYYY-MM') AS month,
+			$state
+			COUNT(j.id) AS jobs_by_new_users
+		FROM
+			job j
+		JOIN
+			galaxy_user u ON j.user_id = u.id
+		WHERE
+			DATE_TRUNC('month', j.create_time) = DATE_TRUNC('month', CAST('$arg_month-01' AS DATE))
+			AND DATE_TRUNC('month', u.create_time) = DATE_TRUNC('month', CAST('$arg_month-01' AS DATE))
+		$group_by_order_by
+	EOF
+}
+
+query_total-jobs(){ ##? [date] [--no_state]: Total number of jobs run by Galaxy instance.
 	meta <<-EOF
 		ADDED: 17
 	EOF
 	handle_help "$@" <<-EOF
-		Count total number of jobs. Providing optional date counts jobs up to that date.
-		Adding '--total' does not break jobs down by job state.
+		Count total number of jobs. Providing optional date (as YYYY-MM-DD) counts jobs up to that date.
+		Adding '--no_state' does not break jobs down by job state.
 
 		    $ gxadmin query total-jobs
 		      state  | num_jobs
@@ -2484,7 +2533,7 @@ query_total-jobs(){ ##? [YYYY-MM-DD] [--total]: Total number of jobs run by Gala
 
 	state="state,"
 	group_by_order_by="GROUP BY state ORDER BY state"
-	if [[ -n $arg_total ]]; then
+	if [[ -n $arg_no_state ]]; then
 		state=""
 		group_by_order_by=""
 	fi
