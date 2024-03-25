@@ -18,13 +18,13 @@ query_latest-users() { ## : 40 recently registered users
 	handle_help "$@" <<-EOF
 		Returns 40 most recently registered users
 
-		    $ gxadmin query latest-users
-		     id |          create_time          | disk_usage | username |     email      |              groups               | active
-		    ----+-------------------------------+------------+----------+----------------+-----------------------------------+--------
-		      3 | 2019-03-07 13:06:37.945403+00 |            | beverly  | b@example.com  |                                   | t
-		      2 | 2019-03-07 13:06:23.369201+00 | 826 bytes  | alice    | a@example.com  |                                   | t
-		      1 | 2018-11-19 14:54:30.969713+00 | 869 MB     | helena   | hxr@local.host | training-fff training-hogeschool | t
-		    (3 rows)
+			$ gxadmin query latest-users
+			 id |          create_time          | disk_usage | username |     email      |              groups               | active
+			----+-------------------------------+------------+----------+----------------+-----------------------------------+--------
+			  3 | 2019-03-07 13:06:37.945403+00 |            | beverly  | b@example.com  |                                   | t
+			  2 | 2019-03-07 13:06:23.369201+00 | 826 bytes  | alice    | a@example.com  |                                   | t
+			  1 | 2018-11-19 14:54:30.969713+00 | 869 MB     | helena   | hxr@local.host | training-fff training-hogeschool | t
+			(3 rows)
 	EOF
 
 	username=$(gdpr_safe galaxy_user.username username)
@@ -51,18 +51,18 @@ query_latest-users() { ## : 40 recently registered users
 
 query_tool-usage() { ##? [weeks]: Counts of tool runs in the past weeks (default = all)
 	handle_help "$@" <<-EOF
-		    $ gxadmin tool-usage
-		                                    tool_id                                 | count
-		    ------------------------------------------------------------------------+--------
-		     toolshed.g2.bx.psu.edu/repos/devteam/column_maker/Add_a_column1/1.1.0  | 958154
-		     Grouping1                                                              | 638890
-		     toolshed.g2.bx.psu.edu/repos/devteam/intersect/gops_intersect_1/1.0.0  | 326959
-		     toolshed.g2.bx.psu.edu/repos/devteam/get_flanks/get_flanks1/1.0.0      | 320236
-		     addValue                                                               | 313470
-		     toolshed.g2.bx.psu.edu/repos/devteam/join/gops_join_1/1.0.0            | 312735
-		     upload1                                                                | 103595
-		     toolshed.g2.bx.psu.edu/repos/rnateam/graphclust_nspdk/nspdk_sparse/9.2 |  52861
-		     Filter1                                                                |  43253
+			$ gxadmin tool-usage
+											tool_id                                 | count
+			------------------------------------------------------------------------+--------
+			 toolshed.g2.bx.psu.edu/repos/devteam/column_maker/Add_a_column1/1.1.0  | 958154
+			 Grouping1                                                              | 638890
+			 toolshed.g2.bx.psu.edu/repos/devteam/intersect/gops_intersect_1/1.0.0  | 326959
+			 toolshed.g2.bx.psu.edu/repos/devteam/get_flanks/get_flanks1/1.0.0      | 320236
+			 addValue                                                               | 313470
+			 toolshed.g2.bx.psu.edu/repos/devteam/join/gops_join_1/1.0.0            | 312735
+			 upload1                                                                | 103595
+			 toolshed.g2.bx.psu.edu/repos/rnateam/graphclust_nspdk/nspdk_sparse/9.2 |  52861
+			 Filter1                                                                |  43253
 	EOF
 
 	where=
@@ -88,18 +88,18 @@ query_tool-usage-over-time() { ##? [searchterm]: Counts of tool runs by month, f
 		ADDED: 19
 	EOF
 	handle_help "$@" <<-EOF
-		    $ gxadmin tool-usage-over-time
-		                                    tool_id                                 | count
-		    ------------------------------------------------------------------------+--------
-		     toolshed.g2.bx.psu.edu/repos/devteam/column_maker/Add_a_column1/1.1.0  | 958154
-		     Grouping1                                                              | 638890
-		     toolshed.g2.bx.psu.edu/repos/devteam/intersect/gops_intersect_1/1.0.0  | 326959
-		     toolshed.g2.bx.psu.edu/repos/devteam/get_flanks/get_flanks1/1.0.0      | 320236
-		     addValue                                                               | 313470
-		     toolshed.g2.bx.psu.edu/repos/devteam/join/gops_join_1/1.0.0            | 312735
-		     upload1                                                                | 103595
-		     toolshed.g2.bx.psu.edu/repos/rnateam/graphclust_nspdk/nspdk_sparse/9.2 |  52861
-		     Filter1                                                                |  43253
+			$ gxadmin tool-usage-over-time
+											tool_id                                 | count
+			------------------------------------------------------------------------+--------
+			 toolshed.g2.bx.psu.edu/repos/devteam/column_maker/Add_a_column1/1.1.0  | 958154
+			 Grouping1                                                              | 638890
+			 toolshed.g2.bx.psu.edu/repos/devteam/intersect/gops_intersect_1/1.0.0  | 326959
+			 toolshed.g2.bx.psu.edu/repos/devteam/get_flanks/get_flanks1/1.0.0      | 320236
+			 addValue                                                               | 313470
+			 toolshed.g2.bx.psu.edu/repos/devteam/join/gops_join_1/1.0.0            | 312735
+			 upload1                                                                | 103595
+			 toolshed.g2.bx.psu.edu/repos/rnateam/graphclust_nspdk/nspdk_sparse/9.2 |  52861
+			 Filter1                                                                |  43253
 	EOF
 
 	where=
@@ -133,18 +133,18 @@ query_tool-popularity() { ##? [months=24] [--error]: Most run tools by month (to
 	handle_help "$@" <<-EOF
 		See most popular tools by month. Use --error to include error counts.
 
-		    $ ./gxadmin query tool-popularity 1
-		              tool_id          |   month    | count
-		    ---------------------------+------------+-------
-		     circos                    | 2019-02-01 |    20
-		     upload1                   | 2019-02-01 |    12
-		     require_format            | 2019-02-01 |     9
-		     circos_gc_skew            | 2019-02-01 |     7
-		     circos_wiggle_to_scatter  | 2019-02-01 |     3
-		     test_history_sanitization | 2019-02-01 |     2
-		     circos_interval_to_tile   | 2019-02-01 |     1
-		     __SET_METADATA__          | 2019-02-01 |     1
-		    (8 rows)
+			$ ./gxadmin query tool-popularity 1
+					  tool_id          |   month    | count
+			---------------------------+------------+-------
+			 circos                    | 2019-02-01 |    20
+			 upload1                   | 2019-02-01 |    12
+			 require_format            | 2019-02-01 |     9
+			 circos_gc_skew            | 2019-02-01 |     7
+			 circos_wiggle_to_scatter  | 2019-02-01 |     3
+			 test_history_sanitization | 2019-02-01 |     2
+			 circos_interval_to_tile   | 2019-02-01 |     1
+			 __SET_METADATA__          | 2019-02-01 |     1
+			(8 rows)
 	EOF
 
 	fields="count=2"
@@ -171,19 +171,19 @@ query_workflow-connections() { ##? [--all]: The connections of tools, from outpu
 	handle_help "$@" <<-EOF
 		This is used by the usegalaxy.eu tool prediction workflow, allowing for building models out of tool connections in workflows.
 
-		    $ gxadmin query workflow-connections
-		     wf_id |     wf_updated      | in_id |      in_tool      | in_tool_v | out_id |     out_tool      | out_tool_v | published | deleted | has_errors
-		    -------+---------------------+-------+-------------------+-----------+--------+-------------------+----------------------------------------------
-		         3 | 2013-02-07 16:48:00 |     5 | Grep1             | 1.0.1     |     12 |                   |            |    f      |    f    |    f
-		         3 | 2013-02-07 16:48:00 |     6 | Cut1              | 1.0.1     |      7 | Remove beginning1 | 1.0.0      |    f      |    f    |    f
-		         3 | 2013-02-07 16:48:00 |     7 | Remove beginning1 | 1.0.0     |      5 | Grep1             | 1.0.1      |    f      |    f    |    f
-		         3 | 2013-02-07 16:48:00 |     8 | addValue          | 1.0.0     |      6 | Cut1              | 1.0.1      |    t      |    f    |    f
-		         3 | 2013-02-07 16:48:00 |     9 | Cut1              | 1.0.1     |      7 | Remove beginning1 | 1.0.0      |    f      |    f    |    f
-		         3 | 2013-02-07 16:48:00 |    10 | addValue          | 1.0.0     |     11 | Paste1            | 1.0.0      |    t      |    f    |    f
-		         3 | 2013-02-07 16:48:00 |    11 | Paste1            | 1.0.0     |      9 | Cut1              | 1.0.1      |    f      |    f    |    f
-		         3 | 2013-02-07 16:48:00 |    11 | Paste1            | 1.0.0     |      8 | addValue          | 1.0.0      |    t      |    t    |    f
-		         4 | 2013-02-07 16:48:00 |    13 | cat1              | 1.0.0     |     18 | addValue          | 1.0.0      |    t      |    f    |    f
-		         4 | 2013-02-07 16:48:00 |    13 | cat1              | 1.0.0     |     20 | Count1            | 1.0.0      |    t      |    t    |    f
+			$ gxadmin query workflow-connections
+			 wf_id |     wf_updated      | in_id |      in_tool      | in_tool_v | out_id |     out_tool      | out_tool_v | published | deleted | has_errors
+			-------+---------------------+-------+-------------------+-----------+--------+-------------------+----------------------------------------------
+				 3 | 2013-02-07 16:48:00 |     5 | Grep1             | 1.0.1     |     12 |                   |            |    f      |    f    |    f
+				 3 | 2013-02-07 16:48:00 |     6 | Cut1              | 1.0.1     |      7 | Remove beginning1 | 1.0.0      |    f      |    f    |    f
+				 3 | 2013-02-07 16:48:00 |     7 | Remove beginning1 | 1.0.0     |      5 | Grep1             | 1.0.1      |    f      |    f    |    f
+				 3 | 2013-02-07 16:48:00 |     8 | addValue          | 1.0.0     |      6 | Cut1              | 1.0.1      |    t      |    f    |    f
+				 3 | 2013-02-07 16:48:00 |     9 | Cut1              | 1.0.1     |      7 | Remove beginning1 | 1.0.0      |    f      |    f    |    f
+				 3 | 2013-02-07 16:48:00 |    10 | addValue          | 1.0.0     |     11 | Paste1            | 1.0.0      |    t      |    f    |    f
+				 3 | 2013-02-07 16:48:00 |    11 | Paste1            | 1.0.0     |      9 | Cut1              | 1.0.1      |    f      |    f    |    f
+				 3 | 2013-02-07 16:48:00 |    11 | Paste1            | 1.0.0     |      8 | addValue          | 1.0.0      |    t      |    t    |    f
+				 4 | 2013-02-07 16:48:00 |    13 | cat1              | 1.0.0     |     18 | addValue          | 1.0.0      |    t      |    f    |    f
+				 4 | 2013-02-07 16:48:00 |    13 | cat1              | 1.0.0     |     20 | Count1            | 1.0.0      |    t      |    t    |    f
 	EOF
 
 	read -r -d '' wf_filter <<-EOF
@@ -256,26 +256,26 @@ query_history-connections() { ## : The connections of tools, from output to inpu
 
 query_datasets-created-daily() { ##? [months=all] [--human]: The min/max/average/p95/p99 of total size of datasets created in a single day.
 	handle_help "$@" <<-EOF
-		    $ gxadmin query datasets-created-daily
-		     min | quant_1st | median  |         mean          | quant_3rd |  perc_95  |  perc_99  |    max    |    sum     |    stddev
-		    -----+-----------+---------+-----------------------+-----------+-----------+-----------+-----------+------------+---------------
-		       2 |    303814 | 6812862 | 39653071.914285714286 |  30215616 | 177509882 | 415786146 | 533643009 | 1387857517 | 96920615.1745
-		    (1 row)
+			$ gxadmin query datasets-created-daily
+			 min | quant_1st | median  |         mean          | quant_3rd |  perc_95  |  perc_99  |    max    |    sum     |    stddev
+			-----+-----------+---------+-----------------------+-----------+-----------+-----------+-----------+------------+---------------
+			   2 |    303814 | 6812862 | 39653071.914285714286 |  30215616 | 177509882 | 415786146 | 533643009 | 1387857517 | 96920615.1745
+			(1 row)
 
 		or more readably:
 
-		    $ gxadmin query datasets-created-daily --human
-		       min   | quant_1st | median  | mean  | quant_3rd | perc_95 | perc_99 |  max   |   sum   | stddev
-		    ---------+-----------+---------+-------+-----------+---------+---------+--------+---------+--------
-		     2 bytes | 297 kB    | 6653 kB | 38 MB | 29 MB     | 169 MB  | 397 MB  | 509 MB | 1324 MB | 92 MB
-		    (1 row)
+			$ gxadmin query datasets-created-daily --human
+			   min   | quant_1st | median  | mean  | quant_3rd | perc_95 | perc_99 |  max   |   sum   | stddev
+			---------+-----------+---------+-------+-----------+---------+---------+--------+---------+--------
+			 2 bytes | 297 kB    | 6653 kB | 38 MB | 29 MB     | 169 MB  | 397 MB  | 509 MB | 1324 MB | 92 MB
+			(1 row)
 
 		only consider datasets created in the past month:
 
-		    $ gxadmin query datasets-created-daily 1 --human
-		       min   | quant_1st | median  |  mean   | quant_3rd | perc_95 | perc_99 |  max  |  sum   | stddev
-		    ---------+-----------+---------+---------+-----------+---------+---------+-------+--------+---------
-		     1974 GB | 7651 GB   | 9705 GB | 9089 GB | 11 TB     | 13 TB   | 13 TB   | 13 TB | 284 TB | 2727 GB
+			$ gxadmin query datasets-created-daily 1 --human
+			   min   | quant_1st | median  |  mean   | quant_3rd | perc_95 | perc_99 |  max  |  sum   | stddev
+			---------+-----------+---------+---------+-----------+---------+---------+-------+--------+---------
+			 1974 GB | 7651 GB   | 9705 GB | 9089 GB | 11 TB     | 13 TB   | 13 TB   | 13 TB | 284 TB | 2727 GB
 	EOF
 
 	if [[ -n $arg_human ]]; then
@@ -325,10 +325,10 @@ query_largest-collection() { ## : Returns the size of the single largest collect
 
 query_queue-time() { ##? <tool_id>: The average/95%/99% a specific tool spends in queue state.
 	handle_help "$@" <<-EOF
-		    $ gxadmin query queue-time toolshed.g2.bx.psu.edu/repos/nilesh/rseqc/rseqc_geneBody_coverage/2.6.4.3
-		           min       |     perc_95     |     perc_99     |       max
-		    -----------------+-----------------+-----------------+-----------------
-		     00:00:15.421457 | 00:00:55.022874 | 00:00:59.974171 | 00:01:01.211995
+			$ gxadmin query queue-time toolshed.g2.bx.psu.edu/repos/nilesh/rseqc/rseqc_geneBody_coverage/2.6.4.3
+				   min       |     perc_95     |     perc_99     |       max
+			-----------------+-----------------+-----------------+-----------------
+			 00:00:15.421457 | 00:00:55.022874 | 00:00:59.974171 | 00:01:01.211995
 	EOF
 
 	read -r -d '' QUERY <<-EOF
@@ -361,32 +361,32 @@ query_queue-time() { ##? <tool_id>: The average/95%/99% a specific tool spends i
 
 query_queue() { ## [--by (tool|destination|user)]: Brief overview of currently running jobs grouped by tool (default) or other columns
 	handle_help "$@" <<-EOF
-		    $ gxadmin query queue
-		                                tool_id                                |  state  | count
-		    -------------------------------------------------------------------+---------+-------
-		     toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.6.0      | queued  |     9
-		     toolshed.g2.bx.psu.edu/repos/iuc/dexseq/dexseq_count/1.24.0.0     | running |     7
-		     toolshed.g2.bx.psu.edu/repos/nml/spades/spades/1.2                | queued  |     6
-		     ebi_sra_main                                                      | running |     6
-		     toolshed.g2.bx.psu.edu/repos/iuc/trinity/trinity/2.8.3            | queued  |     5
-		     toolshed.g2.bx.psu.edu/repos/devteam/bowtie2/bowtie2/2.3.4.2      | running |     5
-		     toolshed.g2.bx.psu.edu/repos/nml/spades/spades/3.11.1+galaxy1     | queued  |     4
-		     toolshed.g2.bx.psu.edu/repos/iuc/mothur_venn/mothur_venn/1.36.1.0 | running |     2
-		     toolshed.g2.bx.psu.edu/repos/nml/metaspades/metaspades/3.9.0      | running |     2
-		     upload1                                                           | running |     2
+			$ gxadmin query queue
+										tool_id                                |  state  | count
+			-------------------------------------------------------------------+---------+-------
+			 toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.6.0      | queued  |     9
+			 toolshed.g2.bx.psu.edu/repos/iuc/dexseq/dexseq_count/1.24.0.0     | running |     7
+			 toolshed.g2.bx.psu.edu/repos/nml/spades/spades/1.2                | queued  |     6
+			 ebi_sra_main                                                      | running |     6
+			 toolshed.g2.bx.psu.edu/repos/iuc/trinity/trinity/2.8.3            | queued  |     5
+			 toolshed.g2.bx.psu.edu/repos/devteam/bowtie2/bowtie2/2.3.4.2      | running |     5
+			 toolshed.g2.bx.psu.edu/repos/nml/spades/spades/3.11.1+galaxy1     | queued  |     4
+			 toolshed.g2.bx.psu.edu/repos/iuc/mothur_venn/mothur_venn/1.36.1.0 | running |     2
+			 toolshed.g2.bx.psu.edu/repos/nml/metaspades/metaspades/3.9.0      | running |     2
+			 upload1                                                           | running |     2
 
-		    $ gxadmin query queue --by destination
+			$ gxadmin query queue --by destination
 
-		     destination_id |  state  | job_count
-		    ----------------+---------+-----------
-		     normal         | running |       128
-		     multicore      | running |        64
-		     multicore      | queued  |        16
+			 destination_id |  state  | job_count
+			----------------+---------+-----------
+			 normal         | running |       128
+			 multicore      | running |        64
+			 multicore      | queued  |        16
 
-		    $ gxadmin iquery queue --by destination
-		    queue-summary-by-destination,state=running,destination_id=normal count=128
-		    queue-summary-by-destination,state=running,destination_id=multicore count=64
-		    queue-summary-by-destination,state=queued,destination_id=multicore count=16
+			$ gxadmin iquery queue --by destination
+			queue-summary-by-destination,state=running,destination_id=normal count=128
+			queue-summary-by-destination,state=running,destination_id=multicore count=64
+			queue-summary-by-destination,state=queued,destination_id=multicore count=16
 	EOF
 
 	fields="count=2"
@@ -437,8 +437,8 @@ query_queue-overview() { ##? [--short-tool-id]: View used mostly for monitoring
 	handle_help "$@" <<-EOF
 		Primarily for monitoring of queue. Optimally used with 'iquery' and passed to Telegraf.
 
-		    $ gxadmin iquery queue-overview
-		    queue-overview,tool_id=upload1,tool_version=0.0.1,state=running,handler=main.web.1,destination_id=condor,job_runner_name=condor,user=1 count=1
+			$ gxadmin iquery queue-overview
+			queue-overview,tool_id=upload1,tool_version=0.0.1,state=running,handler=main.web.1,destination_id=condor,job_runner_name=condor,user=1 count=1
 
 	EOF
 
@@ -488,20 +488,20 @@ query_queue-overview() { ##? [--short-tool-id]: View used mostly for monitoring
 
 query_queue-detail() { ##? [--all] [--seconds] [--since-update]: Detailed overview of running and queued jobs
 	handle_help "$@" <<-EOF
-		    $ gxadmin query queue-detail
-		      state  |   id    |  extid  |                                 tool_id                                   | username | time_since_creation
-		    ---------+---------+---------+---------------------------------------------------------------------------+----------+---------------------
-		     running | 4360629 | 229333  | toolshed.g2.bx.psu.edu/repos/bgruening/infernal/infernal_cmsearch/1.1.2.0 | xxxx     | 5 days 11:00:00
-		     running | 4362676 | 230237  | toolshed.g2.bx.psu.edu/repos/iuc/mothur_venn/mothur_venn/1.36.1.0         | xxxx     | 4 days 18:00:00
-		     running | 4364499 | 231055  | toolshed.g2.bx.psu.edu/repos/iuc/mothur_venn/mothur_venn/1.36.1.0         | xxxx     | 4 days 05:00:00
-		     running | 4366604 | 5183013 | toolshed.g2.bx.psu.edu/repos/iuc/dexseq/dexseq_count/1.24.0.0             | xxxx     | 3 days 20:00:00
-		     running | 4366605 | 5183016 | toolshed.g2.bx.psu.edu/repos/iuc/dexseq/dexseq_count/1.24.0.0             | xxxx     | 3 days 20:00:00
-		     queued  | 4350274 | 225743  | toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.6.0              | xxxx     | 9 days 05:00:00
-		     queued  | 4353435 | 227038  | toolshed.g2.bx.psu.edu/repos/iuc/trinity/trinity/2.8.3                    | xxxx     | 8 days 08:00:00
-		     queued  | 4361914 | 229712  | toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.6.0              | xxxx     | 5 days -01:00:00
-		     queued  | 4361812 | 229696  | toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.6.0              | xxxx     | 5 days -01:00:00
-		     queued  | 4361939 | 229728  | toolshed.g2.bx.psu.edu/repos/nml/spades/spades/1.2                        | xxxx     | 4 days 21:00:00
-		     queued  | 4361941 | 229731  | toolshed.g2.bx.psu.edu/repos/nml/spades/spades/1.2                        | xxxx     | 4 days 21:00:00
+			$ gxadmin query queue-detail
+			  state  |   id    |  extid  |                                 tool_id                                   | username | time_since_creation
+			---------+---------+---------+---------------------------------------------------------------------------+----------+---------------------
+			 running | 4360629 | 229333  | toolshed.g2.bx.psu.edu/repos/bgruening/infernal/infernal_cmsearch/1.1.2.0 | xxxx     | 5 days 11:00:00
+			 running | 4362676 | 230237  | toolshed.g2.bx.psu.edu/repos/iuc/mothur_venn/mothur_venn/1.36.1.0         | xxxx     | 4 days 18:00:00
+			 running | 4364499 | 231055  | toolshed.g2.bx.psu.edu/repos/iuc/mothur_venn/mothur_venn/1.36.1.0         | xxxx     | 4 days 05:00:00
+			 running | 4366604 | 5183013 | toolshed.g2.bx.psu.edu/repos/iuc/dexseq/dexseq_count/1.24.0.0             | xxxx     | 3 days 20:00:00
+			 running | 4366605 | 5183016 | toolshed.g2.bx.psu.edu/repos/iuc/dexseq/dexseq_count/1.24.0.0             | xxxx     | 3 days 20:00:00
+			 queued  | 4350274 | 225743  | toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.6.0              | xxxx     | 9 days 05:00:00
+			 queued  | 4353435 | 227038  | toolshed.g2.bx.psu.edu/repos/iuc/trinity/trinity/2.8.3                    | xxxx     | 8 days 08:00:00
+			 queued  | 4361914 | 229712  | toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.6.0              | xxxx     | 5 days -01:00:00
+			 queued  | 4361812 | 229696  | toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.6.0              | xxxx     | 5 days -01:00:00
+			 queued  | 4361939 | 229728  | toolshed.g2.bx.psu.edu/repos/nml/spades/spades/1.2                        | xxxx     | 4 days 21:00:00
+			 queued  | 4361941 | 229731  | toolshed.g2.bx.psu.edu/repos/nml/spades/spades/1.2                        | xxxx     | 4 days 21:00:00
 	EOF
 
 	fields="id=1;extid=2;count=9"
@@ -550,10 +550,10 @@ query_queue-detail() { ##? [--all] [--seconds] [--since-update]: Detailed overvi
 
 query_runtime-per-user() { ##? <email>: computation time of user (by email)
 	handle_help "$@" <<-EOF
-		    $ gxadmin query runtime-per-user hxr@informatik.uni-freiburg.de
-		       sum
-		    ----------
-		     14:07:39
+			$ gxadmin query runtime-per-user hxr@informatik.uni-freiburg.de
+			   sum
+			----------
+			 14:07:39
 	EOF
 
 	read -r -d '' QUERY <<-EOF
@@ -575,32 +575,32 @@ query_jobs-nonterminal() { ## [--states=new,queued,running] [--update-time] [--o
 	handle_help "$@" <<-EOF
 		You can request the user information by username, id, and user email
 
-		    $ gxadmin query jobs-nonterminal helena-Rasche
-		       id    | tool_id             |  state  |        create_time         | runner | ext_id |     handler     | user_id
-		    ---------+---------------------+---------+----------------------------+--------+--------+-----------------+---------
-		     4760549 | featurecounts/1.6.3 | running | 2019-01-18 14:05:14.871711 | condor | 197549 | handler_main_7  | 599
-		     4760552 | featurecounts/1.6.3 | running | 2019-01-18 14:05:16.205867 | condor | 197552 | handler_main_7  | 599
-		     4760554 | featurecounts/1.6.3 | running | 2019-01-18 14:05:17.170157 | condor | 197580 | handler_main_8  | 599
-		     4760557 | featurecounts/1.6.3 | running | 2019-01-18 14:05:18.25044  | condor | 197545 | handler_main_10 | 599
-		     4760573 | featurecounts/1.6.3 | running | 2019-01-18 14:05:47.20392  | condor | 197553 | handler_main_2  | 599
-		     4760984 | deseq2/2.11.40.4    | new     | 2019-01-18 14:56:37.700714 |        |        | handler_main_1  | 599
-		     4766092 | deseq2/2.11.40.4    | new     | 2019-01-21 07:24:16.232376 |        |        | handler_main_5  | 599
-		     4811598 | cuffnorm/2.2.1.2    | running | 2019-02-01 13:08:30.400016 | condor | 248432 | handler_main_0  | 599
-		    (8 rows)
+			$ gxadmin query jobs-nonterminal helena-Rasche
+			   id    | tool_id             |  state  |        create_time         | runner | ext_id |     handler     | user_id
+			---------+---------------------+---------+----------------------------+--------+--------+-----------------+---------
+			 4760549 | featurecounts/1.6.3 | running | 2019-01-18 14:05:14.871711 | condor | 197549 | handler_main_7  | 599
+			 4760552 | featurecounts/1.6.3 | running | 2019-01-18 14:05:16.205867 | condor | 197552 | handler_main_7  | 599
+			 4760554 | featurecounts/1.6.3 | running | 2019-01-18 14:05:17.170157 | condor | 197580 | handler_main_8  | 599
+			 4760557 | featurecounts/1.6.3 | running | 2019-01-18 14:05:18.25044  | condor | 197545 | handler_main_10 | 599
+			 4760573 | featurecounts/1.6.3 | running | 2019-01-18 14:05:47.20392  | condor | 197553 | handler_main_2  | 599
+			 4760984 | deseq2/2.11.40.4    | new     | 2019-01-18 14:56:37.700714 |        |        | handler_main_1  | 599
+			 4766092 | deseq2/2.11.40.4    | new     | 2019-01-21 07:24:16.232376 |        |        | handler_main_5  | 599
+			 4811598 | cuffnorm/2.2.1.2    | running | 2019-02-01 13:08:30.400016 | condor | 248432 | handler_main_0  | 599
+			(8 rows)
 
 		You can also query all non-terminal jobs by all users
 
-		    $ gxadmin query jobs-nonterminal | head
-		       id    |  tool_id            |  state  |        create_time         | runner | ext_id |     handler     | user_id
-		    ---------+---------------------+---------+----------------------------+--------+--------+-----------------+---------
-		     4760549 | featurecounts/1.6.3 | running | 2019-01-18 14:05:14.871711 | condor | 197549 | handler_main_7  |     599
-		     4760552 | featurecounts/1.6.3 | running | 2019-01-18 14:05:16.205867 | condor | 197552 | handler_main_7  |     599
-		     4760554 | featurecounts/1.6.3 | running | 2019-01-18 14:05:17.170157 | condor | 197580 | handler_main_8  |     599
-		     4760557 | featurecounts/1.6.3 | running | 2019-01-18 14:05:18.25044  | condor | 197545 | handler_main_10 |     599
-		     4760573 | featurecounts/1.6.3 | running | 2019-01-18 14:05:47.20392  | condor | 197553 | handler_main_2  |     599
-		     4760588 | featurecounts/1.6.3 | new     | 2019-01-18 14:11:03.766558 |        |        | handler_main_9  |      11
-		     4760589 | featurecounts/1.6.3 | new     | 2019-01-18 14:11:05.895232 |        |        | handler_main_1  |      11
-		     4760590 | featurecounts/1.6.3 | new     | 2019-01-18 14:11:07.328533 |        |        | handler_main_2  |      11
+			$ gxadmin query jobs-nonterminal | head
+			   id    |  tool_id            |  state  |        create_time         | runner | ext_id |     handler     | user_id
+			---------+---------------------+---------+----------------------------+--------+--------+-----------------+---------
+			 4760549 | featurecounts/1.6.3 | running | 2019-01-18 14:05:14.871711 | condor | 197549 | handler_main_7  |     599
+			 4760552 | featurecounts/1.6.3 | running | 2019-01-18 14:05:16.205867 | condor | 197552 | handler_main_7  |     599
+			 4760554 | featurecounts/1.6.3 | running | 2019-01-18 14:05:17.170157 | condor | 197580 | handler_main_8  |     599
+			 4760557 | featurecounts/1.6.3 | running | 2019-01-18 14:05:18.25044  | condor | 197545 | handler_main_10 |     599
+			 4760573 | featurecounts/1.6.3 | running | 2019-01-18 14:05:47.20392  | condor | 197553 | handler_main_2  |     599
+			 4760588 | featurecounts/1.6.3 | new     | 2019-01-18 14:11:03.766558 |        |        | handler_main_9  |      11
+			 4760589 | featurecounts/1.6.3 | new     | 2019-01-18 14:11:05.895232 |        |        | handler_main_1  |      11
+			 4760590 | featurecounts/1.6.3 | new     | 2019-01-18 14:11:07.328533 |        |        | handler_main_2  |      11
 
 		By default jobs in the states 'new', 'queued', and 'running' are considered non-terminal, but this can
 		be controlled by passing a comma-separated list to the '--states=' parameter. In addition, by default,
@@ -613,12 +613,12 @@ query_jobs-nonterminal() { ## [--states=new,queued,running] [--update-time] [--o
 		with '--update-time'. So to return all queued and running jobs that have not been updated in the past 2
 		days:
 
-		    $ gxadmin query jobs-nonterminal --states=queued,running --older-than='2 days' --update-time | head -5
-		       id   |       tool_id        |  state  |     update_time     |     runner   | ext_id |      handler     | user_id
-		    --------+----------------------+---------+---------------------+--------------+--------+------------------+---------
-		     335897 | trinity/2.9.1        | queued  | 2021-03-10 10:44:09 | bridges      | 335897 | main_w3_handler2 | 599
-		     338554 | repeatmasker/4.0.9   | running | 2021-03-09 10:41:30 | jetstream_iu | 338554 | main_w4_handler2 | 11
-		     338699 | hisat2/2.1.0+galaxy7 | queued  | 2021-03-10 05:36:26 | jetstream_iu | 338699 | main_w3_handler2 | 42
+			$ gxadmin query jobs-nonterminal --states=queued,running --older-than='2 days' --update-time | head -5
+			   id   |       tool_id        |  state  |     update_time     |     runner   | ext_id |      handler     | user_id
+			--------+----------------------+---------+---------------------+--------------+--------+------------------+---------
+			 335897 | trinity/2.9.1        | queued  | 2021-03-10 10:44:09 | bridges      | 335897 | main_w3_handler2 | 599
+			 338554 | repeatmasker/4.0.9   | running | 2021-03-09 10:41:30 | jetstream_iu | 338554 | main_w4_handler2 | 11
+			 338699 | hisat2/2.1.0+galaxy7 | queued  | 2021-03-10 05:36:26 | jetstream_iu | 338699 | main_w3_handler2 | 42
 	EOF
 
 	states='new,queued,running'
@@ -663,11 +663,11 @@ query_jobs-nonterminal() { ## [--states=new,queued,running] [--update-time] [--o
 
 query_jobs-per-user() { ##? <user>: Number of jobs run by a specific user
 	handle_help "$@" <<-EOF
-		    $ gxadmin query jobs-per-user helena
-		     count | user_id
-		    -------+---------
-		       999 |       1
-		    (1 row)
+			$ gxadmin query jobs-per-user helena
+			 count | user_id
+			-------+---------
+			   999 |       1
+			(1 row)
 	EOF
 
 	user_filter=$(get_user_filter "$arg_user")
@@ -686,16 +686,16 @@ query_jobs-per-user() { ##? <user>: Number of jobs run by a specific user
 
 query_recent-jobs() { ##? <hours>: Jobs run in the past <hours> (in any state)
 	handle_help "$@" <<-EOF
-		    $ gxadmin query recent-jobs 2.1
-		       id    |     create_time     |      tool_id          | state |    username
-		    ---------+---------------------+-----------------------+-------+-----------------
-		     4383997 | 2018-10-05 16:07:00 | Filter1               | ok    |
-		     4383994 | 2018-10-05 16:04:00 | echo_main_condor      | ok    |
-		     4383993 | 2018-10-05 16:04:00 | echo_main_drmaa       | error |
-		     4383992 | 2018-10-05 16:04:00 | echo_main_handler11   | ok    |
-		     4383983 | 2018-10-05 16:04:00 | echo_main_handler2    | ok    |
-		     4383982 | 2018-10-05 16:04:00 | echo_main_handler1    | ok    |
-		     4383981 | 2018-10-05 16:04:00 | echo_main_handler0    | ok    |
+			$ gxadmin query recent-jobs 2.1
+			   id    |     create_time     |      tool_id          | state |    username
+			---------+---------------------+-----------------------+-------+-----------------
+			 4383997 | 2018-10-05 16:07:00 | Filter1               | ok    |
+			 4383994 | 2018-10-05 16:04:00 | echo_main_condor      | ok    |
+			 4383993 | 2018-10-05 16:04:00 | echo_main_drmaa       | error |
+			 4383992 | 2018-10-05 16:04:00 | echo_main_handler11   | ok    |
+			 4383983 | 2018-10-05 16:04:00 | echo_main_handler2    | ok    |
+			 4383982 | 2018-10-05 16:04:00 | echo_main_handler1    | ok    |
+			 4383981 | 2018-10-05 16:04:00 | echo_main_handler0    | ok    |
 	EOF
 
 	username=$(gdpr_safe galaxy_user.username username)
@@ -721,7 +721,7 @@ query_job-state-stats() { ## : Shows all jobs states for the last 30 days in a t
 
 		Example:
 		$ gxadmin query job-state-stats
-		    date    |  new  | running | queued | upload |  ok   | error | paused | stopped | deleted
+			date    |  new  | running | queued | upload |  ok   | error | paused | stopped | deleted
 		------------+-------+---------+--------+--------+-------+-------+--------+---------+---------
 		2022-04-26 |   921 |     564 |    799 |      0 |   581 |    21 |      1 |       0 |       2
 		2022-04-25 |  1412 |    1230 |   1642 |      0 |  1132 |   122 |     14 |       0 |      15
@@ -849,12 +849,12 @@ query_training-list() { ##? [--all]: List known trainings
 	handle_help "$@" <<-EOF
 		This module is specific to EU's implementation of Training Infrastructure as a Service. But this specifically just checks for all groups with the name prefix 'training-'
 
-		    $ gxadmin query training-list
-		        name    |  created
-		    ------------+------------
-		     hogeschool | 2020-01-22
-		     ffff       | 2019-08-28
-		    (2 rows)
+			$ gxadmin query training-list
+				name    |  created
+			------------+------------
+			 hogeschool | 2020-01-22
+			 ffff       | 2019-08-28
+			(2 rows)
 
 	EOF
 
@@ -881,10 +881,10 @@ query_training-members() { ##? <tr_id>: List users in a specific training
 		ADDED: 12
 	EOF
 	handle_help "$@" <<-EOF
-		    $ gxadmin query training-members hts2018
-		          username      |       joined
-		    --------------------+---------------------
-		     helena-Rasche      | 2018-09-21 21:42:01
+			$ gxadmin query training-members hts2018
+				  username      |       joined
+			--------------------+---------------------
+			 helena-Rasche      | 2018-09-21 21:42:01
 	EOF
 
 	# Remove training- if they used it.
@@ -944,29 +944,29 @@ query_largest-histories() { ##? [--human]: Largest histories in Galaxy
 	handle_help "$@" <<-EOF
 		Finds all histories and print by decreasing size
 
-		    $ gxadmin query largest-histories
-		     total_size | id | substring  | username
-		    ------------+----+------------+----------
-		       17215831 |  6 | Unnamed hi | helena
-		          45433 |  8 | Unnamed hi | helena
-		          42846 |  9 | Unnamed hi | helena
-		           1508 | 10 | Circos     | helena
-		            365 |  2 | Tag Testin | helena
-		            158 | 44 | test       | helena
-		             16 | 45 | Unnamed hi | alice
+			$ gxadmin query largest-histories
+			 total_size | id | substring  | username
+			------------+----+------------+----------
+			   17215831 |  6 | Unnamed hi | helena
+				  45433 |  8 | Unnamed hi | helena
+				  42846 |  9 | Unnamed hi | helena
+				   1508 | 10 | Circos     | helena
+					365 |  2 | Tag Testin | helena
+					158 | 44 | test       | helena
+					 16 | 45 | Unnamed hi | alice
 
 		Or you can supply the --human flag, but this should not be used with iquery/InfluxDB
 
-		    $ gxadmin query largest-histories --human
-		     total_size | id | substring  | userna
-		    ------------+----+------------+-------
-		     16 MB      |  6 | Unnamed hi | helena
-		     44 kB      |  8 | Unnamed hi | helena
-		     42 kB      |  9 | Unnamed hi | helena
-		     1508 bytes | 10 | Circos     | helena
-		     365 bytes  |  2 | Tag Testin | helena
-		     158 bytes  | 44 | test       | helena
-		     16 bytes   | 45 | Unnamed hi | alice
+			$ gxadmin query largest-histories --human
+			 total_size | id | substring  | userna
+			------------+----+------------+-------
+			 16 MB      |  6 | Unnamed hi | helena
+			 44 kB      |  8 | Unnamed hi | helena
+			 42 kB      |  9 | Unnamed hi | helena
+			 1508 bytes | 10 | Circos     | helena
+			 365 bytes  |  2 | Tag Testin | helena
+			 158 bytes  | 44 | test       | helena
+			 16 bytes   | 45 | Unnamed hi | alice
 	EOF
 
 	username=$(gdpr_safe galaxy_user.username username)
@@ -1002,10 +1002,10 @@ query_training-queue() { ##? <training_id>: Jobs currently being run by people i
 	handle_help "$@" <<-EOF
 		Finds all jobs by people in that queue (including things they are executing that are not part of a training)
 
-		    $ gxadmin query training-queue hts2018
-		     state  |   id    | extid  | tool_id |   username    |       created
-		    --------+---------+--------+---------+---------------+---------------------
-		     queued | 4350274 | 225743 | upload1 |               | 2018-09-26 10:00:00
+			$ gxadmin query training-queue hts2018
+			 state  |   id    | extid  | tool_id |   username    |       created
+			--------+---------+--------+---------+---------------+---------------------
+			 queued | 4350274 | 225743 | upload1 |               | 2018-09-26 10:00:00
 	EOF
 
 	# Remove training- if they used it.
@@ -1046,19 +1046,19 @@ query_disk-usage() { ##? [--human]: Disk usage per object store.
 	handle_help "$@" <<-EOF
 		Query the different object stores referenced in your Galaxy database
 
-		    $ gxadmin query disk-usage
-		     object_store_id |    sum
-		    -----------------+------------
-		                     | 1387857517
-		    (1 row)
+			$ gxadmin query disk-usage
+			 object_store_id |    sum
+			-----------------+------------
+							 | 1387857517
+			(1 row)
 
 		Or you can supply the --human flag, but this should not be used with iquery/InfluxDB
 
-		    $ gxadmin query disk-usage --human
-		     object_store_id |    sum
-		    -----------------+------------
-		                     | 1324 MB
-		    (1 row)
+			$ gxadmin query disk-usage --human
+			 object_store_id |    sum
+			-----------------+------------
+							 | 1324 MB
+			(1 row)
 	EOF
 
 	fields="count=1"
@@ -1082,13 +1082,13 @@ query_disk-usage() { ##? [--human]: Disk usage per object store.
 
 query_users-count() { ## : Shows sums of active/external/deleted/purged accounts
 	handle_help "$@" <<-EOF
-		     active | external | deleted | purged | count
-		    --------+----------+---------+--------+-------
-		     f      | f        | f       | f      |   182
-		     t      | f        | t       | t      |     2
-		     t      | f        | t       | f      |     6
-		     t      | f        | f       | f      |  2350
-		     f      | f        | t       | t      |    36
+			 active | external | deleted | purged | count
+			--------+----------+---------+--------+-------
+			 f      | f        | f       | f      |   182
+			 t      | f        | t       | t      |     2
+			 t      | f        | t       | f      |     6
+			 t      | f        | f       | f      |  2350
+			 f      | f        | t       | t      |    36
 	EOF
 
 	fields="count=4"
@@ -1108,13 +1108,13 @@ query_tool-last-used-date() { ## : When was the most recent invocation of every 
 	handle_help "$@" <<-EOF
 		Example invocation:
 
-		    $ gxadmin query tool-last-used-date
-		             max         |          tool_id
-		    ---------------------+---------------------------
-		     2019-02-01 00:00:00 | test_history_sanitization
-		     2018-12-01 00:00:00 | require_format
-		     2018-11-01 00:00:00 | upload1
-		    (3 rows)
+			$ gxadmin query tool-last-used-date
+					 max         |          tool_id
+			---------------------+---------------------------
+			 2019-02-01 00:00:00 | test_history_sanitization
+			 2018-12-01 00:00:00 | require_format
+			 2018-11-01 00:00:00 | upload1
+			(3 rows)
 
 		**WARNING**
 
@@ -1235,22 +1235,22 @@ query_tool-metrics() { ##? <tool_id> <metric_id> [last=-1] [--like] [--ok] [--su
 		A good way to use this is to fetch the memory usage of a tool and then
 		do some aggregations. The following requires [data_hacks](https://github.com/bitly/data_hacks)
 
-		    $ gxadmin tsvquery tool-metrics %rgrnastar/rna_star% memory.max_usage_in_bytes --like | \\
-		        awk '{print \$1 / 1024 / 1024 / 1024}' | \\
-		        | gxadmin filter histogram
-		    (   0.104,   12.614) n=23228 **************
-		    [  12.614,   25.124) n=15873 *********
-		    [  25.124,   37.634) n=80849 **************************************************
-		    [  37.634,   50.144) n=45171 ***************************
-		    [  50.144,   62.654) n=37672 ***********************
-		    [  62.654,   75.163) n=20549 ************
-		    [  75.163,   87.673) n=7726  ****
-		    [  87.673,  100.183) n=7390  ****
-		    [ 100.183,  112.693) n=4309  **
-		    [ 112.693,  125.203) n=1686  *
-		    [ 125.203,  137.713) n=975
-		    [ 137.713,  150.223) n=970
-		    [ 150.223,  162.733) n=746
+			$ gxadmin tsvquery tool-metrics %rgrnastar/rna_star% memory.max_usage_in_bytes --like | \\
+				awk '{print \$1 / 1024 / 1024 / 1024}' | \\
+				| gxadmin filter histogram
+			(   0.104,   12.614) n=23228 **************
+			[  12.614,   25.124) n=15873 *********
+			[  25.124,   37.634) n=80849 **************************************************
+			[  37.634,   50.144) n=45171 ***************************
+			[  50.144,   62.654) n=37672 ***********************
+			[  62.654,   75.163) n=20549 ************
+			[  75.163,   87.673) n=7726  ****
+			[  87.673,  100.183) n=7390  ****
+			[ 100.183,  112.693) n=4309  **
+			[ 112.693,  125.203) n=1686  *
+			[ 125.203,  137.713) n=975
+			[ 137.713,  150.223) n=970
+			[ 150.223,  162.733) n=746
 
 
 		The optional 'last' argument can be used to limit the number of most recent jobs that will be checked.
@@ -1303,14 +1303,14 @@ query_tool-available-metrics() { ##? <tool_id>: list all available metrics for a
 	handle_help "$@" <<-EOF
 		Gives a list of available metrics, which can then be used to query.
 
-		    $ gxadmin query tool-available-metrics upload1
-		                 metric_name
-		    -------------------------------------
-		     memory.stat.total_rss
-		     memory.stat.total_swap
-		     memory.stat.total_unevictable
-		     memory.use_hierarchy
-		     ...
+			$ gxadmin query tool-available-metrics upload1
+						 metric_name
+			-------------------------------------
+			 memory.stat.total_rss
+			 memory.stat.total_swap
+			 memory.stat.total_unevictable
+			 memory.use_hierarchy
+			 ...
 	EOF
 
 	read -r -d '' QUERY <<-EOF
@@ -1332,34 +1332,34 @@ query_tool-memory-per-inputs() { ##? <tool_id> [--like]: See memory usage and in
 		Display details about tool input counts and sizes along with memory usage and the relation between them,
 		to aid in determining appropriate memory allocations for tools.
 
-		    $ gxadmin query tool-memory-per-inputs %/unicycler/% --like
-		        id    |                           tool_id                            | input_count | total_input_size_mb | mean_input_size_mb | median_input_size_mb | memory_used_mb | memory_used_per_input_mb | memory_mean_input_ratio | memory_median_input_ratio
-		    ----------+--------------------------------------------------------------+-------------+---------------------+--------------------+----------------------+----------------+--------------------------+-------------------------+---------------------------
-		     34663027 | toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.8.0 |           2 |                 245 |                122 |                  122 |           4645 |                       19 |                      38 |                        38
-		     34657045 | toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.8.0 |           2 |                  51 |                 25 |                   25 |           1739 |                       34 |                      68 |                        68
-		     34655863 | toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.8.0 |           2 |                1829 |                915 |                  915 |          20635 |                       11 |                      23 |                        23
-		     34650581 | toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.8.0 |           3 |                 235 |                 78 |                  112 |          30550 |                      130 |                     391 |                       274
-		     34629187 | toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.8.0 |           2 |                2411 |               1206 |                 1206 |          50018 |                       21 |                      41 |                        41
+			$ gxadmin query tool-memory-per-inputs %/unicycler/% --like
+				id    |                           tool_id                            | input_count | total_input_size_mb | mean_input_size_mb | median_input_size_mb | memory_used_mb | memory_used_per_input_mb | memory_mean_input_ratio | memory_median_input_ratio
+			----------+--------------------------------------------------------------+-------------+---------------------+--------------------+----------------------+----------------+--------------------------+-------------------------+---------------------------
+			 34663027 | toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.8.0 |           2 |                 245 |                122 |                  122 |           4645 |                       19 |                      38 |                        38
+			 34657045 | toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.8.0 |           2 |                  51 |                 25 |                   25 |           1739 |                       34 |                      68 |                        68
+			 34655863 | toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.8.0 |           2 |                1829 |                915 |                  915 |          20635 |                       11 |                      23 |                        23
+			 34650581 | toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.8.0 |           3 |                 235 |                 78 |                  112 |          30550 |                      130 |                     391 |                       274
+			 34629187 | toolshed.g2.bx.psu.edu/repos/iuc/unicycler/unicycler/0.4.8.0 |           2 |                2411 |               1206 |                 1206 |          50018 |                       21 |                      41 |                        41
 
 		A good way to use this is to fetch the data and then do some aggregations. The following requires
 		[data_hacks](https://github.com/bitly/data_hacks):
 
-		    $ gxadmin tsvquery tool-memory-per-inputs %/unicycler/% --like | \\
-		        awk '{print \$10}' | histogram.py --percentage --max=256
-		    # NumSamples = 870; Min = 4.00; Max = 256.00
-		    # 29 values outside of min/max
-		    # Mean = 67.804598; Variance = 15461.789404; SD = 124.345444; Median 37.000000
-		    # each ∎ represents a count of 4
-		        4.0000 -    29.2000 [   368]: ∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎ (42.30%)
-		       29.2000 -    54.4000 [   226]: ∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎ (25.98%)
-		       54.4000 -    79.6000 [   133]: ∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎ (15.29%)
-		       79.6000 -   104.8000 [    45]: ∎∎∎∎∎∎∎∎∎∎∎ (5.17%)
-		      104.8000 -   130.0000 [    28]: ∎∎∎∎∎∎∎ (3.22%)
-		      130.0000 -   155.2000 [    12]: ∎∎∎ (1.38%)
-		      155.2000 -   180.4000 [     9]: ∎∎ (1.03%)
-		      180.4000 -   205.6000 [     6]: ∎ (0.69%)
-		      205.6000 -   230.8000 [    10]: ∎∎ (1.15%)
-		      230.8000 -   256.0000 [     4]: ∎ (0.46%)
+			$ gxadmin tsvquery tool-memory-per-inputs %/unicycler/% --like | \\
+				awk '{print \$10}' | histogram.py --percentage --max=256
+			# NumSamples = 870; Min = 4.00; Max = 256.00
+			# 29 values outside of min/max
+			# Mean = 67.804598; Variance = 15461.789404; SD = 124.345444; Median 37.000000
+			# each ∎ represents a count of 4
+				4.0000 -    29.2000 [   368]: ∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎ (42.30%)
+			   29.2000 -    54.4000 [   226]: ∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎ (25.98%)
+			   54.4000 -    79.6000 [   133]: ∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎ (15.29%)
+			   79.6000 -   104.8000 [    45]: ∎∎∎∎∎∎∎∎∎∎∎ (5.17%)
+			  104.8000 -   130.0000 [    28]: ∎∎∎∎∎∎∎ (3.22%)
+			  130.0000 -   155.2000 [    12]: ∎∎∎ (1.38%)
+			  155.2000 -   180.4000 [     9]: ∎∎ (1.03%)
+			  180.4000 -   205.6000 [     6]: ∎ (0.69%)
+			  205.6000 -   230.8000 [    10]: ∎∎ (1.15%)
+			  230.8000 -   256.0000 [     4]: ∎ (0.46%)
 	EOF
 
 	tool_clause="j.tool_id = '$arg_tool_id'"
@@ -1442,7 +1442,7 @@ query_monthly-cpu-stats() { ##? [--nb-users] [--filter-email=<domain>] [year]: C
 		calculate allocated CPU years/hours. This will not be the value of what is
 		actually consumed by your jobs, you should use cgroups. It can also display the number of users that ran jobs. You can also filter for email domain.
 
-		    $ gxadmin query monthly-cpu-stats --nb-users --filter-email epfl.ch 2022
+			$ gxadmin query monthly-cpu-stats --nb-users --filter-email epfl.ch 2022
 			   month    | cpu_years | cpu_hours | nb_users
 			------------+-----------+-----------+----------
 			 2022-12-01 |      0.44 |   3894.59 |        4
@@ -1459,18 +1459,18 @@ query_monthly-cpu-stats() { ##? [--nb-users] [--filter-email=<domain>] [year]: C
 			 2022-01-01 |      0.01 |     71.66 |        8
 			(12 rows)
 
-		     ...
+			 ...
 	EOF
 
 	if [[ -n $arg_year ]]; then
-	    filter_by_year="AND date_trunc('year', job.create_time AT TIME ZONE 'UTC') = '$arg_year-01-01'::date"
+		filter_by_year="AND date_trunc('year', job.create_time AT TIME ZONE 'UTC') = '$arg_year-01-01'::date"
 	fi
 	if [[ -n $arg_nb_users ]]; then
-	    nb_users=", COUNT (DISTINCT job.user_id) as nb_users"
+		nb_users=", COUNT (DISTINCT job.user_id) as nb_users"
 	fi
 	if [[ -n $arg_filter_email ]]; then
 		filter_email_from=", galaxy_user"
-	    filter_email="AND job.user_id = galaxy_user.id AND galaxy_user.email LIKE '%${arg_filter_email}'"
+		filter_email="AND job.user_id = galaxy_user.id AND galaxy_user.email LIKE '%${arg_filter_email}'"
 	fi
 	read -r -d '' QUERY <<-EOF
 		SELECT
@@ -1504,26 +1504,26 @@ query_monthly-cpu-years() { ## : CPU years allocated to tools by month
 		calculate allocated CPU years. This will not be the value of what is
 		actually consumed by your jobs, you should use cgroups.
 
-		    $ gxadmin query monthly-cpu-years
-		        month   | cpu_years
-		    ------------+-----------
-		     2019-04-01 |      2.95
-		     2019-03-01 |     12.38
-		     2019-02-01 |     11.47
-		     2019-01-01 |      8.27
-		     2018-12-01 |     11.42
-		     2018-11-01 |     16.99
-		     2018-10-01 |     12.09
-		     2018-09-01 |      6.27
-		     2018-08-01 |      9.06
-		     2018-07-01 |      6.17
-		     2018-06-01 |      5.73
-		     2018-05-01 |      7.36
-		     2018-04-01 |     10.21
-		     2018-03-01 |      5.20
-		     2018-02-01 |      4.53
-		     2018-01-01 |      4.05
-		     2017-12-01 |      2.44
+			$ gxadmin query monthly-cpu-years
+				month   | cpu_years
+			------------+-----------
+			 2019-04-01 |      2.95
+			 2019-03-01 |     12.38
+			 2019-02-01 |     11.47
+			 2019-01-01 |      8.27
+			 2018-12-01 |     11.42
+			 2018-11-01 |     16.99
+			 2018-10-01 |     12.09
+			 2018-09-01 |      6.27
+			 2018-08-01 |      9.06
+			 2018-07-01 |      6.17
+			 2018-06-01 |      5.73
+			 2018-05-01 |      7.36
+			 2018-04-01 |     10.21
+			 2018-03-01 |      5.20
+			 2018-02-01 |      4.53
+			 2018-01-01 |      4.05
+			 2017-12-01 |      2.44
 	EOF
 
 	read -r -d '' QUERY <<-EOF
@@ -1549,21 +1549,21 @@ query_monthly-data(){ ##? [year] [--human]: Number of active users per month, ru
 	handle_help "$@" <<-EOF
 		Find out how much data was ingested or created by Galaxy during the past months.
 
-		    $ gxadmin query monthly-data 2018
-		        month   | pg_size_pretty
-		    ------------+----------------
-		     2018-12-01 | 62 TB
-		     2018-11-01 | 50 TB
-		     2018-10-01 | 59 TB
-		     2018-09-01 | 32 TB
-		     2018-08-01 | 26 TB
-		     2018-07-01 | 42 TB
-		     2018-06-01 | 34 TB
-		     2018-05-01 | 33 TB
-		     2018-04-01 | 27 TB
-		     2018-03-01 | 32 TB
-		     2018-02-01 | 18 TB
-		     2018-01-01 | 16 TB
+			$ gxadmin query monthly-data 2018
+				month   | pg_size_pretty
+			------------+----------------
+			 2018-12-01 | 62 TB
+			 2018-11-01 | 50 TB
+			 2018-10-01 | 59 TB
+			 2018-09-01 | 32 TB
+			 2018-08-01 | 26 TB
+			 2018-07-01 | 42 TB
+			 2018-06-01 | 34 TB
+			 2018-05-01 | 33 TB
+			 2018-04-01 | 27 TB
+			 2018-03-01 | 32 TB
+			 2018-02-01 | 18 TB
+			 2018-01-01 | 16 TB
 	EOF
 	size="sum(coalesce(dataset.total_size, dataset.file_size, 0))"
 
@@ -1600,26 +1600,26 @@ query_monthly-gpu-years() { ## : GPU years allocated to tools by month
 		environment variable 'CUDA_VISIBLE_DEVICES' is recorded as job metric by Galaxy.
 		Requires Nvidia GPUs.
 
-		    $ gxadmin query monthly-gpu-years
-		        month   | gpu_years
-		    ------------+-----------
-		     2019-04-01 |      2.95
-		     2019-03-01 |     12.38
-		     2019-02-01 |     11.47
-		     2019-01-01 |      8.27
-		     2018-12-01 |     11.42
-		     2018-11-01 |     16.99
-		     2018-10-01 |     12.09
-		     2018-09-01 |      6.27
-		     2018-08-01 |      9.06
-		     2018-07-01 |      6.17
-		     2018-06-01 |      5.73
-		     2018-05-01 |      7.36
-		     2018-04-01 |     10.21
-		     2018-03-01 |      5.20
-		     2018-02-01 |      4.53
-		     2018-01-01 |      4.05
-		     2017-12-01 |      2.44
+			$ gxadmin query monthly-gpu-years
+				month   | gpu_years
+			------------+-----------
+			 2019-04-01 |      2.95
+			 2019-03-01 |     12.38
+			 2019-02-01 |     11.47
+			 2019-01-01 |      8.27
+			 2018-12-01 |     11.42
+			 2018-11-01 |     16.99
+			 2018-10-01 |     12.09
+			 2018-09-01 |      6.27
+			 2018-08-01 |      9.06
+			 2018-07-01 |      6.17
+			 2018-06-01 |      5.73
+			 2018-05-01 |      7.36
+			 2018-04-01 |     10.21
+			 2018-03-01 |      5.20
+			 2018-02-01 |      4.53
+			 2018-01-01 |      4.05
+			 2017-12-01 |      2.44
 	EOF
 
 	read -r -d '' QUERY <<-EOF
@@ -1647,13 +1647,13 @@ query_monthly-workflow-invocations() { ## : Workflow invocations by month
 	handle_help "$@" <<-EOF
 		Find out how many workflows has been invocated by Galaxy during the past months.
 
-		    $ gxadmin query monthly-workflow-invocations
-		       month    | count
-		    ------------+-------
-		     2022-05-01 |  4183
-		     2022-04-01 |  5043
-		     2022-03-01 |  4851
-		     2022-02-01 | 29587
+			$ gxadmin query monthly-workflow-invocations
+			   month    | count
+			------------+-------
+			 2022-05-01 |  4183
+			 2022-04-01 |  5043
+			 2022-03-01 |  4851
+			 2022-02-01 | 29587
 	EOF
 
 		read -r -d '' QUERY <<-EOF
@@ -2066,7 +2066,7 @@ query_disk-usage-library() { ##? [--library_name=<NAME>] [--by_folder] [--human]
 		A --by_folder flag is also available for displaying disk usage for each folder.
 
 		a$ gxadmin local query-disk-usage-library --library_name 'My Library' --by_folder
-		       folder_name       | folder size
+			   folder_name       | folder size
 		-------------------------+-------------
 		 Contamination Filtering | 10798630750
 		 Metagenomes             | 12026310232
@@ -2075,7 +2075,7 @@ query_disk-usage-library() { ##? [--library_name=<NAME>] [--by_folder] [--human]
 		And, of course, the --human flag can be used here as well.
 
 		$ gxadmin local query-disk-usage-library --library_name 'My Library' --by_folder --human
-		       folder_name       | folder size
+			   folder_name       | folder size
 		-------------------------+-------------
 		 Contamination Filtering | 10 GB
 		 Metagenomes             | 11 GB
@@ -2132,9 +2132,9 @@ query_disk-usage-library() { ##? [--library_name=<NAME>] [--by_folder] [--human]
 	read -r -d '' QUERY <<-EOF
 		WITH RECURSIVE library_tree AS (
 			SELECT id,
-			    name,
-			    parent_id,
-			    0 AS folder_level
+				name,
+				parent_id,
+				0 AS folder_level
 			FROM library_folder
 			WHERE parent_id IS NULL
 			AND name = '$2'
@@ -2358,7 +2358,7 @@ query_monthly-users-active(){ ## [year] [YYYY-MM] [--by_group]: Number of active
 		year: Will return monthly active users from the start of [year] till now
 		YYYY-MM: Will return number of active users for the given month
 
-		    $ gxadmin query monthly-users-active 2024
+			$ gxadmin query monthly-users-active 2024
 	  		  month  | active_users
 			---------+--------------
 			 2024-02 |         1580
@@ -2420,7 +2420,7 @@ query_users-engaged-multiday() { ##? [month] [--new_only]: Number of users runni
 		month: Month to count jobs for, provided as YYYY-MM. If month is not provided, defaults to current month.
 		--new_only: Only count users who registered in the same month
 
-		    $ gxadmin query users-engaged-multiday 2024-02
+			$ gxadmin query users-engaged-multiday 2024-02
 	  		  month  | users_engaged_more_than_day
 			---------+-----------------------------
 			 2024-02 |                         454
@@ -2453,32 +2453,32 @@ query_users-engaged-multiday() { ##? [month] [--new_only]: Number of users runni
 
 		SELECT
 			TO_CHAR(CAST('$arg_month-01' AS DATE), 'YYYY-MM') AS month,
-            count(DISTINCT user_id) AS users_engaged_more_than_day
-        FROM
-            (
-                SELECT
-                    user_id,
-                    count(DISTINCT date_group) AS date_group_count
-                FROM
-                    (
-                        SELECT
-                            user_id,
-                            to_char(create_time, 'YYYY-MM-DD') AS date_group
-                        FROM
-                            $job_table
-                        WHERE
-                            DATE_TRUNC('month', create_time) = DATE_TRUNC('month', CAST('$arg_month-01' AS DATE))
-                        GROUP BY
-                            user_id,
-                            date_group
-                        HAVING
-                            COUNT(user_id) > 1
-                    ) AS user_date_groups
-                GROUP BY
-                    user_id
-                HAVING
-                    count(*) > 1
-            ) AS users_that_ran_jobs_more_than_1_day
+			count(DISTINCT user_id) AS users_engaged_more_than_day
+		FROM
+			(
+				SELECT
+					user_id,
+					count(DISTINCT date_group) AS date_group_count
+				FROM
+					(
+						SELECT
+							user_id,
+							to_char(create_time, 'YYYY-MM-DD') AS date_group
+						FROM
+							$job_table
+						WHERE
+							DATE_TRUNC('month', create_time) = DATE_TRUNC('month', CAST('$arg_month-01' AS DATE))
+						GROUP BY
+							user_id,
+							date_group
+						HAVING
+							COUNT(user_id) > 1
+					) AS user_date_groups
+				GROUP BY
+					user_id
+				HAVING
+					count(*) > 1
+			) AS users_that_ran_jobs_more_than_1_day
 	EOF
 }
 
@@ -2562,8 +2562,8 @@ query_monthly-jobs-by-new-users() { ##? [month] [--no_state]: Number of jobs run
 		month: Month to count jobs for, provided as YYYY-MM. If month is not provided, defaults to current month.
 		--no_state: Do not break down jobs by state
 
-		    $ gxadmin query jobs-by-new-users 2024-02
-		      state   | jobs_by_new_users
+			$ gxadmin query jobs-by-new-users 2024-02
+			  state   | jobs_by_new_users
 			----------+-------------------
 			 deleted  |               340
 			 deleting |                 2
@@ -2611,7 +2611,7 @@ query_monthly-jobs-by-new-multiday-users() { ##? [month]: Number of jobs run by 
 		Parameters:
 		month: Month to count jobs for, provided as YYYY-MM. If month is not provided, defaults to current month.
 
-		    $ gxadmin query monthly-jobs-by-new-multiday-users 2024-02
+			$ gxadmin query monthly-jobs-by-new-multiday-users 2024-02
 			  month  | num_jobs_by_new_users_engaged_more_than_day
 			---------+---------------------------------------------
 			 2024-02 |                                        2771
@@ -2680,13 +2680,13 @@ query_total-jobs(){ ##? [date] [--no_state]: Total number of jobs run by Galaxy 
 		Count total number of jobs. Providing optional date (as YYYY-MM-DD) counts jobs up to that date.
 		Adding '--no_state' does not break jobs down by job state.
 
-		    $ gxadmin query total-jobs
-		      state  | num_jobs
-		    ---------+---------
-		     deleted |    21
-		     error   |   197
-		     ok      |   798
-		    (3 rows)
+			$ gxadmin query total-jobs
+			  state  | num_jobs
+			---------+---------
+			 deleted |    21
+			 error   |   197
+			 ok      |   798
+			(3 rows)
 	EOF
 
 	state="state,"
@@ -2720,11 +2720,11 @@ query_job-state() { ##? <job_id>: Get current job state given a job ID
 		ADDED: 19
 	EOF
 	handle_help "$@" <<-EOF
-		    $ gxadmin query job-state 1
-		     state
-		    --------
-		     error
-		    (1 row)
+			$ gxadmin query job-state 1
+			 state
+			--------
+			 error
+			(1 row)
 	EOF
 
 	read -r -d '' QUERY <<-EOF
@@ -2737,15 +2737,15 @@ query_job-state() { ##? <job_id>: Get current job state given a job ID
 
 query_job-history() { ##? <id>: Job state history for a specific job
 	handle_help "$@" <<-EOF
-		    $ gxadmin query job-history 1
-		                 time              | state
-		    -------------------------------+--------
-		     2018-11-20 17:15:09.297907+00 | error
-		     2018-11-20 17:15:08.911972+00 | queued
-		     2018-11-20 17:15:08.243363+00 | new
-		     2018-11-20 17:15:08.198301+00 | upload
-		     2018-11-20 17:15:08.19655+00  | new
-		    (5 rows)
+			$ gxadmin query job-history 1
+						 time              | state
+			-------------------------------+--------
+			 2018-11-20 17:15:09.297907+00 | error
+			 2018-11-20 17:15:08.911972+00 | queued
+			 2018-11-20 17:15:08.243363+00 | new
+			 2018-11-20 17:15:08.198301+00 | upload
+			 2018-11-20 17:15:08.19655+00  | new
+			(5 rows)
 	EOF
 
 	read -r -d '' QUERY <<-EOF
@@ -2880,18 +2880,18 @@ query_old-histories(){ ##? <weeks>: Lists histories that haven't been updated (u
 	handle_help "$@" <<-EOF
 		Histories and their users who haven't been updated for a specified number of weeks. Default number of weeks is 15.
 
-		    $gxadmin query old-histories 52
-		      id   |        update_time         | user_id |  email  |       name         | published | deleted | purged | hid_counter
-		    -------+----------------------------+---------+---------+--------------------+-----------+---------+--------+-------------
-		     39903 | 2017-06-13 12:35:07.174749 |     834 | xxx@xxx | Unnamed history    | f         | f       | f      |          23
-		      1674 | 2017-06-13 14:08:30.017574 |       9 | xxx@xxx | SAHA project       | f         | f       | f      |          47
-		     40088 | 2017-06-15 04:10:48.879122 |     986 | xxx@xxx | Unnamed history    | f         | f       | f      |           3
-		     39023 | 2017-06-15 09:33:12.007002 |     849 | xxx@xxx | prac 4 new final   | f         | f       | f      |         297
-		     35437 | 2017-06-16 04:41:13.15785  |     731 | xxx@xxx | Unnamed history    | f         | f       | f      |          98
-		     40123 | 2017-06-16 13:43:24.948344 |     987 | xxx@xxx | Unnamed history    | f         | f       | f      |          22
-		     40050 | 2017-06-19 00:46:29.032462 |     193 | xxx@xxx | Telmatactis        | f         | f       | f      |          74
-		     12212 | 2017-06-20 14:41:03.762881 |     169 | xxx@xxx | Unnamed history    | f         | f       | f      |          24
-		     39523 | 2017-06-21 01:34:52.226653 |       9 | xxx@xxx | OSCC Cell Lines    | f         | f       | f      |         139
+			$gxadmin query old-histories 52
+			  id   |        update_time         | user_id |  email  |       name         | published | deleted | purged | hid_counter
+			-------+----------------------------+---------+---------+--------------------+-----------+---------+--------+-------------
+			 39903 | 2017-06-13 12:35:07.174749 |     834 | xxx@xxx | Unnamed history    | f         | f       | f      |          23
+			  1674 | 2017-06-13 14:08:30.017574 |       9 | xxx@xxx | SAHA project       | f         | f       | f      |          47
+			 40088 | 2017-06-15 04:10:48.879122 |     986 | xxx@xxx | Unnamed history    | f         | f       | f      |           3
+			 39023 | 2017-06-15 09:33:12.007002 |     849 | xxx@xxx | prac 4 new final   | f         | f       | f      |         297
+			 35437 | 2017-06-16 04:41:13.15785  |     731 | xxx@xxx | Unnamed history    | f         | f       | f      |          98
+			 40123 | 2017-06-16 13:43:24.948344 |     987 | xxx@xxx | Unnamed history    | f         | f       | f      |          22
+			 40050 | 2017-06-19 00:46:29.032462 |     193 | xxx@xxx | Telmatactis        | f         | f       | f      |          74
+			 12212 | 2017-06-20 14:41:03.762881 |     169 | xxx@xxx | Unnamed history    | f         | f       | f      |          24
+			 39523 | 2017-06-21 01:34:52.226653 |       9 | xxx@xxx | OSCC Cell Lines    | f         | f       | f      |         139
 	EOF
 
 	email=$(gdpr_safe galaxy_user.email 'email')
@@ -2947,13 +2947,13 @@ query_errored-jobs(){ ##? <hours> [--details]: Lists jobs that errored in the la
 	handle_help "$@" <<-EOF
 		Lists details of jobs that have status = 'error' for the specified number of hours. Default = 24 hours
 
-		    $ gxadmin query errored-jobs 2
-		     id | create_time | tool_id | tool_version | handler  | destination_id | job_runner_external_id |      email
-		    ----+-------------+---------+--------------+----------+----------------+------------------------+------------------
-		      1 |             | upload1 | 1.1.0        | handler2 | slurm_normal   | 42                     | user@example.org
-		      2 |             | cut1    | 1.1.1        | handler1 | slurm_normal   | 43                     | user@example.org
-		      3 |             | bwa     | 0.7.17.1     | handler0 | slurm_multi    | 44                     | map@example.org
-		      4 |             | trinity | 2.9.1        | handler1 | pulsar_bigmem  | 4                      | rna@example.org
+			$ gxadmin query errored-jobs 2
+			 id | create_time | tool_id | tool_version | handler  | destination_id | job_runner_external_id |      email
+			----+-------------+---------+--------------+----------+----------------+------------------------+------------------
+			  1 |             | upload1 | 1.1.0        | handler2 | slurm_normal   | 42                     | user@example.org
+			  2 |             | cut1    | 1.1.1        | handler1 | slurm_normal   | 43                     | user@example.org
+			  3 |             | bwa     | 0.7.17.1     | handler0 | slurm_multi    | 44                     | map@example.org
+			  4 |             | trinity | 2.9.1        | handler1 | pulsar_bigmem  | 4                      | rna@example.org
 
 
 	EOF
@@ -3041,17 +3041,17 @@ query_tool-new-errors() { ##? [weeks=4] [--short-tool-id]: Summarize percent of 
 	handle_help "$@" <<-EOF
 		See jobs-in-error summary for recent tools (tools whose first execution is in recent weeks).
 
-		    $ gxadmin query tool-errors --short-tool-id 1
-		        tool_id                        | tool_runs |  percent_errored  | percent_failed | count_errored | count_failed |     handler
-		    -----------------------------------+-----------+-------------------+----------------+---------------+--------------+-----------------
-		     rnateam/graphclust_align_cluster/ |        55 | 0.145454545454545 |              0 |             8 |            0 | handler_main_10
-		     iuc/rgrnastar/rna_star/2.6.0b-2   |        46 | 0.347826086956522 |              0 |            16 |            0 | handler_main_3
-		     iuc/rgrnastar/rna_star/2.6.0b-2   |        43 | 0.186046511627907 |              0 |             8 |            0 | handler_main_0
-		     iuc/rgrnastar/rna_star/2.6.0b-2   |        41 | 0.390243902439024 |              0 |            16 |            0 | handler_main_4
-		     iuc/rgrnastar/rna_star/2.6.0b-2   |        40 |             0.325 |              0 |            13 |            0 | handler_main_6
-		     Filter1                           |        40 |             0.125 |              0 |             5 |            0 | handler_main_0
-		     devteam/bowtie2/bowtie2/2.3.4.3   |        40 |             0.125 |              0 |             5 |            0 | handler_main_7
-		     iuc/rgrnastar/rna_star/2.6.0b-2   |        40 |               0.3 |              0 |            12 |            0 | handler_main_2
+			$ gxadmin query tool-errors --short-tool-id 1
+				tool_id                        | tool_runs |  percent_errored  | percent_failed | count_errored | count_failed |     handler
+			-----------------------------------+-----------+-------------------+----------------+---------------+--------------+-----------------
+			 rnateam/graphclust_align_cluster/ |        55 | 0.145454545454545 |              0 |             8 |            0 | handler_main_10
+			 iuc/rgrnastar/rna_star/2.6.0b-2   |        46 | 0.347826086956522 |              0 |            16 |            0 | handler_main_3
+			 iuc/rgrnastar/rna_star/2.6.0b-2   |        43 | 0.186046511627907 |              0 |             8 |            0 | handler_main_0
+			 iuc/rgrnastar/rna_star/2.6.0b-2   |        41 | 0.390243902439024 |              0 |            16 |            0 | handler_main_4
+			 iuc/rgrnastar/rna_star/2.6.0b-2   |        40 |             0.325 |              0 |            13 |            0 | handler_main_6
+			 Filter1                           |        40 |             0.125 |              0 |             5 |            0 | handler_main_0
+			 devteam/bowtie2/bowtie2/2.3.4.3   |        40 |             0.125 |              0 |             5 |            0 | handler_main_7
+			 iuc/rgrnastar/rna_star/2.6.0b-2   |        40 |               0.3 |              0 |            12 |            0 | handler_main_2
 	EOF
 
 	tool_id="j.tool_id"
@@ -3092,17 +3092,17 @@ query_tool-errors() { ##? [--short-tool-id] [weeks=4]: Summarize percent of tool
 	handle_help "$@" <<-EOF
 		See jobs-in-error summary for recently executed tools that have failed at least 10% of the time.
 
-		    $ gxadmin query tool-errors --short-tool-id 1
-		        tool_id                        | tool_runs |  percent_errored  | percent_failed | count_errored | count_failed |     handler
-		    -----------------------------------+-----------+-------------------+----------------+---------------+--------------+-----------------
-		     rnateam/graphclust_align_cluster/ |        55 | 0.145454545454545 |              0 |             8 |            0 | handler_main_10
-		     iuc/rgrnastar/rna_star/2.6.0b-2   |        46 | 0.347826086956522 |              0 |            16 |            0 | handler_main_3
-		     iuc/rgrnastar/rna_star/2.6.0b-2   |        43 | 0.186046511627907 |              0 |             8 |            0 | handler_main_0
-		     iuc/rgrnastar/rna_star/2.6.0b-2   |        41 | 0.390243902439024 |              0 |            16 |            0 | handler_main_4
-		     iuc/rgrnastar/rna_star/2.6.0b-2   |        40 |             0.325 |              0 |            13 |            0 | handler_main_6
-		     Filter1                           |        40 |             0.125 |              0 |             5 |            0 | handler_main_0
-		     devteam/bowtie2/bowtie2/2.3.4.3   |        40 |             0.125 |              0 |             5 |            0 | handler_main_7
-		     iuc/rgrnastar/rna_star/2.6.0b-2   |        40 |               0.3 |              0 |            12 |            0 | handler_main_2
+			$ gxadmin query tool-errors --short-tool-id 1
+				tool_id                        | tool_runs |  percent_errored  | percent_failed | count_errored | count_failed |     handler
+			-----------------------------------+-----------+-------------------+----------------+---------------+--------------+-----------------
+			 rnateam/graphclust_align_cluster/ |        55 | 0.145454545454545 |              0 |             8 |            0 | handler_main_10
+			 iuc/rgrnastar/rna_star/2.6.0b-2   |        46 | 0.347826086956522 |              0 |            16 |            0 | handler_main_3
+			 iuc/rgrnastar/rna_star/2.6.0b-2   |        43 | 0.186046511627907 |              0 |             8 |            0 | handler_main_0
+			 iuc/rgrnastar/rna_star/2.6.0b-2   |        41 | 0.390243902439024 |              0 |            16 |            0 | handler_main_4
+			 iuc/rgrnastar/rna_star/2.6.0b-2   |        40 |             0.325 |              0 |            13 |            0 | handler_main_6
+			 Filter1                           |        40 |             0.125 |              0 |             5 |            0 | handler_main_0
+			 devteam/bowtie2/bowtie2/2.3.4.3   |        40 |             0.125 |              0 |             5 |            0 | handler_main_7
+			 iuc/rgrnastar/rna_star/2.6.0b-2   |        40 |               0.3 |              0 |            12 |            0 | handler_main_2
 	EOF
 
 	# TODO: Fix this nonsense for proper args
@@ -3141,16 +3141,16 @@ query_tool-likely-broken() { ##? [--short-tool-id] [weeks=4]: Find tools that ha
 		This runs an identical query to tool-errors, except filtering for tools
 		which were run more than 4 times, and have a failure rate over 95%.
 
-		                             tool_id                       | tool_runs | percent_errored | percent_failed | count_errored | count_failed |     handler
-		    -------------------------------------------------------+-----------+-----------------+----------------+---------------+--------------+-----------------
-		     simon-gladman/velvetoptimiser/velvetoptimiser/2.2.6   |        14 |               1 |              0 |            14 |            0 | handler_main_7
-		     bgruening/hicexplorer_hicplottads/hicexplorer_hicplott|         9 |               1 |              0 |             9 |            0 | handler_main_0
-		     bgruening/text_processing/tp_replace_in_column/1.1.3  |         8 |               1 |              0 |             8 |            0 | handler_main_3
-		     bgruening/text_processing/tp_awk_tool/1.1.1           |         7 |               1 |              0 |             7 |            0 | handler_main_5
-		     rnateam/dorina/dorina_search/1.0.0                    |         7 |               1 |              0 |             7 |            0 | handler_main_2
-		     bgruening/text_processing/tp_replace_in_column/1.1.3  |         6 |               1 |              0 |             6 |            0 | handler_main_9
-		     rnateam/dorina/dorina_search/1.0.0                    |         6 |               1 |              0 |             6 |            0 | handler_main_11
-		     rnateam/dorina/dorina_search/1.0.0                    |         6 |               1 |              0 |             6 |            0 | handler_main_8
+									 tool_id                       | tool_runs | percent_errored | percent_failed | count_errored | count_failed |     handler
+			-------------------------------------------------------+-----------+-----------------+----------------+---------------+--------------+-----------------
+			 simon-gladman/velvetoptimiser/velvetoptimiser/2.2.6   |        14 |               1 |              0 |            14 |            0 | handler_main_7
+			 bgruening/hicexplorer_hicplottads/hicexplorer_hicplott|         9 |               1 |              0 |             9 |            0 | handler_main_0
+			 bgruening/text_processing/tp_replace_in_column/1.1.3  |         8 |               1 |              0 |             8 |            0 | handler_main_3
+			 bgruening/text_processing/tp_awk_tool/1.1.1           |         7 |               1 |              0 |             7 |            0 | handler_main_5
+			 rnateam/dorina/dorina_search/1.0.0                    |         7 |               1 |              0 |             7 |            0 | handler_main_2
+			 bgruening/text_processing/tp_replace_in_column/1.1.3  |         6 |               1 |              0 |             6 |            0 | handler_main_9
+			 rnateam/dorina/dorina_search/1.0.0                    |         6 |               1 |              0 |             6 |            0 | handler_main_11
+			 rnateam/dorina/dorina_search/1.0.0                    |         6 |               1 |              0 |             6 |            0 | handler_main_8
 	EOF
 
 	# TODO: Fix this nonsense for proper args
@@ -4007,21 +4007,21 @@ query_data-origin-distribution() { ## : data sources (uploaded vs derived)
 
 		Recommendation is to run with GDPR_MODE so you can safely share this information:
 
-		    GDPR_MODE=\$(openssl rand -hex 24 2>/dev/null) gxadmin tsvquery data-origin-distribution | gzip > data-origin.tsv.gz
+			GDPR_MODE=\$(openssl rand -hex 24 2>/dev/null) gxadmin tsvquery data-origin-distribution | gzip > data-origin.tsv.gz
 
 		Output looks like:
 
-		    derived 130000000000    2019-07-01 00:00:00     fff4f423d06
-		    derived 61000000000     2019-08-01 00:00:00     fff4f423d06
-		    created 340000000       2019-08-01 00:00:00     fff4f423d06
-		    created 19000000000     2019-07-01 00:00:00     fff4f423d06
-		    derived 180000000000    2019-04-01 00:00:00     ffd28c0cf8c
-		    created 21000000000     2019-04-01 00:00:00     ffd28c0cf8c
-		    derived 1700000000      2019-06-01 00:00:00     ffd28c0cf8c
-		    derived 120000000       2019-06-01 00:00:00     ffcb567a837
-		    created 62000000        2019-05-01 00:00:00     ffcb567a837
-		    created 52000000        2019-06-01 00:00:00     ffcb567a837
-		    derived 34000000        2019-07-01 00:00:00     ffcb567a837
+			derived 130000000000    2019-07-01 00:00:00     fff4f423d06
+			derived 61000000000     2019-08-01 00:00:00     fff4f423d06
+			created 340000000       2019-08-01 00:00:00     fff4f423d06
+			created 19000000000     2019-07-01 00:00:00     fff4f423d06
+			derived 180000000000    2019-04-01 00:00:00     ffd28c0cf8c
+			created 21000000000     2019-04-01 00:00:00     ffd28c0cf8c
+			derived 1700000000      2019-06-01 00:00:00     ffd28c0cf8c
+			derived 120000000       2019-06-01 00:00:00     ffcb567a837
+			created 62000000        2019-05-01 00:00:00     ffcb567a837
+			created 52000000        2019-06-01 00:00:00     ffcb567a837
+			derived 34000000        2019-07-01 00:00:00     ffcb567a837
 
 	EOF
 
@@ -4308,22 +4308,22 @@ query_pg-rows-per-table() { ## : Print rows per table
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-		    n.nspname AS table_schema,
-		    c.relname AS table_name,
-		    c.reltuples AS rows
+			n.nspname AS table_schema,
+			c.relname AS table_name,
+			c.reltuples AS rows
 		FROM
-		    pg_class AS c
-		    JOIN pg_namespace AS n ON
-		            n.oid = c.relnamespace
+			pg_class AS c
+			JOIN pg_namespace AS n ON
+					n.oid = c.relnamespace
 		WHERE
-		    c.relkind = 'r'
-		    AND n.nspname
-		        NOT IN (
-		                'information_schema',
-		                'pg_catalog'
-		            )
+			c.relkind = 'r'
+			AND n.nspname
+				NOT IN (
+						'information_schema',
+						'pg_catalog'
+					)
 		ORDER BY
-		    c.reltuples DESC
+			c.reltuples DESC
 	EOF
 }
 
@@ -4355,7 +4355,7 @@ query_dump-users() { ##? [--apikey] [--email] : Dump the list of users and their
 		FROM
 			galaxy_user
 		ORDER BY
-		    id desc
+			id desc
 	EOF
 }
 
@@ -4366,27 +4366,27 @@ query_job-metrics() { ## : Retrieves input size, runtime, memory for all execute
 	handle_help "$@" <<-EOF
 		Dump runtime stats for ALL jobs:
 
-		    $ gxadmin query job-metrics
-		    job_id  |               tool_id                |  state  | total_filesize | num_files | runtime_seconds |   slots   | memory_bytes |        create_time
-		    --------+--------------------------------------+---------+----------------+-----------+-----------------+-----------+--------------+----------------------------
-		    19      | require_format                       | ok      |           5098 |         1 |       4.0000000 | 1.0000000 |              | 2018-12-04 17:17:02.148239
-		    48      | __SET_METADATA__                     | ok      |                |         0 |       4.0000000 | 1.0000000 |              | 2019-02-05 22:46:33.848141
-		    49      | upload1                              | ok      |                |           |       6.0000000 | 1.0000000 |              | 2019-02-05 22:58:41.610146
-		    50      | upload1                              | ok      |                |           |       5.0000000 | 1.0000000 |              | 2019-02-07 21:30:11.645826
-		    51      | upload1                              | ok      |                |           |       5.0000000 | 1.0000000 |              | 2019-02-07 21:30:12.18259
-		    52      | upload1                              | ok      |                |           |       7.0000000 | 1.0000000 |              | 2019-02-07 21:31:15.304868
-		    54      | upload1                              | ok      |                |           |       5.0000000 | 1.0000000 |              | 2019-02-07 21:31:16.116164
-		    53      | upload1                              | ok      |                |           |       7.0000000 | 1.0000000 |              | 2019-02-07 21:31:15.665948
+			$ gxadmin query job-metrics
+			job_id  |               tool_id                |  state  | total_filesize | num_files | runtime_seconds |   slots   | memory_bytes |        create_time
+			--------+--------------------------------------+---------+----------------+-----------+-----------------+-----------+--------------+----------------------------
+			19      | require_format                       | ok      |           5098 |         1 |       4.0000000 | 1.0000000 |              | 2018-12-04 17:17:02.148239
+			48      | __SET_METADATA__                     | ok      |                |         0 |       4.0000000 | 1.0000000 |              | 2019-02-05 22:46:33.848141
+			49      | upload1                              | ok      |                |           |       6.0000000 | 1.0000000 |              | 2019-02-05 22:58:41.610146
+			50      | upload1                              | ok      |                |           |       5.0000000 | 1.0000000 |              | 2019-02-07 21:30:11.645826
+			51      | upload1                              | ok      |                |           |       5.0000000 | 1.0000000 |              | 2019-02-07 21:30:12.18259
+			52      | upload1                              | ok      |                |           |       7.0000000 | 1.0000000 |              | 2019-02-07 21:31:15.304868
+			54      | upload1                              | ok      |                |           |       5.0000000 | 1.0000000 |              | 2019-02-07 21:31:16.116164
+			53      | upload1                              | ok      |                |           |       7.0000000 | 1.0000000 |              | 2019-02-07 21:31:15.665948
 			...
-		    989     | circos                               | error   |         671523 |        12 |      14.0000000 | 1.0000000 |              | 2020-04-30 10:13:33.872872
-		    990     | circos                               | error   |         671523 |        12 |      10.0000000 | 1.0000000 |              | 2020-04-30 10:19:36.72646
-		    991     | circos                               | error   |         671523 |        12 |      10.0000000 | 1.0000000 |              | 2020-04-30 10:21:00.460471
-		    992     | circos                               | ok      |         671523 |        12 |      21.0000000 | 1.0000000 |              | 2020-04-30 10:31:35.366913
-		    993     | circos                               | error   |         588747 |         6 |       8.0000000 | 1.0000000 |              | 2020-04-30 11:12:17.340591
-		    994     | circos                               | error   |         588747 |         6 |       9.0000000 | 1.0000000 |              | 2020-04-30 11:15:27.076502
-		    995     | circos                               | error   |         588747 |         6 |      42.0000000 | 1.0000000 |              | 2020-04-30 11:16:41.19449
-		    996     | circos                               | ok      |         588747 |         6 |      48.0000000 | 1.0000000 |              | 2020-04-30 11:21:51.49684
-		    997     | circos                               | ok      |         588747 |         6 |      46.0000000 | 1.0000000 |              | 2020-04-30 11:23:52.455536
+			989     | circos                               | error   |         671523 |        12 |      14.0000000 | 1.0000000 |              | 2020-04-30 10:13:33.872872
+			990     | circos                               | error   |         671523 |        12 |      10.0000000 | 1.0000000 |              | 2020-04-30 10:19:36.72646
+			991     | circos                               | error   |         671523 |        12 |      10.0000000 | 1.0000000 |              | 2020-04-30 10:21:00.460471
+			992     | circos                               | ok      |         671523 |        12 |      21.0000000 | 1.0000000 |              | 2020-04-30 10:31:35.366913
+			993     | circos                               | error   |         588747 |         6 |       8.0000000 | 1.0000000 |              | 2020-04-30 11:12:17.340591
+			994     | circos                               | error   |         588747 |         6 |       9.0000000 | 1.0000000 |              | 2020-04-30 11:15:27.076502
+			995     | circos                               | error   |         588747 |         6 |      42.0000000 | 1.0000000 |              | 2020-04-30 11:16:41.19449
+			996     | circos                               | ok      |         588747 |         6 |      48.0000000 | 1.0000000 |              | 2020-04-30 11:21:51.49684
+			997     | circos                               | ok      |         588747 |         6 |      46.0000000 | 1.0000000 |              | 2020-04-30 11:23:52.455536
 
 		**WARNING**
 
@@ -4547,12 +4547,12 @@ query_largest-dataset-users() { ##? [--human] [--deleted] [--purged] [--format-u
 	handle_help "$@" <<-EOF
 		Optionally includes deleted and purged datasets
 
-		    $ gxadmin query largest-dataset-users --human
-		                   uuid               | job_id | file_size | total_size |  username  | id  |      history_name       |                     hda_name
-		    ----------------------------------+--------+-----------+------------+------------+-----+-------------------------+---------------------------------------------------
-		     a18fed2a9d4d4f66b301b48c4c6ed720 |   6995 | 220 GB    | 220 GB     | alice      | 269 | B1MG_Case5_IC           | EGA Download Client: EGAF00005572869
-		     a18fed2a9d4d4f66b301b48c4c6ed720 |   6995 | 220 GB    | 220 GB     | beth       | 280 | imported: B1MG_Case5_IC | EGA Download Client: EGAF00005572869
-		     a18fed2a9d4d4f66b301b48c4c6ed720 |   6995 | 220 GB    | 220 GB     | beth       | 284 | HTSGET                  | Case 5 Child BAM (EGAF00005572869)
+			$ gxadmin query largest-dataset-users --human
+						   uuid               | job_id | file_size | total_size |  username  | id  |      history_name       |                     hda_name
+			----------------------------------+--------+-----------+------------+------------+-----+-------------------------+---------------------------------------------------
+			 a18fed2a9d4d4f66b301b48c4c6ed720 |   6995 | 220 GB    | 220 GB     | alice      | 269 | B1MG_Case5_IC           | EGA Download Client: EGAF00005572869
+			 a18fed2a9d4d4f66b301b48c4c6ed720 |   6995 | 220 GB    | 220 GB     | beth       | 280 | imported: B1MG_Case5_IC | EGA Download Client: EGAF00005572869
+			 a18fed2a9d4d4f66b301b48c4c6ed720 |   6995 | 220 GB    | 220 GB     | beth       | 284 | HTSGET                  | Case 5 Child BAM (EGAF00005572869)
 
 		here you can see another user has imported this single large dataset multiple times.
 
@@ -4619,11 +4619,11 @@ query_dataset-usage-and-imports() { ##? <dataset_uuid>: Fetch limited informatio
 	EOF
 	handle_help "$@" <<-EOF
 		This has built in support for "cleaning up" paths like /data/galaxy/.../dataset_<uuid>.dat into just the properly formatted UUID. It will also strip - characters from the uuid if present.
-		    $ gxadmin query dataset-usage-and-imports /data/galaxy/b/8/4/dataset_b8482e38-0e6f-4871-92ee-a699458f18a5.dat
-		      id  | job_id | history_id | user_id | username |              name              |  name
-		    ------+--------+------------+---------+----------+--------------------------------+---------
-		     3338 |        |         93 |       6 | alice    | transient vector vs normal M14 | sources
-		    (1 row)
+			$ gxadmin query dataset-usage-and-imports /data/galaxy/b/8/4/dataset_b8482e38-0e6f-4871-92ee-a699458f18a5.dat
+			  id  | job_id | history_id | user_id | username |              name              |  name
+			------+--------+------------+---------+----------+--------------------------------+---------
+			 3338 |        |         93 |       6 | alice    | transient vector vs normal M14 | sources
+			(1 row)
 
 	EOF
 
@@ -4652,13 +4652,13 @@ query_queue-details-drm() { ##? [--all] [--seconds] [--since-update]: Detailed o
 	handle_help "$@" <<-EOF
 		This is a copy of gxadmin query queue-detail with job destination info (cores/mem/partition) added and runner_id, count removed
 
-		    $ gxadmin query queue-details-drm
-		           state  |  id  | extid |								  tool_id								  | username | time_since_creation |		 handler		 | cores | mem  | partition | destination_id
-		    ---------+------+-------+-----------------------------------------------------------+----------+---------------------+---------------------+-------+------+-----------+-----------------
-		     running | 4385 | 4011  | upload1																	| cat		| 00:01:01.518932	  | main.job-handlers.2 | 2	  | 6144 |			  | slurm
-		     queued  | 4387 | 4012  | toolshed.g2.bx.psu.edu/repos/devteam/bwa/bwa_mem/0.7.17.2 | cat		| 00:00:24.377336	  | main.job-handlers.2 | 1	  | 3072 |			  | slurm
-		     queued  | 4388 | 4388  | toolshed.g2.bx.psu.edu/repos/devteam/bwa/bwa_mem/0.7.17.2 | cat		| 00:00:13.254505	  | main.job-handlers.1 | 1	  | 3072 |			  | pulsar-nci-test
-		     queued  | 4389 | 4013  | toolshed.g2.bx.psu.edu/repos/devteam/bwa/bwa_mem/0.7.17.2 | cat		| 00:00:01.834048	  | main.job-handlers.2 | 1	  | 3072 |			  | slurm
+			$ gxadmin query queue-details-drm
+				   state  |  id  | extid |								  tool_id								  | username | time_since_creation |		 handler		 | cores | mem  | partition | destination_id
+			---------+------+-------+-----------------------------------------------------------+----------+---------------------+---------------------+-------+------+-----------+-----------------
+			 running | 4385 | 4011  | upload1																	| cat		| 00:01:01.518932	  | main.job-handlers.2 | 2	  | 6144 |			  | slurm
+			 queued  | 4387 | 4012  | toolshed.g2.bx.psu.edu/repos/devteam/bwa/bwa_mem/0.7.17.2 | cat		| 00:00:24.377336	  | main.job-handlers.2 | 1	  | 3072 |			  | slurm
+			 queued  | 4388 | 4388  | toolshed.g2.bx.psu.edu/repos/devteam/bwa/bwa_mem/0.7.17.2 | cat		| 00:00:13.254505	  | main.job-handlers.1 | 1	  | 3072 |			  | pulsar-nci-test
+			 queued  | 4389 | 4013  | toolshed.g2.bx.psu.edu/repos/devteam/bwa/bwa_mem/0.7.17.2 | cat		| 00:00:01.834048	  | main.job-handlers.2 | 1	  | 3072 |			  | slurm
 	EOF
 
 	fields="count=9"
@@ -4731,22 +4731,22 @@ query_jobs() { ##? [--tool=] [--destination=] [--limit=50] [--states=<comma,sep,
 		Displays a list of jobs ordered from most recently updated, which can be filtered by states, destination_id,
 		tool_id or user. By default up to 50 rows are returned which can be adjusted with the --limit or -l flag.
 
-		    $ gxadmin query jobs --destination=pulsar-nci-test
-		      id   |     create_time     |     update_time     | user_id |  state  |                                           tool_id                                           |  handler  |         destination         | external_id
-		    -------+---------------------+---------------------+---------+---------+---------------------------------------------------------------------------------------------+-----------+-----------------------------+-------------
-		     14701 | 2022-10-31 00:54:43 | 2022-10-31 00:55:02 |      16 | ok      | toolshed.g2.bx.psu.edu/repos/devteam/bwa/bwa_mem/0.7.17.2                                   | handler_0 | pulsar-nci-test             | 14701
-		     14700 | 2022-10-31 00:53:45 | 2022-10-31 00:54:04 |      16 | ok      | toolshed.g2.bx.psu.edu/repos/devteam/fastqc/fastqc/0.71                                     | handler_0 | pulsar-nci-test             | 14700
-		     14588 | 2022-10-19 10:45:42 | 2022-10-19 10:46:01 |      16 | ok      | toolshed.g2.bx.psu.edu/repos/devteam/bwa/bwa_mem/0.7.17.2                                   | handler_2 | pulsar-nci-test             | 14588
-		     14584 | 2022-10-19 10:45:12 | 2022-10-19 10:45:31 |      16 | ok      | toolshed.g2.bx.psu.edu/repos/devteam/bwa/bwa_mem/0.7.17.2                                   | handler_2 | pulsar-nci-test             | 14584
-		     14580 | 2022-10-19 10:44:43 | 2022-10-19 10:45:02 |      16 | ok      | toolshed.g2.bx.psu.edu/repos/devteam/bwa/bwa_mem/0.7.17.2                                   | handler_2 | pulsar-nci-test             | 14580
+			$ gxadmin query jobs --destination=pulsar-nci-test
+			  id   |     create_time     |     update_time     | user_id |  state  |                                           tool_id                                           |  handler  |         destination         | external_id
+			-------+---------------------+---------------------+---------+---------+---------------------------------------------------------------------------------------------+-----------+-----------------------------+-------------
+			 14701 | 2022-10-31 00:54:43 | 2022-10-31 00:55:02 |      16 | ok      | toolshed.g2.bx.psu.edu/repos/devteam/bwa/bwa_mem/0.7.17.2                                   | handler_0 | pulsar-nci-test             | 14701
+			 14700 | 2022-10-31 00:53:45 | 2022-10-31 00:54:04 |      16 | ok      | toolshed.g2.bx.psu.edu/repos/devteam/fastqc/fastqc/0.71                                     | handler_0 | pulsar-nci-test             | 14700
+			 14588 | 2022-10-19 10:45:42 | 2022-10-19 10:46:01 |      16 | ok      | toolshed.g2.bx.psu.edu/repos/devteam/bwa/bwa_mem/0.7.17.2                                   | handler_2 | pulsar-nci-test             | 14588
+			 14584 | 2022-10-19 10:45:12 | 2022-10-19 10:45:31 |      16 | ok      | toolshed.g2.bx.psu.edu/repos/devteam/bwa/bwa_mem/0.7.17.2                                   | handler_2 | pulsar-nci-test             | 14584
+			 14580 | 2022-10-19 10:44:43 | 2022-10-19 10:45:02 |      16 | ok      | toolshed.g2.bx.psu.edu/repos/devteam/bwa/bwa_mem/0.7.17.2                                   | handler_2 | pulsar-nci-test             | 14580
 
-		    $ gxadmin query jobs --destination=pulsar-nci-test --tool=bionano
-		      id   |     create_time     |     update_time     | user_id | state |                                        tool_id                                         |       handler       |         destination         | external_id
-		    -------+---------------------+---------------------+---------+-------+----------------------------------------------------------------------------------------+---------------------+-----------------------------+-------------
-		     14085 | 2022-09-08 07:44:48 | 2022-09-08 08:21:58 |       3 | ok    | toolshed.g2.bx.psu.edu/repos/bgruening/bionano_scaffold/bionano_scaffold/3.6.1+galaxy3 | handler_2           | pulsar-nci-test             | 14085
-		     14080 | 2022-09-08 07:00:14 | 2022-09-08 07:44:31 |       3 | ok    | toolshed.g2.bx.psu.edu/repos/bgruening/bionano_scaffold/bionano_scaffold/3.6.1+galaxy3 | handler_0           | pulsar-nci-test             | 14080
-		     14076 | 2022-09-08 06:15:37 | 2022-09-08 06:59:59 |       3 | error | toolshed.g2.bx.psu.edu/repos/bgruening/bionano_scaffold/bionano_scaffold/3.6.1+galaxy3 | handler_2           | pulsar-nci-test             | 14076
-		     14071 | 2022-09-08 05:38:25 | 2022-09-08 06:15:22 |       3 | error | toolshed.g2.bx.psu.edu/repos/bgruening/bionano_scaffold/bionano_scaffold/3.6.1+galaxy3 | handler_1           | pulsar-nci-test             | 14071
+			$ gxadmin query jobs --destination=pulsar-nci-test --tool=bionano
+			  id   |     create_time     |     update_time     | user_id | state |                                        tool_id                                         |       handler       |         destination         | external_id
+			-------+---------------------+---------------------+---------+-------+----------------------------------------------------------------------------------------+---------------------+-----------------------------+-------------
+			 14085 | 2022-09-08 07:44:48 | 2022-09-08 08:21:58 |       3 | ok    | toolshed.g2.bx.psu.edu/repos/bgruening/bionano_scaffold/bionano_scaffold/3.6.1+galaxy3 | handler_2           | pulsar-nci-test             | 14085
+			 14080 | 2022-09-08 07:00:14 | 2022-09-08 07:44:31 |       3 | ok    | toolshed.g2.bx.psu.edu/repos/bgruening/bionano_scaffold/bionano_scaffold/3.6.1+galaxy3 | handler_0           | pulsar-nci-test             | 14080
+			 14076 | 2022-09-08 06:15:37 | 2022-09-08 06:59:59 |       3 | error | toolshed.g2.bx.psu.edu/repos/bgruening/bionano_scaffold/bionano_scaffold/3.6.1+galaxy3 | handler_2           | pulsar-nci-test             | 14076
+			 14071 | 2022-09-08 05:38:25 | 2022-09-08 06:15:22 |       3 | error | toolshed.g2.bx.psu.edu/repos/bgruening/bionano_scaffold/bionano_scaffold/3.6.1+galaxy3 | handler_1           | pulsar-nci-test             | 14071
 	EOF
 
 	tool_id_substr="${arg_tool}"
@@ -4970,18 +4970,18 @@ query_tpt-tool-cpu() { ##? [--startyear=<YYYY>] [--endyear=<YYYY>] [--formula=av
 	handle_help "$@" <<-EOF
 		Tool Performance Tracking: CPU by Month-Year.
 
-		    $ gxadmin tpt-tool-cpu
-		              tool_id          |   month    | seconds | destination_id
-		    ---------------------------+------------+--------------------------
-		     circos                    | 2019-02-01 | 2329342 | multicore
-		     upload1                   | 2019-02-01 | 1243878 | multicore
-		     require_format            | 2019-02-01 |  933630 | multicore
-		     circos_gc_skew            | 2019-02-01 |  752233 | multicore
-		     circos_wiggle_to_scatter  | 2019-02-01 |  337924 | normal
-		     test_history_sanitization | 2019-02-01 |  246521 | normal
-		     circos_interval_to_tile   | 2019-02-01 |  109382 | normal
-		     __SET_METADATA__          | 2019-02-01 |   82791 | normal
-		    (8 rows)
+			$ gxadmin tpt-tool-cpu
+					  tool_id          |   month    | seconds | destination_id
+			---------------------------+------------+--------------------------
+			 circos                    | 2019-02-01 | 2329342 | multicore
+			 upload1                   | 2019-02-01 | 1243878 | multicore
+			 require_format            | 2019-02-01 |  933630 | multicore
+			 circos_gc_skew            | 2019-02-01 |  752233 | multicore
+			 circos_wiggle_to_scatter  | 2019-02-01 |  337924 | normal
+			 test_history_sanitization | 2019-02-01 |  246521 | normal
+			 circos_interval_to_tile   | 2019-02-01 |  109382 | normal
+			 __SET_METADATA__          | 2019-02-01 |   82791 | normal
+			(8 rows)
 	EOF
 
 	filter_by_time_period=""
@@ -5037,18 +5037,18 @@ query_tpt-tool-users() { ##? [--startyear=<YYYY>] [--endyear=<YYYY>]: Start year
 	handle_help "$@" <<-EOF
 		Tool Performance Tracking: Users by Month-Year.
 
-		    $ gxadmin tpt-tool-users
-		              tool_id          |   month    | count
-		    ---------------------------+------------+-------
-		     circos                    | 2019-02-01 |    20
-		     upload1                   | 2019-02-01 |    12
-		     require_format            | 2019-02-01 |     9
-		     circos_gc_skew            | 2019-02-01 |     7
-		     circos_wiggle_to_scatter  | 2019-02-01 |     3
-		     test_history_sanitization | 2019-02-01 |     2
-		     circos_interval_to_tile   | 2019-02-01 |     1
-		     __SET_METADATA__          | 2019-02-01 |     1
-		    (8 rows)
+			$ gxadmin tpt-tool-users
+					  tool_id          |   month    | count
+			---------------------------+------------+-------
+			 circos                    | 2019-02-01 |    20
+			 upload1                   | 2019-02-01 |    12
+			 require_format            | 2019-02-01 |     9
+			 circos_gc_skew            | 2019-02-01 |     7
+			 circos_wiggle_to_scatter  | 2019-02-01 |     3
+			 test_history_sanitization | 2019-02-01 |     2
+			 circos_interval_to_tile   | 2019-02-01 |     1
+			 __SET_METADATA__          | 2019-02-01 |     1
+			(8 rows)
 	EOF
 
 	filter_by_time_period=""
@@ -5087,18 +5087,18 @@ query_tpt-tool-memory() { ##? [--startyear=<YYYY>] [--endyear=<YYYY>] [--formula
 	handle_help "$@" <<-EOF
 		Tool Performance Tracking: Memory by Month-Year.
 
-		    $ gxadmin tpt-tool-users
-		              tool_id          |   month    | consumed_gigabytes
-		    ---------------------------+------------+-------------------
-		     circos                    | 2019-02-01 |              24234
-		     upload1                   | 2019-02-01 |              12435
-		     require_format            | 2019-02-01 |               9535
-		     circos_gc_skew            | 2019-02-01 |               7163
-		     circos_wiggle_to_scatter  | 2019-02-01 |               3053
-		     test_history_sanitization | 2019-02-01 |               2390
-		     circos_interval_to_tile   | 2019-02-01 |               1315
-		     __SET_METADATA__          | 2019-02-01 |               1623
-		    (8 rows)
+			$ gxadmin tpt-tool-users
+					  tool_id          |   month    | consumed_gigabytes
+			---------------------------+------------+-------------------
+			 circos                    | 2019-02-01 |              24234
+			 upload1                   | 2019-02-01 |              12435
+			 require_format            | 2019-02-01 |               9535
+			 circos_gc_skew            | 2019-02-01 |               7163
+			 circos_wiggle_to_scatter  | 2019-02-01 |               3053
+			 test_history_sanitization | 2019-02-01 |               2390
+			 circos_interval_to_tile   | 2019-02-01 |               1315
+			 __SET_METADATA__          | 2019-02-01 |               1623
+			(8 rows)
 	EOF
 
 	filter_by_time_period=""
@@ -5152,7 +5152,7 @@ query_tools-usage-per-month() { ##? [--startmonth=<YYYY>-<MM>] [--endmonth=<YYYY
 	handle_help "$@" <<-EOF
 		Tools Usage Tracking: cpu-hours and nb_users by Month-Year.
 
-		    $ gxadmin query tools-usage-per-month --super_short_tool_id --no_version --tools bowtie2,Cut1 --startmonth=2023-03 --endmonth 2023-08
+			$ gxadmin query tools-usage-per-month --super_short_tool_id --no_version --tools bowtie2,Cut1 --startmonth=2023-03 --endmonth 2023-08
 			   month    | cpu_hours | tool_id | nb_users
 			------------+-----------+---------+----------
 			 2023-08-01 |    326.88 | bowtie2 |        1
@@ -5227,16 +5227,16 @@ query_archivable-histories() { ##? [--user-last-active=360] [--history-last-acti
 	handle_help "$@" <<-EOF
 		Get a list of archivable histories based on user and history age.
 
-		    $ gxadmin query archivable-histories
-		    ...
+			$ gxadmin query archivable-histories
+			...
 
 		The --size option can be used to show the size of the histories returned, but can significantly slow the
 		query.
 
 		One useful way to use this function is like so:
 
-		    $ gxadmin tsvquery archivable-histories --size | \\
-		        awk -F'\\t' '{print \$1; sum+=\$NF;} END {print "Total: " sum/1024^3 " GB" > "/dev/stderr";}' | \\
+			$ gxadmin tsvquery archivable-histories --size | \\
+				awk -F'\\t' '{print \$1; sum+=\$NF;} END {print "Total: " sum/1024^3 " GB" > "/dev/stderr";}' | \\
 			GALAXY_CONFIG_FILE=/gx/config/galaxy.yml xargs /gx/venv/bin/python3 | \\
 			  /gx/galaxy/scripts/secret_decoder_ring.py encode
 
