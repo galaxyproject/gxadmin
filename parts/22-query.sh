@@ -2410,7 +2410,7 @@ query_monthly-users-active(){ ## [year] [YYYY-MM] [--by_group]: Number of active
 	EOF
 }
 
-query_users-engaged-multiday() { ##? [month]: Number of users running jobs for more than a day
+query_users-engaged-multiday() { ##? [month] [--new_only]: Number of users running jobs for more than a day
 	meta <<-EOF
 		ADDED: 24
 	EOF
@@ -2418,6 +2418,7 @@ query_users-engaged-multiday() { ##? [month]: Number of users running jobs for m
 		Number of unique users in a given month who ran jobs for more than a day.
 		Parameters:
 		month: Month to count jobs for, provided as YYYY-MM. If month is not provided, defaults to current month.
+		--new_only: Only count users who registered in the same month
 
 		    $ gxadmin query users-engaged-multiday 2024-02
 	  		  month  | users_engaged_more_than_day
@@ -2425,11 +2426,30 @@ query_users-engaged-multiday() { ##? [month]: Number of users running jobs for m
 			 2024-02 |                         454
 	EOF
 
-	if [ $# -eq 0 ]; then
+	if [ $# -eq 0 ] || [ -z "$arg_month" ]; then
 		arg_month=$(date +%Y-%m)
 	fi
 
+	job_table="job"
+	if [[ -n $arg_new_only ]]; then
+		new_users_jobs="
+			SELECT
+				j.create_time,
+				j.user_id
+			INTO TEMP new_users_jobs
+			FROM
+				job j
+			JOIN
+				galaxy_user u ON j.user_id = u.id
+			WHERE
+				DATE_TRUNC('month', j.create_time) = DATE_TRUNC('month', CAST('$arg_month-01' AS DATE))
+				AND DATE_TRUNC('month', u.create_time) = DATE_TRUNC('month', CAST('$arg_month-01' AS DATE));"
+		job_table="new_users_jobs"
+	fi
+
 	read -r -d '' QUERY <<-EOF
+		$new_users_jobs
+
 		SELECT
 			TO_CHAR(CAST('$arg_month-01' AS DATE), 'YYYY-MM') AS month,
             count(DISTINCT user_id) AS users_engaged_more_than_day
@@ -2444,7 +2464,7 @@ query_users-engaged-multiday() { ##? [month]: Number of users running jobs for m
                             user_id,
                             to_char(create_time, 'YYYY-MM-DD') AS date_group
                         FROM
-                            job
+                            $job_table
                         WHERE
                             DATE_TRUNC('month', create_time) = DATE_TRUNC('month', CAST('$arg_month-01' AS DATE))
                         GROUP BY
