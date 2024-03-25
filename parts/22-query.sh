@@ -2412,7 +2412,7 @@ query_monthly-users-active(){ ## [year] [YYYY-MM] [--by_group]: Number of active
 
 query_users-engaged-multiday() { ##? [month] [--new_only]: Number of users running jobs for more than a day
 	meta <<-EOF
-		ADDED: 24
+		ADDED: 22
 	EOF
 	handle_help "$@" <<-EOF
 		Number of unique users in a given month who ran jobs for more than a day.
@@ -2554,7 +2554,7 @@ query_monthly-jobs(){ ## [year] [YYYY-MM] [--by_group] [--by_state]: Number of j
 
 query_monthly-jobs-by-new-users() { ##? [month] [--no_state]: Number of jobs run by new users in the given month
 	meta <<-EOF
-		ADDED: 24
+		ADDED: 22
 	EOF
 	handle_help "$@" <<-EOF
 		Count jobs run by users that registered in the given month
@@ -2603,7 +2603,7 @@ query_monthly-jobs-by-new-users() { ##? [month] [--no_state]: Number of jobs run
 
 query_monthly-jobs-by-new-multiday-users() { ##? [month]: Number of jobs run by newly registered users that ran jobs more than a day
 	meta <<-EOF
-		ADDED: 24
+		ADDED: 22
 	EOF
 	handle_help "$@" <<-EOF
 		Number of jobs run by newly registered users that ran jobs more than a day
