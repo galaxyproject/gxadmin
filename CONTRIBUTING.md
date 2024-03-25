@@ -3,6 +3,7 @@
 1. Please make PRs to the `main` branch
 2. When making changes:
 	1. Make changes to parts/
+	2. Run `make` to build gxadmin and test
 	2. Update the changelog for your additions
 3. Commit everything except the `gxadmin` file
 
@@ -60,6 +61,13 @@ When this is provided, the WAP parsers the arguments and automatically exports t
 
 Super wonderful!
 
+## View built queries
+
+To see the query gxadmin has built, use `echoquery`, for example:
+
+```
+gxadmin echoquery users-total
+```
 
 # Portability
 
