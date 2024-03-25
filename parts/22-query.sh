@@ -2601,6 +2601,76 @@ query_monthly-jobs-by-new-users() { ##? [month] [--no_state]: Number of jobs run
 	EOF
 }
 
+query_monthly-jobs-by-new-multiday-users() { ##? [month]: Number of jobs run by newly registered users that ran jobs more than a day
+	meta <<-EOF
+		ADDED: 24
+	EOF
+	handle_help "$@" <<-EOF
+		Number of jobs run by newly registered users that ran jobs more than a day
+		Parameters:
+		month: Month to count jobs for, provided as YYYY-MM. If month is not provided, defaults to current month.
+
+		    $ gxadmin query monthly-jobs-by-new-multiday-users 2024-02
+			  month  | num_jobs_by_new_users_engaged_more_than_day
+			---------+---------------------------------------------
+			 2024-02 |                                        2771
+	EOF
+
+	if [ $# -eq 0 ]; then
+		arg_month=$(date +%Y-%m)
+	fi
+
+	read -r -d '' QUERY <<-EOF
+		WITH new_users_jobs AS (
+			SELECT
+				j.id AS job_id,
+				j.create_time,
+				j.user_id
+			FROM
+				job j
+			JOIN
+				galaxy_user u ON j.user_id = u.id
+			WHERE
+				DATE_TRUNC('month', j.create_time) = DATE_TRUNC('month', CAST('$arg_month-01' AS DATE))
+				AND DATE_TRUNC('month', u.create_time) = DATE_TRUNC('month', CAST('$arg_month-01' AS DATE))
+		), new_users_engaged_more_than_day AS (
+			SELECT
+				user_id
+			FROM
+				(
+					SELECT
+						user_id,
+						count(DISTINCT date_group) AS date_group_count
+					FROM
+						(
+							SELECT
+								user_id,
+								to_char(create_time, 'YYYY-MM-DD') AS date_group
+							FROM
+								new_users_jobs
+							WHERE
+								DATE_TRUNC('month', create_time) = DATE_TRUNC('month', CAST('$arg_month-01' AS DATE))
+							GROUP BY
+								user_id,
+								date_group
+							HAVING
+								COUNT(user_id) > 1
+						) AS user_date_groups
+					GROUP BY
+						user_id
+					HAVING
+						count(*) > 1
+				) AS users_that_ran_jobs_more_than_1_day
+			)
+		SELECT
+			TO_CHAR(CAST('$arg_month-01' AS DATE), 'YYYY-MM') AS month,
+			COUNT(DISTINCT(j1.job_id)) as num_jobs_by_new_users_engaged_more_than_day
+		FROM
+			new_users_jobs j1
+		JOIN new_users_engaged_more_than_day AS j2 ON j1.user_id = j2.user_id
+	EOF
+}
+
 query_total-jobs(){ ##? [date] [--no_state]: Total number of jobs run by Galaxy instance.
 	meta <<-EOF
 		ADDED: 17
