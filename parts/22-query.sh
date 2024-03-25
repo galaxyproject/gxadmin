@@ -2286,52 +2286,55 @@ query_group-gpu-time() { ##? [group]: Retrieve an approximation of the GPU time 
 	EOF
 }
 
-query_monthly-users-registered(){ ## [year] [--by_group]: Number of users registered each month
+query_monthly-users-registered(){ ## [year] [YYYY-MM] [--by_group]: Number of users registered
 	handle_help "$@" <<-EOF
 		Number of users that registered each month. **NOTE**: Does not include anonymous users or users in no group.
 		Parameters:
 		--by_group: Will separate out registrations by galaxy user group as well
 		year: Will return monthly user registrations from the start of [year] till now
+		YYYY-MM: Will return number of user registrations for the given month
 
-		$ gxadmin query monthly-users 2020 --by_group
-			month    | Group name | count
-		 ------------+------------+-------
-		  2020-08-01 | Group_1    |     1
-		  2020-08-01 | Group_2    |     1
-		  2020-08-01 | Group_3    |     1
-		  2020-08-01 | Group_4    |     3
-		  2020-07-01 | Group_1    |     1
-		  2020-07-01 | Group_2    |     6
-		  2020-07-01 | Group_3    |     2
-		  2020-07-01 | Group_4    |     6
-		  2020-07-01 | Group_5    |     2
-		  2020-07-01 | Group_6    |     1
-		  ...
+		$ gxadmin query monthly-users-registered 2024
+		  month  | num_registered_users
+		---------+----------------------
+		 2024-03 |                 4109
+		 2024-02 |                 4709
+		 2024-01 |                 3711
 	EOF
 
 	if (( $# > 0 )); then
 		for args in "$@"; do
 			if [[ "$args" = "--by_group" ]]; then
 				where_g="galaxy_user.id = user_group_association.user_id and galaxy_group.id = user_group_association.group_id"
-				select="galaxy_group.name,"
+				select="galaxy_group.name AS group_name,"
 				from="galaxy_group, user_group_association,"
 				group=", galaxy_group.name"
+			elif [[ "$args" =~ ^[0-9]{4}-[0-9]{2}$ ]]; then
+				where_m="date_trunc('month', galaxy_user.create_time AT TIME ZONE 'UTC')::DATE = '$args-01'::date"
 			else
 				where_y="date_trunc('year', galaxy_user.create_time AT TIME ZONE 'UTC') = '$args-01-01'::date"
 			fi
 		done
-		if (( $# > 1 )); then
-			where="WHERE $where_y and $where_g"
-		else
-			where="WHERE $where_y $where_g"
+		if [[ -n "$where_m" ]]; then
+			where="WHERE $where_m"
+			if [[ -n "$where_g" ]]; then
+			where="$where AND $where_g"
+		fi
+		elif [[ -n "$where_y" ]]; then
+			where="WHERE $where_y"
+			if [[ -n "$where_g" ]]; then
+				where="$where AND $where_g"
+			fi
+		elif [[ -n "$where_g" ]]; then
+			where="WHERE $where_g"
 		fi
 	fi
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			date_trunc('month', galaxy_user.create_time)::DATE AS month,
+			TO_CHAR(date_trunc('month', galaxy_user.create_time AT TIME ZONE 'UTC')::DATE, 'YYYY-MM') AS month,
 			$select
-			count(*)
+			count(*) AS num_registered_users
 		FROM
 			$from
 			galaxy_user
@@ -2413,12 +2416,13 @@ query_monthly-jobs(){ ## [year] [YYYY-MM] [--by_group] [--by_state]: Number of j
 		--by_group: Will separate out job counts for each month by galaxy user group
 		--by_state: Will separate out job counts for each month by job state
 		year: Will return number of monthly jobs run from the start of [year] till now
-		month: Will return number of jobs for the given month
-		    $ gxadmin query monthly-jobs 2024
-		      month  | count
-			---------+--------
-			 2024-02 |  71238
-			 2024-01 | 589359
+		YYYY-MM: Will return number of jobs for the given month
+
+		$ gxadmin query monthly-jobs 2024
+		  month  | count
+		---------+--------
+		 2024-02 |  71238
+		 2024-01 | 589359
 	EOF
 
 	state=""
