@@ -2406,50 +2406,51 @@ query_monthly-users-active(){ ## [year] [--by_group]: Number of active users per
 	EOF
 }
 
-query_monthly-jobs(){ ## [year] [--by_group]: Number of jobs run each month
+query_monthly-jobs(){ ## [year] [YYYY-MM] [--by_group]: Number of jobs run each month
 	handle_help "$@" <<-EOF
-		Count jobs run each month
+		Count jobs run each month or specified month
 		Parameters:
 		--by_group: Will separate out job counts for each month by galaxy user group
 		year: Will return number of monthly jobs run from the start of [year] till now
-		    $ gxadmin query monthly-jobs 2018
-		        month   | count
-		    ------------+--------
-		     2018-12-01 |  96941
-		     2018-11-01 |  94625
-		     2018-10-01 | 156940
-		     2018-09-01 | 103331
-		     2018-08-01 | 128658
-		     2018-07-01 |  90852
-		     2018-06-01 | 230470
-		     2018-05-01 | 182331
-		     2018-04-01 | 109032
-		     2018-03-01 | 197125
-		     2018-02-01 | 260931
-		     2018-01-01 |  25378
+		month: Will return number of jobs for the given month
+		    $ gxadmin query monthly-jobs 2024
+		       month  | count
+			---------+--------
+			2024-02 |  71238
+			2024-01 | 589359
 	EOF
 
 	if (( $# > 0 )); then
 		for args in "$@"; do
 			if [[ "$args" = "--by_group" ]]; then
-				where_g="job.user_id = user_group_association.user_id and galaxy_group.id = user_group_association.group_id"
+				where_g="job.user_id = user_group_association.user_id AND galaxy_group.id = user_group_association.group_id"
 				select="galaxy_group.name,"
 				from="galaxy_group, user_group_association,"
 				group=", galaxy_group.name"
+			elif [[ "$args" =~ ^[0-9]{4}-[0-9]{2}$ ]]; then
+				where_m="date_trunc('month', job.create_time AT TIME ZONE 'UTC')::DATE = '$args-01'::date"
 			else
 				where_y="date_trunc('year', job.create_time AT TIME ZONE 'UTC') = '$args-01-01'::date"
 			fi
 		done
-		if (( $# > 1 )); then
-			where="WHERE $where_y and $where_g"
-		else
-			where="WHERE $where_y $where_g"
+		if [[ -n "$where_m" ]]; then
+			where="WHERE $where_m"
+			if [[ -n "$where_g" ]]; then
+			where="$where AND $where_g"
+		fi
+		elif [[ -n "$where_y" ]]; then
+			where="WHERE $where_y"
+			if [[ -n "$where_g" ]]; then
+				where="$where AND $where_g"
+			fi
+		elif [[ -n "$where_g" ]]; then
+			where="WHERE $where_g"
 		fi
 	fi
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			date_trunc('month', job.create_time AT TIME ZONE 'UTC')::DATE AS month,
+			TO_CHAR(date_trunc('month', job.create_time AT TIME ZONE 'UTC')::DATE, 'YYYY-MM') AS month,
 			$select
 			count(*)
 		FROM
@@ -2464,12 +2465,12 @@ query_monthly-jobs(){ ## [year] [--by_group]: Number of jobs run each month
 	EOF
 }
 
-query_total-jobs(){ ##? [date] [--total]: Total number of jobs run by Galaxy instance.
+query_total-jobs(){ ##? [YYYY-MM-DD] [--total]: Total number of jobs run by Galaxy instance.
 	meta <<-EOF
 		ADDED: 17
 	EOF
 	handle_help "$@" <<-EOF
-		Count total number of jobs. Providing date (eg. 2024-01-01) counts jobs up to that date.
+		Count total number of jobs. Providing optional date counts jobs up to that date.
 		Adding '--total' does not break jobs down by job state.
 
 		    $ gxadmin query total-jobs
