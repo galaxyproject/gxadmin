@@ -2433,17 +2433,18 @@ query_users-engaged-multiday() { ##? [month] [--new_only]: Number of users runni
 	job_table="job"
 	if [[ -n $arg_new_only ]]; then
 		new_users_jobs="
-			SELECT
-				j.create_time,
-				j.user_id
-			INTO TEMP new_users_jobs
-			FROM
-				job j
-			JOIN
-				galaxy_user u ON j.user_id = u.id
-			WHERE
-				DATE_TRUNC('month', j.create_time) = DATE_TRUNC('month', CAST('$arg_month-01' AS DATE))
-				AND DATE_TRUNC('month', u.create_time) = DATE_TRUNC('month', CAST('$arg_month-01' AS DATE));"
+			WITH new_users_jobs AS (
+				SELECT
+					j.create_time,
+					j.user_id
+				FROM
+					job j
+				JOIN
+					galaxy_user u ON j.user_id = u.id
+				WHERE
+					DATE_TRUNC('month', j.create_time) = DATE_TRUNC('month', CAST('$arg_month-01' AS DATE))
+					AND DATE_TRUNC('month', u.create_time) = DATE_TRUNC('month', CAST('$arg_month-01' AS DATE))
+			)"
 		job_table="new_users_jobs"
 	fi
 
