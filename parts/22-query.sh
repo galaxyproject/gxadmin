@@ -2410,6 +2410,57 @@ query_monthly-users-active(){ ## [year] [YYYY-MM] [--by_group]: Number of active
 	EOF
 }
 
+query_users-engaged-multiday() { ##? [month]: Number of users running jobs for more than a day
+	meta <<-EOF
+		ADDED: 24
+	EOF
+	handle_help "$@" <<-EOF
+		Number of unique users in a given month who ran jobs for more than a day.
+		Parameters:
+		month: Month to count jobs for, provided as YYYY-MM. If month is not provided, defaults to current month.
+
+		    $ gxadmin query users-engaged-multiday 2024-02
+	  		  month  | users_engaged_more_than_day
+			---------+-----------------------------
+			 2024-02 |                         454
+	EOF
+
+	if [ $# -eq 0 ]; then
+		arg_month=$(date +%Y-%m)
+	fi
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			TO_CHAR(CAST('$arg_month-01' AS DATE), 'YYYY-MM') AS month,
+            count(DISTINCT user_id) AS users_engaged_more_than_day
+        FROM
+            (
+                SELECT
+                    user_id,
+                    count(DISTINCT date_group) AS date_group_count
+                FROM
+                    (
+                        SELECT
+                            user_id,
+                            to_char(create_time, 'YYYY-MM-DD') AS date_group
+                        FROM
+                            job
+                        WHERE
+                            DATE_TRUNC('month', create_time) = DATE_TRUNC('month', CAST('$arg_month-01' AS DATE))
+                        GROUP BY
+                            user_id,
+                            date_group
+                        HAVING
+                            COUNT(user_id) > 1
+                    ) AS user_date_groups
+                GROUP BY
+                    user_id
+                HAVING
+                    count(*) > 1
+            ) AS users_that_ran_jobs_more_than_1_day
+	EOF
+}
+
 query_monthly-jobs(){ ## [year] [YYYY-MM] [--by_group] [--by_state]: Number of jobs run each month
 	handle_help "$@" <<-EOF
 		Count jobs run each month or specified month
