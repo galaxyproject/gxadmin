@@ -2347,7 +2347,7 @@ query_monthly-users-registered(){ ## [year] [YYYY-MM] [--by_group]: Number of us
 	EOF
 }
 
-query_monthly-users-active(){ ## [year] [--by_group]: Number of active users per month, running jobs
+query_monthly-users-active(){ ## [year] [YYYY-MM] [--by_group]: Number of active users per month, running jobs
 	meta <<-EOF
 		ADDED: 12
 	EOF
@@ -2356,45 +2356,46 @@ query_monthly-users-active(){ ## [year] [--by_group]: Number of active users per
 		Parameters:
 		--by_group: Separate out active users by galaxy user group
 		year: Will return monthly active users from the start of [year] till now
+		YYYY-MM: Will return number of active users for the given month
 
-		    $ gxadmin query monthly-users-active 2018
-		       month    | active_users
-		    ------------+--------------
-		     2018-12-01 |          811
-		     2018-11-01 |          658
-		     2018-10-01 |          583
-		     2018-09-01 |          444
-		     2018-08-01 |          342
-		     2018-07-01 |          379
-		     2018-06-01 |          370
-		     2018-05-01 |          330
-		     2018-04-01 |          274
-		     2018-03-01 |          186
-		     2018-02-01 |          168
-		     2018-01-01 |          122
+		    $ gxadmin query monthly-users-active 2024
+	  		  month  | active_users
+			---------+--------------
+			 2024-02 |         1580
+			 2024-01 |         6812
 	EOF
 
 	if (( $# > 0 )); then
 		for args in "$@"; do
 			if [[ "$args" = "--by_group" ]]; then
 				where_g="job.user_id = user_group_association.user_id and user_group_association.group_id = galaxy_group.id"
-				select="galaxy_group.name,"
+				select="galaxy_group.name AS group_name,"
 				from=", user_group_association, galaxy_group"
 				group=", galaxy_group.name"
+			elif [[ "$args" =~ ^[0-9]{4}-[0-9]{2}$ ]]; then
+				where_m="date_trunc('month', job.create_time AT TIME ZONE 'UTC')::DATE = '$args-01'::date"
 			else
 				where_y="date_trunc('year', job.create_time AT TIME ZONE 'UTC') = '$args-01-01'::date"
 			fi
 		done
-		if (( $# > 1 )); then
-			where="WHERE $where_y and $where_g"
-		else
-			where="WHERE $where_y $where_g"
+		if [[ -n "$where_m" ]]; then
+			where="WHERE $where_m"
+			if [[ -n "$where_g" ]]; then
+			where="$where AND $where_g"
+		fi
+		elif [[ -n "$where_y" ]]; then
+			where="WHERE $where_y"
+			if [[ -n "$where_g" ]]; then
+				where="$where AND $where_g"
+			fi
+		elif [[ -n "$where_g" ]]; then
+			where="WHERE $where_g"
 		fi
 	fi
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			date_trunc('month', job.create_time AT TIME ZONE 'UTC')::date as month,
+			TO_CHAR(date_trunc('month', job.create_time AT TIME ZONE 'UTC')::date, 'YYYY-MM') AS month,
 			$select
 			count(distinct job.user_id) as active_users
 		FROM
