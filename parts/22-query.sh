@@ -2406,11 +2406,12 @@ query_monthly-users-active(){ ## [year] [--by_group]: Number of active users per
 	EOF
 }
 
-query_monthly-jobs(){ ## [year] [YYYY-MM] [--by_group]: Number of jobs run each month
+query_monthly-jobs(){ ## [year] [YYYY-MM] [--by_group] [--by_state]: Number of jobs run each month
 	handle_help "$@" <<-EOF
 		Count jobs run each month or specified month
 		Parameters:
 		--by_group: Will separate out job counts for each month by galaxy user group
+		--by_state: Will separate out job counts for each month by job state
 		year: Will return number of monthly jobs run from the start of [year] till now
 		month: Will return number of jobs for the given month
 		    $ gxadmin query monthly-jobs 2024
@@ -2420,8 +2421,16 @@ query_monthly-jobs(){ ## [year] [YYYY-MM] [--by_group]: Number of jobs run each 
 			 2024-01 | 589359
 	EOF
 
+	state=""
+	group_by=""
+
 	if (( $# > 0 )); then
 		for args in "$@"; do
+			if [[ "$args" = "--by_state" ]]; then
+				state=", state"
+				group_by=", state"
+				continue
+			fi
 			if [[ "$args" = "--by_group" ]]; then
 				where_g="job.user_id = user_group_association.user_id AND galaxy_group.id = user_group_association.group_id"
 				select="galaxy_group.name,"
@@ -2453,12 +2462,14 @@ query_monthly-jobs(){ ## [year] [YYYY-MM] [--by_group]: Number of jobs run each 
 			TO_CHAR(date_trunc('month', job.create_time AT TIME ZONE 'UTC')::DATE, 'YYYY-MM') AS month,
 			$select
 			count(*)
+			$state
 		FROM
 			$from
 			job
 		$where
 		GROUP BY
 			month
+			$state
 			$group
 		ORDER BY
 			month DESC
@@ -2472,7 +2483,7 @@ query_monthly-jobs-by-new-users() { ##? [month] [--no_state]: Number of jobs run
 	handle_help "$@" <<-EOF
 		Count jobs run by users that registered in the given month
 		month: Month to count jobs for, provided as YYYY-MM. If month is not provided, defaults to current month.
-		no_state: Do not break down jobs by state
+		--no_state: Do not break down jobs by state
 
 		    $ gxadmin query jobs-by-new-users 2024-02
 		      state   | jobs_by_new_users
