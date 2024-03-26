@@ -2585,7 +2585,7 @@ query_monthly-jobs-by-new-users() { ##? [month] [--no_state]: Number of jobs run
 	state="state,"
 	group_by_order_by="GROUP BY month, state ORDER BY month, state"
 
-	if [ $# -eq 0 ]; then
+	if [[ -z "$arg_month" ]]; then
 		arg_month=$(date +%Y-%m)
 	fi
 
