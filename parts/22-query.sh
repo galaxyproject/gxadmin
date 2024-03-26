@@ -2300,6 +2300,14 @@ query_monthly-users-registered(){ ## [year] [YYYY-MM] [--by_group]: Number of us
 		 2024-03 |                 4109
 		 2024-02 |                 4709
 		 2024-01 |                 3711
+
+		$ gxadmin query monthly-users-registered 2024 --by_group
+		   month  |    group_name    | num_registered_users
+		 ---------+------------------+----------------------
+		  2024-02 | Group_1          |                    1
+		  2024-02 | Group_2          |                   18
+		  2024-02 | Group_3          |                    1
+		  2024-01 | Group_4          |                    6
 	EOF
 
 	if (( $# > 0 )); then
@@ -2318,8 +2326,8 @@ query_monthly-users-registered(){ ## [year] [YYYY-MM] [--by_group]: Number of us
 		if [[ -n "$where_m" ]]; then
 			where="WHERE $where_m"
 			if [[ -n "$where_g" ]]; then
-			where="$where AND $where_g"
-		fi
+				where="$where AND $where_g"
+			fi
 		elif [[ -n "$where_y" ]]; then
 			where="WHERE $where_y"
 			if [[ -n "$where_g" ]]; then
@@ -2381,8 +2389,8 @@ query_monthly-users-active(){ ## [year] [YYYY-MM] [--by_group]: Number of active
 		if [[ -n "$where_m" ]]; then
 			where="WHERE $where_m"
 			if [[ -n "$where_g" ]]; then
-			where="$where AND $where_g"
-		fi
+				where="$where AND $where_g"
+			fi
 		elif [[ -n "$where_y" ]]; then
 			where="WHERE $where_y"
 			if [[ -n "$where_g" ]]; then
@@ -2453,32 +2461,32 @@ query_users-engaged-multiday() { ##? [month] [--new_only]: Number of users runni
 
 		SELECT
 			TO_CHAR(CAST('$arg_month-01' AS DATE), 'YYYY-MM') AS month,
-            count(DISTINCT user_id) AS users_engaged_more_than_day
-        FROM
-            (
-                SELECT
-                    user_id,
-                    count(DISTINCT date_group) AS date_group_count
-                FROM
-                    (
-                        SELECT
-                            user_id,
-                            to_char(create_time, 'YYYY-MM-DD') AS date_group
-                        FROM
-                            $job_table
-                        WHERE
-                            DATE_TRUNC('month', create_time) = DATE_TRUNC('month', CAST('$arg_month-01' AS DATE))
-                        GROUP BY
-                            user_id,
-                            date_group
-                        HAVING
-                            COUNT(user_id) > 1
-                    ) AS user_date_groups
-                GROUP BY
-                    user_id
-                HAVING
-                    count(*) > 1
-            ) AS users_that_ran_jobs_more_than_1_day
+			count(DISTINCT user_id) AS users_engaged_more_than_day
+		FROM
+			(
+				SELECT
+					user_id,
+					count(DISTINCT date_group) AS date_group_count
+				FROM
+					(
+						SELECT
+							user_id,
+							to_char(create_time, 'YYYY-MM-DD') AS date_group
+						FROM
+							$job_table
+						WHERE
+							DATE_TRUNC('month', create_time) = DATE_TRUNC('month', CAST('$arg_month-01' AS DATE))
+						GROUP BY
+							user_id,
+							date_group
+						HAVING
+							COUNT(user_id) > 1
+					) AS user_date_groups
+				GROUP BY
+					user_id
+				HAVING
+					count(*) > 1
+			) AS users_that_ran_jobs_more_than_1_day
 	EOF
 }
 
@@ -2522,8 +2530,8 @@ query_monthly-jobs(){ ## [year] [YYYY-MM] [--by_group] [--by_state]: Number of j
 		if [[ -n "$where_m" ]]; then
 			where="WHERE $where_m"
 			if [[ -n "$where_g" ]]; then
-			where="$where AND $where_g"
-		fi
+				where="$where AND $where_g"
+			fi
 		elif [[ -n "$where_y" ]]; then
 			where="WHERE $where_y"
 			if [[ -n "$where_g" ]]; then
