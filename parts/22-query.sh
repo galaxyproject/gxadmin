@@ -2625,7 +2625,7 @@ query_monthly-jobs-by-new-multiday-users() { ##? [month]: Number of jobs run by 
 			 2024-02 |                                        2771
 	EOF
 
-	if [ $# -eq 0 ]; then
+	if [[ -z "$arg_month" ]]; then
 		arg_month=$(date +%Y-%m)
 	fi
 
