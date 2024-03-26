@@ -13,29 +13,34 @@ gunicorn_active-users() { ## : Shows active users in last 10 minutes
 	grep '/history/current_history_json'  | awk '{print $11}' | sort -u | wc -l)"
 }
 
-gunicorn_handler-restart() { ## : Restart all handlers
+gunicorn_handler-restart() { ##	: Restart all handlers
 	handle_help "$@" <<-EOF
-		Checks if service is inactive and restarts otherwise, if at least service 0 or 1 is running
+		Reads all running gunicorn instances in an array and starts first half and once it is back and serves requests, the second half
 	EOF
-	for i in {0..9}; do
-		if systemctl status galaxy-gunicorn@$i | grep inactive >/dev/null
-		then
-			echo "not restarting galaxy-gunicorn@$i, bacause it is inactive"
-		elif systemctl status galaxy-gunicorn@0 | grep "GET /history/current_history_json" >/dev/null || \
-			systemctl status galaxy-gunicorn@1 | grep "GET /history/current_history_json" >/dev/null
-		then
-			systemctl restart galaxy-gunicorn@$i
-			while true
-			do
-				if systemctl status galaxy-gunicorn@$i | grep "GET /history/current_history_json" >/dev/null
-				then
-					break
-				else
-					sleep 10
-				fi
-			done
-		fi
-	done
+	readarray -t gunicorns < <(systemctl list-units	--state=running	| grep galaxy-gunicorn | cut -d	'@'	-f2	| cut -d '.' -f1)
+	gunicorn_len=${#gunicorns[@]}
+	last_unicorn=$((gunicorn_len-1))
+	gunicorn_half=$((gunicorn_len/2))
+	gunicorn_lower=$(printf	",%s" "${gunicorns[@]:0:$gunicorn_half}")
+	gunicorn_upper=$(printf	",%s" "${gunicorns[@]:$gunicorn_half:$last_unicorn}")
+	gunicorn_lower=${gunicorn_lower:1}
+	gunicorn_upper=${gunicorn_upper:1}
+	if systemctl status galaxy-gunicorn@{"$gunicorn_upper"}	| grep "GET /history/current_history_json" >/dev/null
+	then
+		echo "First restarting:	galaxy_gunicorn@{$gunicorn_lower}"
+		systemctl restart galaxy-gunicorn@{"$gunicorn_lower"}
+		while true
+		do
+			if systemctl status galaxy-gunicorn@{"$gunicorn_lower"}	| grep "GET /history/current_history_json" >/dev/null
+			then
+				break
+			else
+				sleep 10
+			fi
+		done
+		echo "Now restarting: galaxy_gunicorn@{$gunicorn_upper}"
+		systemctl restart galaxy-gunicorn@{"$gunicorn_upper"}
+	fi
 
 }
 
