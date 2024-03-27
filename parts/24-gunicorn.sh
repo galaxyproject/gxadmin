@@ -18,23 +18,26 @@ gunicorn_handler-restart() {
 	readarray -t gunicorns < <(systemctl list-units	--state=running	| grep galaxy-gunicorn | cut -d	'@'	-f2	| cut -d '.' -f1)
 
 	# Calculate	batch size
-	# batch_size=$(( (${#gunicorns[@]} + 1)	/ 2	))
-	batch_size=$(( (${#gunicorns[@]} - 1) /	2 +	1))
-
+	batch_size=$(( (${#gunicorns[@]} + 1) /	2 ))
+	if ((${#gunicorns[@]} < 2)); then
+		echo "You have too few Gunicorn handlers to restart in batch mode. Please restart manually."
+		exit 1
+	fi
 	# Construct	service	name ranges	for	each batch
 	batch1=""
 	batch2=""
-	for	((i	= 0; i < ${#gunicorns[@]} -	1; i++)); do
+	for	((i	= 0; i < ${#gunicorns[@]}; i++)); do
 		if ((i < batch_size)); then
 			batch1+="galaxy-gunicorn@${gunicorns[i]}.service "
 		else
 			batch2+="galaxy-gunicorn@${gunicorns[i]}.service "
 		fi
 	done
+	echo "Found handlers: $batch1 and $batch2"
 	# Restart each batch
 	if systemctl status	$batch1	| grep "GET" | grep "200" >/dev/null
 	then
-			echo "First	restarting:	$batch2"
+			echo "First restarting: $batch2"
 			systemctl restart $batch2
 			while true
 			do
