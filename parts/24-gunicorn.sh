@@ -13,30 +13,44 @@ gunicorn_active-users() { ## : Shows active users in last 10 minutes
 	grep '/history/current_history_json'  | awk '{print $11}' | sort -u | wc -l)"
 }
 
-gunicorn_handler-restart() { ## : Restart all handlers
-	handle_help "$@" <<-EOF
-		Checks if service is inactive and restarts otherwise, if at least service 0 or 1 is running
-	EOF
-	for i in {0..9}; do
-		if systemctl status galaxy-gunicorn@$i | grep inactive >/dev/null
-		then
-			echo "not restarting galaxy-gunicorn@$i, bacause it is inactive"
-		elif systemctl status galaxy-gunicorn@0 | grep "GET /history/current_history_json" >/dev/null || \
-			systemctl status galaxy-gunicorn@1 | grep "GET /history/current_history_json" >/dev/null
-		then
-			systemctl restart galaxy-gunicorn@$i
-			while true
-			do
-				if systemctl status galaxy-gunicorn@$i | grep "GET /history/current_history_json" >/dev/null
-				then
-					break
-				else
-					sleep 10
-				fi
-			done
+gunicorn_handler-restart() {
+	# Retrieve running gunicorn	services matching "galaxy-gunicorn"
+	readarray -t gunicorns < <(systemctl list-units	--state=running	| grep galaxy-gunicorn | cut -d	'@'	-f2	| cut -d '.' -f1)
+
+	# Calculate	batch size
+	batch_size=$(( (${#gunicorns[@]} + 1) /	2 ))
+	if ((${#gunicorns[@]} < 2)); then
+		echo "You have too few Gunicorn handlers to restart in batch mode. Please restart manually."
+		exit 1
+	fi
+	# Construct	service	name ranges	for	each batch
+	batch1=""
+	batch2=""
+	for	((i	= 0; i < ${#gunicorns[@]}; i++)); do
+		if ((i < batch_size)); then
+			batch1+="galaxy-gunicorn@${gunicorns[i]}.service "
+		else
+			batch2+="galaxy-gunicorn@${gunicorns[i]}.service "
 		fi
 	done
-
+	echo "Found handlers: $batch1 and $batch2"
+	# Restart each batch
+	if systemctl status	$batch1	| grep "GET" | grep "200" >/dev/null
+	then
+			echo "First restarting: $batch2"
+			systemctl restart $batch2
+			while true
+			do
+					if systemctl status	$batch2	| grep "GET" | grep "200" >/dev/null
+					then
+							break
+					else
+							sleep 10
+					fi
+			done
+			echo "Now restarting: $batch1"
+			systemctl restart $batch1
+	fi
 }
 
 gunicorn_lastlog(){ ## : Fetch the number of seconds since the last log message was written
@@ -62,4 +76,3 @@ gunicorn_lastlog(){ ## : Fetch the number of seconds since the last log message 
 		fi
 	done
 }
-

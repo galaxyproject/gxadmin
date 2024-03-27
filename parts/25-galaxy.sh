@@ -430,7 +430,7 @@ galaxy_fix-conda-env() { ## <conda_dir/envs/>: Fix broken conda environments
 	done
 }
 
-galaxy_fav_tools() { ## : Favourite tools in Galaxy DB
+galaxy_fav-tools() { ## : Favourite tools in Galaxy DB
 	meta <<-EOF
 		ADDED: 15
 	EOF

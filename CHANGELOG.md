@@ -27,6 +27,7 @@
 - Updated:
 	- Add summary and limit options to tool-metrics query, by @natefoo.
 	- Updated the Wonderful Argument Parser with a fancier version, @hexylena
+	- Gunicorn handler-restart uses now a two-batches-approach instead of restarting handlers one-by-one @sanjaysrikakulam @mira-miracoli
 - Fixed:
 	- Wonderful Argument Parser arg values could not contain spaces, @natefoo
 - Removed:
