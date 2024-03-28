@@ -7,7 +7,7 @@ Command | Description
 [`galaxy cleanup-jwd`](#galaxy-cleanup-jwd) | (NEW) Cleanup job working directories
 [`galaxy decode`](#galaxy-decode) | Decode an encoded ID
 [`galaxy encode`](#galaxy-encode) | Encode an ID
-[`galaxy fav_tools`](#galaxy-fav_tools) | Favourite tools in Galaxy DB
+[`galaxy fav-tools`](#galaxy-fav-tools) | Favourite tools in Galaxy DB
 [`galaxy fix-conda-env`](#galaxy-fix-conda-env) | Fix broken conda environments
 [`galaxy ie-list`](#galaxy-ie-list) | List GIEs
 [`galaxy ie-show`](#galaxy-ie-show) | Report on a GIE [HTCondor Only!]
@@ -125,14 +125,14 @@ Encode an unecoded ID
     6fe4eea8c591a9c4
 
 
-## galaxy fav_tools
+## galaxy fav-tools
 
-([*source*](https://github.com/galaxyproject/gxadmin/search?q=galaxy_fav_tools&type=Code))
-galaxy fav_tools -  Favourite tools in Galaxy DB
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=galaxy_fav-tools&type=Code))
+galaxy fav-tools -  Favourite tools in Galaxy DB
 
 **SYNOPSIS**
 
-    gxadmin galaxy fav_tools
+    gxadmin galaxy fav-tools
 
 **NOTES**
 

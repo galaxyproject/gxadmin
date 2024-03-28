@@ -7,6 +7,7 @@ Command | Description
 [`mutate assign-unassigned-workflows`](#mutate-assign-unassigned-workflows) | Randomly assigns unassigned workflows to handlers. Workaround for galaxyproject/galaxy#8209
 [`mutate dataset-mark-purged`](#mutate-dataset-mark-purged) | Purge dataset and mark downstream HDAs as purged as well
 [`mutate delete-group-role`](#mutate-delete-group-role) | Remove the group, role, and any user-group + user-role associations
+[`mutate derive-missing-username-from-email`](#mutate-derive-missing-username-from-email) | Set empty username to email address for users created before 2011
 [`mutate drop-extraneous-workflow-step-output-associations`](#mutate-drop-extraneous-workflow-step-output-associations) | #8418, drop extraneous connection
 [`mutate fail-history`](#mutate-fail-history) | Mark all jobs within a history to state error
 [`mutate fail-job`](#mutate-fail-job) | Sets a job state to error
@@ -23,6 +24,8 @@ Command | Description
 [`mutate reassign-job-to-handler`](#mutate-reassign-job-to-handler) | Reassign a job to a different handler
 [`mutate reassign-workflows-to-handler`](#mutate-reassign-workflows-to-handler) | Reassign workflows in 'new' state to a different handler.
 [`mutate restart-jobs`](#mutate-restart-jobs) | Restart some jobs
+[`mutate scale-table-autovacuum`](#mutate-scale-table-autovacuum) | Update autovacuum and autoanalyze scale for large tables.
+[`mutate set-missing-username-to-random-uuid`](#mutate-set-missing-username-to-random-uuid) | Set empty username to random uuid
 [`mutate set-quota-for-oidc-user`](#mutate-set-quota-for-oidc-user) | Set quota for OIDC users.
 
 ## mutate anonymise-db-for-release
@@ -96,6 +99,26 @@ mutate delete-group-role -  Remove the group, role, and any user-group + user-ro
 **NOTES**
 
 Wipe out a group+role, and user associations.
+
+
+## mutate derive-missing-username-from-email
+
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=mutate_derive-missing-username-from-email&type=Code))
+mutate derive-missing-username-from-email -  Set empty username to email address for users created before 2011
+
+**SYNOPSIS**
+
+    gxadmin mutate derive-missing-username-from-email [--commit]
+
+**NOTES**
+
+Galaxy did not require setting a username for users registered prior to 2011.
+This will set the username to the lowercased substring of the email addres before the first @.
+The username for a user with the email address "Jane.DoE@example.com"
+will be set to "jane.doe" if the the user did not have a username and no other user
+has been registered with that username.
+It is recommended that usernames that could not be changed due to conflicts are fixed
+using mutate set-missing-username-to-random-uuid()
 
 
 ## mutate drop-extraneous-workflow-step-output-associations
@@ -377,6 +400,39 @@ mutate restart-jobs -  Restart some jobs
 **NOTES**
 
 Restart jobs
+
+
+## mutate scale-table-autovacuum
+
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=mutate_scale-table-autovacuum&type=Code))
+mutate scale-table-autovacuum -  Update autovacuum and autoanalyze scale for large tables.
+
+**SYNOPSIS**
+
+    gxadmin mutate scale-table-autovacuum [--shift=16] [--commit]
+
+**NOTES**
+
+Set autovacuum_vacuum_scale_factor and autovacuum_analyze_scale_factor dynamically based on size for
+large tables. See https://www.enterprisedb.com/blog/postgresql-vacuum-and-analyze-best-practice-tips
+
+Table row counts are shifted right by --shift, any shifted value over 1 will have its autovacuum scale
+adjusted to 0.2/log(rows >> [shift]) and autoanalyze scale adjusted to 0.1/log(rows >> [shift]).
+
+
+## mutate set-missing-username-to-random-uuid
+
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=mutate_set-missing-username-to-random-uuid&type=Code))
+mutate set-missing-username-to-random-uuid -  Set empty username to random uuid
+
+**SYNOPSIS**
+
+    gxadmin mutate set-missing-username-to-random-uuid [--commit]
+
+**NOTES**
+
+Galaxy did not require setting a username for users registered prior to 2011.
+This will set the username column to a random uuid.
 
 
 ## mutate set-quota-for-oidc-user

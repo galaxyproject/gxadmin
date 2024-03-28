@@ -3,6 +3,7 @@
 Command | Description
 ------- | -----------
 [`query aq`](#query-aq) | Given a list of IDs from a table (e.g. 'job'), access a specific column from that table
+[`query archivable-histories`](#query-archivable-histories) | query archivable-histories [--user-last-active=360] [--history-last-active=360] [--size]
 [`query collection-usage`](#query-collection-usage) | Information about how many collections of various types are used
 [`query data-origin-distribution`](#query-data-origin-distribution) | data sources (uploaded vs derived)
 [`query data-origin-distribution-summary`](#query-data-origin-distribution-summary) | breakdown of data sources (uploaded vs derived)
@@ -43,14 +44,16 @@ Command | Description
 [`query largest-dataset-users`](#query-largest-dataset-users) | Get largest datasets by users
 [`query largest-histories`](#query-largest-histories) | Largest histories in Galaxy
 [`query latest-users`](#query-latest-users) | 40 recently registered users
-[`query monthly-cpu-stats`](#query-monthly-cpu-stats) | CPU years/hours allocated to tools by month
+[`query monthly-cpu-stats`](#query-monthly-cpu-stats) | CPU years/hours allocated to tools by month (+ nb of users)
 [`query monthly-cpu-years`](#query-monthly-cpu-years) | CPU years allocated to tools by month
 [`query monthly-data`](#query-monthly-data) | Number of active users per month, running jobs
 [`query monthly-gpu-years`](#query-monthly-gpu-years) | GPU years allocated to tools by month
 [`query monthly-job-runtimes`](#query-monthly-job-runtimes) | Summation of total job run times per user per destination over a period of time
 [`query monthly-jobs`](#query-monthly-jobs) | Number of jobs run each month
+[`query monthly-jobs-by-new-multiday-users`](#query-monthly-jobs-by-new-multiday-users) | Number of jobs run by newly registered users that ran jobs more than a day
+[`query monthly-jobs-by-new-users`](#query-monthly-jobs-by-new-users) | Number of jobs run by new users in the given month
 [`query monthly-users-active`](#query-monthly-users-active) | Number of active users per month, running jobs
-[`query monthly-users-registered`](#query-monthly-users-registered) | Number of users registered each month
+[`query monthly-users-registered`](#query-monthly-users-registered) | Number of users registered
 [`query monthly-workflow-invocations`](#query-monthly-workflow-invocations) | Workflow invocations by month
 [`query old-histories`](#query-old-histories) | Lists histories that haven't been updated (used) for <weeks>
 [`query pg-cache-hit`](#query-pg-cache-hit) | Check postgres in-memory cache hit ratio
@@ -88,7 +91,8 @@ Command | Description
 [`query tool-usage`](#query-tool-usage) | Counts of tool runs in the past weeks (default = all)
 [`query tool-usage-over-time`](#query-tool-usage-over-time) | Counts of tool runs by month, filtered by a tool id search
 [`query tool-use-by-group`](#query-tool-use-by-group) | Lists count of tools used by all users in a group
-[`query total-jobs`](#query-total-jobs) | Total number of jobs run by galaxy instance
+[`query tools-usage-per-month`](#query-tools-usage-per-month) | By default, startmonth is 1 year ago and end month is current month. tool1, tool2 etc. should correspond to the tool_id with the same format as requested: toolshed.g2.bx.psu.edu/repos/devteam/bowtie2/bowtie2/2.5.0+galaxy0,Cut1 for default, devteam/bowtie2/bowtie2/2.5.0+galaxy0,Cut1 for --short_tool_id, bowtie2/2.5.0+galaxy0,Cut1 for --super_short_tool_id etc...
+[`query total-jobs`](#query-total-jobs) | Total number of jobs run by Galaxy instance.
 [`query tpt-tool-cpu`](#query-tpt-tool-cpu) | Start year is required. Formula returns sum if blank.
 [`query tpt-tool-memory`](#query-tpt-tool-memory) | Start year is required. Formula returns sum if blank.
 [`query tpt-tool-users`](#query-tpt-tool-users) | Start year is required.
@@ -105,6 +109,7 @@ Command | Description
 [`query user-history-list`](#query-user-history-list) | List a user's (by email/id/username) histories.
 [`query user-recent-aggregate-jobs`](#query-user-recent-aggregate-jobs) | Show aggregate information for jobs in past N days for user (by email/id/username)
 [`query users-count`](#query-users-count) | Shows sums of active/external/deleted/purged accounts
+[`query users-engaged-multiday`](#query-users-engaged-multiday) | Number of users running jobs for more than a day
 [`query users-total`](#query-users-total) | Total number of Galaxy users (incl deleted, purged, inactive)
 [`query users-with-oidc`](#query-users-with-oidc) | How many users logged in with OIDC
 [`query workers`](#query-workers) | Retrieve a list of Galaxy worker processes
@@ -120,6 +125,36 @@ query aq -  Given a list of IDs from a table (e.g. 'job'), access a specific col
 **SYNOPSIS**
 
     gxadmin query aq <table> <column> <-|job_id [job_id [...]]>
+
+
+## query archivable-histories
+
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_archivable-histories&type=Code))
+query archivable-histories - gxadmin query archivable-histories [--user-last-active=360] [--history-last-active=360] [--size]
+
+**SYNOPSIS**
+
+    gxadmin query archivable-histories [--user-last-active=360] [--history-last-active=360] [--size]
+
+**NOTES**
+
+Get a list of archivable histories based on user and history age.
+
+    $ gxadmin query archivable-histories
+    ...
+
+The --size option can be used to show the size of the histories returned, but can significantly slow the
+query.
+
+One useful way to use this function is like so:
+
+    $ gxadmin tsvquery archivable-histories --size | \
+        awk -F'\t' '{print $1; sum+=$NF;} END {print "Total: " sum/1024^3 " GB" > "/dev/stderr";}' | \
+GALAXY_CONFIG_FILE=/gx/config/galaxy.yml xargs /gx/venv/bin/python3 | \
+  /gx/galaxy/scripts/secret_decoder_ring.py encode
+
+This outputs the total size to archive to stderr while encoding all history IDs on stdout for
+consumption by API-based archival tools.
 
 
 ## query collection-usage
@@ -295,7 +330,7 @@ $ gxadmin local query-disk-usage-library --library_name 'My Library' --human
 A --by_folder flag is also available for displaying disk usage for each folder.
 
 a$ gxadmin local query-disk-usage-library --library_name 'My Library' --by_folder
-       folder_name       | folder size 
+       folder_name       | folder size
 -------------------------+-------------
  Contamination Filtering | 10798630750
  Metagenomes             | 12026310232
@@ -667,7 +702,7 @@ Shows all job states for the last 30 days in a table counted by state
 
 Example:
 $ gxadmin query job-state-stats
-    date    |  new  | running | queued | upload |  ok   | error | paused | stopped | deleted 
+    date    |  new  | running | queued | upload |  ok   | error | paused | stopped | deleted
 ------------+-------+---------+--------+--------+-------+-------+--------+---------+---------
 2022-04-26 |   921 |     564 |    799 |      0 |   581 |    21 |      1 |       0 |       2
 2022-04-25 |  1412 |    1230 |   1642 |      0 |  1132 |   122 |     14 |       0 |      15
@@ -699,7 +734,7 @@ tool_id or user. By default up to 50 rows are returned which can be adjusted wit
      14588 | 2022-10-19 10:45:42 | 2022-10-19 10:46:01 |      16 | ok      | toolshed.g2.bx.psu.edu/repos/devteam/bwa/bwa_mem/0.7.17.2                                   | handler_2 | pulsar-nci-test             | 14588
      14584 | 2022-10-19 10:45:12 | 2022-10-19 10:45:31 |      16 | ok      | toolshed.g2.bx.psu.edu/repos/devteam/bwa/bwa_mem/0.7.17.2                                   | handler_2 | pulsar-nci-test             | 14584
      14580 | 2022-10-19 10:44:43 | 2022-10-19 10:45:02 |      16 | ok      | toolshed.g2.bx.psu.edu/repos/devteam/bwa/bwa_mem/0.7.17.2                                   | handler_2 | pulsar-nci-test             | 14580
-    
+
     $ gxadmin query jobs --destination=pulsar-nci-test --tool=bionano
       id   |     create_time     |     update_time     | user_id | state |                                        tool_id                                         |       handler       |         destination         | external_id
     -------+---------------------+---------------------+---------+-------+----------------------------------------------------------------------------------------+---------------------+-----------------------------+-------------
@@ -970,26 +1005,35 @@ Returns 40 most recently registered users
 ## query monthly-cpu-stats
 
 ([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_monthly-cpu-stats&type=Code))
-query monthly-cpu-stats -  CPU years/hours allocated to tools by month
+query monthly-cpu-stats -  CPU years/hours allocated to tools by month (+ nb of users)
 
 **SYNOPSIS**
 
-    gxadmin query monthly-cpu-stats [year]
+    gxadmin query monthly-cpu-stats [--nb-users] [--filter-email=<domain>] [year]
 
 **NOTES**
 
 This uses the galaxy_slots and runtime_seconds metrics in order to
 calculate allocated CPU years/hours. This will not be the value of what is
-actually consumed by your jobs, you should use cgroups.
+actually consumed by your jobs, you should use cgroups. It can also display the number of users that ran jobs. You can also filter for email domain.
 
-    $ gxadmin query monthly-cpu-stats
-       month    | cpu_years | cpu_hours
-    ------------+-----------+-----------
-     2020-05-01 |     53.55 | 469088.02
-     2020-04-01 |     59.55 | 521642.60
-     2020-03-01 |     57.04 | 499658.86
-     2020-02-01 |     53.93 | 472390.31
-     2020-01-01 |     56.49 | 494887.37
+    $ gxadmin query monthly-cpu-stats --nb-users --filter-email epfl.ch 2022
+   month    | cpu_years | cpu_hours | nb_users
+------------+-----------+-----------+----------
+ 2022-12-01 |      0.44 |   3894.59 |        4
+ 2022-11-01 |      0.06 |    558.50 |        6
+ 2022-10-01 |      0.10 |    903.05 |        5
+ 2022-09-01 |      0.14 |   1198.12 |        5
+ 2022-08-01 |      0.19 |   1650.16 |        6
+ 2022-07-01 |      0.13 |   1142.43 |        5
+ 2022-06-01 |      0.01 |     65.51 |        3
+ 2022-05-01 |      0.01 |     50.95 |        2
+ 2022-04-01 |      0.02 |    216.83 |        4
+ 2022-03-01 |      0.09 |    802.63 |        7
+ 2022-02-01 |      0.20 |   1764.14 |        6
+ 2022-01-01 |      0.01 |     71.66 |        8
+(12 rows)
+
      ...
 
 
@@ -1118,7 +1162,7 @@ and hours.
 The destination id can be restricted to the first N letters in the id string by using
 the --sub_dest flag.  This allows grouping on values like "slurm" and "front" instead
 of "slurm_multi", "slurm_normal", "frontera_small", "frontera_large", etc., which
-clutters the output. 
+clutters the output.
 
 A time period can be defined using 3 options:
 
@@ -1127,26 +1171,26 @@ A time period can be defined using 3 options:
 $ gxadmin local query-monthly-job-runtimes --year 2022 --month 05 --sub_dest 5
    month    | total_jobs | destination_id | runtime_secomnds | runtime_minutes | runtime_hours |   user_email
 ------------+------------+----------------+------------------+-----------------+---------------+-----------------
- 2022-05-01 |      20323 | front          |           502031 |         8367.18 |        139.45 | 
- 2022-05-01 |       3013 | slurm          |            99135 |         1652.25 |         27.54 | 
+ 2022-05-01 |      20323 | front          |           502031 |         8367.18 |        139.45 |
+ 2022-05-01 |       3013 | slurm          |            99135 |         1652.25 |         27.54 |
 
 --year XXXX - all months of the specified year
 
 $ gxadmin local query-monthly-job-runtimes --year 2021 --sub_dest 5
    month    | total_jobs | destination_id | runtime_secomnds | runtime_minutes | runtime_hours |   user_email
 ------------+------------+----------------+------------------+-----------------+---------------+-----------------
- 2021-12-01 |        155 | slurm          |            27981 |          466.35 |          7.77 | 
- 2021-12-01 |        417 | slurm          |            47063 |          784.38 |         13.07 | 
- 2021-11-01 |        113 | slurm          |             3032 |           50.53 |          0.84 | 
- 2021-11-01 |          2 | slurm          |              142 |            2.37 |          0.04 | 
+ 2021-12-01 |        155 | slurm          |            27981 |          466.35 |          7.77 |
+ 2021-12-01 |        417 | slurm          |            47063 |          784.38 |         13.07 |
+ 2021-11-01 |        113 | slurm          |             3032 |           50.53 |          0.84 |
+ 2021-11-01 |          2 | slurm          |              142 |            2.37 |          0.04 |
 
 --month XX - the specified month of the current year
 
 $ gxadmin local query-monthly-job-runtimes --month 04 --sub_dest 5
    month    | total_jobs | destination_id | runtime_secomnds | runtime_minutes | runtime_hours |   user_email
 ------------+------------+----------------+------------------+-----------------+---------------+-----------------
- 2022-04-01 |         94 | front          |           333029 |         5550.48 |         92.51 | 
- 2022-04-01 |        146 | slurm          |           278408 |         4640.13 |         77.34 | 
+ 2022-04-01 |         94 | front          |           333029 |         5550.48 |         92.51 |
+ 2022-04-01 |        146 | slurm          |           278408 |         4640.13 |         77.34 |
 
 
 ## query monthly-jobs
@@ -1156,29 +1200,70 @@ query monthly-jobs -  Number of jobs run each month
 
 **SYNOPSIS**
 
-    gxadmin query monthly-jobs [year] [--by_group]
+    gxadmin query monthly-jobs [--year=<YYYY>] [--month=<MM>] [--by_group] [--by_state]
 
 **NOTES**
 
-Count jobs run each month
+Count jobs run each month or specified month
 Parameters:
 --by_group: Will separate out job counts for each month by galaxy user group
-year: Will return number of monthly jobs run from the start of [year] till now
-    $ gxadmin query monthly-jobs 2018
-        month   | count
-    ------------+--------
-     2018-12-01 |  96941
-     2018-11-01 |  94625
-     2018-10-01 | 156940
-     2018-09-01 | 103331
-     2018-08-01 | 128658
-     2018-07-01 |  90852
-     2018-06-01 | 230470
-     2018-05-01 | 182331
-     2018-04-01 | 109032
-     2018-03-01 | 197125
-     2018-02-01 | 260931
-     2018-01-01 |  25378
+--by_state: Will separate out job counts for each month by job state
+--year=<YYYY>: Will return monthly job count for the given year
+--month=<MM>: Will return monthly job count for the given month. If --year is not supplied, will return for each year.
+
+$ gxadmin query monthly-jobs --year=2024
+  month  | count
+---------+--------
+ 2024-02 |  71238
+ 2024-01 | 589359
+
+
+## query monthly-jobs-by-new-multiday-users
+
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_monthly-jobs-by-new-multiday-users&type=Code))
+query monthly-jobs-by-new-multiday-users -  Number of jobs run by newly registered users that ran jobs more than a day
+
+**SYNOPSIS**
+
+    gxadmin query monthly-jobs-by-new-multiday-users [month]
+
+**NOTES**
+
+Number of jobs run by newly registered users that ran jobs more than a day
+Parameters:
+month: Month to count jobs for, provided as YYYY-MM. If month is not provided, defaults to current month.
+
+    $ gxadmin query monthly-jobs-by-new-multiday-users 2024-02
+  month  | num_jobs_by_new_users_engaged_more_than_day
+---------+---------------------------------------------
+ 2024-02 |                                        2771
+
+
+## query monthly-jobs-by-new-users
+
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_monthly-jobs-by-new-users&type=Code))
+query monthly-jobs-by-new-users -  Number of jobs run by new users in the given month
+
+**SYNOPSIS**
+
+    gxadmin query monthly-jobs-by-new-users [month] [--no_state]
+
+**NOTES**
+
+Count jobs run by users that registered in the given month
+month: Month to count jobs for, provided as YYYY-MM. If month is not provided, defaults to current month.
+--no_state: Do not break down jobs by state
+
+    $ gxadmin query jobs-by-new-users 2024-02
+      state   | jobs_by_new_users
+----------+-------------------
+ deleted  |               340
+ deleting |                 2
+ error    |              1092
+ new      |                41
+ ok       |              4688
+ paused   |                87
+ stopped  |                 1
 
 
 ## query monthly-users-active
@@ -1188,62 +1273,54 @@ query monthly-users-active -  Number of active users per month, running jobs
 
 **SYNOPSIS**
 
-    gxadmin query monthly-users-active [year] [--by_group]
+    gxadmin query monthly-users-active [--year=<YYYY>] [--month=<MM>] [--by_group]
 
 **NOTES**
 
 Number of unique users each month who ran jobs. **NOTE**: does not include anonymous users.
 Parameters:
 --by_group: Separate out active users by galaxy user group
-year: Will return monthly active users from the start of [year] till now
+--year=<YYYY>: Will return monthly active user count for the given year
+--month=<MM>: Will return number of active users for the given month. If --year is not supplied, will return for each year.
 
-    $ gxadmin query monthly-users-active 2018
-       month    | active_users
-    ------------+--------------
-     2018-12-01 |          811
-     2018-11-01 |          658
-     2018-10-01 |          583
-     2018-09-01 |          444
-     2018-08-01 |          342
-     2018-07-01 |          379
-     2018-06-01 |          370
-     2018-05-01 |          330
-     2018-04-01 |          274
-     2018-03-01 |          186
-     2018-02-01 |          168
-     2018-01-01 |          122
+    $ gxadmin query monthly-users-active --year=2024
+  		  month  | active_users
+---------+--------------
+ 2024-02 |         1580
+ 2024-01 |         6812
 
 
 ## query monthly-users-registered
 
 ([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_monthly-users-registered&type=Code))
-query monthly-users-registered -  Number of users registered each month
+query monthly-users-registered -  Number of users registered
 
 **SYNOPSIS**
 
-    gxadmin query monthly-users-registered [year] [--by_group]
+    gxadmin query monthly-users-registered [--year=<YYYY>] [--month=<MM>] [--by_group]
 
 **NOTES**
 
 Number of users that registered each month. **NOTE**: Does not include anonymous users or users in no group.
 Parameters:
 --by_group: Will separate out registrations by galaxy user group as well
-year: Will return monthly user registrations from the start of [year] till now
+--year=<YYYY>: Will return monthly user registrations for the given year
+--month=<MM>: Will return number of user registrations for the given month. If --year is not supplied, will return for each year.
 
-$ gxadmin query monthly-users 2020 --by_group
-month    | Group name | count
- ------------+------------+-------
-  2020-08-01 | Group_1    |     1
-  2020-08-01 | Group_2    |     1
-  2020-08-01 | Group_3    |     1
-  2020-08-01 | Group_4    |     3
-  2020-07-01 | Group_1    |     1
-  2020-07-01 | Group_2    |     6
-  2020-07-01 | Group_3    |     2
-  2020-07-01 | Group_4    |     6
-  2020-07-01 | Group_5    |     2
-  2020-07-01 | Group_6    |     1
-  ...
+$ gxadmin query monthly-users-registered --year=2024
+  month  | num_registered_users
+---------+----------------------
+ 2024-03 |                 4109
+ 2024-02 |                 4709
+ 2024-01 |                 3711
+
+$ gxadmin query monthly-users-registered --year=2024 --by_group
+   month  |    group_name    | num_registered_users
+ ---------+------------------+----------------------
+  2024-02 | Group_1          |                    1
+  2024-02 | Group_2          |                   18
+  2024-02 | Group_3          |                    1
+  2024-01 | Group_4          |                    6
 
 
 ## query monthly-workflow-invocations
@@ -2003,11 +2080,11 @@ query tool-use-by-group -  Lists count of tools used by all users in a group
 **NOTES**
 
 Lists tools use count by users in group.
-Requires <year-month> (2022-03) and <group> 
+Requires <year-month> (2022-03) and <group>
 
 Example:
 $ gxadmin query tool-use-by-group 2022-02 NameOfGroup
-tool_id                                             |             username             | count 
+tool_id                                             |             username             | count
 ----------------------------------------------------+----------------------------------+-------
 CONVERTER_gz_to_uncompressed                        | user_1                           |     1
 Convert characters1                                 | user_2                           |     1
@@ -2015,22 +2092,54 @@ Cut1                                                | user_2                    
 Cut1                                                | user_3                           |     1
 
 
-## query total-jobs
+## query tools-usage-per-month
 
-([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_total-jobs&type=Code))
-query total-jobs -  Total number of jobs run by galaxy instance
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_tools-usage-per-month&type=Code))
+query tools-usage-per-month -  toolshed.g2.bx.psu.edu/repos/devteam/bowtie2/bowtie2/2.5.0+galaxy0,Cut1 for default, devteam/bowtie2/bowtie2/2.5.0+galaxy0,Cut1 for --short_tool_id, bowtie2/2.5.0+galaxy0,Cut1 for --super_short_tool_id etc...
 
 **SYNOPSIS**
 
-    gxadmin query total-jobs
+    gxadmin query tools-usage-per-month [--startmonth=<YYYY>-<MM>] [--endmonth=<YYYY>-<MM>] [--tools=<tool1,tool2,...>] [--short_tool_id] [--super_short_tool_id] [--no_version]
 
 **NOTES**
 
-Count total number of jobs
+Tools Usage Tracking: cpu-hours and nb_users by Month-Year.
+
+    $ gxadmin query tools-usage-per-month --super_short_tool_id --no_version --tools bowtie2,Cut1 --startmonth=2023-03 --endmonth 2023-08
+   month    | cpu_hours | tool_id | nb_users
+------------+-----------+---------+----------
+ 2023-08-01 |    326.88 | bowtie2 |        1
+ 2023-08-01 |    469.27 | bowtie2 |        1
+ 2023-07-01 |      0.01 | Cut1    |        2
+ 2023-07-01 |     20.04 | bowtie2 |        1
+ 2023-06-01 |      0.04 | Cut1    |        2
+ 2023-06-01 |    271.16 | bowtie2 |        3
+ 2023-05-01 |    732.74 | bowtie2 |        3
+ 2023-04-01 |      1.55 | Cut1    |        2
+ 2023-04-01 |    426.32 | bowtie2 |        2
+ 2023-03-01 |      0.00 | Cut1    |        1
+ 2023-03-01 |    437.31 | bowtie2 |        1
+ 2023-03-01 |    506.71 | bowtie2 |        2
+(12 rows)
+
+
+## query total-jobs
+
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_total-jobs&type=Code))
+query total-jobs -  Total number of jobs run by Galaxy instance.
+
+**SYNOPSIS**
+
+    gxadmin query total-jobs [date] [--no_state]
+
+**NOTES**
+
+Count total number of jobs. Providing optional date (as YYYY-MM-DD) counts jobs up to that date.
+Adding '--no_state' does not break jobs down by job state.
 
     $ gxadmin query total-jobs
-      state  | count
-    ---------+-------
+      state  | num_jobs
+    ---------+---------
      deleted |    21
      error   |   197
      ok      |   798
@@ -2382,6 +2491,28 @@ query users-count -  Shows sums of active/external/deleted/purged accounts
      t      | f        | t       | f      |     6
      t      | f        | f       | f      |  2350
      f      | f        | t       | t      |    36
+
+
+## query users-engaged-multiday
+
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_users-engaged-multiday&type=Code))
+query users-engaged-multiday -  Number of users running jobs for more than a day
+
+**SYNOPSIS**
+
+    gxadmin query users-engaged-multiday [month] [--new_only]
+
+**NOTES**
+
+Number of unique users in a given month who ran jobs for more than a day.
+Parameters:
+month: Month to count jobs for, provided as YYYY-MM. If month is not provided, defaults to current month.
+--new_only: Only count users who registered in the same month
+
+    $ gxadmin query users-engaged-multiday 2024-02
+  		  month  | users_engaged_more_than_day
+---------+-----------------------------
+ 2024-02 |                         454
 
 
 ## query users-total

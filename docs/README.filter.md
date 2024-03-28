@@ -43,6 +43,7 @@ filter histogram -  Generate a small histogram of the input values. It must be a
 **NOTES**
 
 Generate a histogram of inputs
+
     $ cat out.txt | ./gxadmin filter histogram
     ( -23.000,  -20.615) n=1
     [ -20.615,  -18.231) n=4
