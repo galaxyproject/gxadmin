@@ -5,8 +5,15 @@
 	- mutate scale-table-autovacuum: Dynamically update autovacuum and autoanalyze scale for large tables. @natefoo
 	- query tools-usage-per-month from @lldelisle
 	- mutate derive-missing-username-from-email and mutate set-missing-username-to-random-uuid from @mvdbeek
+	- query monthly-jobs-by-new-multiday-users @afgane
+	- query users-engaged-multiday @afgane
+	- query monthly-jobs-by-new-users @afgane
 - Updated:
 	- query monthly-cpu-stats to add --nb_users --filter_email by @lldelisle
+	- query monthly-users-active to add YYYY-MM parameter @afgane
+	- query monthly-users-registered to add YYYY-MM parameter @afgane
+	- query monthly-jobs to add YYYY-MM and --by_state parameters @afgane
+	- query total-jobs to add date and --total parameters @afgane
 - Fixed:
 	- Replaced hardcoded metric_name with the variable in query_tool-metrics function @sanjaysrikakulam
 	- improved man pages a tad

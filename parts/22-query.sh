@@ -1443,19 +1443,19 @@ query_monthly-cpu-stats() { ##? [--nb-users] [--filter-email=<domain>] [year]: C
 		actually consumed by your jobs, you should use cgroups. It can also display the number of users that ran jobs. You can also filter for email domain.
 
 		    $ gxadmin query monthly-cpu-stats --nb-users --filter-email epfl.ch 2022
-			   month    | cpu_years | cpu_hours | nb_users                                                                                              
-			------------+-----------+-----------+----------                                                                                             
-			 2022-12-01 |      0.44 |   3894.59 |        4                                                                                              
-			 2022-11-01 |      0.06 |    558.50 |        6                                                                                              
-			 2022-10-01 |      0.10 |    903.05 |        5                                                                                              
-			 2022-09-01 |      0.14 |   1198.12 |        5                                                                                              
-			 2022-08-01 |      0.19 |   1650.16 |        6                                                                                              
-			 2022-07-01 |      0.13 |   1142.43 |        5                                                                                              
-			 2022-06-01 |      0.01 |     65.51 |        3                                                                                              
-			 2022-05-01 |      0.01 |     50.95 |        2                                                                                              
-			 2022-04-01 |      0.02 |    216.83 |        4                                                                                              
-			 2022-03-01 |      0.09 |    802.63 |        7                                                                                              
-			 2022-02-01 |      0.20 |   1764.14 |        6                                                                                              
+			   month    | cpu_years | cpu_hours | nb_users
+			------------+-----------+-----------+----------
+			 2022-12-01 |      0.44 |   3894.59 |        4
+			 2022-11-01 |      0.06 |    558.50 |        6
+			 2022-10-01 |      0.10 |    903.05 |        5
+			 2022-09-01 |      0.14 |   1198.12 |        5
+			 2022-08-01 |      0.19 |   1650.16 |        6
+			 2022-07-01 |      0.13 |   1142.43 |        5
+			 2022-06-01 |      0.01 |     65.51 |        3
+			 2022-05-01 |      0.01 |     50.95 |        2
+			 2022-04-01 |      0.02 |    216.83 |        4
+			 2022-03-01 |      0.09 |    802.63 |        7
+			 2022-02-01 |      0.20 |   1764.14 |        6
 			 2022-01-01 |      0.01 |     71.66 |        8
 			(12 rows)
 
@@ -2286,52 +2286,49 @@ query_group-gpu-time() { ##? [group]: Retrieve an approximation of the GPU time 
 	EOF
 }
 
-query_monthly-users-registered(){ ## [year] [--by_group]: Number of users registered each month
+query_monthly-users-registered(){ ##? [--year=<YYYY>] [--month=<MM>] [--by_group]: Number of users registered
 	handle_help "$@" <<-EOF
 		Number of users that registered each month. **NOTE**: Does not include anonymous users or users in no group.
 		Parameters:
 		--by_group: Will separate out registrations by galaxy user group as well
-		year: Will return monthly user registrations from the start of [year] till now
+		--year=<YYYY>: Will return monthly user registrations for the given year
+		--month=<MM>: Will return number of user registrations for the given month. If --year is not supplied, will return for each year.
 
-		$ gxadmin query monthly-users 2020 --by_group
-			month    | Group name | count
-		 ------------+------------+-------
-		  2020-08-01 | Group_1    |     1
-		  2020-08-01 | Group_2    |     1
-		  2020-08-01 | Group_3    |     1
-		  2020-08-01 | Group_4    |     3
-		  2020-07-01 | Group_1    |     1
-		  2020-07-01 | Group_2    |     6
-		  2020-07-01 | Group_3    |     2
-		  2020-07-01 | Group_4    |     6
-		  2020-07-01 | Group_5    |     2
-		  2020-07-01 | Group_6    |     1
-		  ...
+		$ gxadmin query monthly-users-registered --year=2024
+		  month  | num_registered_users
+		---------+----------------------
+		 2024-03 |                 4109
+		 2024-02 |                 4709
+		 2024-01 |                 3711
+
+		$ gxadmin query monthly-users-registered --year=2024 --by_group
+		   month  |    group_name    | num_registered_users
+		 ---------+------------------+----------------------
+		  2024-02 | Group_1          |                    1
+		  2024-02 | Group_2          |                   18
+		  2024-02 | Group_3          |                    1
+		  2024-01 | Group_4          |                    6
 	EOF
 
-	if (( $# > 0 )); then
-		for args in "$@"; do
-			if [[ "$args" = "--by_group" ]]; then
-				where_g="galaxy_user.id = user_group_association.user_id and galaxy_group.id = user_group_association.group_id"
-				select="galaxy_group.name,"
-				from="galaxy_group, user_group_association,"
-				group=", galaxy_group.name"
-			else
-				where_y="date_trunc('year', galaxy_user.create_time AT TIME ZONE 'UTC') = '$args-01-01'::date"
-			fi
-		done
-		if (( $# > 1 )); then
-			where="WHERE $where_y and $where_g"
-		else
-			where="WHERE $where_y $where_g"
-		fi
+	where="WHERE true"
+	if [[ -n "$arg_year" ]] ; then
+		where="$where AND date_trunc('year', galaxy_user.create_time AT TIME ZONE 'UTC') = '$arg_year-01-01'::date"
+	fi;
+	if [[ -n "$arg_month" ]]; then
+		where="$where AND DATE_TRUNC('month', galaxy_user.create_time) = DATE_TRUNC('month', CAST(CONCAT(EXTRACT(YEAR FROM galaxy_user.create_time), '-$arg_month-01') AS DATE))"
+	fi;
+	if [[ -n "$arg_by_group" ]]; then
+		where="$where AND galaxy_user.id = user_group_association.user_id AND galaxy_group.id = user_group_association.group_id"
+		select="galaxy_group.name AS group_name,"
+		from="galaxy_group, user_group_association,"
+		group=", galaxy_group.name"
 	fi
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			date_trunc('month', galaxy_user.create_time)::DATE AS month,
+			TO_CHAR(date_trunc('month', galaxy_user.create_time AT TIME ZONE 'UTC')::DATE, 'YYYY-MM') AS month,
 			$select
-			count(*)
+			count(*) AS num_registered_users
 		FROM
 			$from
 			galaxy_user
@@ -2344,7 +2341,7 @@ query_monthly-users-registered(){ ## [year] [--by_group]: Number of users regist
 	EOF
 }
 
-query_monthly-users-active(){ ## [year] [--by_group]: Number of active users per month, running jobs
+query_monthly-users-active(){ ##? [--year=<YYYY>] [--month=<MM>] [--by_group]: Number of active users per month, running jobs
 	meta <<-EOF
 		ADDED: 12
 	EOF
@@ -2352,51 +2349,38 @@ query_monthly-users-active(){ ## [year] [--by_group]: Number of active users per
 		Number of unique users each month who ran jobs. **NOTE**: does not include anonymous users.
 		Parameters:
 		--by_group: Separate out active users by galaxy user group
-		year: Will return monthly active users from the start of [year] till now
+		--year=<YYYY>: Will return monthly active user count for the given year
+		--month=<MM>: Will return number of active users for the given month. If --year is not supplied, will return for each year.
 
-		    $ gxadmin query monthly-users-active 2018
-		       month    | active_users
-		    ------------+--------------
-		     2018-12-01 |          811
-		     2018-11-01 |          658
-		     2018-10-01 |          583
-		     2018-09-01 |          444
-		     2018-08-01 |          342
-		     2018-07-01 |          379
-		     2018-06-01 |          370
-		     2018-05-01 |          330
-		     2018-04-01 |          274
-		     2018-03-01 |          186
-		     2018-02-01 |          168
-		     2018-01-01 |          122
+		    $ gxadmin query monthly-users-active --year=2024
+	  		  month  | active_users
+			---------+--------------
+			 2024-02 |         1580
+			 2024-01 |         6812
 	EOF
 
-	if (( $# > 0 )); then
-		for args in "$@"; do
-			if [[ "$args" = "--by_group" ]]; then
-				where_g="job.user_id = user_group_association.user_id and user_group_association.group_id = galaxy_group.id"
-				select="galaxy_group.name,"
-				from=", user_group_association, galaxy_group"
-				group=", galaxy_group.name"
-			else
-				where_y="date_trunc('year', job.create_time AT TIME ZONE 'UTC') = '$args-01-01'::date"
-			fi
-		done
-		if (( $# > 1 )); then
-			where="WHERE $where_y and $where_g"
-		else
-			where="WHERE $where_y $where_g"
-		fi
+	where="WHERE true"
+	if [[ -n "$arg_year" ]] ; then
+		where="$where AND date_trunc('year', job.create_time AT TIME ZONE 'UTC') = '$arg_year-01-01'::date"
+	fi;
+	if [[ -n "$arg_month" ]]; then
+		where="$where AND DATE_TRUNC('month', job.create_time) = DATE_TRUNC('month', CAST(CONCAT(EXTRACT(YEAR FROM job.create_time), '-$arg_month-01') AS DATE))"
+	fi;
+	if [[ -n "$arg_by_group" ]]; then
+		where="$where AND job.user_id = user_group_association.user_id AND galaxy_group.id = user_group_association.group_id"
+		select="galaxy_group.name AS group_name,"
+		from="galaxy_group, user_group_association,"
+		group=", galaxy_group.name"
 	fi
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			date_trunc('month', job.create_time AT TIME ZONE 'UTC')::date as month,
+			TO_CHAR(date_trunc('month', job.create_time AT TIME ZONE 'UTC')::date, 'YYYY-MM') AS month,
 			$select
 			count(distinct job.user_id) as active_users
 		FROM
-			job
 			$from
+			job
 		$where
 		GROUP BY
 			month
@@ -2406,93 +2390,292 @@ query_monthly-users-active(){ ## [year] [--by_group]: Number of active users per
 	EOF
 }
 
-query_monthly-jobs(){ ## [year] [--by_group]: Number of jobs run each month
+query_users-engaged-multiday() { ##? [month] [--new_only]: Number of users running jobs for more than a day
+	meta <<-EOF
+		ADDED: 22
+	EOF
 	handle_help "$@" <<-EOF
-		Count jobs run each month
+		Number of unique users in a given month who ran jobs for more than a day.
 		Parameters:
-		--by_group: Will separate out job counts for each month by galaxy user group
-		year: Will return number of monthly jobs run from the start of [year] till now
-		    $ gxadmin query monthly-jobs 2018
-		        month   | count
-		    ------------+--------
-		     2018-12-01 |  96941
-		     2018-11-01 |  94625
-		     2018-10-01 | 156940
-		     2018-09-01 | 103331
-		     2018-08-01 | 128658
-		     2018-07-01 |  90852
-		     2018-06-01 | 230470
-		     2018-05-01 | 182331
-		     2018-04-01 | 109032
-		     2018-03-01 | 197125
-		     2018-02-01 | 260931
-		     2018-01-01 |  25378
+		month: Month to count jobs for, provided as YYYY-MM. If month is not provided, defaults to current month.
+		--new_only: Only count users who registered in the same month
+
+		    $ gxadmin query users-engaged-multiday 2024-02
+	  		  month  | users_engaged_more_than_day
+			---------+-----------------------------
+			 2024-02 |                         454
 	EOF
 
-	if (( $# > 0 )); then
-		for args in "$@"; do
-			if [[ "$args" = "--by_group" ]]; then
-				where_g="job.user_id = user_group_association.user_id and galaxy_group.id = user_group_association.group_id"
-				select="galaxy_group.name,"
-				from="galaxy_group, user_group_association,"
-				group=", galaxy_group.name"
-			else
-				where_y="date_trunc('year', job.create_time AT TIME ZONE 'UTC') = '$args-01-01'::date"
-			fi
-		done
-		if (( $# > 1 )); then
-			where="WHERE $where_y and $where_g"
-		else
-			where="WHERE $where_y $where_g"
-		fi
+	if [ $# -eq 0 ] || [ -z "$arg_month" ]; then
+		arg_month=$(date +%Y-%m)
+	fi
+
+	job_table="job"
+	if [[ -n $arg_new_only ]]; then
+		new_users_jobs="
+			WITH new_users_jobs AS (
+				SELECT
+					j.create_time,
+					j.user_id
+				FROM
+					job j
+				JOIN
+					galaxy_user u ON j.user_id = u.id
+				WHERE
+					DATE_TRUNC('month', j.create_time) = DATE_TRUNC('month', CAST('$arg_month-01' AS DATE))
+					AND DATE_TRUNC('month', u.create_time) = DATE_TRUNC('month', CAST('$arg_month-01' AS DATE))
+			)"
+		job_table="new_users_jobs"
+	fi
+
+	read -r -d '' QUERY <<-EOF
+		$new_users_jobs
+
+		SELECT
+			TO_CHAR(CAST('$arg_month-01' AS DATE), 'YYYY-MM') AS month,
+			count(DISTINCT user_id) AS users_engaged_more_than_day
+		FROM
+			(
+				SELECT
+					user_id,
+					count(DISTINCT date_group) AS date_group_count
+				FROM
+					(
+						SELECT
+							user_id,
+							to_char(create_time, 'YYYY-MM-DD') AS date_group
+						FROM
+							$job_table
+						WHERE
+							DATE_TRUNC('month', create_time) = DATE_TRUNC('month', CAST('$arg_month-01' AS DATE))
+						GROUP BY
+							user_id,
+							date_group
+						HAVING
+							COUNT(user_id) > 1
+					) AS user_date_groups
+				GROUP BY
+					user_id
+				HAVING
+					count(*) > 1
+			) AS users_that_ran_jobs_more_than_1_day
+	EOF
+}
+
+query_monthly-jobs(){ ##? [--year=<YYYY>] [--month=<MM>] [--by_group] [--by_state]: Number of jobs run each month
+	handle_help "$@" <<-EOF
+		Count jobs run each month or specified month
+		Parameters:
+		--by_group: Will separate out job counts for each month by galaxy user group
+		--by_state: Will separate out job counts for each month by job state
+		--year=<YYYY>: Will return monthly job count for the given year
+		--month=<MM>: Will return monthly job count for the given month. If --year is not supplied, will return for each year.
+
+		$ gxadmin query monthly-jobs --year=2024
+		  month  | count
+		---------+--------
+		 2024-02 |  71238
+		 2024-01 | 589359
+	EOF
+
+	state=""
+	group_by=""
+
+	where="WHERE true"
+	if [[ -n "$arg_year" ]] ; then
+		where="$where AND date_trunc('year', job.create_time AT TIME ZONE 'UTC') = '$arg_year-01-01'::date"
+	fi;
+	if [[ -n "$arg_month" ]]; then
+		where="$where AND DATE_TRUNC('month', job.create_time) = DATE_TRUNC('month', CAST(CONCAT(EXTRACT(YEAR FROM job.create_time), '-$arg_month-01') AS DATE))"
+	fi;
+	if [[ -n "$arg_by_group" ]]; then
+		where="$where AND job.user_id = user_group_association.user_id AND galaxy_group.id = user_group_association.group_id"
+		select="galaxy_group.name AS group_name,"
+		from="galaxy_group, user_group_association,"
+		group=", galaxy_group.name"
+	fi
+	if [[ -n "$arg_by_state" ]]; then
+		state=", state"
+		group_by=", state"
 	fi
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			date_trunc('month', job.create_time AT TIME ZONE 'UTC')::DATE AS month,
+			TO_CHAR(date_trunc('month', job.create_time AT TIME ZONE 'UTC')::DATE, 'YYYY-MM') AS month,
 			$select
 			count(*)
+			$state
 		FROM
 			$from
 			job
 		$where
 		GROUP BY
 			month
+			$state
 			$group
 		ORDER BY
 			month DESC
 	EOF
 }
 
-query_total-jobs(){ ## : Total number of jobs run by galaxy instance
+query_monthly-jobs-by-new-users() { ##? [month] [--no_state]: Number of jobs run by new users in the given month
+	meta <<-EOF
+		ADDED: 22
+	EOF
+	handle_help "$@" <<-EOF
+		Count jobs run by users that registered in the given month
+		month: Month to count jobs for, provided as YYYY-MM. If month is not provided, defaults to current month.
+		--no_state: Do not break down jobs by state
+
+		    $ gxadmin query jobs-by-new-users 2024-02
+		      state   | jobs_by_new_users
+			----------+-------------------
+			 deleted  |               340
+			 deleting |                 2
+			 error    |              1092
+			 new      |                41
+			 ok       |              4688
+			 paused   |                87
+			 stopped  |                 1
+	EOF
+
+	state="state,"
+	group_by_order_by="GROUP BY month, state ORDER BY month, state"
+
+	if [[ -z "$arg_month" ]]; then
+		arg_month=$(date +%Y-%m)
+	fi
+
+	if [[ -n $arg_no_state ]]; then
+		state=""
+		group_by_order_by="GROUP BY month ORDER BY month"
+	fi
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			TO_CHAR(date_trunc('month', j.create_time AT TIME ZONE 'UTC')::DATE, 'YYYY-MM') AS month,
+			$state
+			COUNT(j.id) AS jobs_by_new_users
+		FROM
+			job j
+		JOIN
+			galaxy_user u ON j.user_id = u.id
+		WHERE
+			DATE_TRUNC('month', j.create_time) = DATE_TRUNC('month', CAST('$arg_month-01' AS DATE))
+			AND DATE_TRUNC('month', u.create_time) = DATE_TRUNC('month', CAST('$arg_month-01' AS DATE))
+		$group_by_order_by
+	EOF
+}
+
+query_monthly-jobs-by-new-multiday-users() { ##? [month]: Number of jobs run by newly registered users that ran jobs more than a day
+	meta <<-EOF
+		ADDED: 22
+	EOF
+	handle_help "$@" <<-EOF
+		Number of jobs run by newly registered users that ran jobs more than a day
+		Parameters:
+		month: Month to count jobs for, provided as YYYY-MM. If month is not provided, defaults to current month.
+
+		    $ gxadmin query monthly-jobs-by-new-multiday-users 2024-02
+			  month  | num_jobs_by_new_users_engaged_more_than_day
+			---------+---------------------------------------------
+			 2024-02 |                                        2771
+	EOF
+
+	if [[ -z "$arg_month" ]]; then
+		arg_month=$(date +%Y-%m)
+	fi
+
+	read -r -d '' QUERY <<-EOF
+		WITH new_users_jobs AS (
+			SELECT
+				j.id AS job_id,
+				j.create_time,
+				j.user_id
+			FROM
+				job j
+			JOIN
+				galaxy_user u ON j.user_id = u.id
+			WHERE
+				DATE_TRUNC('month', j.create_time) = DATE_TRUNC('month', CAST('$arg_month-01' AS DATE))
+				AND DATE_TRUNC('month', u.create_time) = DATE_TRUNC('month', CAST('$arg_month-01' AS DATE))
+		), new_users_engaged_more_than_day AS (
+			SELECT
+				user_id
+			FROM
+				(
+					SELECT
+						user_id,
+						count(DISTINCT date_group) AS date_group_count
+					FROM
+						(
+							SELECT
+								user_id,
+								to_char(create_time, 'YYYY-MM-DD') AS date_group
+							FROM
+								new_users_jobs
+							WHERE
+								DATE_TRUNC('month', create_time) = DATE_TRUNC('month', CAST('$arg_month-01' AS DATE))
+							GROUP BY
+								user_id,
+								date_group
+							HAVING
+								COUNT(user_id) > 1
+						) AS user_date_groups
+					GROUP BY
+						user_id
+					HAVING
+						count(*) > 1
+				) AS users_that_ran_jobs_more_than_1_day
+			)
+		SELECT
+			TO_CHAR(CAST('$arg_month-01' AS DATE), 'YYYY-MM') AS month,
+			COUNT(DISTINCT(j1.job_id)) as num_jobs_by_new_users_engaged_more_than_day
+		FROM
+			new_users_jobs j1
+		JOIN new_users_engaged_more_than_day AS j2 ON j1.user_id = j2.user_id
+	EOF
+}
+
+query_total-jobs(){ ##? [date] [--no_state]: Total number of jobs run by Galaxy instance.
 	meta <<-EOF
 		ADDED: 17
 	EOF
 	handle_help "$@" <<-EOF
-		Count total number of jobs
+		Count total number of jobs. Providing optional date (as YYYY-MM-DD) counts jobs up to that date.
+		Adding '--no_state' does not break jobs down by job state.
 
 		    $ gxadmin query total-jobs
-		      state  | count
-		    ---------+-------
+		      state  | num_jobs
+		    ---------+---------
 		     deleted |    21
 		     error   |   197
 		     ok      |   798
 		    (3 rows)
 	EOF
 
+	state="state,"
+	group_by_order_by="GROUP BY state ORDER BY state"
+	if [[ -n $arg_no_state ]]; then
+		state=""
+		group_by_order_by=""
+	fi
+
+	if [[ -n $arg_date ]]; then
+		where="WHERE create_time < '$arg_date'"
+	fi
+
 	fields="count=1"
 	tags="state=0"
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			state, count(*)
+			$state
+			count(*) AS num_jobs
 		FROM
 			job
-
-		GROUP BY
-			state
-		ORDER BY
-			state
+		$where
+		$group_by_order_by
 	EOF
 
 }
@@ -4521,7 +4704,7 @@ query_jobs() { ##? [--tool=] [--destination=] [--limit=50] [--states=<comma,sep,
 		     14588 | 2022-10-19 10:45:42 | 2022-10-19 10:46:01 |      16 | ok      | toolshed.g2.bx.psu.edu/repos/devteam/bwa/bwa_mem/0.7.17.2                                   | handler_2 | pulsar-nci-test             | 14588
 		     14584 | 2022-10-19 10:45:12 | 2022-10-19 10:45:31 |      16 | ok      | toolshed.g2.bx.psu.edu/repos/devteam/bwa/bwa_mem/0.7.17.2                                   | handler_2 | pulsar-nci-test             | 14584
 		     14580 | 2022-10-19 10:44:43 | 2022-10-19 10:45:02 |      16 | ok      | toolshed.g2.bx.psu.edu/repos/devteam/bwa/bwa_mem/0.7.17.2                                   | handler_2 | pulsar-nci-test             | 14580
-		
+
 		    $ gxadmin query jobs --destination=pulsar-nci-test --tool=bionano
 		      id   |     create_time     |     update_time     | user_id | state |                                        tool_id                                         |       handler       |         destination         | external_id
 		    -------+---------------------+---------------------+---------+-------+----------------------------------------------------------------------------------------+---------------------+-----------------------------+-------------
@@ -4765,7 +4948,7 @@ query_tpt-tool-cpu() { ##? [--startyear=<YYYY>] [--endyear=<YYYY>] [--formula=av
 		     __SET_METADATA__          | 2019-02-01 |   82791 | normal
 		    (8 rows)
 	EOF
-	
+
 	filter_by_time_period=""
 	if [[ -n $arg_startyear ]]; then
 		filter_by_time_period="date_trunc('year', job.create_time AT TIME ZONE 'UTC') >= '$arg_startyear-01-01'::date"
@@ -4832,7 +5015,7 @@ query_tpt-tool-users() { ##? [--startyear=<YYYY>] [--endyear=<YYYY>]: Start year
 		     __SET_METADATA__          | 2019-02-01 |     1
 		    (8 rows)
 	EOF
-	
+
 	filter_by_time_period=""
 	if [[ -n $arg_startyear ]]; then
 		filter_by_time_period="date_trunc('year', job.create_time AT TIME ZONE 'UTC') >= '$arg_startyear-01-01'::date"
@@ -4882,7 +5065,7 @@ query_tpt-tool-memory() { ##? [--startyear=<YYYY>] [--endyear=<YYYY>] [--formula
 		     __SET_METADATA__          | 2019-02-01 |               1623
 		    (8 rows)
 	EOF
-	
+
 	filter_by_time_period=""
 	if [[ -n $arg_startyear ]]; then
 		filter_by_time_period="date_trunc('year', job.create_time AT TIME ZONE 'UTC') >= '$arg_startyear-01-01'::date"
@@ -4935,7 +5118,7 @@ query_tools-usage-per-month() { ##? [--startmonth=<YYYY>-<MM>] [--endmonth=<YYYY
 		Tools Usage Tracking: cpu-hours and nb_users by Month-Year.
 
 		    $ gxadmin query tools-usage-per-month --super_short_tool_id --no_version --tools bowtie2,Cut1 --startmonth=2023-03 --endmonth 2023-08
-			   month    | cpu_hours | tool_id | nb_users 
+			   month    | cpu_hours | tool_id | nb_users
 			------------+-----------+---------+----------
 			 2023-08-01 |    326.88 | bowtie2 |        1
 			 2023-08-01 |    469.27 | bowtie2 |        1
@@ -4951,7 +5134,7 @@ query_tools-usage-per-month() { ##? [--startmonth=<YYYY>-<MM>] [--endmonth=<YYYY
 			 2023-03-01 |    506.71 | bowtie2 |        2
 			(12 rows)
 	EOF
-	
+
 	filter_by_time_period=""
 	if [[ -n $arg_startmonth ]]; then
 		filter_by_time_period="date_trunc('month', job.create_time AT TIME ZONE 'UTC') >= '$arg_startmonth-01'::date"
