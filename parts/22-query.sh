@@ -1140,7 +1140,7 @@ query_tool-last-used-date() { ## : When was the most recent invocation of every 
 	EOF
 }
 
-query_tool-use-by-group() { ##? <years_month> [--group=<name>]: Lists count of tools used by all users in a group
+query_tool-use-by-group() { ##? <year_month> [--group=<name>]: Lists count of tools used by all users in a group
 	meta <<-EOF
 		ADDED: 19
 	EOF
