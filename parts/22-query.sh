@@ -1143,6 +1143,8 @@ query_tool-last-used-date() { ## : When was the most recent invocation of every 
 query_tool-use-by-group() { ##? <year_month> [--group=<name>]: Lists count of tools used by all users in a group
 	meta <<-EOF
 		ADDED: 19
+		UPDATED: 22
+		AUTHORS: gavindi
 	EOF
 	handle_help "$@" <<-EOFhelp
 		Lists tools use count by users in group.
