@@ -1174,8 +1174,8 @@ EOFhelp
 			user_group_association.user_id = galaxy_user.id
 		AND
 			date_trunc('month', job.create_time) = '$arg_year_month-01'
-   		AND
-     			galaxy_group.name = '$arg_group'
+		AND
+			galaxy_group.name = '$arg_group'
 		GROUP BY
 			job.tool_id, galaxy_user.username
 EOF
