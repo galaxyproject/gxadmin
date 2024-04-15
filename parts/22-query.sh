@@ -5327,8 +5327,8 @@ query_archivable-histories() { ##? [--user-last-active=360] [--history-last-acti
 			AND NOT history.purged
 			AND NOT history_dataset_association.deleted
 			AND NOT history_dataset_association.purged
-			AND history.update_time < now() - interval '$arg_history_last_active minutes'
-			AND galaxy_user.update_time < now() - interval '$arg_user_last_active minutes'
+			AND history.update_time < now() - interval '$arg_history_last_active days'
+			AND galaxy_user.update_time < now() - interval '$arg_user_last_active days'
 			$extra_conds
 		GROUP BY
 			history.id, galaxy_user.id
