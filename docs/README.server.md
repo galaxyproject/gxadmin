@@ -6,10 +6,10 @@ Command | Description
 [`server allocated-gpu`](#server-allocated-gpu) | GPU time per job runner
 [`server datasets`](#server-datasets) | Counts of datasets
 [`server disk-usage`](#server-disk-usage) | Retrieve an approximation of the global disk usage
-[`server groups`](#server-groups) | Counts of group memberships
 [`server groups-allocated-cpu`](#server-groups-allocated-cpu) | Retrieve an approximation of the CPU allocation for groups
 [`server groups-allocated-gpu`](#server-groups-allocated-gpu) | Retrieve an approximation of the GPU allocation for groups
 [`server groups-disk-usage`](#server-groups-disk-usage) | Retrieve an approximation of the disk usage for groups
+[`server groups`](#server-groups) | Counts of group memberships
 [`server hda`](#server-hda) | Counts of HDAs
 [`server histories`](#server-histories) | Counts of histories and sharing
 [`server jobs`](#server-jobs) | Counts of jobs
@@ -17,6 +17,7 @@ Command | Description
 [`server users`](#server-users) | Count of different classifications of users
 [`server users-with-oidc`](#server-users-with-oidc) | How many users logged in with OIDC
 [`server workflow-invocations`](#server-workflow-invocations) | Counts of workflow invocations
+[`server workflows`](#server-workflows) | Counts of workflows
 [`server workflow-trace-archive-jobs`](#server-workflow-trace-archive-jobs) | [Workflow Trace Archive] Export jobs
 [`server workflow-trace-archive-metrics`](#server-workflow-trace-archive-metrics) | [Workflow Trace Archive] Export numeric metrics
 [`server workflow-trace-archive-workflow-connections`](#server-workflow-trace-archive-workflow-connections) | [Workflow Trace Archive] Export workflow connections
@@ -25,7 +26,6 @@ Command | Description
 [`server workflow-trace-archive-workflow-step-input`](#server-workflow-trace-archive-workflow-step-input) | [Workflow Trace Archive] Export workflow step-input
 [`server workflow-trace-archive-workflow-steps`](#server-workflow-trace-archive-workflow-steps) | [Workflow Trace Archive] Export workflow steps
 [`server workflow-trace-archive-workflows`](#server-workflow-trace-archive-workflows) | [Workflow Trace Archive] Export workflows
-[`server workflows`](#server-workflows) | Counts of workflows
 
 ## server allocated-cpu
 
@@ -72,16 +72,6 @@ ADDED: 21
 AUTHORS: abretaud
 
 
-## server groups
-
-([*source*](https://github.com/galaxyproject/gxadmin/search?q=server_groups&type=Code))
-server groups -  Counts of group memberships
-
-**SYNOPSIS**
-
-    gxadmin server groups [--op=<...>] [--date=<yyyy-mm-dd>]
-
-
 ## server groups-allocated-cpu
 
 ([*source*](https://github.com/galaxyproject/gxadmin/search?q=server_groups-allocated-cpu&type=Code))
@@ -110,6 +100,16 @@ server groups-disk-usage -  Retrieve an approximation of the disk usage for grou
 **SYNOPSIS**
 
     gxadmin server groups-disk-usage [--op=<...>] [--date=<yyyy-mm-dd>]
+
+
+## server groups
+
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=server_groups&type=Code))
+server groups -  Counts of group memberships
+
+**SYNOPSIS**
+
+    gxadmin server groups [--op=<...>] [--date=<yyyy-mm-dd>]
 
 
 ## server hda
@@ -180,6 +180,16 @@ server workflow-invocations -  Counts of workflow invocations
 **SYNOPSIS**
 
     gxadmin server workflow-invocations [--op=<...>] [--date=<yyyy-mm-dd>]
+
+
+## server workflows
+
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=server_workflows&type=Code))
+server workflows -  Counts of workflows
+
+**SYNOPSIS**
+
+    gxadmin server workflows [--op=<...>] [--date=<yyyy-mm-dd>]
 
 
 ## server workflow-trace-archive-jobs
@@ -292,14 +302,4 @@ server workflow-trace-archive-workflows -  [Workflow Trace Archive] Export workf
 **NOTES**
 
 Helper for WTA
-
-
-## server workflows
-
-([*source*](https://github.com/galaxyproject/gxadmin/search?q=server_workflows&type=Code))
-server workflows -  Counts of workflows
-
-**SYNOPSIS**
-
-    gxadmin server workflows [--op=<...>] [--date=<yyyy-mm-dd>]
 

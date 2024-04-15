@@ -359,6 +359,77 @@ query_queue-time() { ##? <tool_id>: The average/95%/99% a specific tool spends i
 	EOF
 }
 
+query_destination-queue-run-time() { ## The average/median/95%/99% tool spends in queue/run state grouped by tool_id and destination_id.
+	handle_help "$@" <<-EOF
+		    $ gxadmin query destination-queue-run-time
+			destination_id |     tool_id     | count |       avg       |       min       |  median_queue   |  perc_95_queue  |  perc_99_queue  |       max       |       avg       |       min    
+			|   median_run    |   perc_95_run   |   perc_99_run   |       max       
+			----------------+-----------------+-------+-----------------+-----------------+-----------------+-----------------+-----------------+-----------------+-----------------+--------------
+			---+-----------------+-----------------+-----------------+-----------------
+			condor_tpv     | Show beginning1 |     4 | 00:00:42.190985 | 00:00:41.921395 | 00:00:42.197197 | 00:00:42.419296 | 00:00:42.44238  | 00:00:42.448151 | 00:00:15.742914 | 00:00:12.2020
+			32 | 00:00:14.23126  | 00:00:21.398603 | 00:00:22.125406 | 00:00:22.307107
+			pulsar_be_tpv  | Show beginning1        |    30 | 00:00:03.752367 | 00:00:00.828691 | 00:00:01.227039 | 00:00:15.833112 | 00:00:19.567223 | 00:00:20.822238 | 00:00:12.835613 | 00:00:07.3436
+			93 | 00:00:08.121174 | 00:00:39.547216 | 00:00:47.76481  | 00:00:48.391205
+							| __DATA_FETCH__  |     5 | 00:00:01.0595   | 00:00:00.557755 | 00:00:00.974273 | 00:00:01.63247  | 00:00:01.722836 | 00:00:01.745428 | 00:00:17.421127 | 00:00:00.4875
+			62 | 00:00:10.301916 | 00:00:37.743373 | 00:00:39.621173 | 00:00:40.090623
+	EOF
+
+	read -r -d '' QUERY <<-EOF
+		WITH temp_queue_run_times AS
+		(select
+			j.destination_id,
+			j.tool_id,
+			j.id,
+			min(a.create_time) - min(b.create_time) as queue_time,
+			min(c.create_time) - min(a.create_time) as run_time
+		from
+			job j
+		join
+			job_state_history as a
+		on
+			(j.id = a.job_id)
+		inner join
+			job_state_history as b
+		on
+			(a.job_id = b.job_id)
+		left join
+			job_state_history as c
+		on
+		(a.job_id = c.job_id)
+		where
+			j.create_time > (now() AT TIME ZONE 'UTC' - '3 months'::interval)
+			and a.state = 'running'
+			and b.state = 'queued'
+			and c.state = 'ok'
+		group by
+				j.id
+		order by
+			queue_time desc
+		)
+		select
+			destination_id,
+			tool_id,
+			count(id),
+			avg(queue_time),
+			min(queue_time),
+			percentile_cont(0.50) WITHIN GROUP (ORDER BY queue_time) as median_queue,
+			percentile_cont(0.95) WITHIN GROUP (ORDER BY queue_time) as perc_95_queue,
+			percentile_cont(0.99) WITHIN GROUP (ORDER BY queue_time) as perc_99_queue,
+			max(queue_time),
+			avg(run_time),
+			min(run_time),
+			percentile_cont(0.50) WITHIN GROUP (ORDER BY run_time) as median_run,
+			percentile_cont(0.95) WITHIN GROUP (ORDER BY run_time) as perc_95_run,
+			percentile_cont(0.99) WITHIN GROUP (ORDER BY run_time) as perc_99_run,
+			max(run_time)
+		from 
+			temp_queue_run_times
+		group by
+			destination_id,
+			tool_id
+	EOF
+}
+
 query_queue() { ## [--by (tool|destination|user)]: Brief overview of currently running jobs grouped by tool (default) or other columns
 	handle_help "$@" <<-EOF
 		    $ gxadmin query queue
