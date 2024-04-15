@@ -359,11 +359,12 @@ query_queue-time() { ##? <tool_id>: The average/95%/99% a specific tool spends i
 	EOF
 }
 
-query_destination-queue-run-time() { ##? The average/median/95%/99% tool spends in queue/run state grouped by tool_id and destination_id.
+query_destination-queue-run-time() { ## The average/median/95%/99% tool spends in queue/run state grouped by tool_id and destination_id.
 	meta <<-EOF
-			AUTHORS: pauldg
-			ADDED: 22
+		AUTHORS: pauldg
+		ADDED: 22
 	EOF
+
 	handle_help "$@" <<-EOF
 		    $ gxadmin query destination-queue-run-time
 			destination_id |     tool_id     | count |       avg       |       min       |  median_queue   |  perc_95_queue  |  perc_99_queue  |       max       |       avg       |       min    
@@ -379,49 +380,59 @@ query_destination-queue-run-time() { ##? The average/median/95%/99% tool spends 
 	EOF
 
 	read -r -d '' QUERY <<-EOF
-	WITH
-		temp_queue_run_times
-			AS (
-				SELECT
-					j.destination_id,
-					j.tool_id,
-					j.id,
-					min(a.create_time) - min(b.create_time)
-						AS queue_time,
-					min(c.create_time) - min(a.create_time)
-						AS run_time
-				FROM
-					job AS j
-					JOIN job_state_history AS a ON
-							(j.id = a.job_id)
-					INNER JOIN job_state_history AS b ON
-							(a.job_id = b.job_id)
-					LEFT JOIN job_state_history AS c ON
-							(a.job_id = c.job_id)
-				WHERE
-					j.create_time
-					> (
-							timezone('UTC', now())
-							- '3 months'::INTERVAL
-						)
-					AND a.state = 'running'
-					AND b.state = 'queued'
-					AND c.state = 'ok'
-				GROUP BY
-					j.id
-				ORDER BY
-					queue_time DESC
-			)
-	SELECT
-		destination_id, 
-		tool_id, 
-		count(id), 
-		$(summary_statistics queue_time),
-        $(summary_statistics run_time) 
-	FROM
-		temp_queue_run_times
-	GROUP BY
-		destination_id, tool_id
+		WITH
+			temp_queue_run_times
+				AS (
+					SELECT
+						j.destination_id,
+						j.tool_id,
+						j.id,
+						min(a.create_time) - min(b.create_time)
+							AS queue_time,
+						min(c.create_time) - min(a.create_time)
+							AS run_time
+					FROM
+						job AS j
+						JOIN job_state_history AS a ON
+								(j.id = a.job_id)
+						INNER JOIN job_state_history AS b ON
+								(a.job_id = b.job_id)
+						LEFT JOIN job_state_history AS c ON
+								(a.job_id = c.job_id)
+					WHERE
+						j.create_time
+						> (
+								timezone('UTC', now())
+								- '3 months'::INTERVAL
+							)
+						AND a.state = 'running'
+						AND b.state = 'queued'
+						AND c.state = 'ok'
+					GROUP BY
+						j.id
+					ORDER BY
+						queue_time DESC
+				)
+		SELECT
+			destination_id, 
+			tool_id, 
+			count(id), 
+			avg(queue_time),
+			min(queue_time),
+			percentile_cont(0.50) WITHIN GROUP (ORDER BY queue_time) as median_queue,
+			percentile_cont(0.95) WITHIN GROUP (ORDER BY queue_time) as perc_95_queue,
+			percentile_cont(0.99) WITHIN GROUP (ORDER BY queue_time) as perc_99_queue,
+			max(queue_time),
+			avg(run_time),
+			min(run_time),
+			percentile_cont(0.50) WITHIN GROUP (ORDER BY run_time) as median_run,
+			percentile_cont(0.95) WITHIN GROUP (ORDER BY run_time) as perc_95_run,
+			percentile_cont(0.99) WITHIN GROUP (ORDER BY run_time) as perc_99_run,
+			max(run_time)
+		FROM
+			temp_queue_run_times
+		GROUP BY
+			destination_id, tool_id
 	EOF
 }
 
