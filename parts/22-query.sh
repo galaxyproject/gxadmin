@@ -359,7 +359,7 @@ query_queue-time() { ##? <tool_id>: The average/95%/99% a specific tool spends i
 	EOF
 }
 
-query_destination-queue-run-time() { ##? [--older-than=30]: The average/median/95%/99% tool spends in queue/run state grouped by tool and destination.
+query_destination-queue-run-time() { ##? [--older-than=30] [--seconds]: The average/median/95%/99% tool spends in queue/run state grouped by tool and destination.
 	meta <<-EOF
 		AUTHORS: pauldg
 		ADDED: 22
@@ -382,6 +382,18 @@ query_destination-queue-run-time() { ##? [--older-than=30]: The average/median/9
 			62 | 00:00:10.301916 | 00:00:37.743373 | 00:00:39.621173 | 00:00:40.090623
 	EOF
 
+	fields="count=2"
+	tags="destination_id=0;tool_id=1"
+
+	nonpretty=""
+	nonprettyend=""
+
+	if [[ -n "$arg_seconds" ]]; then
+			  fields="$fields;avg_queue=3;min_queue=4;median_queue=5;perc_95_queue=6;perc_99_queue=7;max_queue=8;avg_run=9;min_run=10;median_run=11;perc_95_run=12;perc_99_run=13;max_run=14"
+			  nonpretty="EXTRACT(EPOCH FROM "
+			  nonprettyend=") :: bigint"
+	fi
+
 	read -r -d '' QUERY <<-EOF
 		WITH
 			temp_queue_run_times
@@ -390,9 +402,9 @@ query_destination-queue-run-time() { ##? [--older-than=30]: The average/median/9
 						j.destination_id,
 						j.tool_id,
 						j.id,
-						min(a.create_time) - min(b.create_time)
+						$nonpretty (min(a.create_time) - min(b.create_time))$nonprettyend
 							AS queue_time,
-						min(c.create_time) - min(a.create_time)
+						$nonpretty (min(c.create_time) - min(a.create_time))$nonprettyend
 							AS run_time
 					FROM
 						job AS j
