@@ -10,6 +10,7 @@
 	- query monthly-jobs-by-new-multiday-users @afgane
 	- query users-engaged-multiday @afgane
 	- query monthly-jobs-by-new-users @afgane
+	- query destination-queue-run-time: queue- and run time statistics by tool and destination from @pauldg
 - Updated:
 	- query monthly-cpu-stats to add --nb_users --filter_email by @lldelisle
 	- query monthly-users-active to add YYYY-MM parameter @afgane
