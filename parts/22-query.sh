@@ -359,14 +359,17 @@ query_queue-time() { ##? <tool_id>: The average/95%/99% a specific tool spends i
 	EOF
 }
 
-query_destination-queue-run-time() { ## The average/median/95%/99% tool spends in queue/run state grouped by tool_id and destination_id.
+query_destination-queue-run-time() { ##? [--older-than=30]: The average/median/95%/99% tool spends in queue/run state grouped by tool and destination.
 	meta <<-EOF
 		AUTHORS: pauldg
 		ADDED: 22
 	EOF
 
 	handle_help "$@" <<-EOF
-		    $ gxadmin query destination-queue-run-time
+			Lists queue and run time statistics grouped by use tool and destination within a time window (# of days).
+			Requires <older-than> a given number of days
+
+		    $ gxadmin query destination-queue-run-time --older-than='90'
 			destination_id |     tool_id     | count |       avg       |       min       |  median_queue   |  perc_95_queue  |  perc_99_queue  |       max       |       avg       |       min    
 			|   median_run    |   perc_95_run   |   perc_99_run   |       max       
 			----------------+-----------------+-------+-----------------+-----------------+-----------------+-----------------+-----------------+-----------------+-----------------+--------------
@@ -403,7 +406,7 @@ query_destination-queue-run-time() { ## The average/median/95%/99% tool spends i
 						j.create_time
 						> (
 								timezone('UTC', now())
-								- '3 months'::INTERVAL
+								- '${arg_older_than} days'::INTERVAL
 							)
 						AND a.state = 'running'
 						AND b.state = 'queued'
