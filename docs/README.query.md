@@ -38,7 +38,7 @@ Command | Description
 [`query jobs-queued-internal-by-handler`](#query-jobs-queued-internal-by-handler) | How many queued jobs do not have external IDs, by handler
 [`query jobs-ready-to-run`](#query-jobs-ready-to-run) | Find jobs ready to run (Mostly a performance test)
 [`query job-state`](#query-job-state) | Get current job state given a job ID
-[`query job-state-stats`](#query-job-state-stats) | Shows all jobs states within a time interval in a table counted by state
+[`query job-state-stats`](#query-job-state-stats) | Shows all jobs states within a time interval (default: 30 days) in a table counted by state
 [`query jobs`](#query-jobs) | List jobs ordered by most recently updated. = is required.
 [`query large-old-histories`](#query-large-old-histories) | Find large, old histories that probably should be deleted.
 [`query largest-collection`](#query-largest-collection) | Returns the size of the single largest collection
@@ -877,7 +877,7 @@ query job-state -  Get current job state given a job ID
 ## query job-state-stats
 
 ([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_job-state-stats&type=Code))
-query job-state-stats -  Shows all jobs states within a time interval in a table counted by state
+query job-state-stats -  30 days) in a table counted by state
 
 **SYNOPSIS**
 
@@ -897,6 +897,16 @@ $ gxadmin query job-state-stats
 2022-04-23 |   254 |     229 |    276 |      0 |   203 |    29 |      0 |       0 |       4
 ...
 -26 days
+
+The '--older-than=' option takes a value in the PostgreSQL date/time interval
+format, see documentation: https://www.postgresql.org/docs/current/functions-datetime.html
+Be sure to quote intervals containing spaces:
+
+$ gxadmin query job-state-stats --older-than='2 days'
+    date    |  new  | running | queued | upload |  ok   | error | paused | stopped | deleted
+------------+-------+---------+--------+--------+-------+-------+--------+---------+---------
+2022-04-26 |   921 |     564 |    799 |      0 |   581 |    21 |      1 |       0 |       2
+2022-04-25 |  1412 |    1230 |   1642 |      0 |  1132 |   122 |     14 |       0 |      15		
 
 
 ## query jobs

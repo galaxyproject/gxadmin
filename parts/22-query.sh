@@ -818,7 +818,7 @@ query_recent-jobs() { ##? <hours>: Jobs run in the past <hours> (in any state)
 	EOF
 }
 
-query_job-state-stats() { ##? [--older-than=<interval>]: Shows all jobs states within a time interval in a table counted by state
+query_job-state-stats() { ##? [--older-than=<interval>]: Shows all jobs states within a time interval (default: 30 days) in a table counted by state
 	meta <<-EOF
 		ADDED: 19
 		UPDATED: 22
@@ -836,6 +836,16 @@ query_job-state-stats() { ##? [--older-than=<interval>]: Shows all jobs states w
 		2022-04-23 |   254 |     229 |    276 |      0 |   203 |    29 |      0 |       0 |       4
 		...
 		-26 days
+
+		The '--older-than=' option takes a value in the PostgreSQL date/time interval
+		format, see documentation: https://www.postgresql.org/docs/current/functions-datetime.html
+		Be sure to quote intervals containing spaces:
+
+		$ gxadmin query job-state-stats --older-than='2 days'
+		    date    |  new  | running | queued | upload |  ok   | error | paused | stopped | deleted
+		------------+-------+---------+--------+--------+-------+-------+--------+---------+---------
+		2022-04-26 |   921 |     564 |    799 |      0 |   581 |    21 |      1 |       0 |       2
+		2022-04-25 |  1412 |    1230 |   1642 |      0 |  1132 |   122 |     14 |       0 |      15		
 
 EOFhelp
 
