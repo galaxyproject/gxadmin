@@ -818,12 +818,12 @@ query_recent-jobs() { ##? <hours>: Jobs run in the past <hours> (in any state)
 	EOF
 }
 
-query_job-state-stats() { ## : Shows all jobs states for the last 30 days in a table counted by state
+query_job-state-stats() { ## [--older-than=<interval>]: Shows all jobs states within a time interval in a table counted by state
 	meta <<-EOF
 		ADDED: 19
 	EOF
 	handle_help "$@" <<-EOFhelp
-		Shows all job states for the last 30 days in a table counted by state
+		Shows all job states within a time interval in a table counted by state
 
 		Example:
 		$ gxadmin query job-state-stats
@@ -837,6 +837,24 @@ query_job-state-stats() { ## : Shows all jobs states for the last 30 days in a t
 		-26 days
 
 EOFhelp
+
+	fields="new=1;running=2;queued=3;upload=4;ok=5;error=6;paused=7;stopped=8;deleted=9"
+	tags="date=0"
+
+	interval=
+	time_column='create_time'
+
+	if (( $# > 0 )); then
+		for args in "$@"; do
+			if [[ "${args:0:13}" = '--older-than=' ]]; then
+				interval="${args:13}"
+			fi
+		done
+	fi
+
+	if [[ -n "$interval" ]]; then
+		interval="AND job.$time_column < NOW() - interval '$interval'"
+	fi
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
@@ -855,7 +873,7 @@ EOFhelp
 			job_state_history
 		WHERE
 			job_state_history.job_id = job.id
-			and job.create_time >= now() - INTERVAL '30 DAYS'
+			$interval
 		GROUP BY
 			date
 		ORDER BY
