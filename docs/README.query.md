@@ -885,7 +885,7 @@ query job-state-stats -  Shows all jobs states within a time interval in a table
 
 **NOTES**
 
-Shows all job states within a time interval in a table counted by state
+Shows all job states within a time interval (default: 30 days) in a table counted by state
 
 Example:
 $ gxadmin query job-state-stats
