@@ -818,7 +818,7 @@ query_recent-jobs() { ##? <hours>: Jobs run in the past <hours> (in any state)
 	EOF
 }
 
-query_job-state-stats() { ## [--older-than=<interval>]: Shows all jobs states within a time interval in a table counted by state
+query_job-state-stats() { ##? [--older-than=<interval>]: Shows all jobs states within a time interval in a table counted by state
 	meta <<-EOF
 		ADDED: 19
 		UPDATED: 22
