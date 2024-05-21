@@ -17,6 +17,7 @@
 	- query monthly-users-registered to add YYYY-MM parameter @afgane
 	- query monthly-jobs to add YYYY-MM and --by_state parameters @afgane
 	- query total-jobs to add date and --total parameters @afgane
+	- query job-state-stats: added a --older-than param from @pauldg
 - Fixed:
 	- Replaced hardcoded metric_name with the variable in query_tool-metrics function @sanjaysrikakulam
 	- improved man pages a tad

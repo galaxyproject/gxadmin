@@ -821,6 +821,7 @@ query_recent-jobs() { ##? <hours>: Jobs run in the past <hours> (in any state)
 query_job-state-stats() { ## [--older-than=<interval>]: Shows all jobs states within a time interval in a table counted by state
 	meta <<-EOF
 		ADDED: 19
+		UPDATED: 22
 	EOF
 	handle_help "$@" <<-EOFhelp
 		Shows all job states within a time interval in a table counted by state
@@ -842,7 +843,6 @@ EOFhelp
 	tags="date=0"
 
 	interval=
-	time_column='create_time'
 
 	if (( $# > 0 )); then
 		for args in "$@"; do
@@ -853,7 +853,7 @@ EOFhelp
 	fi
 
 	if [[ -n "$interval" ]]; then
-		interval="AND job.$time_column < NOW() - interval '$interval'"
+			interval="AND job.create_time > (timezone('UTC', now()) - '$interval'::INTERVAL)"
 	fi
 
 	read -r -d '' QUERY <<-EOF
