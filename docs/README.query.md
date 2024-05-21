@@ -9,7 +9,7 @@ Command | Description
 [`query data-origin-distribution-summary`](#query-data-origin-distribution-summary) | breakdown of data sources (uploaded vs derived)
 [`query datasets-created-daily`](#query-datasets-created-daily) | The min/max/average/p95/p99 of total size of datasets created in a single day.
 [`query dataset-usage-and-imports`](#query-dataset-usage-and-imports) | Fetch limited information about which users and histories are using a specific dataset from disk.
-[`query destination-queue-run-time The average/median/95%/99% tool spends in queue/run state grouped by tool_id and destination_id.`](#query-destination-queue-run-time-The-average/median/95%/99%-tool-spends-in-queue/run-state-grouped-by-tool_id-and-destination_id.) | query destination-queue-run-time The average/median/95%/99% tool spends in queue/run state grouped by tool_id and destination_id.
+[`query destination-queue-run-time`](#query-destination-queue-run-time) | The average/median/95%/99% tool spends in queue/run state grouped by tool and destination.
 [`query disk-usage`](#query-disk-usage) | Disk usage per object store.
 [`query disk-usage-library`](#query-disk-usage-library) | Retrieve an approximation of the disk usage for a data library
 [`query dump-users`](#query-dump-users) | Dump the list of users and their emails
@@ -38,7 +38,7 @@ Command | Description
 [`query jobs-queued-internal-by-handler`](#query-jobs-queued-internal-by-handler) | How many queued jobs do not have external IDs, by handler
 [`query jobs-ready-to-run`](#query-jobs-ready-to-run) | Find jobs ready to run (Mostly a performance test)
 [`query job-state`](#query-job-state) | Get current job state given a job ID
-[`query job-state-stats`](#query-job-state-stats) | Shows all jobs states for the last 30 days in a table counted by state
+[`query job-state-stats`](#query-job-state-stats) | Shows all jobs states within a time interval in a table counted by state
 [`query jobs`](#query-jobs) | List jobs ordered by most recently updated. = is required.
 [`query large-old-histories`](#query-large-old-histories) | Find large, old histories that probably should be deleted.
 [`query largest-collection`](#query-largest-collection) | Returns the size of the single largest collection
@@ -273,18 +273,21 @@ This has built in support for "cleaning up" paths like /data/galaxy/.../dataset_
     (1 row)
 
 
-## query destination-queue-run-time The average/median/95%/99% tool spends in queue/run state grouped by tool_id and destination_id.
+## query destination-queue-run-time
 
-([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_destination-queue-run-time_The_average/median/95%/99%_tool_spends_in_queue/run_state_grouped_by_tool_id_and_destination_id.&type=Code))
-query destination-queue-run-time - gxadmin query destination-queue-run-time The average/median/95%/99% tool spends in queue/run state grouped by tool_id and destination_id.
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_destination-queue-run-time&type=Code))
+query destination-queue-run-time -  The average/median/95%/99% tool spends in queue/run state grouped by tool and destination.
 
 **SYNOPSIS**
 
-    gxadmin query destination-queue-run-time The average/median/95%/99% tool spends in queue/run state grouped by tool_id and destination_id.
+    gxadmin query destination-queue-run-time [--older-than=30] [--seconds]
 
 **NOTES**
 
-    $ gxadmin query destination-queue-run-time
+Lists queue and run time statistics grouped by use tool and destination within a time window (# of days).
+Requires <older-than> a given number of days
+
+    $ gxadmin query destination-queue-run-time --older-than='90'
 destination_id |     tool_id     | count |       avg       |       min       |  median_queue   |  perc_95_queue  |  perc_99_queue  |       max       |       avg       |       min    
 |   median_run    |   perc_95_run   |   perc_99_run   |       max       
 ----------------+-----------------+-------+-----------------+-----------------+-----------------+-----------------+-----------------+-----------------+-----------------+--------------
@@ -874,15 +877,15 @@ query job-state -  Get current job state given a job ID
 ## query job-state-stats
 
 ([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_job-state-stats&type=Code))
-query job-state-stats -  Shows all jobs states for the last 30 days in a table counted by state
+query job-state-stats -  Shows all jobs states within a time interval in a table counted by state
 
 **SYNOPSIS**
 
-    gxadmin query job-state-stats
+    gxadmin query job-state-stats [--older-than=<interval>]
 
 **NOTES**
 
-Shows all job states for the last 30 days in a table counted by state
+Shows all job states within a time interval in a table counted by state
 
 Example:
 $ gxadmin query job-state-stats
