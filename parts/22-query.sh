@@ -818,12 +818,13 @@ query_recent-jobs() { ##? <hours>: Jobs run in the past <hours> (in any state)
 	EOF
 }
 
-query_job-state-stats() { ## : Shows all jobs states for the last 30 days in a table counted by state
+query_job-state-stats() { ##? [--older-than=<interval>]: Shows all jobs states within a time interval (default: 30 days) in a table counted by state
 	meta <<-EOF
 		ADDED: 19
+		UPDATED: 22
 	EOF
 	handle_help "$@" <<-EOFhelp
-		Shows all job states for the last 30 days in a table counted by state
+		Shows all job states within a time interval (default: 30 days) in a table counted by state
 
 		Example:
 		$ gxadmin query job-state-stats
@@ -836,7 +837,26 @@ query_job-state-stats() { ## : Shows all jobs states for the last 30 days in a t
 		...
 		-26 days
 
+		The '--older-than=' option takes a value in the PostgreSQL date/time interval
+		format, see documentation: https://www.postgresql.org/docs/current/functions-datetime.html
+		Be sure to quote intervals containing spaces:
+
+		$ gxadmin query job-state-stats --older-than='2 days'
+		    date    |  new  | running | queued | upload |  ok   | error | paused | stopped | deleted
+		------------+-------+---------+--------+--------+-------+-------+--------+---------+---------
+		2022-04-26 |   921 |     564 |    799 |      0 |   581 |    21 |      1 |       0 |       2
+		2022-04-25 |  1412 |    1230 |   1642 |      0 |  1132 |   122 |     14 |       0 |      15		
+
 EOFhelp
+
+	fields="new=1;running=2;queued=3;upload=4;ok=5;error=6;paused=7;stopped=8;deleted=9"
+	tags="date=0"
+
+	interval="AND job.create_time > (timezone('UTC', now()) - '30 days'::INTERVAL)"
+	if [[ -n "$arg_older_than" ]]; then
+		interval="AND job.create_time > (timezone('UTC', now()) - '$arg_older_than'::INTERVAL)"
+	fi
+
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
@@ -855,7 +875,7 @@ EOFhelp
 			job_state_history
 		WHERE
 			job_state_history.job_id = job.id
-			and job.create_time >= now() - INTERVAL '30 DAYS'
+			$interval
 		GROUP BY
 			date
 		ORDER BY
