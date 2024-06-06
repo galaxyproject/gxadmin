@@ -1806,6 +1806,64 @@ query_monthly-workflow-invocations() { ## : Workflow invocations by month
 	EOF
 }
 
+query_workflow-invocation-count() { ##? [date] : Count the total number of workflow invocations.
+	meta <<-EOF
+		ADDED: 23
+	EOF
+	handle_help "$@" <<-EOF
+		Count total number of workflow invocations. Providing optional date (as YYYY-MM-DD) counts
+		number of invocations up to that date.
+
+			$ gxadmin query workflow-invocation-count
+			 num_workflow_invocations
+			--------------------------
+							   758473
+			(1 row)
+	EOF
+
+	where=""
+	if [[ -n $arg_date ]]; then
+		where="WHERE create_time < '$arg_date'"
+	fi
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			count(*) as num_workflow_invocations
+		FROM
+			workflow_invocation
+		$where
+	EOF
+}
+
+query_workflow-count() { ##? [date] : Count the number of workflow.
+	meta <<-EOF
+		ADDED: 23
+	EOF
+	handle_help "$@" <<-EOF
+		Count total number of workflows. Providing optional date (as YYYY-MM-DD) counts
+		number of workflows created up to that date.
+
+			$ gxadmin query workflow-count
+			 num_workflows
+			---------------
+					471969
+			(1 row)
+	EOF
+
+	where=""
+	if [[ -n $arg_date ]]; then
+		where="WHERE create_time < '$arg_date'"
+	fi
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			count(*) as num_workflows
+		FROM
+			workflow
+		$where
+	EOF
+}
+
 query_user-cpu-years() { ## : CPU years allocated to tools by user
 	meta <<-EOF
 		ADDED: 12
@@ -3578,6 +3636,35 @@ query_history-runtime-system-by-tool() { ##? <history_id>: Sum of runtimes by al
 	EOF
 }
 
+query_history-count() { ##? [date] : Count the number of histories.
+	meta <<-EOF
+		ADDED: 23
+	EOF
+	handle_help "$@" <<-EOF
+		Count total number of histories. Providing optional date (as YYYY-MM-DD) counts
+		number of histories created up to that date.
+
+			$ gxadmin query history-count
+			num_histories
+			---------------
+				9065181
+			(1 row)
+	EOF
+
+	where=""
+	if [[ -n $arg_date ]]; then
+		where="WHERE create_time < '$arg_date'"
+	fi
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			count(*) as num_histories
+		FROM
+			history
+		$where
+	EOF
+}
+
 query_upload-gb-in-past-hour() { ##? [hours=1]: Sum in bytes of files uploaded in the past hour
 	meta <<-EOF
 		ADDED: 13
@@ -4756,6 +4843,34 @@ query_dataset-usage-and-imports() { ##? <dataset_uuid>: Fetch limited informatio
 	EOF
 }
 
+query_dataset-count() { ##? [date] : Count the number of datasets.
+	meta <<-EOF
+		ADDED: 23
+	EOF
+	handle_help "$@" <<-EOF
+		Count total number of datasets. Providing optional date (as YYYY-MM-DD) counts
+		number of datasets created up to that date.
+
+			$ gxadmin query dataset-count
+			 num_datasets
+			---------------
+				 107615974
+			(1 row)
+	EOF
+
+	where=""
+	if [[ -n $arg_date ]]; then
+		where="WHERE create_time < '$arg_date'"
+	fi
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			count(*) as num_datasets
+		FROM
+			dataset
+		$where
+	EOF
+}
 
 query_queue-details-drm() { ##? [--all] [--seconds] [--since-update]: Detailed overview of running and queued jobs with cores/mem info
 	meta <<-EOF
