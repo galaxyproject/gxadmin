@@ -370,8 +370,8 @@ query_destination-queue-run-time() { ##? [--older-than=30] [--seconds]: The aver
 			Requires <older-than> a given number of days
 
 		    $ gxadmin query destination-queue-run-time --older-than='90'
-			destination_id |     tool_id     | count |       avg       |       min       |  median_queue   |  perc_95_queue  |  perc_99_queue  |       max       |       avg       |       min    
-			|   median_run    |   perc_95_run   |   perc_99_run   |       max       
+			destination_id |     tool_id     | count |       avg       |       min       |  median_queue   |  perc_95_queue  |  perc_99_queue  |       max       |       avg       |       min
+			|   median_run    |   perc_95_run   |   perc_99_run   |       max
 			----------------+-----------------+-------+-----------------+-----------------+-----------------+-----------------+-----------------+-----------------+-----------------+--------------
 			---+-----------------+-----------------+-----------------+-----------------
 			condor_tpv     | Show beginning1 |     4 | 00:00:42.190985 | 00:00:41.921395 | 00:00:42.197197 | 00:00:42.419296 | 00:00:42.44238  | 00:00:42.448151 | 00:00:15.742914 | 00:00:12.2020
@@ -429,9 +429,9 @@ query_destination-queue-run-time() { ##? [--older-than=30] [--seconds]: The aver
 						queue_time DESC
 				)
 		SELECT
-			destination_id, 
-			tool_id, 
-			count(id), 
+			destination_id,
+			tool_id,
+			count(id),
 			avg(queue_time),
 			min(queue_time),
 			percentile_cont(0.50) WITHIN GROUP (ORDER BY queue_time) as median_queue,
@@ -845,7 +845,7 @@ query_job-state-stats() { ##? [--older-than=<interval>]: Shows all jobs states w
 		    date    |  new  | running | queued | upload |  ok   | error | paused | stopped | deleted
 		------------+-------+---------+--------+--------+-------+-------+--------+---------+---------
 		2022-04-26 |   921 |     564 |    799 |      0 |   581 |    21 |      1 |       0 |       2
-		2022-04-25 |  1412 |    1230 |   1642 |      0 |  1132 |   122 |     14 |       0 |      15		
+		2022-04-25 |  1412 |    1230 |   1642 |      0 |  1132 |   122 |     14 |       0 |      15
 
 EOFhelp
 
@@ -1289,15 +1289,28 @@ EOFhelp
 EOF
 }
 
-query_users-total() { ## : Total number of Galaxy users (incl deleted, purged, inactive)
+query_users-total() { ##? [date] : Total number of Galaxy users (incl deleted, purged, inactive).
 	handle_help "$@" <<-EOF
+		Count total number of registered users. Providing optional date (as YYYY-MM-DD) counts up to that date.
+
+			$ gxadmin query users-total 2024-06-01
+ 			 count
+			--------
+			 351400
+			(1 row)
 	EOF
 
 	fields="count=0"
 	tags=""
+	where=""
+
+	if [[ -n $arg_date ]]; then
+		where="WHERE create_time < '$arg_date'"
+	fi
 
 	read -r -d '' QUERY <<-EOF
 			SELECT count(*) FROM galaxy_user
+			$where
 	EOF
 }
 
@@ -1790,6 +1803,64 @@ query_monthly-workflow-invocations() { ## : Workflow invocations by month
 			workflow_invocation
 		GROUP BY date_trunc('month', workflow_invocation.create_time)
 		ORDER BY date_trunc('month', workflow_invocation.create_time) DESC
+	EOF
+}
+
+query_workflow-invocation-count() { ##? [date] : Count the total number of workflow invocations.
+	meta <<-EOF
+		ADDED: 23
+	EOF
+	handle_help "$@" <<-EOF
+		Count total number of workflow invocations. Providing optional date (as YYYY-MM-DD) counts
+		number of invocations up to that date.
+
+			$ gxadmin query workflow-invocation-count
+			 num_workflow_invocations
+			--------------------------
+							   758473
+			(1 row)
+	EOF
+
+	where=""
+	if [[ -n $arg_date ]]; then
+		where="WHERE create_time < '$arg_date'"
+	fi
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			count(*) as num_workflow_invocations
+		FROM
+			workflow_invocation
+		$where
+	EOF
+}
+
+query_workflow-count() { ##? [date] : Count the number of workflow.
+	meta <<-EOF
+		ADDED: 23
+	EOF
+	handle_help "$@" <<-EOF
+		Count total number of workflows. Providing optional date (as YYYY-MM-DD) counts
+		number of workflows created up to that date.
+
+			$ gxadmin query workflow-count
+			 num_workflows
+			---------------
+					471969
+			(1 row)
+	EOF
+
+	where=""
+	if [[ -n $arg_date ]]; then
+		where="WHERE create_time < '$arg_date'"
+	fi
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			count(*) as num_workflows
+		FROM
+			workflow
+		$where
 	EOF
 }
 
@@ -2452,7 +2523,7 @@ query_monthly-users-registered(){ ##? [--year=<YYYY>] [--month=<MM>] [--by_group
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			TO_CHAR(date_trunc('month', galaxy_user.create_time AT TIME ZONE 'UTC')::DATE, 'YYYY-MM') AS month,
+			TO_CHAR(date_trunc('month', galaxy_user.create_time)::DATE, 'YYYY-MM') AS month,
 			$select
 			count(*) AS num_registered_users
 		FROM
@@ -2501,7 +2572,7 @@ query_monthly-users-active(){ ##? [--year=<YYYY>] [--month=<MM>] [--by_group]: N
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			TO_CHAR(date_trunc('month', job.create_time AT TIME ZONE 'UTC')::date, 'YYYY-MM') AS month,
+			TO_CHAR(date_trunc('month', job.create_time)::date, 'YYYY-MM') AS month,
 			$select
 			count(distinct job.user_id) as active_users
 		FROM
@@ -2588,12 +2659,13 @@ query_users-engaged-multiday() { ##? [month] [--new_only]: Number of users runni
 	EOF
 }
 
-query_monthly-jobs(){ ##? [--year=<YYYY>] [--month=<MM>] [--by_group] [--by_state]: Number of jobs run each month
+query_monthly-jobs(){ ##? [--year=<YYYY>] [--month=<MM>] [--by_group] [--by_state] [--state=<state>]: Number of jobs run each month
 	handle_help "$@" <<-EOF
 		Count jobs run each month or specified month
 		Parameters:
 		--by_group: Will separate out job counts for each month by galaxy user group
 		--by_state: Will separate out job counts for each month by job state
+		--state=<state>: Only count jobs in the given state
 		--year=<YYYY>: Will return monthly job count for the given year
 		--month=<MM>: Will return monthly job count for the given month. If --year is not supplied, will return for each year.
 
@@ -2623,13 +2695,16 @@ query_monthly-jobs(){ ##? [--year=<YYYY>] [--month=<MM>] [--by_group] [--by_stat
 	if [[ -n "$arg_by_state" ]]; then
 		state=", state"
 		group_by=", state"
+	elif [[ -n $arg_state ]]; then
+		state=", state"
+		where="$where AND state = '$arg_state'"
 	fi
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			TO_CHAR(date_trunc('month', job.create_time AT TIME ZONE 'UTC')::DATE, 'YYYY-MM') AS month,
+			TO_CHAR(date_trunc('month', job.create_time)::DATE, 'YYYY-MM') AS month,
 			$select
-			count(*)
+			count(*) AS num_jobs
 			$state
 		FROM
 			$from
@@ -2644,7 +2719,7 @@ query_monthly-jobs(){ ##? [--year=<YYYY>] [--month=<MM>] [--by_group] [--by_stat
 	EOF
 }
 
-query_monthly-jobs-by-new-users() { ##? [month] [--no_state]: Number of jobs run by new users in the given month
+query_monthly-jobs-by-new-users() { ##? [month] [--no_state] [--state=<state>]: Number of jobs run by new users in the given month
 	meta <<-EOF
 		ADDED: 22
 	EOF
@@ -2652,6 +2727,7 @@ query_monthly-jobs-by-new-users() { ##? [month] [--no_state]: Number of jobs run
 		Count jobs run by users that registered in the given month
 		month: Month to count jobs for, provided as YYYY-MM. If month is not provided, defaults to current month.
 		--no_state: Do not break down jobs by state
+		--state=<state>: Only count jobs in the given state
 
 		    $ gxadmin query jobs-by-new-users 2024-02
 		      state   | jobs_by_new_users
@@ -2675,11 +2751,13 @@ query_monthly-jobs-by-new-users() { ##? [month] [--no_state]: Number of jobs run
 	if [[ -n $arg_no_state ]]; then
 		state=""
 		group_by_order_by="GROUP BY month ORDER BY month"
+	elif [[ -n $arg_state ]]; then
+		where_state="AND state = '$arg_state'"
 	fi
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			TO_CHAR(date_trunc('month', j.create_time AT TIME ZONE 'UTC')::DATE, 'YYYY-MM') AS month,
+			TO_CHAR(date_trunc('month', j.create_time)::DATE, 'YYYY-MM') AS month,
 			$state
 			COUNT(j.id) AS jobs_by_new_users
 		FROM
@@ -2689,6 +2767,7 @@ query_monthly-jobs-by-new-users() { ##? [month] [--no_state]: Number of jobs run
 		WHERE
 			DATE_TRUNC('month', j.create_time) = DATE_TRUNC('month', CAST('$arg_month-01' AS DATE))
 			AND DATE_TRUNC('month', u.create_time) = DATE_TRUNC('month', CAST('$arg_month-01' AS DATE))
+			$where_state
 		$group_by_order_by
 	EOF
 }
@@ -3554,6 +3633,35 @@ query_history-runtime-system-by-tool() { ##? <history_id>: Sum of runtimes by al
 			job.tool_id
 		ORDER BY
 			"interval" DESC
+	EOF
+}
+
+query_history-count() { ##? [date] : Count the number of histories.
+	meta <<-EOF
+		ADDED: 23
+	EOF
+	handle_help "$@" <<-EOF
+		Count total number of histories. Providing optional date (as YYYY-MM-DD) counts
+		number of histories created up to that date.
+
+			$ gxadmin query history-count
+			num_histories
+			---------------
+				9065181
+			(1 row)
+	EOF
+
+	where=""
+	if [[ -n $arg_date ]]; then
+		where="WHERE create_time < '$arg_date'"
+	fi
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			count(*) as num_histories
+		FROM
+			history
+		$where
 	EOF
 }
 
@@ -4735,6 +4843,34 @@ query_dataset-usage-and-imports() { ##? <dataset_uuid>: Fetch limited informatio
 	EOF
 }
 
+query_dataset-count() { ##? [date] : Count the number of datasets.
+	meta <<-EOF
+		ADDED: 23
+	EOF
+	handle_help "$@" <<-EOF
+		Count total number of datasets. Providing optional date (as YYYY-MM-DD) counts
+		number of datasets created up to that date.
+
+			$ gxadmin query dataset-count
+			 num_datasets
+			---------------
+				 107615974
+			(1 row)
+	EOF
+
+	where=""
+	if [[ -n $arg_date ]]; then
+		where="WHERE create_time < '$arg_date'"
+	fi
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			count(*) as num_datasets
+		FROM
+			dataset
+		$where
+	EOF
+}
 
 query_queue-details-drm() { ##? [--all] [--seconds] [--since-update]: Detailed overview of running and queued jobs with cores/mem info
 	meta <<-EOF
