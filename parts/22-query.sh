@@ -5375,26 +5375,26 @@ query_tools-usage-per-month() { ##? [--startmonth=<YYYY>-<MM>] [--endmonth=<YYYY
 	meta <<-EOF
 		AUTHORS: lldelisle
 		ADDED: 22
+		EDITED: 23
 	EOF
 	handle_help "$@" <<-EOF
 		Tools Usage Tracking: cpu-hours and nb_users by Month-Year.
 
 		    $ gxadmin query tools-usage-per-month --super_short_tool_id --no_version --tools bowtie2,Cut1 --startmonth=2023-03 --endmonth 2023-08
-			   month    | cpu_hours | tool_id | nb_users
+			   month    | cpu_hours | tool_id | nb_users 
 			------------+-----------+---------+----------
-			 2023-08-01 |    326.88 | bowtie2 |        1
-			 2023-08-01 |    469.27 | bowtie2 |        1
-			 2023-07-01 |      0.01 | Cut1    |        2
+			 2023-08-01 |    796.15 | bowtie2 |        2
 			 2023-07-01 |     20.04 | bowtie2 |        1
-			 2023-06-01 |      0.04 | Cut1    |        2
+			 2023-07-01 |      0.00 | Cut1    |        1
 			 2023-06-01 |    271.16 | bowtie2 |        3
+			 2023-06-01 |      0.07 | Cut1    |        4
 			 2023-05-01 |    732.74 | bowtie2 |        3
-			 2023-04-01 |      1.55 | Cut1    |        2
+			 2023-05-01 |      0.01 | Cut1    |        2
 			 2023-04-01 |    426.32 | bowtie2 |        2
-			 2023-03-01 |      0.00 | Cut1    |        1
-			 2023-03-01 |    437.31 | bowtie2 |        1
-			 2023-03-01 |    506.71 | bowtie2 |        2
-			(12 rows)
+			 2023-04-01 |      0.05 | Cut1    |        4
+			 2023-03-01 |    944.02 | bowtie2 |        2
+			 2023-03-01 |      0.01 | Cut1    |        2
+			(11 rows)
 	EOF
 
 	filter_by_time_period=""
@@ -5440,7 +5440,7 @@ query_tools-usage-per-month() { ##? [--startmonth=<YYYY>-<MM>] [--endmonth=<YYYY
 			AND b.metric_name = 'galaxy_slots'
 			AND $filter_by_time_period $filter_tool
 		GROUP BY
-			month, tool_id
+			month, $tool_id
 		ORDER BY
 			month DESC
 	EOF
@@ -5525,6 +5525,11 @@ query_tools-usage() { ##? [year] [--tools=<tool1,tool2,...>] [--short_tool_id] [
 		Tools Usage Tracking: cpu-hours, cpu-years and nb_users for specific tools (optionally in a given year).
 
 		    $ gxadmin query tools-usage --super_short_tool_id --no_version --tools bowtie2,Cut1 2023
+			 cpu_hours | cpu_years | tool_id | nb_users 
+			-----------+-----------+---------+----------
+			   4631.91 |      0.53 | bowtie2 |        7 
+			      0.24 |      0.00 | Cut1    |        6 
+			(2 rows)  
 	EOF
 	if [[ -n $arg_year ]]; then
 	    filter_by_year="AND date_trunc('year', job.create_time AT TIME ZONE 'UTC') = '$arg_year-01-01'::date"
@@ -5564,6 +5569,6 @@ query_tools-usage() { ##? [year] [--tools=<tool1,tool2,...>] [--short_tool_id] [
 			$filter_tool
 			$filter_by_year
 		GROUP BY
-			tool_id
+			$tool_id
 	EOF
 }

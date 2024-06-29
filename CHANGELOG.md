@@ -2,6 +2,8 @@
 
 - Added:
 	- query tools-usage (like tools-usage-per-month but for a year or for whole history) by @lldelisle
+- Fixed:
+	- query tools-usage-per-month when 'no_version' was used there were still one line per version.
 
 # 22
 
