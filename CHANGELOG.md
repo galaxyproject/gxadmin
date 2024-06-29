@@ -1,5 +1,8 @@
 # 23-pre
 
+- Added:
+	- query tools-usage (like tools-usage-per-month but for a year or for whole history) by @lldelisle
+
 # 22
 
 - Added:

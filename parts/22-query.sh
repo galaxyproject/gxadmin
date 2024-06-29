@@ -5515,3 +5515,55 @@ query_archivable-histories() { ##? [--user-last-active=360] [--history-last-acti
 			history_age ASC
 	EOF
 }
+
+query_tools-usage() { ##? [year] [--tools=<tool1,tool2,...>] [--short_tool_id] [--super_short_tool_id] [--no_version]: tool1, tool2 etc. should correspond to the tool_id with the same format as requested: toolshed.g2.bx.psu.edu/repos/devteam/bowtie2/bowtie2/2.5.0+galaxy0,Cut1 for default, devteam/bowtie2/bowtie2/2.5.0+galaxy0,Cut1 for --short_tool_id, bowtie2/2.5.0+galaxy0,Cut1 for --super_short_tool_id etc...
+	meta <<-EOF
+		AUTHORS: lldelisle
+		ADDED: 23
+	EOF
+	handle_help "$@" <<-EOF
+		Tools Usage Tracking: cpu-hours, cpu-years and nb_users for specific tools (optionally in a given year).
+
+		    $ gxadmin query tools-usage --super_short_tool_id --no_version --tools bowtie2,Cut1 2023
+	EOF
+	if [[ -n $arg_year ]]; then
+	    filter_by_year="AND date_trunc('year', job.create_time AT TIME ZONE 'UTC') = '$arg_year-01-01'::date"
+	fi
+	tool_id="job.tool_id"
+	if [[ -n $arg_short_tool_id ]]; then
+		tool_id="regexp_replace(job.tool_id, '.*toolshed.*/repos/', '')"
+	fi
+	if [[ -n $arg_super_short_tool_id ]]; then
+		tool_id="regexp_replace(job.tool_id, '.*toolshed.*/repos/[^/]*/[^/]*/', '')"
+	fi
+
+	if [[ -n $arg_no_version ]]; then
+		tool_id="regexp_replace(${tool_id}::TEXT, '/[0-9.a-z+-]+$', '')"
+	fi
+	filter_tool=""
+	if [[ -n $arg_tools ]]; then
+		tool_list=$(echo "$arg_tools" | sed -e "s/^/('/" -e "s/,/', '/g" -e "s/$/')/")
+		filter_tool="AND $tool_id in $tool_list"
+	fi
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			round(sum((a.metric_value * b.metric_value) / 3600 ), 2) as cpu_hours,
+			round(sum((a.metric_value * b.metric_value) / 3600 / 24 / 365 ), 2) as cpu_years,
+			$tool_id as tool_id,
+			COUNT (DISTINCT job.user_id) as nb_users
+		FROM
+			job_metric_numeric a,
+			job_metric_numeric b,
+			job
+		WHERE
+			b.job_id = a.job_id
+			AND a.job_id = job.id
+			AND a.metric_name = 'runtime_seconds'
+			AND b.metric_name = 'galaxy_slots'
+			$filter_tool
+			$filter_by_year
+		GROUP BY
+			tool_id
+	EOF
+}
