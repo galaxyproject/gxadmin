@@ -5375,26 +5375,26 @@ query_tools-usage-per-month() { ##? [--startmonth=<YYYY>-<MM>] [--endmonth=<YYYY
 	meta <<-EOF
 		AUTHORS: lldelisle
 		ADDED: 22
+		EDITED: 23
 	EOF
 	handle_help "$@" <<-EOF
 		Tools Usage Tracking: cpu-hours and nb_users by Month-Year.
 
 		    $ gxadmin query tools-usage-per-month --super_short_tool_id --no_version --tools bowtie2,Cut1 --startmonth=2023-03 --endmonth 2023-08
-			   month    | cpu_hours | tool_id | nb_users
+			   month    | cpu_hours | tool_id | nb_users 
 			------------+-----------+---------+----------
-			 2023-08-01 |    326.88 | bowtie2 |        1
-			 2023-08-01 |    469.27 | bowtie2 |        1
-			 2023-07-01 |      0.01 | Cut1    |        2
+			 2023-08-01 |    796.15 | bowtie2 |        2
 			 2023-07-01 |     20.04 | bowtie2 |        1
-			 2023-06-01 |      0.04 | Cut1    |        2
+			 2023-07-01 |      0.00 | Cut1    |        1
 			 2023-06-01 |    271.16 | bowtie2 |        3
+			 2023-06-01 |      0.07 | Cut1    |        4
 			 2023-05-01 |    732.74 | bowtie2 |        3
-			 2023-04-01 |      1.55 | Cut1    |        2
+			 2023-05-01 |      0.01 | Cut1    |        2
 			 2023-04-01 |    426.32 | bowtie2 |        2
-			 2023-03-01 |      0.00 | Cut1    |        1
-			 2023-03-01 |    437.31 | bowtie2 |        1
-			 2023-03-01 |    506.71 | bowtie2 |        2
-			(12 rows)
+			 2023-04-01 |      0.05 | Cut1    |        4
+			 2023-03-01 |    944.02 | bowtie2 |        2
+			 2023-03-01 |      0.01 | Cut1    |        2
+			(11 rows)
 	EOF
 
 	filter_by_time_period=""
@@ -5440,7 +5440,7 @@ query_tools-usage-per-month() { ##? [--startmonth=<YYYY>-<MM>] [--endmonth=<YYYY
 			AND b.metric_name = 'galaxy_slots'
 			AND $filter_by_time_period $filter_tool
 		GROUP BY
-			month, tool_id
+			month, $tool_id
 		ORDER BY
 			month DESC
 	EOF
@@ -5513,5 +5513,62 @@ query_archivable-histories() { ##? [--user-last-active=360] [--history-last-acti
 			user_age ASC,
 			galaxy_user.email ASC,
 			history_age ASC
+	EOF
+}
+
+query_tools-usage() { ##? [year] [--tools=<tool1,tool2,...>] [--short_tool_id] [--super_short_tool_id] [--no_version]: tool1, tool2 etc. should correspond to the tool_id with the same format as requested: toolshed.g2.bx.psu.edu/repos/devteam/bowtie2/bowtie2/2.5.0+galaxy0,Cut1 for default, devteam/bowtie2/bowtie2/2.5.0+galaxy0,Cut1 for --short_tool_id, bowtie2/2.5.0+galaxy0,Cut1 for --super_short_tool_id etc...
+	meta <<-EOF
+		AUTHORS: lldelisle
+		ADDED: 23
+	EOF
+	handle_help "$@" <<-EOF
+		Tools Usage Tracking: cpu-hours, cpu-years and nb_users for specific tools (optionally in a given year).
+
+		    $ gxadmin query tools-usage --super_short_tool_id --no_version --tools bowtie2,Cut1 2023
+			 cpu_hours | cpu_years | tool_id | nb_users 
+			-----------+-----------+---------+----------
+			   4631.91 |      0.53 | bowtie2 |        7 
+			      0.24 |      0.00 | Cut1    |        6 
+			(2 rows)  
+	EOF
+	if [[ -n $arg_year ]]; then
+	    filter_by_year="AND date_trunc('year', job.create_time AT TIME ZONE 'UTC') = '$arg_year-01-01'::date"
+	fi
+	tool_id="job.tool_id"
+	if [[ -n $arg_short_tool_id ]]; then
+		tool_id="regexp_replace(job.tool_id, '.*toolshed.*/repos/', '')"
+	fi
+	if [[ -n $arg_super_short_tool_id ]]; then
+		tool_id="regexp_replace(job.tool_id, '.*toolshed.*/repos/[^/]*/[^/]*/', '')"
+	fi
+
+	if [[ -n $arg_no_version ]]; then
+		tool_id="regexp_replace(${tool_id}::TEXT, '/[0-9.a-z+-]+$', '')"
+	fi
+	filter_tool=""
+	if [[ -n $arg_tools ]]; then
+		tool_list=$(echo "$arg_tools" | sed -e "s/^/('/" -e "s/,/', '/g" -e "s/$/')/")
+		filter_tool="AND $tool_id in $tool_list"
+	fi
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			round(sum((a.metric_value * b.metric_value) / 3600 ), 2) as cpu_hours,
+			round(sum((a.metric_value * b.metric_value) / 3600 / 24 / 365 ), 2) as cpu_years,
+			$tool_id as tool_id,
+			COUNT (DISTINCT job.user_id) as nb_users
+		FROM
+			job_metric_numeric a,
+			job_metric_numeric b,
+			job
+		WHERE
+			b.job_id = a.job_id
+			AND a.job_id = job.id
+			AND a.metric_name = 'runtime_seconds'
+			AND b.metric_name = 'galaxy_slots'
+			$filter_tool
+			$filter_by_year
+		GROUP BY
+			$tool_id
 	EOF
 }
