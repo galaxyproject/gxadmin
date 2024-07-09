@@ -1846,7 +1846,7 @@ query_workflow-count() { ##? [date] : Count the number of workflow.
 			$ gxadmin query workflow-count
 			 num_workflows
 			---------------
-					471969
+					403101
 			(1 row)
 	EOF
 
@@ -1857,7 +1857,7 @@ query_workflow-count() { ##? [date] : Count the number of workflow.
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			count(*) as num_workflows
+			count(distinct(uuid)) as num_workflows
 		FROM
 			workflow
 		$where
@@ -5381,7 +5381,7 @@ query_tools-usage-per-month() { ##? [--startmonth=<YYYY>-<MM>] [--endmonth=<YYYY
 		Tools Usage Tracking: cpu-hours and nb_users by Month-Year.
 
 		    $ gxadmin query tools-usage-per-month --super_short_tool_id --no_version --tools bowtie2,Cut1 --startmonth=2023-03 --endmonth 2023-08
-			   month    | cpu_hours | tool_id | nb_users 
+			   month    | cpu_hours | tool_id | nb_users
 			------------+-----------+---------+----------
 			 2023-08-01 |    796.15 | bowtie2 |        2
 			 2023-07-01 |     20.04 | bowtie2 |        1
@@ -5525,11 +5525,11 @@ query_tools-usage() { ##? [year] [--tools=<tool1,tool2,...>] [--short_tool_id] [
 		Tools Usage Tracking: cpu-hours, cpu-years and nb_users for specific tools (optionally in a given year).
 
 		    $ gxadmin query tools-usage --super_short_tool_id --no_version --tools bowtie2,Cut1 2023
-			 cpu_hours | cpu_years | tool_id | nb_users 
+			 cpu_hours | cpu_years | tool_id | nb_users
 			-----------+-----------+---------+----------
-			   4631.91 |      0.53 | bowtie2 |        7 
-			      0.24 |      0.00 | Cut1    |        6 
-			(2 rows)  
+			   4631.91 |      0.53 | bowtie2 |        7
+			      0.24 |      0.00 | Cut1    |        6
+			(2 rows)
 	EOF
 	if [[ -n $arg_year ]]; then
 	    filter_by_year="AND date_trunc('year', job.create_time AT TIME ZONE 'UTC') = '$arg_year-01-01'::date"
