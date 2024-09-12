@@ -1403,7 +1403,7 @@ query_tool-input-to-memory-ratio() { ##? <tool_id> [last=-1] [--like] [--ok] [--
 		JOIN
 			input_sizes isz ON j.id = isz.job_id
 		WHERE
-			jmn.metric_name = 'memory.max_usage_in_bytes'
+			jmn.metric_name IN ('memory.max_usage_in_bytes', 'memory.peak')
 			AND isz.bytes > 0
 			AND jmn.metric_value >= ${arg_min_used}::float*1024*1024*1024
 		$order_by
@@ -2644,7 +2644,8 @@ query_job-inputs() { ##? <id>: Input datasets to a specific job
 				d.state AS d_state,
 				d.deleted AS d_deleted,
 				d.purged AS d_purged,
-				d.object_store_id AS object_store_id
+				d.object_store_id AS object_store_id,
+				d.total_size/1024/1024/1024 AS gb
 			FROM job j
 				JOIN job_to_input_dataset jtid
 					ON j.id = jtid.job_id
