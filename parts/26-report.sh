@@ -568,6 +568,9 @@ report_data-info(){ ##? <data_id> [object_store_config_file]: Information about 
 			Disk path | /data/dnb06/galaxy_db/files/4/2/8/dataset_428d0c0095a54c1a8248e9e0937f376f.dat
 	EOF
 
+	assert_count $# 1 "Missing Dataset ID or UUID"
+	arg_data_id=$1
+
 	# Metada
 	read -r -d '' qstr <<-EOF
 		SELECT DISTINCT d.id,
