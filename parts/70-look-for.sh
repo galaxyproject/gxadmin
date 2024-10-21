@@ -324,6 +324,12 @@ look_for() {
 		elif [[ "${query_name}" == "iquery"* ]]; then
 			query_influx "$QUERY" "$query_name" "$fields" "$tags" "$timestamp"
 		fi
+	elif [[ $query_type == "report" ]]; then
+		obtain_func "$query_type" "$query_name" "$@"
+
+		if [[ "${query_name}" == "report"* ]]; then
+			query_tbl_wrapper "$QUERY"
+		fi
 	else
 		$fn "$@";
 
