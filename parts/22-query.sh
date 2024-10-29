@@ -5572,3 +5572,82 @@ query_tools-usage() { ##? [year] [--tools=<tool1,tool2,...>] [--short_tool_id] [
 			$tool_id
 	EOF
 }
+
+query_tool-memory-efficiency() { ##? [--newer-than=2592000] [--min-job-count=5] [--min-runtime=300] [--min-mem=8]: View the efficiency of recent jobs
+	meta <<-EOF
+		AUTHORS: natefoo
+		ADDED: 23
+	EOF
+	handle_help "$@" <<-EOF
+		This is mainly useful for determining which long-running tools with large memory allocations have been
+		granted too large of an allocation. It requires that your jobs run in isolated Linux cgroups (as is
+		commonly configured for Slurm) that accurately report memory usage in memory.peak (cgroupsv2) or
+		memory.memsw.max_usage_in_bytes (cgroupsv1) and you have enabled the Galaxy cgroups job metrics plugin.
+
+		    $ gxadmin query tool-memory-efficiency
+		           tool_id       | run_count | total_runtime_hrs | avg_mem_used_gb | avg_mem_allocated_gb | avg_mem_percent
+		    ---------------------+-----------+-------------------+-----------------+----------------------+-----------------
+		     samtools_sort/2.0.5 |       232 |             48.65 |           10.00 |                10.00 |          100.00
+		     featurecounts/2.0.3 |       657 |            123.18 |            7.77 |                 8.00 |           97.07
+		     kraken2/2.1.1       |       156 |             74.76 |           78.03 |                84.82 |           91.55
+		     bwa_mem2/2.2.1      |       635 |            399.82 |           53.24 |                57.82 |           90.01
+		     rna_star/2.7.10b    |        20 |             59.47 |           51.34 |                58.00 |           88.51
+		     trim_galore/0.6.7   |      1217 |            358.12 |           10.74 |                18.50 |           58.03
+		     fastqc/0.74         |        97 |             15.52 |            6.65 |                27.46 |           24.31
+		     metaspades/3.15.3   |         6 |              4.56 |            7.46 |                28.00 |           26.65
+		     raxml/8.2.12        |       406 |            133.41 |            0.44 |                59.20 |            0.75
+
+		By default, only jobs from the last 30 days, tools that were allocated 8 GB of memory or more and run
+		more than 5 times, and jobs that ran for at least 5 minutes are included, since old jobs and fast and
+		infrequent tools can add noise to the results.
+
+		You can change the age of jobs returned by specifying '--newer-than='. This option takes a value in the
+		PostgreSQL date/time interval format, see documentation:
+		https://www.postgresql.org/docs/current/functions-datetime.html
+
+		Be sure to quote intervals containing spaces.
+
+		The minimum job cutoff per tool can be specified with '--min-job-count', minimum runtime (in seconds)
+		with '--min-runtime', and minimum memory (in GB) with '--min-mem'.
+	EOF
+
+	fields="run_count=1;total_runtime_hrs=2;avg_mem_used_gb=3;avg_mem_allocated_gb=4;avg_mem_percent=5"
+	tags="tool_id=0"
+
+	read -r -d '' QUERY <<-EOF
+		WITH job_metrics AS (
+			SELECT
+			j.id,
+			j.tool_id,
+			(SELECT metric_value FROM job_metric_numeric WHERE job_id = j.id AND metric_name = 'galaxy_memory_mb' LIMIT 1) * POW(1024, 2) AS mem_allocated,
+			(SELECT metric_value FROM job_metric_numeric WHERE job_id = j.id AND metric_name IN ('memory.peak', 'memory.memsw.max_usage_in_bytes') LIMIT 1) AS mem_used,
+			(SELECT metric_value FROM job_metric_numeric WHERE job_id = j.id AND metric_name = 'runtime_seconds' LIMIT 1) AS runtime,
+			(SELECT metric_value FROM job_metric_numeric WHERE job_id = j.id AND metric_name IN ('memory.peak', 'memory.memsw.max_usage_in_bytes') LIMIT 1)
+			  / NULLIF((SELECT metric_value FROM job_metric_numeric WHERE job_id = j.id AND metric_name = 'galaxy_memory_mb' LIMIT 1) * POW(1024, 2), 0) AS mem_ratio
+		    FROM
+			job j
+		    WHERE
+			j.update_time > timezone('UTC', now()) - '$arg_newer_than'::INTERVAL
+			AND j.state = 'ok'
+		)
+		SELECT
+		    tool_id,
+		    COUNT(*) AS run_count,
+		    ROUND((SUM(runtime) / POW(60, 2))::numeric, 2) AS total_runtime_hrs,
+		    ROUND((AVG(mem_used) / POW(1024, 3))::numeric, 2) AS avg_mem_used_gb,
+		    ROUND((AVG(mem_allocated) / POW(1024, 3))::numeric, 2) AS avg_mem_allocated_gb,
+		    ROUND((AVG(mem_ratio) * 100)::numeric, 2) AS avg_mem_percent
+		FROM
+		    job_metrics
+		WHERE
+		    mem_allocated >= ($arg_min_mem * POW(1024, 3))
+		    AND mem_used IS NOT NULL
+		    AND runtime > $arg_min_runtime
+		GROUP BY
+		    tool_id
+		HAVING
+		    COUNT(tool_id) > $arg_min_job_count
+		ORDER BY
+		    avg_mem_percent DESC
+	EOF
+}
