@@ -1392,6 +1392,8 @@ query_tool-metrics() { ##? <tool_id> <metric_id> [last=-1] [--like] [--ok] [--su
 		    [ 150.223,  162.733) n=746
 
 
+		Multiple metrics can be specified by separating them with a comma.
+
 		The optional 'last' argument can be used to limit the number of most recent jobs that will be checked.
 		The default is all jobs. Note that this can return zero results if your most recent jobs have not
 		returned metric data for your selected metric.
@@ -1402,6 +1404,7 @@ query_tool-metrics() { ##? <tool_id> <metric_id> [last=-1] [--like] [--ok] [--su
 	EOF
 
 	limit_clause=
+	metric_clause=
 	summary='*'
 
 	tool_subquery="SELECT id FROM job WHERE tool_id = '$arg_tool_id'"
@@ -1418,13 +1421,19 @@ query_tool-metrics() { ##? <tool_id> <metric_id> [last=-1] [--like] [--ok] [--su
 		summary="$(summary_statistics metric_value 0)"
 	fi
 
+	if [[ "$arg_metric_id" =~ ',' ]]; then
+		metric_clause="metric_name IN ('$(echo "$arg_metric_id" | sed "s/,/','/g")')"
+	else
+		metric_clause="metric_name = '$arg_metric_id'"
+	fi
+
 	read -r -d '' QUERY <<-EOF
 		WITH runtime_data AS (
 			SELECT
 				metric_value
 			FROM job_metric_numeric
 			WHERE
-				metric_name = '$arg_metric_id'
+				$metric_clause
 				and
 				job_id in (
 					$tool_subquery
