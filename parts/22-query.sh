@@ -1252,9 +1252,11 @@ query_tool-last-used-date() { ## : When was the most recent invocation of every 
 	EOF
 }
 
-query_tool-use-by-group() { ##? <years_month> [--group=<name>]: Lists count of tools used by all users in a group
+query_tool-use-by-group() { ##? <year_month> <group>: Lists count of tools used by all users in a group
 	meta <<-EOF
 		ADDED: 19
+		UPDATED: 22
+		AUTHORS: gavindi
 	EOF
 	handle_help "$@" <<-EOFhelp
 		Lists tools use count by users in group.
@@ -1284,6 +1286,8 @@ EOFhelp
 			user_group_association.user_id = galaxy_user.id
 		AND
 			date_trunc('month', job.create_time) = '$arg_year_month-01'
+		AND
+			galaxy_group.name = '$arg_group'
 		GROUP BY
 			job.tool_id, galaxy_user.username
 EOF
