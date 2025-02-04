@@ -4361,11 +4361,12 @@ query_aq() { ## [--escape] <table> <column> <-|job_id [job_id [...]]>: Given a l
 	# shellcheck disable=SC2068
 	ids_string=$(join_by ',' ${ids[@]})
 
+	# unnest(...) stands in for WHERE id IN (...) while preserving the command line order
 	read -r -d '' QUERY <<-EOF
 		SELECT
 			$column
 		FROM $table
-		WHERE id in ($ids_string)
+		JOIN unnest('{$ids_string}'::int[]) WITH ORDINALITY t(id, ord) USING (id)
 	EOF
 }
 
