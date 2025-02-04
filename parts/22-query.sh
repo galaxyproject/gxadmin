@@ -4,7 +4,7 @@
 registered_subcommands="$registered_subcommands query"
 _query_short_help="DB Queries"
 _query_long_help="
-	'query' can be exchanged with 'tsvquery' or 'csvquery' for tab- and comma-separated variants.
+	'query' can be exchanged with 'tsvquery' or 'csvquery' for tab- and comma-separated variants. Additionally, 'rawquery' returns unaligned tuples only.
 	In some cases 'iquery' is supported for InfluxDB compatible output.
 	In all cases 'explainquery' will show you the query plan, in case you need to optimise or index data. 'explainjsonquery' is useful with PEV: http://tatiyants.com/pev/
 "
