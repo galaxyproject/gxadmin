@@ -254,6 +254,7 @@ look_for() {
 
 		# Run the queries
 		case "$group_name" in
+			rawquery         ) query_raw "$QUERY";;
 			tsvquery         ) query_tsv "$QUERY";;
 			csvquery         ) query_csv "$QUERY";;
 			query            ) query_tbl_wrapper "$QUERY";;

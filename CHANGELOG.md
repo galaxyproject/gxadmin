@@ -2,6 +2,10 @@
 
 - Added:
 	- query tools-usage (like tools-usage-per-month but for a year or for whole history) by @lldelisle
+	- query tool-memory-efficiency, evaluates the memory efficiency of recent jobs from @natefoo
+	- Return query results in raw (unaligned, tuples-only) format with 'rawquery' from @natefoo
+- Updated:
+	- query aq to add --escape option to encode bytea columns to ASCII from @natefoo
 - Fixed:
 	- query tools-usage-per-month when 'no_version' was used there were still one line per version.
 

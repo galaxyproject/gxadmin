@@ -4,7 +4,7 @@
 registered_subcommands="$registered_subcommands query"
 _query_short_help="DB Queries"
 _query_long_help="
-	'query' can be exchanged with 'tsvquery' or 'csvquery' for tab- and comma-separated variants.
+	'query' can be exchanged with 'tsvquery' or 'csvquery' for tab- and comma-separated variants. Additionally, 'rawquery' returns unaligned tuples only.
 	In some cases 'iquery' is supported for InfluxDB compatible output.
 	In all cases 'explainquery' will show you the query plan, in case you need to optimise or index data. 'explainjsonquery' is useful with PEV: http://tatiyants.com/pev/
 "
@@ -4306,15 +4306,49 @@ query_data-origin-distribution-summary() { ##? [--human]: breakdown of data sour
 	EOF
 }
 
-query_aq() { ## <table> <column> <-|job_id [job_id [...]]>: Given a list of IDs from a table (e.g. 'job'), access a specific column from that table
+query_aq() { ## [--escape] <table> <column> <-|job_id [job_id [...]]>: Given a list of IDs from a table (e.g. 'job'), access a specific column from that table
 	meta <<-EOF
 		ADDED: 15
 	EOF
 	handle_help "$@" <<-EOF
+		Select a column from a table matching the given id(s).
+
+		The --escape option can be used to convert data stored in the escape format, such as the job destination
+		parameters:
+
+		    $ gxadmin query aq --escape job destination_params 42 43
+		                                                 encode
+		    ------------------------------------------------------------------------------------------------
+		     {"embed_metadata_in_job": false, "require_container": true, "singularity_enabled": true}
+		     {"native_specification": "--partition=normal --nodes=1 --ntasks=2 --mem=8192 --time=24:00:00"}
+		    (2 rows)
+
+		This is particularly useful to combine with 'rawquery' and jq:
+
+		    $ gxadmin rawquery aq --escape job destination_params 42 43 | jq -s
+		    [
+		      {
+		        "embed_metadata_in_job": false,
+		        "require_container": true,
+		        "singularity_enabled": true
+		      },
+		      {
+		        "native_specification": "--partition=normal --nodes=1 --ntasks=2 --mem=8192 --time=24:00:00"
+		      }
+		    ]
 	EOF
+
+	escape=false
+	if [[ "$1" == '--escape' ]]; then
+		escape=true; shift
+	fi
 
 	table=$1; shift
 	column=$1; shift
+
+	if $escape; then
+		column="encode($column, 'escape')"
+	fi
 
 	if [[ "$1" == "-" ]]; then
 		# read jobs from stdin
@@ -4327,11 +4361,12 @@ query_aq() { ## <table> <column> <-|job_id [job_id [...]]>: Given a list of IDs 
 	# shellcheck disable=SC2068
 	ids_string=$(join_by ',' ${ids[@]})
 
+	# unnest(...) stands in for WHERE id IN (...) while preserving the command line order
 	read -r -d '' QUERY <<-EOF
 		SELECT
 			$column
 		FROM $table
-		WHERE id in ($ids_string)
+		JOIN unnest('{$ids_string}'::int[]) WITH ORDINALITY t(id, ord) USING (id)
 	EOF
 }
 
