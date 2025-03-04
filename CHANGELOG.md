@@ -2,6 +2,8 @@
 
 - Added:
 	- query tools-usage (like tools-usage-per-month but for a year or for whole history) by @lldelisle
+	- query longest-running-jobs-by-destination from @TomasVondrak and @sanjaysrikakulam
+	- query most-used-tools-by-destination from @TomasVondrak and @sanjaysrikakulam
 - Fixed:
 	- query tools-usage-per-month when 'no_version' was used there were still one line per version.
 
