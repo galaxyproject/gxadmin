@@ -22,32 +22,26 @@ query_longest-running-jobs-by-destination() { ## : get the longest running jobs 
 	EOF
 
 	read -r -d '' QUERY <<-EOF
-		COPY (
+		SELECT
+			j.id,
+			j.tool_id,
+			j.destination_id,
+			EXTRACT(EPOCH FROM (NOW() - jsh.running_since)) / 3600 AS hours_since_running
+		FROM
+			job j
+		JOIN LATERAL (
 			SELECT
-				j.id,
-				j.tool_id,
-				j.destination_id,
-				EXTRACT(EPOCH FROM (NOW() - jsh.running_since)) / 3600 AS hours_since_running
+				MIN(create_time) AS running_since
 			FROM
-				job j
-			JOIN LATERAL (
-				SELECT
-					MIN(create_time) AS running_since
-				FROM
-					job_state_history jsh
-				WHERE
-					jsh.job_id = j.id
-					AND jsh.state = 'running'
-			) jsh ON true
+				job_state_history jsh
 			WHERE
-				j.state = 'running'
-			ORDER BY
-				hours_since_running DESC
-		) TO STDOUT WITH (
-			FORMAT CSV,
-			HEADER FALSE,
-			DELIMITER ','
-		);
+				jsh.job_id = j.id
+				AND jsh.state = 'running'
+		) jsh ON true
+		WHERE
+			j.state = 'running'
+		ORDER BY
+			hours_since_running DESC
 	EOF
 }
 
@@ -64,27 +58,21 @@ query_most-used-tools-by-destination() { ## : count the most used tools on the G
 	EOF
 
 	read -r -d '' QUERY <<-EOF
-		COPY (
-			SELECT
-				regexp_replace(tool_id, '/[^/]+$', '') AS tool_id_no_version,
-				destination_id,
-				COUNT(*) AS job_count
-			FROM
-				job
-			WHERE
-				create_time >= (NOW() AT TIME ZONE 'UTC' - INTERVAL '1 hour')
-				AND tool_id ILIKE 'toolshed%'
-				AND destination_id IS NOT NULL
-			GROUP BY
-				tool_id_no_version,
-				destination_id
-			ORDER BY
-				job_count DESC
-		) TO STDOUT WITH (
-			FORMAT CSV,
-			HEADER FALSE,
-			DELIMITER ','
-		);
+		SELECT
+			regexp_replace(tool_id, '/[^/]+$', '') AS tool_id_no_version,
+			destination_id,
+			COUNT(*) AS job_count
+		FROM
+			job
+		WHERE
+			create_time >= (NOW() AT TIME ZONE 'UTC' - INTERVAL '1 hour')
+			AND tool_id ILIKE 'toolshed%'
+			AND destination_id IS NOT NULL
+		GROUP BY
+			tool_id_no_version,
+			destination_id
+		ORDER BY
+			job_count DESC
 	EOF
 }
 
