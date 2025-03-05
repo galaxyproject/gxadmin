@@ -28,16 +28,15 @@ query_longest-running-jobs-by-destination() { ## : get the longest running jobs 
 			j.destination_id,
 			EXTRACT(EPOCH FROM (NOW() - jsh.running_since)) / 3600 AS hours_since_running
 		FROM
-			job j
-		JOIN LATERAL (
-			SELECT
-				MIN(create_time) AS running_since
-			FROM
-				job_state_history jsh
-			WHERE
-				jsh.job_id = j.id
-				AND jsh.state = 'running'
-		) jsh ON true
+			job j JOIN LATERAL (
+				SELECT
+					MIN(create_time) AS running_since
+				FROM
+					job_state_history jsh
+				WHERE
+					jsh.job_id = j.id
+					AND jsh.state = 'running'
+			) jsh ON true
 		WHERE
 			j.state = 'running'
 		ORDER BY
