@@ -21,8 +21,8 @@ query_longest-running-jobs-by-destination() { ## : List the longest (currently) 
 
 	EOF
 
-	fields="hours_since_running=2"
-	tags="job_id=0;tool_id=1"
+	fields="hours_since_running=3"
+	tags="job_id=0;tool_id=1;destination_id=2"
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
