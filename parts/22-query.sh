@@ -9,9 +9,9 @@ _query_long_help="
 	In all cases 'explainquery' will show you the query plan, in case you need to optimise or index data. 'explainjsonquery' is useful with PEV: http://tatiyants.com/pev/
 "
 
-query_longest-running-jobs-by-destination() { ## : get the longest running jobs on the Galaxy server and outputs the longest running jobs by destination in InfluxDB line protocol format
+query_longest-running-jobs-by-destination() { ## : List the longest (currently) running jobs on the Galaxy server by destination
 	handle_help "$@" <<-EOF
-		This script uses gxadmin to get the longest running jobs on the Galaxy server and outputs the longest running jobs by destination in InfluxDB line protocol format.
+		List the longest (currently) running jobs on the Galaxy server by destination
 
 		job_id | tool_id                                                                                  | destination_id         | hours_since_running
 		------ | ---------------------------------------------------------------------------------------- | ---------------------- | -------------------
@@ -20,6 +20,9 @@ query_longest-running-jobs-by-destination() { ## : get the longest running jobs 
 		69435  | toolshed.g2.bx.psu.edu/repos/petr-novak/dante_ltr/dante_ltr_search/4.0.4.1               | tpv_pulsar             | 56
 
 	EOF
+
+	fields="hours_since_running=2"
+	tags="job_id=0;tool_id=1"
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
@@ -44,9 +47,9 @@ query_longest-running-jobs-by-destination() { ## : get the longest running jobs 
 	EOF
 }
 
-query_most-used-tools-by-destination() { ## : count the most used tools on the Galaxy server and outputs the count of most used tools by destination in InfluxDB line protocol format
+query_most-used-tools-by-destination() { ## : List tools with the highest job count on the Galaxy server by destination
 	handle_help "$@" <<-EOF
-		This script uses gxadmin to count the most used tools on the Galaxy server and outputs the count of most used tools by destination in InfluxDB line protocol format.
+		List tools with the highest job count on the Galaxy server by destination
 
 		tool_id                                                                                         | destination_id | job_count
 		----------------------------------------------------------------------------------------------- | -------------- | ---------
@@ -55,6 +58,9 @@ query_most-used-tools-by-destination() { ## : count the most used tools on the G
 		toolshed.g2.bx.psu.edu/repos/petr-novak/re_utils/sampler                                        | tpv_pulsar     | 13
 
 	EOF
+
+	fields="job_count=2"
+	tags="tool_id=0;destination_id=1"
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
