@@ -9,6 +9,78 @@ _query_long_help="
 	In all cases 'explainquery' will show you the query plan, in case you need to optimise or index data. 'explainjsonquery' is useful with PEV: http://tatiyants.com/pev/
 "
 
+query_longest-running-jobs-by-destination() { ## : List the longest (currently) running jobs on the Galaxy server by destination
+	handle_help "$@" <<-EOF
+		List the longest (currently) running jobs on the Galaxy server by destination
+
+		job_id | tool_id                                                                                  | destination_id         | hours_since_running
+		------ | ---------------------------------------------------------------------------------------- | ---------------------- | -------------------
+		65213  | toolshed.g2.bx.psu.edu/repos/petr-novak/repeatexplorer2_testing/repeatexplorer2/2.3.12.1 | tpv_pulsar_singularity | 326
+		69261  | toolshed.g2.bx.psu.edu/repos/petr-novak/dante/dante/2.6.2                                | tpv_pulsar             | 85
+		69435  | toolshed.g2.bx.psu.edu/repos/petr-novak/dante_ltr/dante_ltr_search/4.0.4.1               | tpv_pulsar             | 56
+
+	EOF
+
+	fields="hours_since_running=3"
+	tags="job_id=0;tool_id=1;destination_id=2"
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			j.id,
+			j.tool_id,
+			j.destination_id,
+			EXTRACT(EPOCH FROM (NOW() - jsh.running_since)) / 3600 AS hours_since_running
+		FROM
+			job j JOIN LATERAL (
+				SELECT
+					MIN(create_time) AS running_since
+				FROM
+					job_state_history jsh
+				WHERE
+					jsh.job_id = j.id
+					AND jsh.state = 'running'
+			) jsh ON true
+		WHERE
+			j.state = 'running'
+		ORDER BY
+			hours_since_running DESC
+	EOF
+}
+
+query_most-used-tools-by-destination() { ## : List tools with the highest job count on the Galaxy server by destination
+	handle_help "$@" <<-EOF
+		List tools with the highest job count on the Galaxy server by destination
+
+		tool_id                                                                                         | destination_id | job_count
+		----------------------------------------------------------------------------------------------- | -------------- | ---------
+		toolshed.g2.bx.psu.edu/repos/petr-novak/re_utils/paired_fastq_filtering                         | tpv_pulsar     | 23
+		toolshed.g2.bx.psu.edu/repos/petr-novak/re_utils/fasta_affixer                                  | tpv_pulsar     | 14
+		toolshed.g2.bx.psu.edu/repos/petr-novak/re_utils/sampler                                        | tpv_pulsar     | 13
+
+	EOF
+
+	fields="job_count=2"
+	tags="tool_id=0;destination_id=1"
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			regexp_replace(tool_id, '/[^/]+$', '') AS tool_id_no_version,
+			destination_id,
+			COUNT(*) AS job_count
+		FROM
+			job
+		WHERE
+			create_time >= (NOW() AT TIME ZONE 'UTC' - INTERVAL '1 hour')
+			AND tool_id ILIKE 'toolshed%'
+			AND destination_id IS NOT NULL
+		GROUP BY
+			tool_id_no_version,
+			destination_id
+		ORDER BY
+			job_count DESC
+	EOF
+}
+
 query_latest-users() { ## : 40 recently registered users
 	meta <<-EOF
 		AUTHORS: hexylena
