@@ -4620,26 +4620,28 @@ query_dump-users() { ##? [--apikey] [--email] : Dump the list of users and their
 	EOF
 
 	if [[ -n "$arg_email"  ]]; then
-		email=",$(gdpr_safe email email)"
+		email=",$(gdpr_safe email u.email)"
 	else
 		email=""
 	fi
 
 	if [[ -n "$arg_apikey"  ]]; then
-		apikey="apikey"
-		apikeyjoin="left join api_keys "
+		apikey=",ak.key"
+		apikeyjoin="left join api_keys ak on ak.user_id = u.id"
 	else
-		email=""
+		apikey=""
+  		apikeyjoin=""
 	fi
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			username
+			u.username
 			$email
+   			$apikey
 		FROM
-			galaxy_user
+			galaxy_user u $apikeyjoin
 		ORDER BY
-		    id desc
+		    u.id desc
 	EOF
 }
 
