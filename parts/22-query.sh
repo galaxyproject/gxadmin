@@ -5770,3 +5770,59 @@ query_user-info() { ## <-|user [user [...]]> : Retrieve information about users 
 			(galaxy_user.email in ('$users_string') or galaxy_user.username in ('$users_string') or galaxy_user.id::text in ('$users_string'))
 	EOF
 }
+
+query_live-tuples() { ##? [--no-analyzed-only] [table]: Estimate table row counts using the n_live_tup stat
+	meta <<-EOF
+		AUTHORS: natefoo
+		ADDED: 23
+	EOF
+	handle_help "$@" <<-EOF
+		Query the 'n_live_tup' value from pg_stat_user_tables as an estimate of total row count in the table.
+
+		NOTE: This will not be accurate if the table has not been analyzed since the last time PostgreSQL was
+		started. The 'gxadmin mutate analyze-unanalyzed-tables' function can be run to ensure all tables are
+		analyzed.
+
+		$gxadmin query live-tuples | head
+		                            relname                             | n_live_tup
+		----------------------------------------------------------------+------------
+		 alembic_version                                                |          1
+		 api_keys                                                       |       4242
+		 celery_user_rate_limit                                         |          0
+		 chat_exchange                                                  |        128
+		 chat_exchange_message                                          |        132
+		 cleanup_event                                                  |        100
+		 cleanup_event_dataset_association                              |       1251
+		 cleanup_event_hda_association                                  |       2898
+
+		By default, only analyzed tables will be included in the output. All tables can be included using
+		'--no-analyzed-only'. The value for a single table can be obtained with the optional 'table' argument.
+	EOF
+
+	fields="count=1"
+	tags="table_name=0"
+
+	analyze_null_string="AND (last_analyze IS NOT NULL OR last_autoanalyze IS NOT NULL)"
+	if [[ -n $arg_no_analyzed_only ]]; then
+		analyze_null_string=
+	fi
+
+	table_clause=
+	if [[ -n $arg_table ]]; then
+		table_clause="AND relname = '$arg_table'"
+	fi
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			relname,
+			n_live_tup
+		FROM
+			pg_stat_user_tables
+		WHERE
+			schemaname = 'public'
+			$analyze_null_string
+			$table_clause
+		ORDER BY
+			relname
+	EOF
+}
