@@ -1718,3 +1718,32 @@ mutate_scale-table-autovacuum() { ##? [--shift=16] [--commit]: Update autovacuum
 	txn_pos=$(txn_postfix "$arg_commit")
 	QUERY="$txn_pre $QUERY; $txn_pos"
 }
+
+mutate_analyze-unanalyzed-tables() { ##?: Analyze unanalyzed tables.
+	meta <<-EOF
+		ADDED: 23
+		AUTHORS: natefoo
+	EOF
+	handle_help "$@" <<-EOF
+		Analyze any tables that do not have a 'last_analyzed' or 'last_autoanalyzed' date.
+
+		These, along with other pg_stat_user_tables columns such as 'n_live_tup' are in-memory and only
+		accurate/counted from the last PostgreSQL server restart, or last ANALYZE, so performing a manual
+		ANALYZE can be useful after restarts when using pg_stat_user_tables for monitoring, even if not needed
+		for query planning.
+	EOF
+
+	local qstr results table
+
+	# check if there is an existing role.
+	read -r -d '' qstr <<-EOF
+		SELECT relname FROM pg_stat_user_tables WHERE schemaname = 'public' AND last_autoanalyze IS NULL AND last_analyze IS NULL
+	EOF
+	mapfile -t results < <(query_tsv "$qstr")
+
+	[[ ${#results[@]} -gt 0 ]] || { echo "No unanalyzed tables"; return; }
+
+	for table in "${results[@]}"; do
+		QUERY="${QUERY} ANALYZE VERBOSE ${table};"
+	done
+}
