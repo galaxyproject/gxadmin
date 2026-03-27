@@ -92,6 +92,8 @@ Command | Description
 [`query tools-usage-per-month`](#query-tools-usage-per-month) | By default, startmonth is 1 year ago and end month is current month. tool1, tool2 etc. should correspond to the tool_id with the same format as requested: toolshed.g2.bx.psu.edu/repos/devteam/bowtie2/bowtie2/2.5.0+galaxy0,Cut1 for default, devteam/bowtie2/bowtie2/2.5.0+galaxy0,Cut1 for --short_tool_id, bowtie2/2.5.0+galaxy0,Cut1 for --super_short_tool_id etc...
 [`query tool-usage-over-time`](#query-tool-usage-over-time) | Counts of tool runs by month, filtered by a tool id search
 [`query tool-usage`](#query-tool-usage) | Counts of tool runs in the past weeks (default = all)
+[`query user-tool-usage-over-time`](#query-user-tool-usage-over-time) | Counts distinct users per tool by month for the last 5 years (default = all users)
+[`query user-tool-usage`](#query-user-tool-usage) | Counts distinct users per tool for the last 5 years (default = all users)
 [`query tool-use-by-group`](#query-tool-use-by-group) | Lists count of tools used by all users in a group
 [`query total-jobs`](#query-total-jobs) | Total number of jobs run by Galaxy instance.
 [`query tpt-tool-cpu`](#query-tpt-tool-cpu) | Start year is required. Formula returns sum if blank.
@@ -2146,6 +2148,59 @@ query tool-usage -  Counts of tool runs in the past weeks (default = all)
      Filter1                                                                |  43253
 
 
+## query user-tool-usage-over-time
+
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_user-tool-usage-over-time&type=Code))
+query user-tool-usage-over-time -  Counts distinct users per tool by month for the last 5 years (default = all users)
+
+**SYNOPSIS**
+
+    gxadmin query user-tool-usage-over-time [user_id]
+
+**NOTES**
+
+Counts distinct users per normalized tool name by month for the last 5 years.
+By default, includes all users. Optionally pass a specific user_id.
+
+    $ gxadmin query user-tool-usage-over-time
+    $ gxadmin query user-tool-usage-over-time 12345
+
+Example:
+month       | tool_name                                                           | count
+------------+---------------------------------------------------------------------+-------
+ 2026-01-01 | __DATA_FETCH__                                                      |  5732
+ 2026-01-01 | toolshed.g2.bx.psu.edu/repos/devteam/fastqc/fastqc                  |  1388
+ 2026-01-01 | __SET_METADATA__                                                    |   883
+ 2026-01-01 | CONVERTER_gz_to_uncompressed                                        |   816
+ 2026-01-01 | toolshed.g2.bx.psu.edu/repos/iuc/falco/falco                        |   788
+ 2026-01-01 | toolshed.g2.bx.psu.edu/repos/iuc/multiqc/multiqc                    |   733
+ 2026-01-01 | toolshed.g2.bx.psu.edu/repos/pjbriggs/trimmomatic/trimmomatic       |   606
+ 2026-01-01 | toolshed.g2.bx.psu.edu/repos/iuc/featurecounts/featurecounts        |   565
+
+## query user-tool-usage
+
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_user-tool-usage&type=Code))
+query user-tool-usage -  Counts distinct users per tool for the last 5 years (default = all users)
+
+**SYNOPSIS**
+
+    gxadmin query user-tool-usage [user_id]
+
+**NOTES**
+
+Counts distinct users per normalized tool name for the last 5 years.
+By default, includes all users. Optionally pass a specific user_id.
+
+    $ gxadmin query user-tool-usage
+    $ gxadmin query user-tool-usage 12345
+
+Example:
+tool_name                                                                         | count          ----------------------------------------------------------------------------------+-------                         
+__DATA_FETCH__                                                                    | 97369                          
+toolshed.g2.bx.psu.edu/repos/devteam/fastqc/fastqc                                | 56282
+toolshed.g2.bx.psu.edu/repos/iuc/multiqc/multiqc                                  | 26981                          
+CONVERTER_gz_to_uncompressed                                                      | 24327                          
+
 ## query tool-use-by-group
 
 ([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_tool-use-by-group&type=Code))
@@ -2663,4 +2718,3 @@ query workflow-invocation-totals -  Report on overall workflow counts, to ensure
 **NOTES**
 
 Really only intended to be used in influx queries.
-
