@@ -201,6 +201,74 @@ query_tool-usage-over-time() { ##? [searchterm]: Counts of tool runs by month, f
 	EOF
 }
 
+query_user-tool-usage() { ##? [user_id]: Counts distinct users per tool for the last 5 years (default = all users)
+	handle_help "$@" <<-EOF
+		Counts distinct users per normalized tool name for the last 5 years.
+		By default, includes all users. Optionally pass a specific user_id.
+
+		    $ gxadmin query user-tool-usage
+		    $ gxadmin query user-tool-usage 123
+	EOF
+
+	user_filter=
+	if [[ "$arg_user_id" != "" ]]; then
+		user_filter="AND user_id = '$arg_user_id'"
+	fi
+
+	fields="count=1"
+	tags="tool_name=0"
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			tool_name, COUNT(*) AS count
+		FROM (
+			SELECT DISTINCT
+				REGEXP_REPLACE(tool_id, '(.*)/(.*)', '\1') AS tool_name,
+				user_id
+			FROM job
+			WHERE create_time BETWEEN CURRENT_DATE - INTERVAL '5 years' AND CURRENT_DATE
+			$user_filter
+			GROUP BY tool_name, user_id
+		) AS subquery
+		GROUP BY tool_name
+		ORDER BY count DESC
+	EOF
+}
+
+query_user-tool-usage-over-time() { ##? [user_id]: Counts distinct users per tool by month for the last 5 years (default = all users)
+	meta <<-EOF
+		ADDED: 19
+		UPDATED: 26
+	EOF
+	handle_help "$@" <<-EOF
+		Counts distinct users per normalized tool name by month for the last 5 years.
+		By default, includes all users. Optionally pass a specific user_id.
+
+		    $ gxadmin query user-tool-usage-over-time
+		    $ gxadmin query user-tool-usage-over-time 123
+	EOF
+
+	user_filter=
+	if [[ "$arg_user_id" != "" ]]; then
+		user_filter="AND user_id = '$arg_user_id'"
+	fi
+
+	fields="count=2"
+	tags="month=0;tool_name=1"
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			date_trunc('month', create_time)::date AS month,
+			REGEXP_REPLACE(tool_id, '(.*)/(.*)', '\1') AS tool_name,
+			COUNT(DISTINCT user_id) AS count
+		FROM job
+		WHERE create_time BETWEEN CURRENT_DATE - INTERVAL '5 years' AND CURRENT_DATE
+		$user_filter
+		GROUP BY month, tool_name
+		ORDER BY month ASC, count DESC
+	EOF
+}
+
 query_tool-popularity() { ##? [months=24] [--error]: Most run tools by month (tool_predictions)
 	handle_help "$@" <<-EOF
 		See most popular tools by month. Use --error to include error counts.
