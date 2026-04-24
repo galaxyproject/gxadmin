@@ -5894,3 +5894,49 @@ query_live-tuples() { ##? [--no-analyzed-only] [table]: Estimate table row count
 			relname
 	EOF
 }
+
+query_history-exports() { ##? [--limit=50] [--user=] [--min_history_size=] : List history exports ordered by most recent.
+	handle_help "$@" <<-EOF
+		Show most recent history export tasks from the store_export_association table.
+		There are optional filters --user (ID/username/email) and --min_history_size (GB) and an optional --limit for number of rows returned (default 50).
+		Note that total_size is the undeleted size of the history: what was included in the export might be smaller than this.
+
+		$ gxadmin query history-exports --min_history_size=10 --user=jarvis
+		  id  |     create_time     |            task_uuid             | history_id | user_id | total_size |                  result_data
+		------+---------------------+----------------------------------+------------+---------+------------+-----------------------------------------------
+		 3275 | 2026-03-15 10:27:25 | 5557cfe535c34c959baa7e7fa4ecddc6 |    2800101 |   12345 | 149 GB     | {"uri": null, "error": null, "success": true}
+		 3274 | 2026-03-14 05:13:12 | 555611b2b02d4ec59a9246b73bbdda15 |    2840202 |   12345 | 11 GB      | {"uri": null, "error": null, "success": true}
+		 3273 | 2026-03-14 04:08:40 | 555c6a5a7eb44836a1c8a705bcfa7714 |    2790303 |   12345 | 279 GB     | {"uri": null, "error": null, "success": true}
+		(3 rows)
+	EOF
+
+	if [[ -n "$arg_user" ]]; then
+		user_filter=" AND $(get_user_filter "$arg_user")"
+	fi
+	if [[ -n "$arg_min_history_size" ]]; then
+		min_history_size_filter=" AND (SELECT SUM(COALESCE(d.total_size, d.file_size, 0)) FROM history_dataset_association hda, dataset d WHERE hda.dataset_id = d.id AND hda.history_id = history.id) >= $(echo "$arg_min_history_size*1024*1024*1024" | bc)"
+	fi
+
+	read -r -d '' QUERY <<-EOF
+			SELECT
+			  store_export_association.id as id,
+			  store_export_association.create_time::timestamp(0) as create_time,
+			  store_export_association.task_uuid as task_uuid,
+			  store_export_association.object_id as history_id,
+			  galaxy_user.id as user_id,
+			  (
+				SELECT
+				  pg_size_pretty(SUM(COALESCE(d.total_size, d.file_size, 0)))
+				  FROM history_dataset_association hda, dataset d
+				  WHERE hda.dataset_id = d.id
+				  AND hda.history_id = history.id
+			  ) as total_size,
+			((CONVERT_FROM(store_export_association.export_metadata, 'UTF8')::jsonb #>> '{}')::jsonb -> 'result_data') as result_data
+			FROM store_export_association
+			LEFT JOIN history ON history.id = store_export_association.object_id
+			LEFT JOIN galaxy_user ON galaxy_user.id = history.user_id
+			WHERE store_export_association.object_type = 'history' $user_filter ${min_history_size_filter}
+			ORDER BY store_export_association.create_time desc
+			LIMIT $arg_limit;
+	EOF
+}
