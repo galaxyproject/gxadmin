@@ -3404,7 +3404,7 @@ query_tool-new-errors() { ##? [weeks=4] [--short-tool-id]: Summarize percent of 
 					GROUP BY j.tool_id
 				)
 		GROUP BY j.tool_id, j.handler
-		ORDER BY percent_failed_errored DESC
+		ORDER BY percent_errored DESC
 	EOF
 }
 
