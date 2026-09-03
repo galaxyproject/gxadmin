@@ -679,10 +679,10 @@ query_queue-overview() { ##? [--short-tool-id]: View used mostly for monitoring
 		It can also be run as a regular query for a tabular, human-readable view:
 
 		    $ gxadmin query queue-overview
-		         tool_id      | tool_version | destination_id |   handler   |  state  | job_runner_name | count | user_id
-		    ------------------+--------------+----------------+-------------+---------+-----------------+-------+---------
-		     toolshed.g2.bx... | 2.5.0+galaxy0 | condor         | main.web.1  | running | condor          |     3 |       1
-		     upload1           | 0.0.1        | local          | main.web.2  | queued  | local           |     1 |       1
+		         tool_id      | tool_version  | destination_id |   handler   |  state  | job_runner_name | count | user_id
+		    ------------------+---------------+----------------+-------------+---------+-----------------+-------+---------
+		    toolshed.g2.bx... | 2.5.0+galaxy0 | condor         | main.web.1  | running | condor          |     3 |       1
+		    upload1           | 0.0.1         | local          | main.web.2  | queued  | local           |     1 |       1
 
 		The tool version is stripped from the tool_id with a regex so that, e.g.,
 		'toolshed.g2.bx.psu.edu/repos/iuc/bowtie2/bowtie2/2.5.0+galaxy0' is
@@ -692,27 +692,20 @@ query_queue-overview() { ##? [--short-tool-id]: View used mostly for monitoring
 
 		Tool ids as stored in the database include the full toolshed path, e.g.
 		'toolshed.g2.bx.psu.edu/repos/iuc/bowtie2/bowtie2/2.5.0+galaxy0'. Pass
-		\`--short-tool-id\` to strip the 'toolshed.../repos/' prefix, leaving
-		'iuc/bowtie2/bowtie2/2.5.0+galaxy0'. This makes the (tag) values shorter
-		and avoids high-cardinality series in InfluxDB:
+		"--short-tool-id" to strip the "toolshed.../repos/" prefix, leaving
+		"iuc/bowtie2/bowtie2/2.5.0+galaxy0".
 
-		    $ gxadmin iquery queue-overview --short-tool-id
-		    queue-overview,tool_id=iuc/bowtie2/bowtie2/2.5.0+galaxy0,tool_version=2.5.0+galaxy0,state=running,handler=main.web.1,destination_id=condor,job_runner_name=condor,user=1 count=3
+		$ gxadmin iquery queue-overview --short-tool-id
+		queue-overview,tool_id=iuc/bowtie2/bowtie2/2.5.0+galaxy0,tool_version=2.5.0+galaxy0,state=running,handler=main.web.1,destination_id=condor,job_runner_name=condor,user=1 count=3
 
 		**GDPR_MODE**
 
-		By default the real \`user_id\` is exposed as a tag. Set the
-		\`GDPR_MODE\` environment variable (to any non-empty value) to replace
-		the user id with '0' so that no per-user information leaves the server.
+		By default the real "user_id" is exposed as a tag. Set the
+		"GDPR_MODE" environment variable to replace
+		the user id with '0' so that no individual user information is exposed.
 		This is recommended when forwarding metrics to a shared InfluxDB.
 
 		    GDPR_MODE=1 gxadmin iquery queue-overview
-
-		**iquery fields & tags**
-
-		When run with \`iquery\`, \`count\` is the field and \`tool_id\`,
-		\`tool_version\`, \`destination_id\`, \`handler\`, \`state\`,
-		\`job_runner_name\` and \`user_id\` are tags.
 	EOF
 
 	# Use full tool id by default
@@ -4368,27 +4361,25 @@ query_data-origin-distribution-merged() { ##? [--human]: Per-user monthly total 
 		ADDED: 14
 	EOF
 	handle_help "$@" <<-EOF
-		Similar to \`data-origin-distribution\` but collapses both origins
+		Similar to "data-origin-distribution" but collapses both origins
 		(uploaded 'created' and tool 'derived') into a single 'total' bucket,
 		reporting the total data volume produced per user per month.
 
-		This is useful when you only care about overall throughput per user
-		rather than the uploaded-vs-derived split.
+		This is useful when you only care about overall throughput per user.
 
 		Recommendation is to run with GDPR_MODE so you can safely share this
 		information:
 
 		    GDPR_MODE=\$(openssl rand -hex 24 2>/dev/null) gxadmin tsvquery data-origin-distribution-merged | gzip > data-origin-merged.tsv.gz
 
-		Pass \`--human\` to pretty-print the byte counts (do not use \`--human\`
-		with \`iquery\`/InfluxDB):
+		Pass "--human" to pretty-print the byte counts (do not use "--human" with "iquery"):
 
-		    $ gxadmin query data-origin-distribution-merged --human
-		       origin |   data    |       created        | galaxy_user
-		    ---------+-----------+----------------------+--------------
-		     total   | 13 GB     | 2019-07-01 00:00:00  | fff4f423d06
-		     total   | 61 GB     | 2019-08-01 00:00:00  | fff4f423d06
-		     total   | 180 GB    | 2019-04-01 00:00:00  | ffd28c0cf8c
+		$ gxadmin query data-origin-distribution-merged --human
+		  origin |   data    |       created        | galaxy_user
+		---------+-----------+----------------------+--------------
+		 total   | 13 GB     | 2019-07-01 00:00:00  | fff4f423d06
+		 total   | 61 GB     | 2019-08-01 00:00:00  | fff4f423d06
+		 total   | 180 GB    | 2019-04-01 00:00:00  | ffd28c0cf8c
 	EOF
 
 	summary="$(summary_statistics data "$arg_human")"
