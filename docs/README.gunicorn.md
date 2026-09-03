@@ -31,26 +31,19 @@ gunicorn handler-restart -  Restart gunicorn handlers in two batches to avoid do
 
 **NOTES**
 
-Restarts all running `galaxy-gunicorn@*.service` systemd units in two
-roughly-equal batches, so that half of the workers remain available
-while the other half restarts.
+Restarts all running "galaxy-gunicorn@*.service" systemd units in two
+batches, so that half of the workers remain available while the other half restarts.
 
 The function:
 
-  - enumerates running `galaxy-gunicorn` units
+  - enumerates running "galaxy-gunicorn" units
   - splits them into two batches
-  - waits until the first batch is serving HTTP 200s on `GET`
+  - waits until the first batch is serving HTTP 200s on "GET"
   - restarts the second batch and waits for it to come back online
   - then restarts the first batch
 
 If fewer than two gunicorn handlers are running it refuses to run, since
 rolling restarts are not possible without downtime.
-
-**WARNING**
-
-!> This operates on systemd services on the current host and restarts
-!> production gunicorn workers. Run it during a maintenance window or
-!> when low traffic is expected.
 
     $ gxadmin gunicorn handler-restart
     Found handlers: galaxy-gunicorn@0.service galaxy-gunicorn@1.service  and galaxy-gunicorn@2.service galaxy-gunicorn@3.service
