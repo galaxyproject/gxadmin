@@ -6,7 +6,9 @@ Command | Description
 [`query archivable-histories`](#query-archivable-histories) | query archivable-histories [--user-last-active=360] [--history-last-active=360] [--size]
 [`query collection-usage`](#query-collection-usage) | Information about how many collections of various types are used
 [`query data-origin-distribution`](#query-data-origin-distribution) | data sources (uploaded vs derived)
+[`query data-origin-distribution-merged`](#query-data-origin-distribution-merged) | Per-user monthly total data volume (uploaded + derived merged)
 [`query data-origin-distribution-summary`](#query-data-origin-distribution-summary) | breakdown of data sources (uploaded vs derived)
+[`query dataset-count`](#query-dataset-count) | Count the number of datasets.
 [`query datasets-created-daily`](#query-datasets-created-daily) | The min/max/average/p95/p99 of total size of datasets created in a single day.
 [`query dataset-usage-and-imports`](#query-dataset-usage-and-imports) | Fetch limited information about which users and histories are using a specific dataset from disk.
 [`query destination-queue-run-time`](#query-destination-queue-run-time) | The average/median/95%/99% tool spends in queue/run state grouped by tool and destination.
@@ -23,8 +25,10 @@ Command | Description
 [`query history-connections`](#query-history-connections) | The connections of tools, from output to input, in histories (tool_predictions)
 [`query history-contents`](#query-history-contents) | List datasets and/or collections in a history
 [`query history-core-hours`](#query-history-core-hours) | Produces the median core hour count for histories matching a name filter
-[`query history-runtime-system-by-tool`](#query-history-runtime-system-by-tool) | Sum of runtimes by all jobs in a history, split by tool
+[`query history-count`](#query-history-count) | Count the number of histories.
+[`query history-exports`](#query-history-exports) | List history exports ordered by most recent.
 [`query history-runtime-system`](#query-history-runtime-system) | Sum of runtimes by all jobs in a history
+[`query history-runtime-system-by-tool`](#query-history-runtime-system-by-tool) | Sum of runtimes by all jobs in a history, split by tool
 [`query history-runtime-wallclock`](#query-history-runtime-wallclock) | Time as elapsed by a clock on the wall
 [`query job-history`](#query-job-history) | Job state history for a specific job
 [`query job-info`](#query-job-info) | Retrieve information about jobs given some job IDs
@@ -45,6 +49,9 @@ Command | Description
 [`query largest-dataset-users`](#query-largest-dataset-users) | Get largest datasets by users
 [`query largest-histories`](#query-largest-histories) | Largest histories in Galaxy
 [`query latest-users`](#query-latest-users) | 40 recently registered users
+[`query live-tuples`](#query-live-tuples) | Estimate table row counts using the n_live_tup stat
+[`query longest-running-jobs-by-destination`](#query-longest-running-jobs-by-destination) | List the longest (currently) running jobs on the Galaxy server by destination
+[`query memory-and-cpu-on-same-node`](#query-memory-and-cpu-on-same-node) | Memory and CPU cgroup metrics for jobs that ran on a given host
 [`query monthly-cpu-stats`](#query-monthly-cpu-stats) | CPU years/hours allocated to tools by month (+ nb of users)
 [`query monthly-cpu-years`](#query-monthly-cpu-years) | CPU years allocated to tools by month
 [`query monthly-data`](#query-monthly-data) | Number of active users per month, running jobs
@@ -56,6 +63,7 @@ Command | Description
 [`query monthly-users-active`](#query-monthly-users-active) | Number of active users per month, running jobs
 [`query monthly-users-registered`](#query-monthly-users-registered) | Number of users registered
 [`query monthly-workflow-invocations`](#query-monthly-workflow-invocations) | Workflow invocations by month
+[`query most-used-tools-by-destination`](#query-most-used-tools-by-destination) | List tools with the highest job count on the Galaxy server by destination
 [`query old-histories`](#query-old-histories) | Lists histories that haven't been updated (used) for <weeks>
 [`query pg-cache-hit`](#query-pg-cache-hit) | Check postgres in-memory cache hit ratio
 [`query pg-column-size`](#query-pg-column-size) | Estimate the size of columns in a table
@@ -85,23 +93,23 @@ Command | Description
 [`query tool-errors`](#query-tool-errors) | Summarize percent of tool runs in error over the past weeks for all tools that have failed (most popular tools first)
 [`query tool-last-used-date`](#query-tool-last-used-date) | When was the most recent invocation of every tool
 [`query tool-likely-broken`](#query-tool-likely-broken) | Find tools that have been executed in recent weeks that are (or were due to job running) likely substantially broken
+[`query tool-memory-efficiency`](#query-tool-memory-efficiency) | View the efficiency of recent jobs
 [`query tool-memory-per-inputs`](#query-tool-memory-per-inputs) | See memory usage and inout size data
 [`query tool-metrics`](#query-tool-metrics) | See values of a specific metric
 [`query tool-new-errors`](#query-tool-new-errors) | Summarize percent of tool runs in error over the past weeks for "new tools"
 [`query tool-popularity`](#query-tool-popularity) | Most run tools by month (tool_predictions)
 [`query tools-usage-per-month`](#query-tools-usage-per-month) | By default, startmonth is 1 year ago and end month is current month. tool1, tool2 etc. should correspond to the tool_id with the same format as requested: toolshed.g2.bx.psu.edu/repos/devteam/bowtie2/bowtie2/2.5.0+galaxy0,Cut1 for default, devteam/bowtie2/bowtie2/2.5.0+galaxy0,Cut1 for --short_tool_id, bowtie2/2.5.0+galaxy0,Cut1 for --super_short_tool_id etc...
+[`query tools-usage`](#query-tools-usage) | tool1, tool2 etc. should correspond to the tool_id with the same format as requested: toolshed.g2.bx.psu.edu/repos/devteam/bowtie2/bowtie2/2.5.0+galaxy0,Cut1 for default, devteam/bowtie2/bowtie2/2.5.0+galaxy0,Cut1 for --short_tool_id, bowtie2/2.5.0+galaxy0,Cut1 for --super_short_tool_id etc...
 [`query tool-usage-over-time`](#query-tool-usage-over-time) | Counts of tool runs by month, filtered by a tool id search
 [`query tool-usage`](#query-tool-usage) | Counts of tool runs in the past weeks (default = all)
-[`query user-tool-usage-over-time`](#query-user-tool-usage-over-time) | Counts distinct users per tool by month for the last 5 years (default = all users)
-[`query user-tool-usage`](#query-user-tool-usage) | Counts distinct users per tool for the last 5 years (default = all users)
 [`query tool-use-by-group`](#query-tool-use-by-group) | Lists count of tools used by all users in a group
 [`query total-jobs`](#query-total-jobs) | Total number of jobs run by Galaxy instance.
 [`query tpt-tool-cpu`](#query-tpt-tool-cpu) | Start year is required. Formula returns sum if blank.
 [`query tpt-tool-memory`](#query-tpt-tool-memory) | Start year is required. Formula returns sum if blank.
 [`query tpt-tool-users`](#query-tpt-tool-users) | Start year is required.
 [`query training-list`](#query-training-list) | List known trainings
-[`query training-members-remove`](#query-training-members-remove) | Remove a user from a training
 [`query training-members`](#query-training-members) | List users in a specific training
+[`query training-members-remove`](#query-training-members-remove) | Remove a user from a training
 [`query training-queue`](#query-training-queue) | Jobs currently being run by people in a given training
 [`query ts-repos`](#query-ts-repos) | Counts of toolshed repositories by toolshed and owner.
 [`query upload-gb-in-past-hour`](#query-upload-gb-in-past-hour) | Sum in bytes of files uploaded in the past hour
@@ -110,13 +118,18 @@ Command | Description
 [`query user-disk-usage`](#query-user-disk-usage) | Retrieve an approximation of the disk usage for users
 [`query user-gpu-years`](#query-user-gpu-years) | GPU years allocated to tools by user
 [`query user-history-list`](#query-user-history-list) | List a user's (by email/id/username) histories.
+[`query user-info`](#query-user-info) | Retrieve information about users given some user identifiers (id, username or email)
 [`query user-recent-aggregate-jobs`](#query-user-recent-aggregate-jobs) | Show aggregate information for jobs in past N days for user (by email/id/username)
 [`query users-count`](#query-users-count) | Shows sums of active/external/deleted/purged accounts
 [`query users-engaged-multiday`](#query-users-engaged-multiday) | Number of users running jobs for more than a day
-[`query users-total`](#query-users-total) | Total number of Galaxy users (incl deleted, purged, inactive)
+[`query users-total`](#query-users-total) | Total number of Galaxy users (incl deleted, purged, inactive).
 [`query users-with-oidc`](#query-users-with-oidc) | How many users logged in with OIDC
+[`query user-tool-usage-over-time`](#query-user-tool-usage-over-time) | Counts distinct users per tool by month for the last 5 years (default = all users)
+[`query user-tool-usage`](#query-user-tool-usage) | Counts distinct users per tool for the last 5 years (default = all users)
 [`query workers`](#query-workers) | Retrieve a list of Galaxy worker processes
 [`query workflow-connections`](#query-workflow-connections) | The connections of tools, from output to input, in the latest (or all) versions of user workflows (tool_predictions)
+[`query workflow-count`](#query-workflow-count) | Count the number of workflow.
+[`query workflow-invocation-count`](#query-workflow-invocation-count) | Count the total number of workflow invocations.
 [`query workflow-invocation-status`](#query-workflow-invocation-status) | Report on how many workflows are in new state by handler
 [`query workflow-invocation-totals`](#query-workflow-invocation-totals) | Report on overall workflow counts, to ensure throughput
 
@@ -202,6 +215,40 @@ Output looks like:
     derived 34000000        2019-07-01 00:00:00     ffcb567a837
 
 
+## query data-origin-distribution-merged
+
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_data-origin-distribution-merged&type=Code))
+query data-origin-distribution-merged -  Per-user monthly total data volume (uploaded + derived merged)
+
+**SYNOPSIS**
+
+    gxadmin query data-origin-distribution-merged [--human]
+
+**NOTES**
+
+Similar to `data-origin-distribution` but collapses both origins
+(uploaded 'created' and tool 'derived') into a single 'total' bucket,
+reporting the total data volume produced per user per month.
+
+This is useful when you only care about overall throughput per user
+rather than the uploaded-vs-derived split.
+
+Recommendation is to run with GDPR_MODE so you can safely share this
+information:
+
+    GDPR_MODE=$(openssl rand -hex 24 2>/dev/null) gxadmin tsvquery data-origin-distribution-merged | gzip > data-origin-merged.tsv.gz
+
+Pass `--human` to pretty-print the byte counts (do not use `--human`
+with `iquery`/InfluxDB):
+
+    $ gxadmin query data-origin-distribution-merged --human
+       origin |   data    |       created        | galaxy_user
+    ---------+-----------+----------------------+--------------
+     total   | 13 GB     | 2019-07-01 00:00:00  | fff4f423d06
+     total   | 61 GB     | 2019-08-01 00:00:00  | fff4f423d06
+     total   | 180 GB    | 2019-04-01 00:00:00  | ffd28c0cf8c
+
+
 ## query data-origin-distribution-summary
 
 ([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_data-origin-distribution-summary&type=Code))
@@ -221,6 +268,27 @@ origin  |   min   | quant_1st | median  |  mean  | quant_3rd | perc_95 | perc_99
 ------- | ------- | --------- | ------- | ------ | --------- | ------- | ------- | ----- | --------
 created | 0 bytes | 17 MB     | 458 MB  | 36 GB  | 11 GB     | 130 GB  | 568 GB  | 11 TB | 257 GB
 derived | 0 bytes | 39 MB     | 1751 MB | 200 GB | 28 GB     | 478 GB  | 2699 GB | 90 TB | 2279 GB
+
+
+## query dataset-count
+
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_dataset-count&type=Code))
+query dataset-count -  Count the number of datasets.
+
+**SYNOPSIS**
+
+    gxadmin query dataset-count [date]
+
+**NOTES**
+
+Count total number of datasets. Providing optional date (as YYYY-MM-DD) counts
+number of datasets created up to that date.
+
+$ gxadmin query dataset-count
+ num_datasets
+---------------
+ 107615974
+(1 row)
 
 
 ## query datasets-created-daily
@@ -290,8 +358,8 @@ Lists queue and run time statistics grouped by use tool and destination within a
 Requires <older-than> a given number of days
 
     $ gxadmin query destination-queue-run-time --older-than='90'
-destination_id |     tool_id     | count |       avg       |       min       |  median_queue   |  perc_95_queue  |  perc_99_queue  |       max       |       avg       |       min    
-|   median_run    |   perc_95_run   |   perc_99_run   |       max       
+destination_id |     tool_id     | count |       avg       |       min       |  median_queue   |  perc_95_queue  |  perc_99_queue  |       max       |       avg       |       min
+|   median_run    |   perc_95_run   |   perc_99_run   |       max
 ----------------+-----------------+-------+-----------------+-----------------+-----------------+-----------------+-----------------+-----------------+-----------------+--------------
 ---+-----------------+-----------------+-----------------+-----------------
 condor_tpv     | Show beginning1 |     4 | 00:00:42.190985 | 00:00:41.921395 | 00:00:42.197197 | 00:00:42.419296 | 00:00:42.44238  | 00:00:42.448151 | 00:00:15.742914 | 00:00:12.2020
@@ -559,14 +627,49 @@ query history-core-hours -  Produces the median core hour count for histories ma
     gxadmin query history-core-hours [history-name-ilike]
 
 
-## query history-runtime-system-by-tool
+## query history-count
 
-([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_history-runtime-system-by-tool&type=Code))
-query history-runtime-system-by-tool -  Sum of runtimes by all jobs in a history, split by tool
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_history-count&type=Code))
+query history-count -  Count the number of histories.
 
 **SYNOPSIS**
 
-    gxadmin query history-runtime-system-by-tool <history_id>
+    gxadmin query history-count [date]
+
+**NOTES**
+
+Count total number of histories. Providing optional date (as YYYY-MM-DD) counts
+number of histories created up to that date.
+
+$ gxadmin query history-count
+num_histories
+---------------
+9065181
+(1 row)
+
+
+## query history-exports
+
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_history-exports&type=Code))
+query history-exports -  List history exports ordered by most recent.
+
+**SYNOPSIS**
+
+    gxadmin query history-exports [--limit=50] [--user=] [--min_history_size=]
+
+**NOTES**
+
+Show most recent history export tasks from the store_export_association table.
+There are optional filters --user (ID/username/email) and --min_history_size (GB) and an optional --limit for number of rows returned (default 50).
+Note that total_size is the undeleted size of the history: what was included in the export might be smaller than this.
+
+$ gxadmin query history-exports --min_history_size=10 --user=jarvis
+  id  |     create_time     |            task_uuid             | history_id | user_id | total_size |                  result_data
+------+---------------------+----------------------------------+------------+---------+------------+-----------------------------------------------
+ 3275 | 2026-03-15 10:27:25 | 5557cfe535c34c959baa7e7fa4ecddc6 |    2800101 |   12345 | 149 GB     | {"uri": null, "error": null, "success": true}
+ 3274 | 2026-03-14 05:13:12 | 555611b2b02d4ec59a9246b73bbdda15 |    2840202 |   12345 | 11 GB      | {"uri": null, "error": null, "success": true}
+ 3273 | 2026-03-14 04:08:40 | 555c6a5a7eb44836a1c8a705bcfa7714 |    2790303 |   12345 | 279 GB     | {"uri": null, "error": null, "success": true}
+(3 rows)
 
 
 ## query history-runtime-system
@@ -577,6 +680,16 @@ query history-runtime-system -  Sum of runtimes by all jobs in a history
 **SYNOPSIS**
 
     gxadmin query history-runtime-system <history_id>
+
+
+## query history-runtime-system-by-tool
+
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_history-runtime-system-by-tool&type=Code))
+query history-runtime-system-by-tool -  Sum of runtimes by all jobs in a history, split by tool
+
+**SYNOPSIS**
+
+    gxadmin query history-runtime-system-by-tool <history_id>
 
 
 ## query history-runtime-wallclock
@@ -908,7 +1021,7 @@ $ gxadmin query job-state-stats --older-than='2 days'
     date    |  new  | running | queued | upload |  ok   | error | paused | stopped | deleted
 ------------+-------+---------+--------+--------+-------+-------+--------+---------+---------
 2022-04-26 |   921 |     564 |    799 |      0 |   581 |    21 |      1 |       0 |       2
-2022-04-25 |  1412 |    1230 |   1642 |      0 |  1132 |   122 |     14 |       0 |      15		
+2022-04-25 |  1412 |    1230 |   1642 |      0 |  1132 |   122 |     14 |       0 |      15
 
 
 ## query jobs
@@ -1049,6 +1162,85 @@ Returns 40 most recently registered users
       2 | 2019-03-07 13:06:23.369201+00 | 826 bytes  | alice    | a@example.com  |                                   | t
       1 | 2018-11-19 14:54:30.969713+00 | 869 MB     | helena   | hxr@local.host | training-fff training-hogeschool | t
     (3 rows)
+
+
+## query live-tuples
+
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_live-tuples&type=Code))
+query live-tuples -  Estimate table row counts using the n_live_tup stat
+
+**SYNOPSIS**
+
+    gxadmin query live-tuples [--no-analyzed-only] [table]
+
+**NOTES**
+
+Query the 'n_live_tup' value from pg_stat_user_tables as an estimate of total row count in the table.
+
+NOTE: This will not be accurate if the table has not been analyzed since the last time PostgreSQL was
+started. The 'gxadmin mutate analyze-unanalyzed-tables' function can be run to ensure all tables are
+analyzed.
+
+ query live-tuples | head
+                            relname                             | n_live_tup
+----------------------------------------------------------------+------------
+ alembic_version                                                |          1
+ api_keys                                                       |       4242
+ celery_user_rate_limit                                         |          0
+ chat_exchange                                                  |        128
+ chat_exchange_message                                          |        132
+ cleanup_event                                                  |        100
+ cleanup_event_dataset_association                              |       1251
+ cleanup_event_hda_association                                  |       2898
+
+By default, only analyzed tables will be included in the output. All tables can be included using
+'--no-analyzed-only'. The value for a single table can be obtained with the optional 'table' argument.
+
+
+## query longest-running-jobs-by-destination
+
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_longest-running-jobs-by-destination&type=Code))
+query longest-running-jobs-by-destination -  List the longest (currently) running jobs on the Galaxy server by destination
+
+**SYNOPSIS**
+
+    gxadmin query longest-running-jobs-by-destination
+
+**NOTES**
+
+List the longest (currently) running jobs on the Galaxy server by destination
+
+job_id | tool_id                                                                                  | destination_id         | hours_since_running
+------ | ---------------------------------------------------------------------------------------- | ---------------------- | -------------------
+65213  | toolshed.g2.bx.psu.edu/repos/petr-novak/repeatexplorer2_testing/repeatexplorer2/2.3.12.1 | tpv_pulsar_singularity | 326
+69261  | toolshed.g2.bx.psu.edu/repos/petr-novak/dante/dante/2.6.2                                | tpv_pulsar             | 85
+69435  | toolshed.g2.bx.psu.edu/repos/petr-novak/dante_ltr/dante_ltr_search/4.0.4.1               | tpv_pulsar             | 56
+
+
+## query memory-and-cpu-on-same-node
+
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_memory-and-cpu-on-same-node&type=Code))
+query memory-and-cpu-on-same-node -  Memory and CPU cgroup metrics for jobs that ran on a given host
+
+**SYNOPSIS**
+
+    gxadmin query memory-and-cpu-on-same-node <hostname>
+
+**NOTES**
+
+Returns the reported `memory.memsw.max_usage_in_bytes` and
+`cpuacct.usage` cgroup metric values for the most recent jobs that ran
+on the supplied hostname, along with the job's update time. Useful for
+debugging what went wrong with cgroup metrics on a specific node.
+
+The hostname must match the value stored in the `hostname` job metric
+(text). Up to 200 recent jobs from that host are considered.
+
+    $ gxadmin query memory-and-cpu-on-same-node worker-04
+     memory.memsw.max_usage_in_bytes | cpuacct.usage |      update_time
+    ---------------------------------+--------------+---------------------
+                       1234567890     |  98765432100 | 2023-01-18 14:05:14
+                       2345678901     |  87654321009 | 2023-01-18 14:05:16
 
 
 ## query monthly-cpu-stats
@@ -1270,13 +1462,14 @@ query monthly-jobs-by-new-users -  Number of jobs run by new users in the given 
 
 **SYNOPSIS**
 
-    gxadmin query monthly-jobs-by-new-users [month] [--no_state]
+    gxadmin query monthly-jobs-by-new-users [month] [--no_state] [--state=<state>]
 
 **NOTES**
 
 Count jobs run by users that registered in the given month
 month: Month to count jobs for, provided as YYYY-MM. If month is not provided, defaults to current month.
 --no_state: Do not break down jobs by state
+--state=<state>: Only count jobs in the given state
 
     $ gxadmin query jobs-by-new-users 2024-02
       state   | jobs_by_new_users
@@ -1297,7 +1490,7 @@ query monthly-jobs -  Number of jobs run each month
 
 **SYNOPSIS**
 
-    gxadmin query monthly-jobs [--year=<YYYY>] [--month=<MM>] [--by_group] [--by_state]
+    gxadmin query monthly-jobs [--year=<YYYY>] [--month=<MM>] [--by_group] [--by_state] [--state=<state>]
 
 **NOTES**
 
@@ -1305,6 +1498,7 @@ Count jobs run each month or specified month
 Parameters:
 --by_group: Will separate out job counts for each month by galaxy user group
 --by_state: Will separate out job counts for each month by job state
+--state=<state>: Only count jobs in the given state
 --year=<YYYY>: Will return monthly job count for the given year
 --month=<MM>: Will return monthly job count for the given month. If --year is not supplied, will return for each year.
 
@@ -1392,6 +1586,26 @@ Find out how many workflows has been invocated by Galaxy during the past months.
      2022-04-01 |  5043
      2022-03-01 |  4851
      2022-02-01 | 29587
+
+
+## query most-used-tools-by-destination
+
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_most-used-tools-by-destination&type=Code))
+query most-used-tools-by-destination -  List tools with the highest job count on the Galaxy server by destination
+
+**SYNOPSIS**
+
+    gxadmin query most-used-tools-by-destination
+
+**NOTES**
+
+List tools with the highest job count on the Galaxy server by destination
+
+tool_id                                                                                         | destination_id | job_count
+----------------------------------------------------------------------------------------------- | -------------- | ---------
+toolshed.g2.bx.psu.edu/repos/petr-novak/re_utils/paired_fastq_filtering                         | tpv_pulsar     | 23
+toolshed.g2.bx.psu.edu/repos/petr-novak/re_utils/fasta_affixer                                  | tpv_pulsar     | 14
+toolshed.g2.bx.psu.edu/repos/petr-novak/re_utils/sampler                                        | tpv_pulsar     | 13
 
 
 ## query old-histories
@@ -1765,10 +1979,52 @@ query queue-overview -  View used mostly for monitoring
 
 **NOTES**
 
-Primarily for monitoring of queue. Optimally used with 'iquery' and passed to Telegraf.
+Counts jobs that are not yet in a terminal state (states 'new', 'queued'
+and 'running') grouped by tool id, tool version, destination, handler,
+state, job runner and user. Primarily for monitoring of the queue, and
+optimally used with 'iquery' so the output can be passed straight to
+Telegraf/InfluxDB.
 
     $ gxadmin iquery queue-overview
     queue-overview,tool_id=upload1,tool_version=0.0.1,state=running,handler=main.web.1,destination_id=condor,job_runner_name=condor,user=1 count=1
+
+It can also be run as a regular query for a tabular, human-readable view:
+
+    $ gxadmin query queue-overview
+         tool_id      | tool_version | destination_id |   handler   |  state  | job_runner_name | count | user_id
+    ------------------+--------------+----------------+-------------+---------+-----------------+-------+---------
+     toolshed.g2.bx... | 2.5.0+galaxy0 | condor         | main.web.1  | running | condor          |     3 |       1
+     upload1           | 0.0.1        | local          | main.web.2  | queued  | local           |     1 |       1
+
+The tool version is stripped from the tool_id with a regex so that, e.g.,
+'toolshed.g2.bx.psu.edu/repos/iuc/bowtie2/bowtie2/2.5.0+galaxy0' is
+reported as 'toolshed.g2.bx.psu.edu/repos/iuc/bowtie2/bowtie2'.
+
+**--short-tool-id**
+
+Tool ids as stored in the database include the full toolshed path, e.g.
+'toolshed.g2.bx.psu.edu/repos/iuc/bowtie2/bowtie2/2.5.0+galaxy0'. Pass
+`--short-tool-id` to strip the 'toolshed.../repos/' prefix, leaving
+'iuc/bowtie2/bowtie2/2.5.0+galaxy0'. This makes the (tag) values shorter
+and avoids high-cardinality series in InfluxDB:
+
+    $ gxadmin iquery queue-overview --short-tool-id
+    queue-overview,tool_id=iuc/bowtie2/bowtie2/2.5.0+galaxy0,tool_version=2.5.0+galaxy0,state=running,handler=main.web.1,destination_id=condor,job_runner_name=condor,user=1 count=3
+
+**GDPR_MODE**
+
+By default the real `user_id` is exposed as a tag. Set the
+`GDPR_MODE` environment variable (to any non-empty value) to replace
+the user id with '0' so that no per-user information leaves the server.
+This is recommended when forwarding metrics to a shared InfluxDB.
+
+    GDPR_MODE=1 gxadmin iquery queue-overview
+
+**iquery fields & tags**
+
+When run with `iquery`, `count` is the field and `tool_id`,
+`tool_version`, `destination_id`, `handler`, `state`,
+`job_runner_name` and `user_id` are tags.
 
 
 ## query queue-time
@@ -1929,6 +2185,49 @@ which were run more than 4 times, and have a failure rate over 95%.
      rnateam/dorina/dorina_search/1.0.0                    |         6 |               1 |              0 |             6 |            0 | handler_main_8
 
 
+## query tool-memory-efficiency
+
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_tool-memory-efficiency&type=Code))
+query tool-memory-efficiency -  View the efficiency of recent jobs
+
+**SYNOPSIS**
+
+    gxadmin query tool-memory-efficiency [--newer-than=2592000] [--min-job-count=5] [--min-runtime=300] [--min-mem=8]
+
+**NOTES**
+
+This is mainly useful for determining which long-running tools with large memory allocations have been
+granted too large of an allocation. It requires that your jobs run in isolated Linux cgroups (as is
+commonly configured for Slurm) that accurately report memory usage in memory.peak (cgroupsv2) or
+memory.memsw.max_usage_in_bytes (cgroupsv1) and you have enabled the Galaxy cgroups job metrics plugin.
+
+    $ gxadmin query tool-memory-efficiency
+           tool_id       | run_count | total_runtime_hrs | avg_mem_used_gb | avg_mem_allocated_gb | avg_mem_percent
+    ---------------------+-----------+-------------------+-----------------+----------------------+-----------------
+     samtools_sort/2.0.5 |       232 |             48.65 |           10.00 |                10.00 |          100.00
+     featurecounts/2.0.3 |       657 |            123.18 |            7.77 |                 8.00 |           97.07
+     kraken2/2.1.1       |       156 |             74.76 |           78.03 |                84.82 |           91.55
+     bwa_mem2/2.2.1      |       635 |            399.82 |           53.24 |                57.82 |           90.01
+     rna_star/2.7.10b    |        20 |             59.47 |           51.34 |                58.00 |           88.51
+     trim_galore/0.6.7   |      1217 |            358.12 |           10.74 |                18.50 |           58.03
+     fastqc/0.74         |        97 |             15.52 |            6.65 |                27.46 |           24.31
+     metaspades/3.15.3   |         6 |              4.56 |            7.46 |                28.00 |           26.65
+     raxml/8.2.12        |       406 |            133.41 |            0.44 |                59.20 |            0.75
+
+By default, only jobs from the last 30 days, tools that were allocated 8 GB of memory or more and run
+more than 5 times, and jobs that ran for at least 5 minutes are included, since old jobs and fast and
+infrequent tools can add noise to the results.
+
+You can change the age of jobs returned by specifying '--newer-than='. This option takes a value in the
+PostgreSQL date/time interval format, see documentation:
+https://www.postgresql.org/docs/current/functions-datetime.html
+
+Be sure to quote intervals containing spaces.
+
+The minimum job cutoff per tool can be specified with '--min-job-count', minimum runtime (in seconds)
+with '--min-runtime', and minimum memory (in GB) with '--min-mem'.
+
+
 ## query tool-memory-per-inputs
 
 ([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_tool-memory-per-inputs&type=Code))
@@ -2004,6 +2303,8 @@ do some aggregations. The following requires [data_hacks](https://github.com/bit
     [ 137.713,  150.223) n=970
     [ 150.223,  162.733) n=746
 
+
+Multiple metrics can be specified by separating them with a comma.
 
 The optional 'last' argument can be used to limit the number of most recent jobs that will be checked.
 The default is all jobs. Note that this can return zero results if your most recent jobs have not
@@ -2083,19 +2384,39 @@ Tools Usage Tracking: cpu-hours and nb_users by Month-Year.
     $ gxadmin query tools-usage-per-month --super_short_tool_id --no_version --tools bowtie2,Cut1 --startmonth=2023-03 --endmonth 2023-08
    month    | cpu_hours | tool_id | nb_users
 ------------+-----------+---------+----------
- 2023-08-01 |    326.88 | bowtie2 |        1
- 2023-08-01 |    469.27 | bowtie2 |        1
- 2023-07-01 |      0.01 | Cut1    |        2
+ 2023-08-01 |    796.15 | bowtie2 |        2
  2023-07-01 |     20.04 | bowtie2 |        1
- 2023-06-01 |      0.04 | Cut1    |        2
+ 2023-07-01 |      0.00 | Cut1    |        1
  2023-06-01 |    271.16 | bowtie2 |        3
+ 2023-06-01 |      0.07 | Cut1    |        4
  2023-05-01 |    732.74 | bowtie2 |        3
- 2023-04-01 |      1.55 | Cut1    |        2
+ 2023-05-01 |      0.01 | Cut1    |        2
  2023-04-01 |    426.32 | bowtie2 |        2
- 2023-03-01 |      0.00 | Cut1    |        1
- 2023-03-01 |    437.31 | bowtie2 |        1
- 2023-03-01 |    506.71 | bowtie2 |        2
-(12 rows)
+ 2023-04-01 |      0.05 | Cut1    |        4
+ 2023-03-01 |    944.02 | bowtie2 |        2
+ 2023-03-01 |      0.01 | Cut1    |        2
+(11 rows)
+
+
+## query tools-usage
+
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_tools-usage&type=Code))
+query tools-usage -  toolshed.g2.bx.psu.edu/repos/devteam/bowtie2/bowtie2/2.5.0+galaxy0,Cut1 for default, devteam/bowtie2/bowtie2/2.5.0+galaxy0,Cut1 for --short_tool_id, bowtie2/2.5.0+galaxy0,Cut1 for --super_short_tool_id etc...
+
+**SYNOPSIS**
+
+    gxadmin query tools-usage [year] [--tools=<tool1,tool2,...>] [--short_tool_id] [--super_short_tool_id] [--no_version]
+
+**NOTES**
+
+Tools Usage Tracking: cpu-hours, cpu-years and nb_users for specific tools (optionally in a given year).
+
+    $ gxadmin query tools-usage --super_short_tool_id --no_version --tools bowtie2,Cut1 2023
+ cpu_hours | cpu_years | tool_id | nb_users
+-----------+-----------+---------+----------
+   4631.91 |      0.53 | bowtie2 |        7
+      0.24 |      0.00 | Cut1    |        6
+(2 rows)
 
 
 ## query tool-usage-over-time
@@ -2148,59 +2469,6 @@ query tool-usage -  Counts of tool runs in the past weeks (default = all)
      Filter1                                                                |  43253
 
 
-## query user-tool-usage-over-time
-
-([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_user-tool-usage-over-time&type=Code))
-query user-tool-usage-over-time -  Counts distinct users per tool by month for the last 5 years (default = all users)
-
-**SYNOPSIS**
-
-    gxadmin query user-tool-usage-over-time [user_id]
-
-**NOTES**
-
-Counts distinct users per normalized tool name by month for the last 5 years.
-By default, includes all users. Optionally pass a specific user_id.
-
-    $ gxadmin query user-tool-usage-over-time
-    $ gxadmin query user-tool-usage-over-time 12345
-
-Example:
-month       | tool_name                                                           | count
-------------+---------------------------------------------------------------------+-------
- 2026-01-01 | __DATA_FETCH__                                                      |  5732
- 2026-01-01 | toolshed.g2.bx.psu.edu/repos/devteam/fastqc/fastqc                  |  1388
- 2026-01-01 | __SET_METADATA__                                                    |   883
- 2026-01-01 | CONVERTER_gz_to_uncompressed                                        |   816
- 2026-01-01 | toolshed.g2.bx.psu.edu/repos/iuc/falco/falco                        |   788
- 2026-01-01 | toolshed.g2.bx.psu.edu/repos/iuc/multiqc/multiqc                    |   733
- 2026-01-01 | toolshed.g2.bx.psu.edu/repos/pjbriggs/trimmomatic/trimmomatic       |   606
- 2026-01-01 | toolshed.g2.bx.psu.edu/repos/iuc/featurecounts/featurecounts        |   565
-
-## query user-tool-usage
-
-([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_user-tool-usage&type=Code))
-query user-tool-usage -  Counts distinct users per tool for the last 5 years (default = all users)
-
-**SYNOPSIS**
-
-    gxadmin query user-tool-usage [user_id]
-
-**NOTES**
-
-Counts distinct users per normalized tool name for the last 5 years.
-By default, includes all users. Optionally pass a specific user_id.
-
-    $ gxadmin query user-tool-usage
-    $ gxadmin query user-tool-usage 12345
-
-Example:
-tool_name                                                                         | count          ----------------------------------------------------------------------------------+-------                         
-__DATA_FETCH__                                                                    | 97369                          
-toolshed.g2.bx.psu.edu/repos/devteam/fastqc/fastqc                                | 56282
-toolshed.g2.bx.psu.edu/repos/iuc/multiqc/multiqc                                  | 26981                          
-CONVERTER_gz_to_uncompressed                                                      | 24327                          
-
 ## query tool-use-by-group
 
 ([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_tool-use-by-group&type=Code))
@@ -2208,7 +2476,7 @@ query tool-use-by-group -  Lists count of tools used by all users in a group
 
 **SYNOPSIS**
 
-    gxadmin query tool-use-by-group <years_month> [--group=<name>]
+    gxadmin query tool-use-by-group <year_month> <group>
 
 **NOTES**
 
@@ -2350,16 +2618,6 @@ This module is specific to EU's implementation of Training Infrastructure as a S
     (2 rows)
 
 
-## query training-members-remove
-
-([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_training-members-remove&type=Code))
-query training-members-remove -  Remove a user from a training
-
-**SYNOPSIS**
-
-    gxadmin query training-members-remove <training> <username> [--yesdoit]
-
-
 ## query training-members
 
 ([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_training-members&type=Code))
@@ -2375,6 +2633,16 @@ query training-members -  List users in a specific training
           username      |       joined
     --------------------+---------------------
      helena-Rasche      | 2018-09-21 21:42:01
+
+
+## query training-members-remove
+
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_training-members-remove&type=Code))
+query training-members-remove -  Remove a user from a training
+
+**SYNOPSIS**
+
+    gxadmin query training-members-remove <training> <username> [--yesdoit]
 
 
 ## query training-queue
@@ -2561,6 +2829,26 @@ $ gxadmin query user-history-list <username|id|email>
  30906 | Unnamed history                      | 2019-07-23 16:25:36.084019 | 13 kB
 
 
+## query user-info
+
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_user-info&type=Code))
+query user-info -  Retrieve information about users given some user identifiers (id, username or email)
+
+**SYNOPSIS**
+
+    gxadmin query user-info <-|user [user [...]]>
+
+**NOTES**
+
+Get user info for one or more user id/username/email
+
+ query user-info roosta arthur-dent
+ username    |  id  |               email           |          create_time          | active | deleted | purged | disk_usage
+-------------+------+-------------------------------+-------------------------------+--------+---------+--------+------------
+ roosta      |  409 | roosta2000@unimelb.edu.au     | 2016-08-22 06:16:17.377211+00 | t      | f       | f      | 102 GB
+ authur-dent | 5948 | arthur.dent725@unimelb.edu.au | 2019-12-08 22:59:10.536365+00 | t      | f       | f      | 569 GB
+
+
 ## query user-recent-aggregate-jobs
 
 ([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_user-recent-aggregate-jobs&type=Code))
@@ -2620,11 +2908,21 @@ month: Month to count jobs for, provided as YYYY-MM. If month is not provided, d
 ## query users-total
 
 ([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_users-total&type=Code))
-query users-total -  Total number of Galaxy users (incl deleted, purged, inactive)
+query users-total -  Total number of Galaxy users (incl deleted, purged, inactive).
 
 **SYNOPSIS**
 
-    gxadmin query users-total
+    gxadmin query users-total [date]
+
+**NOTES**
+
+Count total number of registered users. Providing optional date (as YYYY-MM-DD) counts up to that date.
+
+$ gxadmin query users-total 2024-06-01
+ 			 count
+--------
+ 351400
+(1 row)
 
 
 ## query users-with-oidc
@@ -2641,6 +2939,42 @@ query users-with-oidc -  How many users logged in with OIDC
 provider | count
 -------- | ------
 elixir   |     5
+
+
+## query user-tool-usage-over-time
+
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_user-tool-usage-over-time&type=Code))
+query user-tool-usage-over-time -  Counts distinct users per tool by month for the last 5 years (default = all users)
+
+**SYNOPSIS**
+
+    gxadmin query user-tool-usage-over-time [user_id]
+
+**NOTES**
+
+Counts distinct users per normalized tool name by month for the last 5 years.
+By default, includes all users. Optionally pass a specific user_id.
+
+    $ gxadmin query user-tool-usage-over-time
+    $ gxadmin query user-tool-usage-over-time 123
+
+
+## query user-tool-usage
+
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_user-tool-usage&type=Code))
+query user-tool-usage -  Counts distinct users per tool for the last 5 years (default = all users)
+
+**SYNOPSIS**
+
+    gxadmin query user-tool-usage [user_id]
+
+**NOTES**
+
+Counts distinct users per normalized tool name for the last 5 years.
+By default, includes all users. Optionally pass a specific user_id.
+
+    $ gxadmin query user-tool-usage
+    $ gxadmin query user-tool-usage 123
 
 
 ## query workers
@@ -2692,6 +3026,48 @@ This is used by the usegalaxy.eu tool prediction workflow, allowing for building
          4 | 2013-02-07 16:48:00 |    13 | cat1              | 1.0.0     |     20 | Count1            | 1.0.0      |    t      |    t    |    f
 
 
+## query workflow-count
+
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_workflow-count&type=Code))
+query workflow-count -  Count the number of workflow.
+
+**SYNOPSIS**
+
+    gxadmin query workflow-count [date]
+
+**NOTES**
+
+Count total number of workflows. Providing optional date (as YYYY-MM-DD) counts
+number of workflows created up to that date.
+
+$ gxadmin query workflow-count
+ num_workflows
+---------------
+403101
+(1 row)
+
+
+## query workflow-invocation-count
+
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_workflow-invocation-count&type=Code))
+query workflow-invocation-count -  Count the total number of workflow invocations.
+
+**SYNOPSIS**
+
+    gxadmin query workflow-invocation-count [date]
+
+**NOTES**
+
+Count total number of workflow invocations. Providing optional date (as YYYY-MM-DD) counts
+number of invocations up to that date.
+
+$ gxadmin query workflow-invocation-count
+ num_workflow_invocations
+--------------------------
+   758473
+(1 row)
+
+
 ## query workflow-invocation-status
 
 ([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_workflow-invocation-status&type=Code))
@@ -2718,3 +3094,4 @@ query workflow-invocation-totals -  Report on overall workflow counts, to ensure
 **NOTES**
 
 Really only intended to be used in influx queries.
+
