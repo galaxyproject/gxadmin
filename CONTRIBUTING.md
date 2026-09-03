@@ -69,6 +69,31 @@ To see the query gxadmin has built, use `echoquery`, for example:
 gxadmin echoquery users-total
 ```
 
+## Tool ID display
+
+Queries that display a `tool_id` column should shorten it via the `tool_id_expr`
+helper (defined in `parts/03-query-utils.sh`) rather than selecting the raw
+column. This respects the user's `GXADMIN_TOOL_ID_FORMAT` setting (see
+README.md → "Tool ID display"):
+
+```
+$(tool_id_expr job.tool_id) AS tool_id
+```
+
+An optional second argument forces a format for a single call, used by the
+per-query `--short-tool-id` / `--super-short-tool-id` flags:
+
+```
+tool_id=$(tool_id_expr "job.tool_id")
+if [[ -n $arg_short_tool_id ]]; then
+	tool_id=$(tool_id_expr "job.tool_id" short)
+fi
+```
+
+When grouping, keep the `GROUP BY` on the raw column (e.g. `GROUP BY job.tool_id`)
+so distinct tools that shorten to the same string remain separate rows. Export
+queries (e.g. `server workflow-trace-archive-*`) should keep the full tool ID.
+
 # Portability
 
 This is **not** intended to be portable, it is a bash script. There is an assumption you will run it under bash. I *may or may not* accept PRs that make it more portable.

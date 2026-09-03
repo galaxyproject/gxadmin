@@ -27,7 +27,7 @@ query_longest-running-jobs-by-destination() { ## : List the longest (currently) 
 	read -r -d '' QUERY <<-EOF
 		SELECT
 			j.id,
-			j.tool_id,
+			$(tool_id_expr j.tool_id) AS tool_id,
 			j.destination_id,
 			EXTRACT(EPOCH FROM (NOW() - jsh.running_since)) / 3600 AS hours_since_running
 		FROM
@@ -64,7 +64,7 @@ query_most-used-tools-by-destination() { ## : List tools with the highest job co
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			regexp_replace(tool_id, '/[^/]+$', '') AS tool_id_no_version,
+			regexp_replace($(tool_id_expr tool_id), '/[^/]+$', '') AS tool_id_no_version,
 			destination_id,
 			COUNT(*) AS job_count
 		FROM
@@ -147,7 +147,7 @@ query_tool-usage() { ##? [weeks]: Counts of tool runs in the past weeks (default
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			j.tool_id, count(*) AS count
+			$(tool_id_expr j.tool_id) AS tool_id, count(*) AS count
 		FROM job j
 		$where
 		GROUP BY j.tool_id
@@ -191,7 +191,7 @@ query_tool-usage-over-time() { ##? [searchterm]: Counts of tool runs by month, f
 					$where
 				)
 		SELECT
-			date_trunc, tool_id, count(*)
+			date_trunc, $(tool_id_expr tool_id) AS tool_id, count(*)
 		FROM
 			cte
 		GROUP BY
@@ -297,7 +297,7 @@ query_tool-popularity() { ##? [months=24] [--error]: Most run tools by month (to
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			tool_id,
+			$(tool_id_expr tool_id) AS tool_id,
 			date_trunc('month', create_time AT TIME ZONE 'UTC')::date as month,
 			count(*) as count $error_count
 		FROM job
@@ -346,10 +346,10 @@ query_workflow-connections() { ##? [--all]: The connections of tools, from outpu
 			workflow.id as wf_id,
 			workflow.update_time::DATE as wf_updated,
 			ws_in.id as in_id,
-			ws_in.tool_id as in_tool,
+			$(tool_id_expr ws_in.tool_id) as in_tool,
 			ws_in.tool_version as in_tool_v,
 			ws_out.id as out_id,
-			ws_out.tool_id as out_tool,
+			$(tool_id_expr ws_out.tool_id) as out_tool,
 			ws_out.tool_version as out_tool_v,
 			sw.published as published,
 			sw.deleted as deleted,
@@ -378,10 +378,10 @@ query_history-connections() { ## : The connections of tools, from output to inpu
 			h.id AS h_id,
 			h.update_time::DATE AS h_update,
 			jtod.job_id AS in_id,
-			j.tool_id AS in_tool,
+			$(tool_id_expr j.tool_id) AS in_tool,
 			j.tool_version AS in_tool_v,
 			jtid.job_id AS out_id,
-			j2.tool_id AS out_tool,
+			$(tool_id_expr j2.tool_id) AS out_tool,
 			j2.tool_version AS out_ver
 		FROM
 			job AS j
@@ -540,7 +540,7 @@ query_destination-queue-run-time() { ##? [--older-than=30] [--seconds]: The aver
 				AS (
 					SELECT
 						j.destination_id,
-						j.tool_id,
+						$(tool_id_expr j.tool_id) AS tool_id,
 						j.id,
 						$nonpretty (min(a.create_time) - min(b.create_time))$nonprettyend
 							AS queue_time,
@@ -651,6 +651,10 @@ query_queue() { ## [--by (tool|destination|user)]: Brief overview of currently r
 		column_query="$column"
 	fi
 
+	if [[ "$column" == "tool_id" ]]; then
+		column_query="$(tool_id_expr "$column") AS tool_id"
+	fi
+
 	read -r -d '' QUERY <<-EOF
 		SELECT
 			${column_query}, state, count(${column}) as ${title}_count
@@ -709,9 +713,9 @@ query_queue-overview() { ##? [--short-tool-id]: View used mostly for monitoring
 	EOF
 
 	# Use full tool id by default
-	tool_id="tool_id"
+	tool_id=$(tool_id_expr "tool_id")
 	if [[ -n "$arg_short_tool_id" ]]; then
-		tool_id="regexp_replace(tool_id, '.*toolshed.*/repos/', '')"
+		tool_id=$(tool_id_expr "tool_id" short)
 	fi
 
 	# Include by default
@@ -804,7 +808,7 @@ query_queue-detail() { ##? [--all] [--seconds] [--since-update]: Detailed overvi
 			job.state,
 			job.id,
 			job.job_runner_external_id as extid,
-			job.tool_id,
+			$(tool_id_expr job.tool_id) AS tool_id,
 			$username,
 			$nonpretty now() AT TIME ZONE 'UTC' - $time_column) as $time_column_name,
 			job.handler,
@@ -937,7 +941,7 @@ query_jobs-nonterminal() { ## [--states=new,queued,running] [--update-time] [--o
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			job.id, job.tool_id, job.state, job.$time_column AT TIME ZONE 'UTC' AS $time_column, job.job_runner_name, job.job_runner_external_id, job.handler, $user
+			job.id, $(tool_id_expr job.tool_id) AS tool_id, job.state, job.$time_column AT TIME ZONE 'UTC' AS $time_column, job.job_runner_name, job.job_runner_external_id, job.handler, $user
 		FROM
 			job
 		LEFT OUTER JOIN
@@ -991,7 +995,7 @@ query_recent-jobs() { ##? <hours>: Jobs run in the past <hours> (in any state)
 		SELECT
 			job.id,
 			job.create_time AT TIME ZONE 'UTC' as create_time,
-			job.tool_id,
+			$(tool_id_expr job.tool_id) AS tool_id,
 			job.state, $username
 		FROM job, galaxy_user
 		WHERE job.create_time > (now() AT TIME ZONE 'UTC' - '$arg_hours hours'::interval) AND job.user_id = galaxy_user.id
@@ -1325,7 +1329,7 @@ query_training-queue() { ##? <training_id>: Jobs currently being run by people i
 				job.state,
 				job.id,
 				job.job_runner_external_id AS extid,
-				job.tool_id,
+				$(tool_id_expr job.tool_id) AS tool_id,
 				$username,
 				job.create_time AT TIME ZONE 'UTC' AS created
 			FROM
@@ -1429,7 +1433,7 @@ query_tool-last-used-date() { ## : When was the most recent invocation of every 
 	EOF
 
 	read -r -d '' QUERY <<-EOF
-		select max(date_trunc('month', create_time AT TIME ZONE 'UTC')), tool_id from job group by tool_id order by max desc
+		select max(date_trunc('month', create_time AT TIME ZONE 'UTC')), $(tool_id_expr tool_id) AS tool_id from job group by tool_id order by max desc
 	EOF
 }
 
@@ -1456,7 +1460,7 @@ EOFhelp
 	username=$(gdpr_safe galaxy_user.username username "Anonymous User")
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			job.tool_id, $username, count(job.tool_id)
+			$(tool_id_expr job.tool_id) AS tool_id, $username, count(job.tool_id)
 		FROM
 			job, galaxy_user, galaxy_group, user_group_association
 		WHERE
@@ -1704,7 +1708,7 @@ query_tool-memory-per-inputs() { ##? <tool_id> [--like]: See memory usage and in
 		WITH job_cte AS (
 			SELECT
 				j.id,
-				j.tool_id
+				$(tool_id_expr j.tool_id) AS tool_id
 			FROM
 				job j
 			WHERE
@@ -3229,7 +3233,7 @@ query_job-info() { ## <-|job_id [job_id [...]]> : Retrieve information about job
 		SELECT job.id,
 			job.create_time,
 			job.update_time,
-			job.tool_id,
+			$(tool_id_expr job.tool_id) AS tool_id,
 			job.state,
 			job.handler,
 			hostname_query.hostname,
@@ -3297,7 +3301,7 @@ query_jobs-max-by-cpu-days() { ## : Top 10 jobs by CPU days consumed (requires C
 	read -r -d '' QUERY <<-EOF
 		SELECT
 			job.id,
-			job.tool_id,
+			$(tool_id_expr job.tool_id) AS tool_id,
 			job.create_time,
 			metric_value/1000000000/3600/24 as cpu_days
 		FROM job, job_metric_numeric
@@ -3335,7 +3339,7 @@ query_errored-jobs(){ ##? <hours> [--details]: Lists jobs that errored in the la
 		SELECT
 			job.id,
 			job.create_time AT TIME ZONE 'UTC' as create_time,
-			job.tool_id,
+			$(tool_id_expr job.tool_id) AS tool_id,
 			job.tool_version,
 			job.handler,
 			job.destination_id,
@@ -3420,9 +3424,9 @@ query_tool-new-errors() { ##? [weeks=4] [--short-tool-id]: Summarize percent of 
 		     iuc/rgrnastar/rna_star/2.6.0b-2   |        40 |               0.3 |              0 |            12 |            0 | handler_main_2
 	EOF
 
-	tool_id="j.tool_id"
+	tool_id="$(tool_id_expr "j.tool_id") as tool_id"
 	if [[ -n $arg_short_tool_id ]]; then
-		tool_id="regexp_replace(j.tool_id, '.*toolshed.*/repos/', '') as tool_id"
+		tool_id="$(tool_id_expr "j.tool_id" short) as tool_id"
 	fi
 
 	fields="tool_runs=1;percent_errored=2;percent_failed=3;count_errored=4;count_failed=5"
@@ -3472,9 +3476,9 @@ query_tool-errors() { ##? [--short-tool-id] [weeks=4]: Summarize percent of tool
 	EOF
 
 	# TODO: Fix this nonsense for proper args
-	tool_id="j.tool_id"
+	tool_id="$(tool_id_expr "j.tool_id") as tool_id"
 	if [[ -n $arg_short_tool_id ]]; then
-		tool_id="regexp_replace(j.tool_id, '.*toolshed.*/repos/', '') as tool_id"
+		tool_id="$(tool_id_expr "j.tool_id" short) as tool_id"
 	fi
 
 	fields="tool_runs=1;percent_errored=2;percent_failed=3;count_errored=4;count_failed=5"
@@ -3520,9 +3524,9 @@ query_tool-likely-broken() { ##? [--short-tool-id] [weeks=4]: Find tools that ha
 	EOF
 
 	# TODO: Fix this nonsense for proper args
-	tool_id="j.tool_id"
+	tool_id="$(tool_id_expr "j.tool_id") as tool_id"
 	if [[ -n $arg_short_tool_id ]]; then
-		tool_id="regexp_replace(j.tool_id, '.*toolshed.*/repos/', '') as tool_id"
+		tool_id="$(tool_id_expr "j.tool_id" short) as tool_id"
 	fi
 
 	fields="tool_runs=1;percent_errored=2;percent_failed=3;count_errored=4;count_failed=5"
@@ -3564,7 +3568,7 @@ query_user-recent-aggregate-jobs() { ##? <user> [days=7]: Show aggregate informa
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			date_trunc('day', create_time), tool_id, state, count(*)
+			date_trunc('day', create_time), $(tool_id_expr tool_id) AS tool_id, state, count(*)
 		FROM
 			job
 		JOIN
@@ -3819,7 +3823,7 @@ query_history-runtime-system-by-tool() { ##? <history_id>: Sum of runtimes by al
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			job.tool_id,
+			$(tool_id_expr job.tool_id) AS tool_id,
 			(sum(job_metric_numeric.metric_value)::INT || 'seconds')::INTERVAL
 		FROM
 			job LEFT JOIN job_metric_numeric ON job.id = job_metric_numeric.job_id
@@ -3901,7 +3905,7 @@ query_queue-detail-by-handler() { ##? <handler_id>: List jobs for a specific han
 			id,
 			create_time,
 			state,
-			regexp_replace(tool_id, '.*toolshed.*/repos/', ''),
+			$(tool_id_expr tool_id) AS tool_id,
 			job_runner_name,
 			job_runner_external_id,
 			destination_id
@@ -4566,7 +4570,7 @@ query_good-for-pulsar() { ## : Look for jobs EU would like to send to pulsar
 	read -r -d '' QUERY <<-EOF
 		WITH job_data AS (
 			SELECT
-				regexp_replace(j.tool_id, '.*toolshed.*/repos/', '') as tool_id,
+				$(tool_id_expr j.tool_id) as tool_id,
 				SUM(d.total_size) AS size,
 				MIN(jmn.metric_value) AS runtime,
 				SUM(d.total_size) / min(jmn.metric_value) AS score
@@ -4824,7 +4828,7 @@ query_job-metrics() { ## : Retrieves input size, runtime, memory for all execute
 
 		SELECT
 			job.id AS job_id,
-			job.tool_id,
+			$(tool_id_expr job.tool_id) AS tool_id,
 			job.state,
 			dataset_filesizes.total_filesize,
 			dataset_filesizes.num_files,
@@ -5136,11 +5140,11 @@ query_queue-details-drm() { ##? [--all] [--seconds] [--since-update]: Detailed o
 			job_data
 				AS (
 					SELECT
-						job.state as jobstate,
-						job.id as jobid,
-						job.job_runner_external_id as extid,
-						job.tool_id as toolid,
-						$username,
+					job.state as jobstate,
+					job.id as jobid,
+					job.job_runner_external_id as extid,
+					$(tool_id_expr job.tool_id) as toolid,
+					$username,
 						$nonpretty now() AT TIME ZONE 'UTC' - $time_column) as $time_column_name,
 						job.handler as handler,
 						(REGEXP_MATCHES(encode(job.destination_params, 'escape'), 'ntasks=(\d+)'))[1] as cpu_slurm,
@@ -5229,7 +5233,7 @@ query_jobs() { ##? [--tool=] [--destination=] [--limit=50] [--states=<comma,sep,
 				job.update_time::timestamp(0) as update_time,
 				job.user_id as user_id,
 				job.state as state,
-				job.tool_id as tool_id,
+				$(tool_id_expr job.tool_id) as tool_id,
 				job.handler as handler,
 				job.destination_id as destination,
 				job.job_runner_external_id as external_id
@@ -5459,7 +5463,7 @@ query_tpt-tool-cpu() { ##? [--startyear=<YYYY>] [--endyear=<YYYY>] [--formula=av
 				metric_name = 'cpuacct.usage'
 		)
 		SELECT
-			job.tool_id,
+			$(tool_id_expr job.tool_id) AS tool_id,
 			date_trunc('month', job.create_time) AS month,
 			cpu_usage.destination_id,
 			ROUND($sql_formula(cpu_usage.cpu_usage_seconds), 0) AS seconds
@@ -5510,7 +5514,7 @@ query_tpt-tool-users() { ##? [--startyear=<YYYY>] [--endyear=<YYYY>]: Start year
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			tool_id,
+			$(tool_id_expr tool_id) AS tool_id,
 			date_trunc('month', job.create_time AT TIME ZONE 'UTC') AS month,
 			COUNT(DISTINCT galaxy_user.username) AS count
 		FROM
@@ -5575,7 +5579,7 @@ query_tpt-tool-memory() { ##? [--startyear=<YYYY>] [--endyear=<YYYY>] [--formula
 				metric_name = 'memory.memsw.max_usage_in_bytes'
 		)
 		SELECT
-			tool_id,
+			$(tool_id_expr tool_id) AS tool_id,
 			date_trunc('month', job.create_time AT TIME ZONE 'UTC') AS month,
 			ROUND($sql_formula(metric_value) * 0.000000001, 0) AS consumed_gigabytes
 		FROM
@@ -5627,12 +5631,12 @@ query_tools-usage-per-month() { ##? [--startmonth=<YYYY>-<MM>] [--endmonth=<YYYY
 	if [[ -n $arg_endmonth ]]; then
 		filter_by_time_period="$filter_by_time_period AND date_trunc('month', job.create_time AT TIME ZONE 'UTC') <= '$arg_endmonth-01'::date"
 	fi
-	tool_id="job.tool_id"
+	tool_id=$(tool_id_expr "job.tool_id")
 	if [[ -n $arg_short_tool_id ]]; then
-		tool_id="regexp_replace(job.tool_id, '.*toolshed.*/repos/', '')"
+		tool_id=$(tool_id_expr "job.tool_id" short)
 	fi
 	if [[ -n $arg_super_short_tool_id ]]; then
-		tool_id="regexp_replace(job.tool_id, '.*toolshed.*/repos/[^/]*/[^/]*/', '')"
+		tool_id=$(tool_id_expr "job.tool_id" super_short)
 	fi
 
 	if [[ -n $arg_no_version ]]; then
@@ -5755,12 +5759,12 @@ query_tools-usage() { ##? [year] [--tools=<tool1,tool2,...>] [--short_tool_id] [
 	if [[ -n $arg_year ]]; then
 	    filter_by_year="AND date_trunc('year', job.create_time AT TIME ZONE 'UTC') = '$arg_year-01-01'::date"
 	fi
-	tool_id="job.tool_id"
+	tool_id=$(tool_id_expr "job.tool_id")
 	if [[ -n $arg_short_tool_id ]]; then
-		tool_id="regexp_replace(job.tool_id, '.*toolshed.*/repos/', '')"
+		tool_id=$(tool_id_expr "job.tool_id" short)
 	fi
 	if [[ -n $arg_super_short_tool_id ]]; then
-		tool_id="regexp_replace(job.tool_id, '.*toolshed.*/repos/[^/]*/[^/]*/', '')"
+		tool_id=$(tool_id_expr "job.tool_id" super_short)
 	fi
 
 	if [[ -n $arg_no_version ]]; then
@@ -5852,7 +5856,7 @@ query_tool-memory-efficiency() { ##? [--newer-than=2592000] [--min-job-count=5] 
 			AND j.state = 'ok'
 		)
 		SELECT
-		    tool_id,
+		    $(tool_id_expr tool_id) AS tool_id,
 		    COUNT(*) AS run_count,
 		    ROUND((SUM(runtime) / POW(60, 2))::numeric, 2) AS total_runtime_hrs,
 		    ROUND((AVG(mem_used) / POW(1024, 3))::numeric, 2) AS avg_mem_used_gb,

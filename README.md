@@ -103,6 +103,35 @@ Variable | Example Value
 `GALAXY_MUTABLE_CONFIG_DIR` |  `/srv/galaxy/var/`
 `GALAXY_ROOT` | `/srv/galaxy/server/` 
 `VIRTUAL_ENV` | `/srv/galaxy/venv/` 
+`GXADMIN_TOOL_ID_FORMAT` | `super_short`
+
+
+### Tool ID display
+
+Tool IDs stored in the Galaxy database are long, e.g.
+`toolshed.g2.bx.psu.edu/repos/genouest/helixer/helixer/0.3.6+galaxy0`, which
+wastes screen space in wide tables. Set `GXADMIN_TOOL_ID_FORMAT` to shorten
+them consistently across all display queries:
+
+Value | Example output
+--- | ---
+`full` (default) | `toolshed.g2.bx.psu.edu/repos/genouest/helixer/helixer/0.3.6+galaxy0`
+`short` | `genouest/helixer/helixer/0.3.6+galaxy0`
+`super_short` | `helixer/0.3.6+galaxy0`
+
+```bash
+export GXADMIN_TOOL_ID_FORMAT=super_short
+gxadmin query queue
+```
+
+Set it permanently in your shell or in `~/.config/gxadmin-local.sh`. The
+per-query `--short-tool-id` / `--super-short-tool-id` flags (where available,
+e.g. `tools-usage`, `tool-errors`) override the env var for that invocation.
+
+Note: when using `--tools=` filters (in `tools-usage` / `tools-usage-per-month`),
+supply the tool IDs in the same form as the chosen format. Export-oriented
+queries (e.g. the `server workflow-trace-archive-*` commands) always emit the
+full tool ID so downstream consumers are unaffected.
 
 
 ### GDPR
