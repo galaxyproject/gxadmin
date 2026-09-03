@@ -84,6 +84,7 @@ Command | Description
 [`query queue`](#query-queue) | Brief overview of currently running jobs grouped by tool (default) or other columns
 [`query queue-detail`](#query-queue-detail) | Detailed overview of running and queued jobs
 [`query queue-detail-by-handler`](#query-queue-detail-by-handler) | List jobs for a specific handler
+[`query queue-details`](#query-queue-details) | Detailed overview of running and queued jobs
 [`query queue-details-drm`](#query-queue-details-drm) | Detailed overview of running and queued jobs with cores/mem info
 [`query queue-overview`](#query-queue-overview) | View used mostly for monitoring
 [`query queue-time`](#query-queue-time) | The average/95%/99% a specific tool spends in queue state.
@@ -1942,6 +1943,20 @@ query queue-detail-by-handler -  List jobs for a specific handler
 **NOTES**
 
 List the jobs currently being processed by a specific handler
+
+
+## query queue-details
+
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_queue-details&type=Code))
+query queue-details -  Detailed overview of running and queued jobs
+
+**SYNOPSIS**
+
+    gxadmin query queue-details [--all] [--seconds] [--since-update]
+
+**NOTES**
+
+This is an alias of ["queue-detail"](#query-queue-detail), provided because we can never remember.
 
 
 ## query queue-details-drm
