@@ -80,19 +80,11 @@ README.md → "Tool ID display"):
 $(tool_id_expr job.tool_id) AS tool_id
 ```
 
-An optional second argument forces a format for a single call, used by the
-per-query `--short-tool-id` / `--super-short-tool-id` flags:
-
-```
-tool_id=$(tool_id_expr "job.tool_id")
-if [[ -n $arg_short_tool_id ]]; then
-	tool_id=$(tool_id_expr "job.tool_id" short)
-fi
-```
-
-When grouping, keep the `GROUP BY` on the raw column (e.g. `GROUP BY job.tool_id`)
-so distinct tools that shorten to the same string remain separate rows. Export
-queries (e.g. `server workflow-trace-archive-*`) should keep the full tool ID.
+The format is controlled by the `GXADMIN_TOOL_ID_FORMAT` environment
+variable. When grouping, keep the `GROUP BY` on
+the raw column (e.g. `GROUP BY job.tool_id`) so distinct tools that shorten to
+the same string remain separate rows. Export queries (e.g.
+`server workflow-trace-archive-*`) should keep the full tool ID.
 
 # Portability
 

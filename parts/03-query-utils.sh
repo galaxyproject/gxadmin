@@ -213,17 +213,17 @@ get_user_filter() {
 }
 
 # Returns a SQL expression that shortens a tool_id column according to
-# $GXADMIN_TOOL_ID_FORMAT (full|short|super_short). An optional second argument
-# overrides the format for this single call (used by per-query flags).
+# $GXADMIN_TOOL_ID_FORMAT (full|short|owner_short|tool_short).
 #
-#   tool_id_expr job.tool_id             -> respects $GXADMIN_TOOL_ID_FORMAT
-#   tool_id_expr job.tool_id super_short -> forces super_short
+#   tool_id_expr job.tool_id -> respects $GXADMIN_TOOL_ID_FORMAT
 tool_id_expr() {
 	local col="${1:-tool_id}"
-	local fmt="${2:-${GXADMIN_TOOL_ID_FORMAT:-full}}"
+	local fmt="${GXADMIN_TOOL_ID_FORMAT:-full}"
 	case "$fmt" in
 		short)       echo "regexp_replace($col, '.*toolshed.*/repos/', '')" ;;
-		super_short) echo "regexp_replace($col, '.*toolshed.*/repos/[^/]*/[^/]*/', '')" ;;
+		owner_short) echo "regexp_replace($col, '.*toolshed.*/repos/([^/]*/)[^/]*/', '\1')" ;;
+		tool_short)  echo "regexp_replace($col, '.*toolshed.*/repos/[^/]*/[^/]*/', '')" ;;
+		super_short) echo "regexp_replace($col, '.*toolshed.*/repos/[^/]*/[^/]*/', '')" ;;  # deprecated alias for tool_short
 		*)           echo "$col" ;;
 	esac
 }

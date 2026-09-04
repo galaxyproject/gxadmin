@@ -669,7 +669,7 @@ query_queue() { ## [--by (tool|destination|user)]: Brief overview of currently r
 	EOF
 }
 
-query_queue-overview() { ##? [--short-tool-id]: View used mostly for monitoring
+query_queue-overview() { ## : View used mostly for monitoring
 	handle_help "$@" <<-EOF
 		Counts jobs that are not yet in a terminal state (states 'new', 'queued'
 		and 'running') grouped by tool id, tool version, destination, handler,
@@ -712,11 +712,7 @@ query_queue-overview() { ##? [--short-tool-id]: View used mostly for monitoring
 		    GDPR_MODE=1 gxadmin iquery queue-overview
 	EOF
 
-	# Use full tool id by default
 	tool_id=$(tool_id_expr "tool_id")
-	if [[ -n "$arg_short_tool_id" ]]; then
-		tool_id=$(tool_id_expr "tool_id" short)
-	fi
 
 	# Include by default
 	if [[ -z "$GDPR_MODE" ]]; then
@@ -3404,30 +3400,27 @@ query_workflow-invocation-totals() { ## : Report on overall workflow counts, to 
 	EOF
 }
 
-query_tool-new-errors() { ##? [weeks=4] [--short-tool-id]: Summarize percent of tool runs in error over the past weeks for "new tools"
+query_tool-new-errors() { ##? [weeks=4]: Summarize percent of tool runs in error over the past weeks for "new tools"
 	meta <<-EOF
 		ADDED: 12
 	EOF
 	handle_help "$@" <<-EOF
 		See jobs-in-error summary for recent tools (tools whose first execution is in recent weeks).
 
-		    $ gxadmin query tool-errors --short-tool-id 1
-		        tool_id                        | tool_runs |  percent_errored  | percent_failed | count_errored | count_failed |     handler
-		    -----------------------------------+-----------+-------------------+----------------+---------------+--------------+-----------------
-		     rnateam/graphclust_align_cluster/ |        55 | 0.145454545454545 |              0 |             8 |            0 | handler_main_10
-		     iuc/rgrnastar/rna_star/2.6.0b-2   |        46 | 0.347826086956522 |              0 |            16 |            0 | handler_main_3
-		     iuc/rgrnastar/rna_star/2.6.0b-2   |        43 | 0.186046511627907 |              0 |             8 |            0 | handler_main_0
-		     iuc/rgrnastar/rna_star/2.6.0b-2   |        41 | 0.390243902439024 |              0 |            16 |            0 | handler_main_4
-		     iuc/rgrnastar/rna_star/2.6.0b-2   |        40 |             0.325 |              0 |            13 |            0 | handler_main_6
-		     Filter1                           |        40 |             0.125 |              0 |             5 |            0 | handler_main_0
-		     devteam/bowtie2/bowtie2/2.3.4.3   |        40 |             0.125 |              0 |             5 |            0 | handler_main_7
-		     iuc/rgrnastar/rna_star/2.6.0b-2   |        40 |               0.3 |              0 |            12 |            0 | handler_main_2
+		    $ GXADMIN_TOOL_ID_FORMAT=tool_short gxadmin query tool-errors
+		        tool_id                   | tool_runs |  percent_errored  | percent_failed | count_errored | count_failed |     handler
+		    ------------------------------+-----------+-------------------+----------------+---------------+--------------+-----------------
+		     graphclust_align_cluster/    |        55 | 0.145454545454545 |              0 |             8 |            0 | handler_main_10
+		     rna_star/2.6.0b-2            |        46 | 0.347826086956522 |              0 |            16 |            0 | handler_main_3
+		     rna_star/2.6.0b-2            |        43 | 0.186046511627907 |              0 |             8 |            0 | handler_main_0
+		     rna_star/2.6.0b-2            |        41 | 0.390243902439024 |              0 |            16 |            0 | handler_main_4
+		     rna_star/2.6.0b-2            |        40 |             0.325 |              0 |            13 |            0 | handler_main_6
+		     Filter1                      |        40 |             0.125 |              0 |             5 |            0 | handler_main_0
+		     bowtie2/2.3.4.3              |        40 |             0.125 |              0 |             5 |            0 | handler_main_7
+		     rna_star/2.6.0b-2            |        40 |               0.3 |              0 |            12 |            0 | handler_main_2
 	EOF
 
 	tool_id="$(tool_id_expr "j.tool_id") as tool_id"
-	if [[ -n $arg_short_tool_id ]]; then
-		tool_id="$(tool_id_expr "j.tool_id" short) as tool_id"
-	fi
 
 	fields="tool_runs=1;percent_errored=2;percent_failed=3;count_errored=4;count_failed=5"
 	tags="tool_id=0;handler=6"
@@ -3455,31 +3448,28 @@ query_tool-new-errors() { ##? [weeks=4] [--short-tool-id]: Summarize percent of 
 	EOF
 }
 
-query_tool-errors() { ##? [--short-tool-id] [weeks=4]: Summarize percent of tool runs in error over the past weeks for all tools that have failed (most popular tools first)
+query_tool-errors() { ##? [weeks=4]: Summarize percent of tool runs in error over the past weeks for all tools that have failed (most popular tools first)
 	meta <<-EOF
 		ADDED: 12
 	EOF
 	handle_help "$@" <<-EOF
 		See jobs-in-error summary for recently executed tools that have failed at least 10% of the time.
 
-		    $ gxadmin query tool-errors --short-tool-id 1
-		        tool_id                        | tool_runs |  percent_errored  | percent_failed | count_errored | count_failed |     handler
-		    -----------------------------------+-----------+-------------------+----------------+---------------+--------------+-----------------
-		     rnateam/graphclust_align_cluster/ |        55 | 0.145454545454545 |              0 |             8 |            0 | handler_main_10
-		     iuc/rgrnastar/rna_star/2.6.0b-2   |        46 | 0.347826086956522 |              0 |            16 |            0 | handler_main_3
-		     iuc/rgrnastar/rna_star/2.6.0b-2   |        43 | 0.186046511627907 |              0 |             8 |            0 | handler_main_0
-		     iuc/rgrnastar/rna_star/2.6.0b-2   |        41 | 0.390243902439024 |              0 |            16 |            0 | handler_main_4
-		     iuc/rgrnastar/rna_star/2.6.0b-2   |        40 |             0.325 |              0 |            13 |            0 | handler_main_6
-		     Filter1                           |        40 |             0.125 |              0 |             5 |            0 | handler_main_0
-		     devteam/bowtie2/bowtie2/2.3.4.3   |        40 |             0.125 |              0 |             5 |            0 | handler_main_7
-		     iuc/rgrnastar/rna_star/2.6.0b-2   |        40 |               0.3 |              0 |            12 |            0 | handler_main_2
+		    $ GXADMIN_TOOL_ID_FORMAT=tool_short gxadmin query tool-errors
+		        tool_id                   | tool_runs |  percent_errored  | percent_failed | count_errored | count_failed |     handler
+		    ------------------------------+-----------+-------------------+----------------+---------------+--------------+-----------------
+		     graphclust_align_cluster/    |        55 | 0.145454545454545 |              0 |             8 |            0 | handler_main_10
+		     rna_star/2.6.0b-2            |        46 | 0.347826086956522 |              0 |            16 |            0 | handler_main_3
+		     rna_star/2.6.0b-2            |        43 | 0.186046511627907 |              0 |             8 |            0 | handler_main_0
+		     rna_star/2.6.0b-2            |        41 | 0.390243902439024 |              0 |            16 |            0 | handler_main_4
+		     rna_star/2.6.0b-2            |        40 |             0.325 |              0 |            13 |            0 | handler_main_6
+		     Filter1                      |        40 |             0.125 |              0 |             5 |            0 | handler_main_0
+		     bowtie2/2.3.4.3              |        40 |             0.125 |              0 |             5 |            0 | handler_main_7
+		     rna_star/2.6.0b-2            |        40 |               0.3 |              0 |            12 |            0 | handler_main_2
 	EOF
 
 	# TODO: Fix this nonsense for proper args
 	tool_id="$(tool_id_expr "j.tool_id") as tool_id"
-	if [[ -n $arg_short_tool_id ]]; then
-		tool_id="$(tool_id_expr "j.tool_id" short) as tool_id"
-	fi
 
 	fields="tool_runs=1;percent_errored=2;percent_failed=3;count_errored=4;count_failed=5"
 	tags="tool_id=0;handler=6"
@@ -3506,7 +3496,7 @@ query_tool-errors() { ##? [--short-tool-id] [weeks=4]: Summarize percent of tool
 	EOF
 }
 
-query_tool-likely-broken() { ##? [--short-tool-id] [weeks=4]: Find tools that have been executed in recent weeks that are (or were due to job running) likely substantially broken
+query_tool-likely-broken() { ##? [weeks=4]: Find tools that have been executed in recent weeks that are (or were due to job running) likely substantially broken
 	handle_help "$@" <<-EOF
 		This runs an identical query to tool-errors, except filtering for tools
 		which were run more than 4 times, and have a failure rate over 95%.
@@ -3525,9 +3515,6 @@ query_tool-likely-broken() { ##? [--short-tool-id] [weeks=4]: Find tools that ha
 
 	# TODO: Fix this nonsense for proper args
 	tool_id="$(tool_id_expr "j.tool_id") as tool_id"
-	if [[ -n $arg_short_tool_id ]]; then
-		tool_id="$(tool_id_expr "j.tool_id" short) as tool_id"
-	fi
 
 	fields="tool_runs=1;percent_errored=2;percent_failed=3;count_errored=4;count_failed=5"
 	tags="tool_id=0;handler=6"
@@ -5596,7 +5583,7 @@ query_tpt-tool-memory() { ##? [--startyear=<YYYY>] [--endyear=<YYYY>] [--formula
 	EOF
 }
 
-query_tools-usage-per-month() { ##? [--startmonth=<YYYY>-<MM>] [--endmonth=<YYYY>-<MM>] [--tools=<tool1,tool2,...>] [--short_tool_id] [--super_short_tool_id] [--no_version]: By default, startmonth is 1 year ago and end month is current month. tool1, tool2 etc. should correspond to the tool_id with the same format as requested: toolshed.g2.bx.psu.edu/repos/devteam/bowtie2/bowtie2/2.5.0+galaxy0,Cut1 for default, devteam/bowtie2/bowtie2/2.5.0+galaxy0,Cut1 for --short_tool_id, bowtie2/2.5.0+galaxy0,Cut1 for --super_short_tool_id etc...
+query_tools-usage-per-month() { ##? [--startmonth=<YYYY>-<MM>] [--endmonth=<YYYY>-<MM>] [--tools=<tool1,tool2,...>] [--no-version]: By default, startmonth is 1 year ago and end month is current month. tool1, tool2 etc. should correspond to the tool_id with the same format as requested (respecting GXADMIN_TOOL_ID_FORMAT): toolshed.g2.bx.psu.edu/repos/devteam/bowtie2/bowtie2/2.5.0+galaxy0,Cut1 for full, devteam/bowtie2/bowtie2/2.5.0+galaxy0,Cut1 for short, bowtie2/2.5.0+galaxy0,Cut1 for tool_short etc...
 	meta <<-EOF
 		AUTHORS: lldelisle
 		ADDED: 22
@@ -5605,7 +5592,7 @@ query_tools-usage-per-month() { ##? [--startmonth=<YYYY>-<MM>] [--endmonth=<YYYY
 	handle_help "$@" <<-EOF
 		Tools Usage Tracking: cpu-hours and nb_users by Month-Year.
 
-		    $ gxadmin query tools-usage-per-month --super_short_tool_id --no_version --tools bowtie2,Cut1 --startmonth=2023-03 --endmonth 2023-08
+		    $ GXADMIN_TOOL_ID_FORMAT=tool_short gxadmin query tools-usage-per-month --no-version --tools bowtie2,Cut1 --startmonth=2023-03 --endmonth 2023-08
 			   month    | cpu_hours | tool_id | nb_users
 			------------+-----------+---------+----------
 			 2023-08-01 |    796.15 | bowtie2 |        2
@@ -5632,12 +5619,6 @@ query_tools-usage-per-month() { ##? [--startmonth=<YYYY>-<MM>] [--endmonth=<YYYY
 		filter_by_time_period="$filter_by_time_period AND date_trunc('month', job.create_time AT TIME ZONE 'UTC') <= '$arg_endmonth-01'::date"
 	fi
 	tool_id=$(tool_id_expr "job.tool_id")
-	if [[ -n $arg_short_tool_id ]]; then
-		tool_id=$(tool_id_expr "job.tool_id" short)
-	fi
-	if [[ -n $arg_super_short_tool_id ]]; then
-		tool_id=$(tool_id_expr "job.tool_id" super_short)
-	fi
 
 	if [[ -n $arg_no_version ]]; then
 		tool_id="regexp_replace(${tool_id}::TEXT, '/[0-9.a-z+-]+$', '')"
@@ -5741,7 +5722,7 @@ query_archivable-histories() { ##? [--user-last-active=360] [--history-last-acti
 	EOF
 }
 
-query_tools-usage() { ##? [year] [--tools=<tool1,tool2,...>] [--short_tool_id] [--super_short_tool_id] [--no_version]: tool1, tool2 etc. should correspond to the tool_id with the same format as requested: toolshed.g2.bx.psu.edu/repos/devteam/bowtie2/bowtie2/2.5.0+galaxy0,Cut1 for default, devteam/bowtie2/bowtie2/2.5.0+galaxy0,Cut1 for --short_tool_id, bowtie2/2.5.0+galaxy0,Cut1 for --super_short_tool_id etc...
+query_tools-usage() { ##? [year] [--tools=<tool1,tool2,...>] [--no-version]: tool1, tool2 etc. should correspond to the tool_id with the same format as requested (respecting GXADMIN_TOOL_ID_FORMAT): toolshed.g2.bx.psu.edu/repos/devteam/bowtie2/bowtie2/2.5.0+galaxy0,Cut1 for full, devteam/bowtie2/bowtie2/2.5.0+galaxy0,Cut1 for short, bowtie2/2.5.0+galaxy0,Cut1 for tool_short etc...
 	meta <<-EOF
 		AUTHORS: lldelisle
 		ADDED: 23
@@ -5749,7 +5730,7 @@ query_tools-usage() { ##? [year] [--tools=<tool1,tool2,...>] [--short_tool_id] [
 	handle_help "$@" <<-EOF
 		Tools Usage Tracking: cpu-hours, cpu-years and nb_users for specific tools (optionally in a given year).
 
-		    $ gxadmin query tools-usage --super_short_tool_id --no_version --tools bowtie2,Cut1 2023
+		    $ GXADMIN_TOOL_ID_FORMAT=tool_short gxadmin query tools-usage --no-version --tools bowtie2,Cut1 2023
 			 cpu_hours | cpu_years | tool_id | nb_users
 			-----------+-----------+---------+----------
 			   4631.91 |      0.53 | bowtie2 |        7
@@ -5760,12 +5741,6 @@ query_tools-usage() { ##? [year] [--tools=<tool1,tool2,...>] [--short_tool_id] [
 	    filter_by_year="AND date_trunc('year', job.create_time AT TIME ZONE 'UTC') = '$arg_year-01-01'::date"
 	fi
 	tool_id=$(tool_id_expr "job.tool_id")
-	if [[ -n $arg_short_tool_id ]]; then
-		tool_id=$(tool_id_expr "job.tool_id" short)
-	fi
-	if [[ -n $arg_super_short_tool_id ]]; then
-		tool_id=$(tool_id_expr "job.tool_id" super_short)
-	fi
 
 	if [[ -n $arg_no_version ]]; then
 		tool_id="regexp_replace(${tool_id}::TEXT, '/[0-9.a-z+-]+$', '')"

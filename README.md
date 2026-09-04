@@ -103,7 +103,7 @@ Variable | Example Value
 `GALAXY_MUTABLE_CONFIG_DIR` |  `/srv/galaxy/var/`
 `GALAXY_ROOT` | `/srv/galaxy/server/` 
 `VIRTUAL_ENV` | `/srv/galaxy/venv/` 
-`GXADMIN_TOOL_ID_FORMAT` | `super_short`
+`GXADMIN_TOOL_ID_FORMAT` | `tool_short`
 
 
 ### Tool ID display
@@ -117,16 +117,17 @@ Value | Example output
 --- | ---
 `full` (default) | `toolshed.g2.bx.psu.edu/repos/genouest/helixer/helixer/0.3.6+galaxy0`
 `short` | `genouest/helixer/helixer/0.3.6+galaxy0`
-`super_short` | `helixer/0.3.6+galaxy0`
+`owner_short` | `genouest/helixer/0.3.6+galaxy0`
+`tool_short` | `helixer/0.3.6+galaxy0`
+
+(`super_short` is accepted as a deprecated alias for `tool_short`.)
 
 ```bash
-export GXADMIN_TOOL_ID_FORMAT=super_short
+export GXADMIN_TOOL_ID_FORMAT=tool_short
 gxadmin query queue
 ```
 
-Set it permanently in your shell or in `~/.config/gxadmin-local.sh`. The
-per-query `--short-tool-id` / `--super-short-tool-id` flags (where available,
-e.g. `tools-usage`, `tool-errors`) override the env var for that invocation.
+Set it permanently in your shell or in `~/.config/gxadmin-local.sh`.
 
 Note: when using `--tools=` filters (in `tools-usage` / `tools-usage-per-month`),
 supply the tool IDs in the same form as the chosen format. Export-oriented
