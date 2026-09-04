@@ -85,8 +85,8 @@ GXADMIN=./.tmpgxadmin
 
 @test "Ensure query names are standardised and match [type]_q-u-e-r-y" {
 	result=$(grep -P '^[a-z]+_[a-z-]*_[a-z-_]*\(\)' ${GXADMIN} -c)
-	if (( result > 20 )); then
+	if (( result > 21 )); then
 		grep -P '^[a-z]+_[a-z-]*_[a-z-_]*\(\)' parts/2*
 	fi
-	[ "$result" -eq 20 ]
+	[ "$result" -eq 21 ]
 }
