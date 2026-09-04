@@ -193,7 +193,16 @@ wonderful_argument_parser() {
 		done
 	fi
 
-	if (( positional_index < positional_count )); then
+	# Suppress "Required argument is missing" when the user only asked for
+	# help; handle_help will exit before the missing arg matters.
+	help_requested=0
+	for a in "${args[@]}"; do
+		case "$a" in
+			--help|--help-man|-h|/h|--man) help_requested=1; break ;;
+		esac
+	done
+
+	if (( ! help_requested )) && (( positional_index < positional_count )); then
 		for i in $(seq $positional_index $(( positional_count - 1 )) ); do
 			error "Required argument <${positional_args[$i]}> is missing"
 		done

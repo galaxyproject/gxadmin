@@ -3,13 +3,21 @@
 # shared because that's the purpose of gxadmin, sharing all of these weird
 # queries that we have :)
 
-query_memory-and-cpu-on-same-node() {
+query_memory-and-cpu-on-same-node() { ##? <hostname>: Memory and CPU cgroup metrics for jobs that ran on a given host
 	handle_help "$@" <<-EOF
-		Helena needed to check the reported values of memory/cpu over a series
-		of jobs on a specific host, to debug what went wrong with the cgroup
-		metrics.
+		Returns the reported "memory.memsw.max_usage_in_bytes" and
+		"cpuacct.usage" cgroup metric values for the most recent jobs that ran
+		on the given hostname. Useful for debugging what went wrong with
+		cgroup metrics on a specific node.
 
-		TODO(hxr): find some way to note "unlisted" functions and let people do the help for them?
+		The hostname must match the value stored in the "hostname" job metric.
+		Up to 200 recent jobs from that host are considered.
+
+		$ gxadmin query memory-and-cpu-on-same-node worker-04
+		  memory.memsw.max_usage_in_bytes | cpuacct.usage |      update_time
+		----------------------------------+---------------+---------------------
+		                   1234567890     |  98765432100  | 2023-01-18 14:05:14
+		                   2345678901     |  87654321009  | 2023-01-18 14:05:16
 	EOF
 
 	assert_count $# 1 "Missing host name"

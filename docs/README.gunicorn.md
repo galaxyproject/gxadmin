@@ -3,6 +3,7 @@
 Command | Description
 ------- | -----------
 [`gunicorn active-users`](#gunicorn-active-users) | Shows active users in last 10 minutes
+[`gunicorn handler-restart`](#gunicorn-handler-restart) | Restart gunicorn handlers in two batches to avoid downtime
 [`gunicorn lastlog`](#gunicorn-lastlog) | Fetch the number of seconds since the last log message was written
 
 ## gunicorn active-users
@@ -17,6 +18,35 @@ gunicorn active-users -  Shows active users in last 10 minutes
 **NOTES**
 
 See unique sorts IP adresses from 'GET /history/current_history_json' from last 10 minutes and prints it in influx line format
+
+
+## gunicorn handler-restart
+
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=gunicorn_handler-restart&type=Code))
+gunicorn handler-restart -  Restart gunicorn handlers in two batches to avoid downtime
+
+**SYNOPSIS**
+
+    gxadmin gunicorn handler-restart
+
+**NOTES**
+
+Restarts all running "galaxy-gunicorn@*.service" systemd units in two
+batches, so that half of the workers remain available while the other half restarts.
+
+The function:
+
+  - enumerates running "galaxy-gunicorn" units
+  - splits them into two batches
+  - waits until the first batch is serving HTTP 200s on "GET"
+  - restarts the second batch and waits for it to come back online
+  - then restarts the first batch
+
+If fewer than two gunicorn handlers are running it refuses to run, since
+rolling restarts are not possible without downtime.
+
+    $ gxadmin gunicorn handler-restart
+    Found handlers: galaxy-gunicorn@0.service galaxy-gunicorn@1.service  and galaxy-gunicorn@2.service galaxy-gunicorn@3.service
 
 
 ## gunicorn lastlog
