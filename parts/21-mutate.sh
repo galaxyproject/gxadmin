@@ -528,8 +528,7 @@ mutate_restart-jobs() { ## <job_id [job_id [...]]|-> [--commit] : Restart some j
 		job_ids=$(cat | paste -s -d' ')
 	else
 		# read from collected args
-		# shellcheck disable=SC2124
-		job_ids="${args[@]}"
+		job_ids="${args[*]}"
 	fi
 
 	# shellcheck disable=SC2068
