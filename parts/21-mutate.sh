@@ -19,7 +19,7 @@ txn_postfix() {
 	fi
 }
 
-mutate_fail-terminal-datasets() { ## [--commit]: Causes the output datasets of jobs which were manually failed, to be marked as failed
+mutate_fail-terminal-datasets() { ##? [--commit]: Causes the output datasets of jobs which were manually failed, to be marked as failed
 	handle_help "$@" <<-EOF
 		Whenever an admin marks a job as failed manually (e.g. by updating the
 		state in the database), the output datasets are not accordingly updated
@@ -109,18 +109,18 @@ mutate_fail-terminal-datasets() { ## [--commit]: Causes the output datasets of j
 		WHERE id in (select hda_id from terminal_jobs_temp)
 	EOF
 
-	txn_pre=$(txn_prefix "$1")
-	txn_pos=$(txn_postfix "$1")
+	txn_pre=$(txn_prefix  "$arg_commit")
+	txn_pos=$(txn_postfix "$arg_commit")
 	QUERY="$txn_pre $QUERY; $txn_pos"
 }
 
-mutate_fail-job() { ## <job_id> [--commit]: Sets a job state to error
+mutate_fail-job() { ##? <job_id> [--commit]: Sets a job state to error
 	handle_help "$@" <<-EOF
 		Sets a job's state to "error"
 	EOF
 
 	assert_count_ge $# 1 "Must supply a job ID"
-	id=$1
+	id=$arg_job_id
 
 	read -r -d '' QUERY <<-EOF
 		UPDATE
@@ -131,12 +131,12 @@ mutate_fail-job() { ## <job_id> [--commit]: Sets a job state to error
 			id = '$id'
 	EOF
 
-	txn_pre=$(txn_prefix  "$2")
-	txn_pos=$(txn_postfix "$2")
+	txn_pre=$(txn_prefix  "$arg_commit")
+	txn_pos=$(txn_postfix "$arg_commit")
 	QUERY="$txn_pre $QUERY; $txn_pos"
 }
 
-mutate_fail-history() { ## <history_id> [--commit]: Mark all jobs within a history to state error
+mutate_fail-history() { ##? <history_id> [--commit]: Mark all jobs within a history to state error
 	meta <<-EOF
 		ADDED: 12
 	EOF
@@ -145,7 +145,7 @@ mutate_fail-history() { ## <history_id> [--commit]: Mark all jobs within a histo
 	EOF
 
 	assert_count_ge $# 1 "Must supply a history ID"
-	id=$1
+	id=$arg_history_id
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
@@ -167,18 +167,18 @@ mutate_fail-history() { ## <history_id> [--commit]: Mark all jobs within a histo
 								FROM
 									history_dataset_association
 								WHERE
-									history_id = $1
+									history_id = $id
 							)
 				)
 			AND state NOT IN ('ok', 'error')
 	EOF
 
-	txn_pre=$(txn_prefix  "$2")
-	txn_pos=$(txn_postfix "$2")
+	txn_pre=$(txn_prefix  "$arg_commit")
+	txn_pos=$(txn_postfix "$arg_commit")
 	QUERY="$txn_pre $QUERY; $txn_pos"
 }
 
-mutate_delete-group-role() { ## <group_name> [--commit]: Remove the group, role, and any user-group + user-role associations
+mutate_delete-group-role() { ##? <group_name> [--commit]: Remove the group, role, and any user-group + user-role associations
 	meta <<-EOF
 		ADDED: 12
 	EOF
@@ -187,31 +187,31 @@ mutate_delete-group-role() { ## <group_name> [--commit]: Remove the group, role,
 	EOF
 
 	assert_count_ge $# 1 "Must supply a group name"
-	id=$1
+	id=$arg_group_name
 
 	read -r -d '' QUERY <<-EOF
 		DELETE FROM group_role_association
-		WHERE group_id = (SELECT id FROM galaxy_group WHERE name = '$1');
+		WHERE group_id = (SELECT id FROM galaxy_group WHERE name = '$id');
 
 		DELETE FROM user_group_association
-		WHERE group_id = (SELECT id FROM galaxy_group WHERE name = '$1');
+		WHERE group_id = (SELECT id FROM galaxy_group WHERE name = '$id');
 
 		DELETE FROM user_role_association
-		WHERE role_id = (SELECT role_id FROM group_role_association WHERE group_id= (SELECT id FROM galaxy_group WHERE name = '$1'));
+		WHERE role_id = (SELECT role_id FROM group_role_association WHERE group_id= (SELECT id FROM galaxy_group WHERE name = '$id'));
 
 		DELETE FROM role
-		WHERE id = (SELECT role_id FROM group_role_association WHERE group_id = (SELECT id FROM galaxy_group WHERE name = '$1'));
+		WHERE id = (SELECT role_id FROM group_role_association WHERE group_id = (SELECT id FROM galaxy_group WHERE name = '$id'));
 
 		DELETE FROM galaxy_group
-		WHERE name = '$1'
+		WHERE name = '$id'
 	EOF
 
-	txn_pre=$(txn_prefix  "$2")
-	txn_pos=$(txn_postfix "$2")
+	txn_pre=$(txn_prefix  "$arg_commit")
+	txn_pos=$(txn_postfix "$arg_commit")
 	QUERY="$txn_pre $QUERY; $txn_pos"
 }
 
-mutate_assign-unassigned-workflows() { ## <handler_prefix> <handler_count> [--commit]: Randomly assigns unassigned workflows to handlers. Workaround for galaxyproject/galaxy#8209
+mutate_assign-unassigned-workflows() { ##? <handler_prefix> <handler_count> [--commit]: Randomly assigns unassigned workflows to handlers. Workaround for galaxyproject/galaxy#8209
 	meta <<-EOF
 		ADDED: 13
 	EOF
@@ -226,8 +226,8 @@ mutate_assign-unassigned-workflows() { ## <handler_prefix> <handler_count> [--co
 	assert_count_ge $# 1 "Must supply a handler_prefix"
 	assert_count_ge $# 2 "Must supply a count"
 
-	prefix=$1
-	count=$2
+	prefix=$arg_handler_prefix
+	count=$arg_handler_count
 
 	read -r -d '' QUERY <<-EOF
 		UPDATE workflow_invocation
@@ -236,12 +236,12 @@ mutate_assign-unassigned-workflows() { ## <handler_prefix> <handler_count> [--co
 		RETURNING workflow_invocation.id
 	EOF
 
-	txn_pre=$(txn_prefix  "$3")
-	txn_pos=$(txn_postfix "$3")
+	txn_pre=$(txn_prefix  "$arg_commit")
+	txn_pos=$(txn_postfix "$arg_commit")
 	QUERY="$txn_pre $QUERY; $txn_pos"
 }
 
-mutate_reassign-workflows-to-handler() { ## <handler_from> <handler_to> [--commit]: Reassign workflows in 'new' state to a different handler.
+mutate_reassign-workflows-to-handler() { ##? <handler_from> <handler_to> [--commit]: Reassign workflows in 'new' state to a different handler.
 	meta <<-EOF
 		ADDED: 14
 	EOF
@@ -256,17 +256,17 @@ mutate_reassign-workflows-to-handler() { ## <handler_from> <handler_to> [--commi
 
 	read -r -d '' QUERY <<-EOF
 		UPDATE workflow_invocation
-		SET handler = '$2'
-		WHERE state = 'new' and handler = '$1'
+		SET handler = '$arg_handler_to'
+		WHERE state = 'new' and handler = '$arg_handler_from'
 		RETURNING workflow_invocation.id
 	EOF
 
-	txn_pre=$(txn_prefix  "$3")
-	txn_pos=$(txn_postfix "$3")
+	txn_pre=$(txn_prefix  "$arg_commit")
+	txn_pos=$(txn_postfix "$arg_commit")
 	QUERY="$txn_pre $QUERY; $txn_pos"
 }
 
-mutate_reassign-active-workflows-to-handler() { ## <handler_from> <handler_to> [--commit]: Reassign workflows with state 'scheduled' or 'new' to a different handler.
+mutate_reassign-active-workflows-to-handler() { ##? <handler_from> <handler_to> [--commit]: Reassign workflows with state 'scheduled' or 'new' to a different handler.
 	meta <<-EOF
 		ADDED: 20
 	EOF
@@ -281,13 +281,13 @@ mutate_reassign-active-workflows-to-handler() { ## <handler_from> <handler_to> [
 
 	read -r -d '' QUERY <<-EOF
 		UPDATE workflow_invocation
-		SET handler = '$2'
-		WHERE (state = 'scheduled' or state = 'new' or state = 'ready') and handler = '$1'
+		SET handler = '$arg_handler_to'
+		WHERE (state = 'scheduled' or state = 'new' or state = 'ready') and handler = '$arg_handler_from'
 		RETURNING workflow_invocation.id
 	EOF
 
-	txn_pre=$(txn_prefix  "$3")
-	txn_pos=$(txn_postfix "$3")
+	txn_pre=$(txn_prefix  "$arg_commit")
+	txn_pos=$(txn_postfix "$arg_commit")
 	QUERY="$txn_pre $QUERY; $txn_pos"
 }
 
@@ -440,7 +440,7 @@ mutate_oidc-role-fix() { ## <username|email|user_id>: Fix permissions for users 
 	EOF
 }
 
-mutate_reassign-job-to-handler() { ## <job_id> <handler_id> [--commit]: Reassign a job to a different handler
+mutate_reassign-job-to-handler() { ##? <job_id> <handler_id> [--commit]: Reassign a job to a different handler
 	meta <<-EOF
 		ADDED: 14
 	EOF
@@ -448,8 +448,8 @@ mutate_reassign-job-to-handler() { ## <job_id> <handler_id> [--commit]: Reassign
 	EOF
 
 	assert_count_ge $# 2 "Must supply a job and handler ID"
-	job_id=$1
-	handler_id=$2
+	job_id=$arg_job_id
+	handler_id=$arg_handler_id
 
 	read -r -d '' QUERY <<-EOF
 		UPDATE
@@ -460,12 +460,12 @@ mutate_reassign-job-to-handler() { ## <job_id> <handler_id> [--commit]: Reassign
 			job.id = $job_id
 	EOF
 
-	txn_pre=$(txn_prefix  "$3")
-	txn_pos=$(txn_postfix "$3")
+	txn_pre=$(txn_prefix  "$arg_commit")
+	txn_pos=$(txn_postfix "$arg_commit")
 	QUERY="$txn_pre $QUERY; $txn_pos"
 }
 
-mutate_drop-extraneous-workflow-step-output-associations() { ## [--commit]: #8418, drop extraneous connection
+mutate_drop-extraneous-workflow-step-output-associations() { ##? [--commit]: #8418, drop extraneous connection
 	handle_help "$@" <<-EOF
 		Per https://github.com/galaxyproject/galaxy/pull/8418, this drops the
 		workflow step output associations that are not necessary.
@@ -500,12 +500,12 @@ mutate_drop-extraneous-workflow-step-output-associations() { ## [--commit]: #841
 		WHERE NOT EXISTS (SELECT 1 FROM exclude_list WHERE wisodca.id = exclude_list.id)
 	EOF
 
-	txn_pre=$(txn_prefix  "$1")
-	txn_pos=$(txn_postfix "$1")
+	txn_pre=$(txn_prefix  "$arg_commit")
+	txn_pos=$(txn_postfix "$arg_commit")
 	QUERY="$txn_pre $QUERY; $txn_pos"
 }
 
-mutate_restart-jobs() { ## [--commit] <-|job_id [job_id [...]]> : Restart some jobs
+mutate_restart-jobs() { ## <job_id [job_id [...]]|-> [--commit] : Restart some jobs
 	meta <<-EOF
 		ADDED: 15
 	EOF
@@ -514,17 +514,22 @@ mutate_restart-jobs() { ## [--commit] <-|job_id [job_id [...]]> : Restart some j
 	EOF
 
 	commit_flag=""
-	if [[ $1 == "--commit" ]]; then
-		commit_flag="$1"
-		shift;
-	fi
+	args=()
+	for a in "$@"; do
+		if [[ "$a" == "--commit" ]]; then
+			commit_flag="$a"
+		else
+			args+=("$a")
+		fi
+	done
 
-	if [[ "$1" == "-" ]]; then
+	if [[ "${args[0]}" == "-" ]]; then
 		# read jobs from stdin
 		job_ids=$(cat | paste -s -d' ')
 	else
-		# read from $@
-		job_ids=$@;
+		# read from collected args
+		# shellcheck disable=SC2124
+		job_ids="${args[@]}"
 	fi
 
 	# shellcheck disable=SC2068
@@ -547,7 +552,7 @@ mutate_restart-jobs() { ## [--commit] <-|job_id [job_id [...]]> : Restart some j
 	QUERY="$txn_pre $QUERY; $txn_pos"
 }
 
-mutate_generate-unset-api-keys() { ## [--commit]: Generate API keys for users which do not have one set.
+mutate_generate-unset-api-keys() { ##? [--commit]: Generate API keys for users which do not have one set.
 	meta <<-EOF
 		ADDED: 15
 	EOF
@@ -557,12 +562,6 @@ mutate_generate-unset-api-keys() { ## [--commit]: Generate API keys for users wh
 		a base64'd key to be a bit extra secure just in case. These work just
 		fine like hex keys.
 	EOF
-
-	commit_flag=""
-	if [[ $1 == "--commit" ]]; then
-		commit_flag="$1"
-		shift;
-	fi
 
 	read -r -d '' QUERY <<-EOF
 		INSERT INTO api_keys (create_time, user_id, key)
@@ -578,8 +577,8 @@ mutate_generate-unset-api-keys() { ## [--commit]: Generate API keys for users wh
 		)
 	EOF
 
-	txn_pre=$(txn_prefix  "$commit_flag")
-	txn_pos=$(txn_postfix "$commit_flag")
+	txn_pre=$(txn_prefix  "$arg_commit")
+	txn_pos=$(txn_postfix "$arg_commit")
 	QUERY="$txn_pre $QUERY; $txn_pos"
 
 }
@@ -596,10 +595,13 @@ mutate_anonymise-db-for-release() { ## [--commit|--very-unsafe]: This will attem
 	EOF
 
 	commit_flag=""
-	if [[ "$1" == "--commit" ]] || [[ "$1" == "--very-unsafe" ]]; then
-		commit_flag="$1"
-		shift;
-	fi
+	args=()
+	for a in "$@"; do
+		case "$a" in
+			--commit|--very-unsafe) commit_flag="$a" ;;
+			*) args+=("$a") ;;
+		esac
+	done
 
 	read -r -d '' QUERY <<-EOF
 --DONE
@@ -1430,7 +1432,7 @@ mutate_anonymise-db-for-release() { ## [--commit|--very-unsafe]: This will attem
 	QUERY="$txn_pre $QUERY; $txn_pos"
 }
 
-mutate_fail-wfi() { ## <wf-invocation-d> [--commit]: Sets a workflow invocation state to failed
+mutate_fail-wfi() { ##? <wf_invocation_id> [--commit]: Sets a workflow invocation state to failed
 	meta <<-EOF
 		ADDED: 17
 	EOF
@@ -1439,7 +1441,7 @@ mutate_fail-wfi() { ## <wf-invocation-d> [--commit]: Sets a workflow invocation 
 	EOF
 
 	assert_count_ge $# 1 "Must supply a wf-invocation-id"
-	id=$1
+	id=$arg_wf_invocation_id
 
 	read -r -d '' QUERY <<-EOF
 		UPDATE
@@ -1450,12 +1452,12 @@ mutate_fail-wfi() { ## <wf-invocation-d> [--commit]: Sets a workflow invocation 
 			id = '$id'
 	EOF
 
-	txn_pre=$(txn_prefix  "$2")
-	txn_pos=$(txn_postfix "$2")
+	txn_pre=$(txn_prefix  "$arg_commit")
+	txn_pos=$(txn_postfix "$arg_commit")
 	QUERY="$txn_pre $QUERY; $txn_pos"
 }
 
-mutate_oidc-by-emails() { ## <email_from> <email_to> [--commit]: Reassign OIDC account between users.
+mutate_oidc-by-emails() { ##? <email_from> <email_to> [--commit]: Reassign OIDC account between users.
 	meta <<-EOF
 		ADDED: 17
 	EOF
@@ -1470,13 +1472,13 @@ mutate_oidc-by-emails() { ## <email_from> <email_to> [--commit]: Reassign OIDC a
 		UPDATE oidc_user_authnz_tokens
 		SET user_id=correctuser.id
 		FROM (
-			SELECT id FROM galaxy_user WHERE email='$2'
+			SELECT id FROM galaxy_user WHERE email='$arg_email_to'
 		) AS correctuser
-		WHERE user_id = (SELECT id FROM galaxy_user WHERE email='$1')
+		WHERE user_id = (SELECT id FROM galaxy_user WHERE email='$arg_email_from')
 	EOF
 
-	txn_pre=$(txn_prefix  "$3")
-	txn_pos=$(txn_postfix "$3")
+	txn_pre=$(txn_prefix  "$arg_commit")
+	txn_pos=$(txn_postfix "$arg_commit")
 	QUERY="$txn_pre $QUERY; $txn_pos"
 }
 
