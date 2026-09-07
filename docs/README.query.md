@@ -99,8 +99,8 @@ Command | Description
 [`query tool-metrics`](#query-tool-metrics) | See values of a specific metric
 [`query tool-new-errors`](#query-tool-new-errors) | Summarize percent of tool runs in error over the past weeks for "new tools"
 [`query tool-popularity`](#query-tool-popularity) | Most run tools by month (tool_predictions)
-[`query tools-usage-per-month`](#query-tools-usage-per-month) | By default, startmonth is 1 year ago and end month is current month. tool1, tool2 etc. should correspond to the tool_id with the same format as requested: toolshed.g2.bx.psu.edu/repos/devteam/bowtie2/bowtie2/2.5.0+galaxy0,Cut1 for default, devteam/bowtie2/bowtie2/2.5.0+galaxy0,Cut1 for --short_tool_id, bowtie2/2.5.0+galaxy0,Cut1 for --super_short_tool_id etc...
-[`query tools-usage`](#query-tools-usage) | tool1, tool2 etc. should correspond to the tool_id with the same format as requested: toolshed.g2.bx.psu.edu/repos/devteam/bowtie2/bowtie2/2.5.0+galaxy0,Cut1 for default, devteam/bowtie2/bowtie2/2.5.0+galaxy0,Cut1 for --short_tool_id, bowtie2/2.5.0+galaxy0,Cut1 for --super_short_tool_id etc...
+[`query tools-usage-per-month`](#query-tools-usage-per-month) | By default, startmonth is 1 year ago and end month is current month. tool1, tool2 etc. should correspond to the tool_id with the same format as requested (respecting GXADMIN_TOOL_ID_FORMAT): toolshed.g2.bx.psu.edu/repos/devteam/bowtie2/bowtie2/2.5.0+galaxy0,Cut1 for full, devteam/bowtie2/bowtie2/2.5.0+galaxy0,Cut1 for short, bowtie2/2.5.0+galaxy0,Cut1 for tool_short etc...
+[`query tools-usage`](#query-tools-usage) | tool1, tool2 etc. should correspond to the tool_id with the same format as requested (respecting GXADMIN_TOOL_ID_FORMAT): toolshed.g2.bx.psu.edu/repos/devteam/bowtie2/bowtie2/2.5.0+galaxy0,Cut1 for full, devteam/bowtie2/bowtie2/2.5.0+galaxy0,Cut1 for short, bowtie2/2.5.0+galaxy0,Cut1 for tool_short etc...
 [`query tool-usage-over-time`](#query-tool-usage-over-time) | Counts of tool runs by month, filtered by a tool id search
 [`query tool-usage`](#query-tool-usage) | Counts of tool runs in the past weeks (default = all)
 [`query tool-use-by-group`](#query-tool-use-by-group) | Lists count of tools used by all users in a group
@@ -1988,7 +1988,7 @@ query queue-overview -  View used mostly for monitoring
 
 **SYNOPSIS**
 
-    gxadmin query queue-overview [--short-tool-id]
+    gxadmin query queue-overview
 
 **NOTES**
 
@@ -2120,23 +2120,23 @@ query tool-errors -  Summarize percent of tool runs in error over the past weeks
 
 **SYNOPSIS**
 
-    gxadmin query tool-errors [--short-tool-id] [weeks=4]
+    gxadmin query tool-errors [weeks=4]
 
 **NOTES**
 
 See jobs-in-error summary for recently executed tools that have failed at least 10% of the time.
 
-    $ gxadmin query tool-errors --short-tool-id 1
-        tool_id                        | tool_runs |  percent_errored  | percent_failed | count_errored | count_failed |     handler
-    -----------------------------------+-----------+-------------------+----------------+---------------+--------------+-----------------
-     rnateam/graphclust_align_cluster/ |        55 | 0.145454545454545 |              0 |             8 |            0 | handler_main_10
-     iuc/rgrnastar/rna_star/2.6.0b-2   |        46 | 0.347826086956522 |              0 |            16 |            0 | handler_main_3
-     iuc/rgrnastar/rna_star/2.6.0b-2   |        43 | 0.186046511627907 |              0 |             8 |            0 | handler_main_0
-     iuc/rgrnastar/rna_star/2.6.0b-2   |        41 | 0.390243902439024 |              0 |            16 |            0 | handler_main_4
-     iuc/rgrnastar/rna_star/2.6.0b-2   |        40 |             0.325 |              0 |            13 |            0 | handler_main_6
-     Filter1                           |        40 |             0.125 |              0 |             5 |            0 | handler_main_0
-     devteam/bowtie2/bowtie2/2.3.4.3   |        40 |             0.125 |              0 |             5 |            0 | handler_main_7
-     iuc/rgrnastar/rna_star/2.6.0b-2   |        40 |               0.3 |              0 |            12 |            0 | handler_main_2
+    $ GXADMIN_TOOL_ID_FORMAT=tool_short gxadmin query tool-errors
+        tool_id                   | tool_runs |  percent_errored  | percent_failed | count_errored | count_failed |     handler
+    ------------------------------+-----------+-------------------+----------------+---------------+--------------+-----------------
+     graphclust_align_cluster/    |        55 | 0.145454545454545 |              0 |             8 |            0 | handler_main_10
+     rna_star/2.6.0b-2            |        46 | 0.347826086956522 |              0 |            16 |            0 | handler_main_3
+     rna_star/2.6.0b-2            |        43 | 0.186046511627907 |              0 |             8 |            0 | handler_main_0
+     rna_star/2.6.0b-2            |        41 | 0.390243902439024 |              0 |            16 |            0 | handler_main_4
+     rna_star/2.6.0b-2            |        40 |             0.325 |              0 |            13 |            0 | handler_main_6
+     Filter1                      |        40 |             0.125 |              0 |             5 |            0 | handler_main_0
+     bowtie2/2.3.4.3              |        40 |             0.125 |              0 |             5 |            0 | handler_main_7
+     rna_star/2.6.0b-2            |        40 |               0.3 |              0 |            12 |            0 | handler_main_2
 
 
 ## query tool-last-used-date
@@ -2172,7 +2172,7 @@ query tool-likely-broken -  Find tools that have been executed in recent weeks t
 
 **SYNOPSIS**
 
-    gxadmin query tool-likely-broken [--short-tool-id] [weeks=4]
+    gxadmin query tool-likely-broken [weeks=4]
 
 **NOTES**
 
@@ -2328,23 +2328,23 @@ query tool-new-errors -  Summarize percent of tool runs in error over the past w
 
 **SYNOPSIS**
 
-    gxadmin query tool-new-errors [weeks=4] [--short-tool-id]
+    gxadmin query tool-new-errors [weeks=4]
 
 **NOTES**
 
 See jobs-in-error summary for recent tools (tools whose first execution is in recent weeks).
 
-    $ gxadmin query tool-errors --short-tool-id 1
-        tool_id                        | tool_runs |  percent_errored  | percent_failed | count_errored | count_failed |     handler
-    -----------------------------------+-----------+-------------------+----------------+---------------+--------------+-----------------
-     rnateam/graphclust_align_cluster/ |        55 | 0.145454545454545 |              0 |             8 |            0 | handler_main_10
-     iuc/rgrnastar/rna_star/2.6.0b-2   |        46 | 0.347826086956522 |              0 |            16 |            0 | handler_main_3
-     iuc/rgrnastar/rna_star/2.6.0b-2   |        43 | 0.186046511627907 |              0 |             8 |            0 | handler_main_0
-     iuc/rgrnastar/rna_star/2.6.0b-2   |        41 | 0.390243902439024 |              0 |            16 |            0 | handler_main_4
-     iuc/rgrnastar/rna_star/2.6.0b-2   |        40 |             0.325 |              0 |            13 |            0 | handler_main_6
-     Filter1                           |        40 |             0.125 |              0 |             5 |            0 | handler_main_0
-     devteam/bowtie2/bowtie2/2.3.4.3   |        40 |             0.125 |              0 |             5 |            0 | handler_main_7
-     iuc/rgrnastar/rna_star/2.6.0b-2   |        40 |               0.3 |              0 |            12 |            0 | handler_main_2
+    $ GXADMIN_TOOL_ID_FORMAT=tool_short gxadmin query tool-errors
+        tool_id                   | tool_runs |  percent_errored  | percent_failed | count_errored | count_failed |     handler
+    ------------------------------+-----------+-------------------+----------------+---------------+--------------+-----------------
+     graphclust_align_cluster/    |        55 | 0.145454545454545 |              0 |             8 |            0 | handler_main_10
+     rna_star/2.6.0b-2            |        46 | 0.347826086956522 |              0 |            16 |            0 | handler_main_3
+     rna_star/2.6.0b-2            |        43 | 0.186046511627907 |              0 |             8 |            0 | handler_main_0
+     rna_star/2.6.0b-2            |        41 | 0.390243902439024 |              0 |            16 |            0 | handler_main_4
+     rna_star/2.6.0b-2            |        40 |             0.325 |              0 |            13 |            0 | handler_main_6
+     Filter1                      |        40 |             0.125 |              0 |             5 |            0 | handler_main_0
+     bowtie2/2.3.4.3              |        40 |             0.125 |              0 |             5 |            0 | handler_main_7
+     rna_star/2.6.0b-2            |        40 |               0.3 |              0 |            12 |            0 | handler_main_2
 
 
 ## query tool-popularity
@@ -2377,17 +2377,17 @@ See most popular tools by month. Use --error to include error counts.
 ## query tools-usage-per-month
 
 ([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_tools-usage-per-month&type=Code))
-query tools-usage-per-month -  toolshed.g2.bx.psu.edu/repos/devteam/bowtie2/bowtie2/2.5.0+galaxy0,Cut1 for default, devteam/bowtie2/bowtie2/2.5.0+galaxy0,Cut1 for --short_tool_id, bowtie2/2.5.0+galaxy0,Cut1 for --super_short_tool_id etc...
+query tools-usage-per-month -  toolshed.g2.bx.psu.edu/repos/devteam/bowtie2/bowtie2/2.5.0+galaxy0,Cut1 for full, devteam/bowtie2/bowtie2/2.5.0+galaxy0,Cut1 for short, bowtie2/2.5.0+galaxy0,Cut1 for tool_short etc...
 
 **SYNOPSIS**
 
-    gxadmin query tools-usage-per-month [--startmonth=<YYYY>-<MM>] [--endmonth=<YYYY>-<MM>] [--tools=<tool1,tool2,...>] [--short_tool_id] [--super_short_tool_id] [--no_version]
+    gxadmin query tools-usage-per-month [--startmonth=<YYYY>-<MM>] [--endmonth=<YYYY>-<MM>] [--tools=<tool1,tool2,...>] [--no-version]
 
 **NOTES**
 
 Tools Usage Tracking: cpu-hours and nb_users by Month-Year.
 
-    $ gxadmin query tools-usage-per-month --super_short_tool_id --no_version --tools bowtie2,Cut1 --startmonth=2023-03 --endmonth 2023-08
+    $ GXADMIN_TOOL_ID_FORMAT=tool_short gxadmin query tools-usage-per-month --no-version --tools bowtie2,Cut1 --startmonth=2023-03 --endmonth 2023-08
    month    | cpu_hours | tool_id | nb_users
 ------------+-----------+---------+----------
  2023-08-01 |    796.15 | bowtie2 |        2
@@ -2407,17 +2407,17 @@ Tools Usage Tracking: cpu-hours and nb_users by Month-Year.
 ## query tools-usage
 
 ([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_tools-usage&type=Code))
-query tools-usage -  toolshed.g2.bx.psu.edu/repos/devteam/bowtie2/bowtie2/2.5.0+galaxy0,Cut1 for default, devteam/bowtie2/bowtie2/2.5.0+galaxy0,Cut1 for --short_tool_id, bowtie2/2.5.0+galaxy0,Cut1 for --super_short_tool_id etc...
+query tools-usage -  toolshed.g2.bx.psu.edu/repos/devteam/bowtie2/bowtie2/2.5.0+galaxy0,Cut1 for full, devteam/bowtie2/bowtie2/2.5.0+galaxy0,Cut1 for short, bowtie2/2.5.0+galaxy0,Cut1 for tool_short etc...
 
 **SYNOPSIS**
 
-    gxadmin query tools-usage [year] [--tools=<tool1,tool2,...>] [--short_tool_id] [--super_short_tool_id] [--no_version]
+    gxadmin query tools-usage [year] [--tools=<tool1,tool2,...>] [--no-version]
 
 **NOTES**
 
 Tools Usage Tracking: cpu-hours, cpu-years and nb_users for specific tools (optionally in a given year).
 
-    $ gxadmin query tools-usage --super_short_tool_id --no_version --tools bowtie2,Cut1 2023
+    $ GXADMIN_TOOL_ID_FORMAT=tool_short gxadmin query tools-usage --no-version --tools bowtie2,Cut1 2023
  cpu_hours | cpu_years | tool_id | nb_users
 -----------+-----------+---------+----------
    4631.91 |      0.53 | bowtie2 |        7

@@ -1,5 +1,14 @@
 GXADMIN_SITE_SPECIFIC=${GXADMIN_SITE_SPECIFIC:-~/.config/gxadmin-local.sh}
 
+# How tool IDs are displayed in query output. One of:
+#   full         - the raw tool_id as stored in the database (default)
+#   short        - strip the toolshed prefix: genouest/helixer/helixer/0.3.6+galaxy0
+#   owner_short  - also strip the repo: genouest/helixer/0.3.6+galaxy0
+#   tool_short   - also strip the owner: helixer/0.3.6+galaxy0
+# (super_short is accepted as a deprecated alias for tool_short)
+# Set in the environment or in ~/.config/gxadmin-local.sh
+GXADMIN_TOOL_ID_FORMAT=${GXADMIN_TOOL_ID_FORMAT:-full}
+
 hexencodefield9=$(cat <<EOF
 import csv
 import binascii
