@@ -252,7 +252,7 @@ mutate fail-wfi -  Sets a workflow invocation state to failed
 
 **SYNOPSIS**
 
-    gxadmin mutate fail-wfi <wf-invocation-d> [--commit]
+    gxadmin mutate fail-wfi <wf_invocation_id> [--commit]
 
 **NOTES**
 
@@ -395,7 +395,7 @@ mutate restart-jobs -  Restart some jobs
 
 **SYNOPSIS**
 
-    gxadmin mutate restart-jobs [--commit] <-|job_id [job_id [...]]>
+    gxadmin mutate restart-jobs <job_id [job_id [...]]|-> [--commit]
 
 **NOTES**
 
