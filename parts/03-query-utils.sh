@@ -250,9 +250,10 @@ galaxy_decode_id() {
 #   resolve_id 123             -> 123
 resolve_id() {
 	local id="$1"
-	# Pure digits? Treat as an already-decoded numeric ID.
-	# TODO: Do we need to be smarter here?
-	if [[ "$id" =~ ^[0-9]+$ ]]; then
+	# Treat as a numeric ("decrypted") DB id only if it's all digits AND
+	# shorter than 16 hex chars. Longer all-digit strings are certainly encoded ids that
+	# happen to contain no letters (a-f)
+	if [[ "$id" =~ ^[0-9]+$ ]] && (( ${#id} < 16 )); then
 		echo "$id"
 		return 0
 	fi
