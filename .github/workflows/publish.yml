@@ -13,7 +13,7 @@ jobs:
 
       - name: Compile
         run: |
-          make
+          make gxadmin
 
       - name: Get version
         id: version
