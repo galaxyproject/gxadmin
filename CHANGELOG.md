@@ -1,10 +1,15 @@
 # 23-pre
 
 - Added:
+	- query workflow-invocation-info: information about a specific workflow invocation (user, workflow, history with link)
+	- query dataset-tool: get the tool_id and job creation time for a dataset given its UUID (accepts bare, dashed, or dataset_<uuid>.dat filename forms)
 	- query tools-usage (like tools-usage-per-month but for a year or for whole history) by @lldelisle
 	- query longest-running-jobs-by-destination from @TomasVondrak and @sanjaysrikakulam
 	- query most-used-tools-by-destination from @TomasVondrak and @sanjaysrikakulam
+- Updated:
+	- query job-state, job-history, job-inputs, job-outputs now accept either a numeric or a Galaxy-encoded ("encrypted") job ID via the new resolve_id helper
 - Fixed:
+	- query job-state now casts the supplied id to bigint to guard against non-numeric input
 	- query tools-usage-per-month when 'no_version' was used there were still one line per version.
 
 # 22

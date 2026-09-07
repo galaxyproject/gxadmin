@@ -3086,6 +3086,10 @@ query_job-state() { ##? <job_id>: Get current job state given a job ID
 		ADDED: 19
 	EOF
 	handle_help "$@" <<-EOF
+		The <job_id> can be supplied as a numeric ID or as a Galaxy-encoded
+		("encrypted") hex string (decoded via secret_decoder_ring.py; requires
+		GALAXY_ROOT and GALAXY_CONFIG_FILE).
+
 		    $ gxadmin query job-state 1
 		     state
 		    --------
@@ -3093,16 +3097,22 @@ query_job-state() { ##? <job_id>: Get current job state given a job ID
 		    (1 row)
 	EOF
 
+	numeric_id="$(resolve_id "$arg_id")"
+
 	read -r -d '' QUERY <<-EOF
 			SELECT
 				state
 			FROM job
-			WHERE id = $arg_id
+			WHERE id = $numeric_id::bigint
 	EOF
 }
 
 query_job-history() { ##? <id>: Job state history for a specific job
 	handle_help "$@" <<-EOF
+		The <id> can be supplied as a numeric ID or as a Galaxy-encoded
+		("encrypted") hex string (decoded via secret_decoder_ring.py; requires
+		GALAXY_ROOT and GALAXY_CONFIG_FILE).
+
 		    $ gxadmin query job-history 1
 		                 time              | state
 		    -------------------------------+--------
@@ -3114,19 +3124,26 @@ query_job-history() { ##? <id>: Job state history for a specific job
 		    (5 rows)
 	EOF
 
+	numeric_id="$(resolve_id "$arg_id")"
+
 	read -r -d '' QUERY <<-EOF
 			SELECT
 				create_time AT TIME ZONE 'UTC' as time,
 				state
 			FROM job_state_history
-			WHERE job_id = $arg_id
+			WHERE job_id = $numeric_id::bigint
    			ORDER BY create_time ASC
 	EOF
 }
 
 query_job-inputs() { ##? <id>: Input datasets to a specific job
 	handle_help "$@" <<-EOF
+		The <id> can be supplied as a numeric ID or as a Galaxy-encoded
+		("encrypted") hex string (decoded via secret_decoder_ring.py; requires
+		GALAXY_ROOT and GALAXY_CONFIG_FILE).
 	EOF
+
+	numeric_id="$(resolve_id "$arg_id")"
 
 	read -r -d '' QUERY <<-EOF
 			SELECT
@@ -3146,13 +3163,18 @@ query_job-inputs() { ##? <id>: Input datasets to a specific job
 					ON hda.id = jtid.dataset_id
 				JOIN dataset d
 					ON hda.dataset_id = d.id
-			WHERE j.id = $arg_id
+			WHERE j.id = $numeric_id::bigint
 	EOF
 }
 
 query_job-outputs() { ##? <id>: Output datasets from a specific job
 	handle_help "$@" <<-EOF
+		The <id> can be supplied as a numeric ID or as a Galaxy-encoded
+		("encrypted") hex string (decoded via secret_decoder_ring.py; requires
+		GALAXY_ROOT and GALAXY_CONFIG_FILE).
 	EOF
+
+	numeric_id="$(resolve_id "$arg_id")"
 
 	read -r -d '' QUERY <<-EOF
 			SELECT
@@ -3172,7 +3194,7 @@ query_job-outputs() { ##? <id>: Output datasets from a specific job
 					ON hda.id = jtod.dataset_id
 				JOIN dataset d
 					ON hda.dataset_id = d.id
-			WHERE j.id = $arg_id
+			WHERE j.id = $numeric_id::bigint
 	EOF
 }
 
@@ -3398,6 +3420,99 @@ query_workflow-invocation-totals() { ## : Report on overall workflow counts, to 
 			workflow_invocation
 		GROUP BY state
 	EOF
+}
+
+query_workflow-invocation-info() { ##? <id> [--encode]: Information about a specific workflow invocation (user, workflow, history)
+	meta <<-EOF
+		ADDED: 23
+	EOF
+	handle_help "$@" <<-EOF
+		Retrieve information about a workflow invocation given its ID. It will
+		return the user, the workflow, when it was scheduled, and the history
+		it is/was running in - plus a history link.
+
+		The <id> argument can be supplied either as a numeric ("decrypted") ID
+		(e.g. 1) or as a Galaxy-encoded ("encrypted") hex string (e.g.
+		6fe4eea8c591a9c4).
+
+		With --encode, the workflow, history, and invocation IDs are additionally
+		shown in their Galaxy-encoded ("encrypted") form alongside the numeric
+		("decrypted") IDs.
+
+		    $ GALAXY_URL=https://usegalaxy.eu gxadmin query workflow-invocation-info 1
+		     id | workflow_id |        workflow         | user_id |    user    |         scheduled          | history_id |        history         |            history_url
+		    ----+-------------+-------------------------+---------+------------+----------------------------+------------+------------------------+--------------------------------------------
+		     1  | 42          | my-workflow             | 7       | alice      | 2023-05-19 10:36:44.902+00 | 1234       | My History             | https://usegalaxy.eu/histories/view?id=1234
+		    (1 row)
+
+		    $ GALAXY_URL=https://usegalaxy.eu GALAXY_ROOT=/srv/galaxy/server GALAXY_CONFIG_FILE=/srv/galaxy/config/galaxy.yml gxadmin query workflow-invocation-info 6fe4eea8c591a9c4 --encode
+		     id |  id_encoded  | workflow_id | workflow_id_encoded |        workflow         | user_id |    user    |         scheduled          | history_id | history_id_encoded |        history         |            history_url
+		    ----+--------------+-------------+---------------------+-------------------------+---------+------------+----------------------------+------------+--------------------+------------------------+--------------------------------------------
+		     1  | 6fe4eea8c591a9c4 | 42     | f6e5d4c3b2a1        | my-workflow             | 7       | alice      | 2023-05-19 10:36:44.902+00 | 1234       | 1a2b3c4d5e6f      | My History             | https://usegalaxy.eu/histories/view?id=1234
+		    (1 row)
+
+		The history URL is built from GALAXY_URL (if set), otherwise left blank.
+	EOF
+
+	galaxy_url="${GALAXY_URL:-}"
+
+	# Accept either a numeric (decoded) ID or a Galaxy-encoded (hex) ID.
+	numeric_id="$(resolve_id "$arg_id")"
+
+	if [[ -n "$arg_encode" ]]; then
+		# Pre-fetch the numeric workflow/history IDs so they can be encoded
+		# via Galaxy's secret_decoder_ring alongside the invocation id.
+		row="$(query_tsv "SELECT workflow_id, history_id FROM workflow_invocation WHERE id = $numeric_id::bigint")"
+		wf_id="$(printf '%s' "$row" | cut -f1)"
+		hist_id="$(printf '%s' "$row" | cut -f2)"
+
+		inv_encoded="$(galaxy_encode_id "$numeric_id" 2>/dev/null)"
+		wf_encoded="$(galaxy_encode_id "$wf_id" 2>/dev/null)"
+		hist_encoded="$(galaxy_encode_id "$hist_id" 2>/dev/null)"
+
+		read -r -d '' QUERY <<-EOF
+			SELECT
+				wi.id AS id,
+				'${inv_encoded}' AS id_encoded,
+				wi.workflow_id AS workflow_id,
+				'${wf_encoded}' AS workflow_id_encoded,
+				w.name AS workflow,
+				galaxy_user.id AS user_id,
+				galaxy_user.username AS user,
+				wi.create_time AS scheduled,
+				wi.history_id AS history_id,
+				'${hist_encoded}' AS history_id_encoded,
+				history.name AS history,
+				'${galaxy_url}/histories/view?id=' || wi.history_id AS history_url
+			FROM
+				workflow_invocation wi
+				JOIN workflow w ON wi.workflow_id = w.id
+				JOIN history ON wi.history_id = history.id
+				LEFT JOIN galaxy_user ON history.user_id = galaxy_user.id
+			WHERE
+				wi.id = $numeric_id::bigint
+		EOF
+	else
+		read -r -d '' QUERY <<-EOF
+			SELECT
+				wi.id AS id,
+				wi.workflow_id AS workflow_id,
+				w.name AS workflow,
+				galaxy_user.id AS user_id,
+				galaxy_user.username AS user,
+				wi.create_time AS scheduled,
+				wi.history_id AS history_id,
+				history.name AS history,
+				'${galaxy_url}/histories/view?id=' || wi.history_id AS history_url
+			FROM
+				workflow_invocation wi
+				JOIN workflow w ON wi.workflow_id = w.id
+				JOIN history ON wi.history_id = history.id
+				LEFT JOIN galaxy_user ON history.user_id = galaxy_user.id
+			WHERE
+				wi.id = $numeric_id::bigint
+		EOF
+	fi
 }
 
 query_tool-new-errors() { ##? [weeks=4]: Summarize percent of tool runs in error over the past weeks for "new tools"
@@ -5052,6 +5167,59 @@ query_dataset-usage-and-imports() { ##? <dataset_uuid>: Fetch limited informatio
 			LEFT JOIN galaxy_user ON history.user_id = galaxy_user.id
 		WHERE
 			uuid = '$cleaned_dataset_uuid'
+	EOF
+}
+
+query_dataset-tool() { ##? <dataset_uuid>: Get the tool that produced a dataset, given its UUID.
+	meta <<-EOF
+		ADDED: 23
+	EOF
+	handle_help "$@" <<-EOF
+		Retrieve the tool_id and creation time of the job that produced a
+		dataset, looked up by the dataset's UUID. The <dataset_uuid> argument
+		can be given in any of the following formats:
+
+		  - the bare UUID as stored in the database (no dashes), e.g.
+		    4d333a8a27d64e1f9060acd06f34f5dd
+		  - the canonical UUID form with dashes, e.g.
+		    4d333a8a-27d6-4e1f-9060-acd06f34f5dd
+		  - the on-disk object store filename, e.g.
+		    dataset_4d333a8a-27d6-4e1f-9060-acd06f34f5dd.dat
+		    (or even a full path such as
+		    /data/galaxy/d/4/d/dataset_4d333a8a-27d6-4e1f-9060-acd06f34f5dd.dat)
+
+		The leading "dataset_" prefix and trailing ".dat" suffix (if present)
+		are stripped, as are any dashes, before the UUID is compared against
+		the database. Both the dashed (canonical) and undashed (stored) UUID
+		forms are returned in the output.
+
+		    $ gxadmin query dataset-tool 4d333a8a-27d6-4e1f-9060-acd06f34f5dd
+		                  uuid_dashed               |             uuid              |     tool_id      |        job_created
+		    --------------------------------------+------------------------------+------------------+----------------------------
+		     4d333a8a-27d6-4e1f-9060-acd06f34f5dd | 4d333a8a27d64e1f9060acd06f34f5dd | toolshed.g2.bx.psu.edu/repos/iuc/bowtie2/bowtie2/2.5.0+galaxy0 | 2026-04-25 10:36:44.902+00
+		    (1 row)
+
+		    $ gxadmin query dataset-tool dataset_4d333a8a-27d6-4e1f-9060-acd06f34f5dd.dat
+		     ... (same result as above) ...
+	EOF
+
+	# Strip any leading path and "dataset_" prefix, trailing ".dat", and dashes
+	# so the UUID matches the undashed form stored in the database.
+	cleaned_dataset_uuid=$(echo "$arg_dataset_uuid" | sed 's/.*dataset_//g;s/\.dat$//g;s/-//g')
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			REGEXP_REPLACE(d.uuid, '(........)(....)(....)(....)(............)', '\1-\2-\3-\4-\5') AS uuid_dashed,
+			d.uuid AS uuid,
+			j.tool_id AS tool_id,
+			j.create_time AS job_created
+		FROM
+			dataset d
+			JOIN history_dataset_association hda ON d.id = hda.dataset_id
+			LEFT JOIN job_to_output_dataset jtod ON hda.id = jtod.dataset_id
+			LEFT JOIN job j ON jtod.job_id = j.id
+		WHERE
+			d.uuid = '$cleaned_dataset_uuid'
 	EOF
 }
 

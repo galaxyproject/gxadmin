@@ -10,6 +10,7 @@ Command | Description
 [`query data-origin-distribution-summary`](#query-data-origin-distribution-summary) | breakdown of data sources (uploaded vs derived)
 [`query dataset-count`](#query-dataset-count) | Count the number of datasets.
 [`query datasets-created-daily`](#query-datasets-created-daily) | The min/max/average/p95/p99 of total size of datasets created in a single day.
+[`query dataset-tool`](#query-dataset-tool) | Get the tool that produced a dataset, given its UUID.
 [`query dataset-usage-and-imports`](#query-dataset-usage-and-imports) | Fetch limited information about which users and histories are using a specific dataset from disk.
 [`query destination-queue-run-time`](#query-destination-queue-run-time) | The average/median/95%/99% tool spends in queue/run state grouped by tool and destination.
 [`query disk-usage`](#query-disk-usage) | Disk usage per object store.
@@ -131,6 +132,7 @@ Command | Description
 [`query workflow-connections`](#query-workflow-connections) | The connections of tools, from output to input, in the latest (or all) versions of user workflows (tool_predictions)
 [`query workflow-count`](#query-workflow-count) | Count the number of workflow.
 [`query workflow-invocation-count`](#query-workflow-invocation-count) | Count the total number of workflow invocations.
+[`query workflow-invocation-info`](#query-workflow-invocation-info) | Information about a specific workflow invocation (user, workflow, history)
 [`query workflow-invocation-status`](#query-workflow-invocation-status) | Report on how many workflows are in new state by handler
 [`query workflow-invocation-totals`](#query-workflow-invocation-totals) | Report on overall workflow counts, to ensure throughput
 
@@ -321,6 +323,45 @@ only consider datasets created in the past month:
        min   | quant_1st | median  |  mean   | quant_3rd | perc_95 | perc_99 |  max  |  sum   | stddev
     ---------+-----------+---------+---------+-----------+---------+---------+-------+--------+---------
      1974 GB | 7651 GB   | 9705 GB | 9089 GB | 11 TB     | 13 TB   | 13 TB   | 13 TB | 284 TB | 2727 GB
+
+
+## query dataset-tool
+
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_dataset-tool&type=Code))
+query dataset-tool -  Get the tool that produced a dataset, given its UUID.
+
+**SYNOPSIS**
+
+    gxadmin query dataset-tool <dataset_uuid>
+
+**NOTES**
+
+Retrieve the tool_id and creation time of the job that produced a
+dataset, looked up by the dataset's UUID. The <dataset_uuid> argument
+can be given in any of the following formats:
+
+  - the bare UUID as stored in the database (no dashes), e.g.
+    4d333a8a27d64e1f9060acd06f34f5dd
+  - the canonical UUID form with dashes, e.g.
+    4d333a8a-27d6-4e1f-9060-acd06f34f5dd
+  - the on-disk object store filename, e.g.
+    dataset_4d333a8a-27d6-4e1f-9060-acd06f34f5dd.dat
+    (or even a full path such as
+    /data/galaxy/d/4/d/dataset_4d333a8a-27d6-4e1f-9060-acd06f34f5dd.dat)
+
+The leading "dataset_" prefix and trailing ".dat" suffix (if present)
+are stripped, as are any dashes, before the UUID is compared against
+the database. Both the dashed (canonical) and undashed (stored) UUID
+forms are returned in the output.
+
+    $ gxadmin query dataset-tool 4d333a8a-27d6-4e1f-9060-acd06f34f5dd
+                  uuid_dashed               |             uuid              |     tool_id      |        job_created
+    --------------------------------------+------------------------------+------------------+----------------------------
+     4d333a8a-27d6-4e1f-9060-acd06f34f5dd | 4d333a8a27d64e1f9060acd06f34f5dd | toolshed.g2.bx.psu.edu/repos/iuc/bowtie2/bowtie2/2.5.0+galaxy0 | 2026-04-25 10:36:44.902+00
+    (1 row)
+
+    $ gxadmin query dataset-tool dataset_4d333a8a-27d6-4e1f-9060-acd06f34f5dd.dat
+     ... (same result as above) ...
 
 
 ## query dataset-usage-and-imports
@@ -712,6 +753,10 @@ query job-history -  Job state history for a specific job
 
 **NOTES**
 
+The <id> can be supplied as a numeric ID or as a Galaxy-encoded
+("encrypted") hex string (decoded via secret_decoder_ring.py; requires
+GALAXY_ROOT and GALAXY_CONFIG_FILE).
+
     $ gxadmin query job-history 1
                  time              | state
     -------------------------------+--------
@@ -759,6 +804,12 @@ query job-inputs -  Input datasets to a specific job
 **SYNOPSIS**
 
     gxadmin query job-inputs <id>
+
+**NOTES**
+
+The <id> can be supplied as a numeric ID or as a Galaxy-encoded
+("encrypted") hex string (decoded via secret_decoder_ring.py; requires
+GALAXY_ROOT and GALAXY_CONFIG_FILE).
 
 
 ## query job-metrics
@@ -809,6 +860,12 @@ query job-outputs -  Output datasets from a specific job
 **SYNOPSIS**
 
     gxadmin query job-outputs <id>
+
+**NOTES**
+
+The <id> can be supplied as a numeric ID or as a Galaxy-encoded
+("encrypted") hex string (decoded via secret_decoder_ring.py; requires
+GALAXY_ROOT and GALAXY_CONFIG_FILE).
 
 
 ## query jobs-max-by-cpu-days
@@ -980,6 +1037,10 @@ query job-state -  Get current job state given a job ID
     gxadmin query job-state <job_id>
 
 **NOTES**
+
+The <job_id> can be supplied as a numeric ID or as a Galaxy-encoded
+("encrypted") hex string (decoded via secret_decoder_ring.py; requires
+GALAXY_ROOT and GALAXY_CONFIG_FILE).
 
     $ gxadmin query job-state 1
      state
@@ -3072,6 +3133,44 @@ $ gxadmin query workflow-invocation-count
 --------------------------
    758473
 (1 row)
+
+
+## query workflow-invocation-info
+
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_workflow-invocation-info&type=Code))
+query workflow-invocation-info -  Information about a specific workflow invocation (user, workflow, history)
+
+**SYNOPSIS**
+
+    gxadmin query workflow-invocation-info <id> [--encode]
+
+**NOTES**
+
+Retrieve information about a workflow invocation given its ID. It will
+return the user, the workflow, when it was scheduled, and the history
+it is/was running in - plus a history link.
+
+The <id> argument can be supplied either as a numeric ("decrypted") ID
+(e.g. 1) or as a Galaxy-encoded ("encrypted") hex string (e.g.
+6fe4eea8c591a9c4).
+
+With --encode, the workflow, history, and invocation IDs are additionally
+shown in their Galaxy-encoded ("encrypted") form alongside the numeric
+("decrypted") IDs.
+
+    $ GALAXY_URL=https://usegalaxy.eu gxadmin query workflow-invocation-info 1
+     id | workflow_id |        workflow         | user_id |    user    |         scheduled          | history_id |        history         |            history_url
+    ----+-------------+-------------------------+---------+------------+----------------------------+------------+------------------------+--------------------------------------------
+     1  | 42          | my-workflow             | 7       | alice      | 2023-05-19 10:36:44.902+00 | 1234       | My History             | https://usegalaxy.eu/histories/view?id=1234
+    (1 row)
+
+    $ GALAXY_URL=https://usegalaxy.eu GALAXY_ROOT=/srv/galaxy/server GALAXY_CONFIG_FILE=/srv/galaxy/config/galaxy.yml gxadmin query workflow-invocation-info 6fe4eea8c591a9c4 --encode
+     id |  id_encoded  | workflow_id | workflow_id_encoded |        workflow         | user_id |    user    |         scheduled          | history_id | history_id_encoded |        history         |            history_url
+    ----+--------------+-------------+---------------------+-------------------------+---------+------------+----------------------------+------------+--------------------+------------------------+--------------------------------------------
+     1  | 6fe4eea8c591a9c4 | 42     | f6e5d4c3b2a1        | my-workflow             | 7       | alice      | 2023-05-19 10:36:44.902+00 | 1234       | 1a2b3c4d5e6f      | My History             | https://usegalaxy.eu/histories/view?id=1234
+    (1 row)
+
+The history URL is built from GALAXY_URL (if set), otherwise left blank.
 
 
 ## query workflow-invocation-status

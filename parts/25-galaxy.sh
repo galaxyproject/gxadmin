@@ -60,7 +60,7 @@ galaxy_encode() { ## <encoded-id>: Encode an ID
 
 	assert_count $# 1 "Missing ID"
 
-	python "$GALAXY_ROOT/scripts/secret_decoder_ring.py" -c "$GALAXY_CONFIG_FILE" encode "$1"
+	galaxy_encode_id "$1"
 }
 
 galaxy_decode() { ## <encoded-id>: Decode an encoded ID
@@ -80,7 +80,7 @@ galaxy_decode() { ## <encoded-id>: Decode an encoded ID
 
 	assert_count $# 1 "Missing ID"
 
-	python "$GALAXY_ROOT/scripts/secret_decoder_ring.py" -c "$GALAXY_CONFIG_FILE" decode "$1"
+	galaxy_decode_id "$1"
 }
 
 galaxy_migrate-tool-install-to-sqlite() { ## : Converts normal potsgres toolshed repository tables into the SQLite version
