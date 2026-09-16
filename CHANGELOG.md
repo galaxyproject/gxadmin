@@ -1,5 +1,18 @@
 # 23-pre
 
+Some bigger changes:
+
+- Support for multiple formats for datasets: UUID (accepts bare, dashed, or dataset_<uuid>.dat filename forms)
+- Standardised the --commit flag in the same way in (nearly) all commands
+- GXADMIN_TOOL_ID_FORMAT: a new env var to let you decide how you want your tool IDs returned:
+
+	- full  - the raw tool_id as stored in the database (default)
+	- short - strip the toolshed prefix: genouest/helixer/helixer/0.3.6+galaxy0
+	- owner_short - also strip the repo: genouest/helixer/0.3.6+galaxy0
+	- tool_short- also strip the owner: helixer/0.3.6+galaxy0
+
+Specific commands:
+
 - Added:
 	- query workflow-invocation-info: information about a specific workflow invocation (user, workflow, history with link)
 	- query dataset-tool: get the tool_id and job creation time for a dataset given its UUID (accepts bare, dashed, or dataset_<uuid>.dat filename forms)
