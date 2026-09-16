@@ -30,4 +30,4 @@ echo "Ok, release built. Please open a new terminal and confirm! Then come back 
 read garbage
 
 git push --follow-tags
-ghr v${NEW_VERSION} gxadmin -b "$(cat $release_body)"
+# ghr v${NEW_VERSION} gxadmin -b "$(cat $release_body)"
