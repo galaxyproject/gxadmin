@@ -227,3 +227,48 @@ tool_id_expr() {
 		*)           echo "$col" ;;
 	esac
 }
+
+# Reusable wrappers around Galaxy's secret_decoder_ring.py. These require
+# GALAXY_ROOT and GALAXY_CONFIG_FILE to be set;
+#
+#   galaxy_encode_id 123      -> 6fe4eea8c591a9c4
+#   galaxy_decode_id 6fe4eea8c591a9c4 -> 123
+galaxy_encode_id() {
+	python "$GALAXY_ROOT/scripts/secret_decoder_ring.py" -c "$GALAXY_CONFIG_FILE" encode "$1"
+}
+
+galaxy_decode_id() {
+	python "$GALAXY_ROOT/scripts/secret_decoder_ring.py" -c "$GALAXY_CONFIG_FILE" decode "$1"
+}
+
+# Resolve a Galaxy object ID that may be given either as a numeric
+# ("decrypted") ID or as a Galaxy-encoded ("encrypted") hex string. Returns
+# the numeric ID on stdout. Encoded IDs are decoded via galaxy_decode_id,
+# which requires GALAXY_ROOT and GALAXY_CONFIG_FILE to be set.
+#
+#   resolve_id 6fe4eea8c591a9c4 -> 123
+#   resolve_id 123             -> 123
+resolve_id() {
+	local id="$1"
+	# Treat as a numeric ("decrypted") DB id only if it's all digits AND
+	# shorter than 16 hex chars. Longer all-digit strings are certainly encoded ids that
+	# happen to contain no letters (a-f)
+	if [[ "$id" =~ ^[0-9]+$ ]] && (( ${#id} < 16 )); then
+		echo "$id"
+		return 0
+	fi
+
+	# Otherwise assume it is an encoded ID and decode it.
+	if [[ -z "${GALAXY_ROOT}" || -z "${GALAXY_CONFIG_FILE}" ]]; then
+		error "Cannot decode encoded ID '${id}': GALAXY_ROOT and GALAXY_CONFIG_FILE must be set"
+		exit 1
+	fi
+
+	local decoded
+	decoded="$(galaxy_decode_id "$id" 2>/dev/null)"
+	if [[ -z "$decoded" ]]; then
+		error "Failed to decode ID '${id}' via secret_decoder_ring.py"
+		exit 1
+	fi
+	echo "$decoded"
+}
