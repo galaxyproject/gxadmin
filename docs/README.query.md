@@ -28,8 +28,8 @@ Command | Description
 [`query history-core-hours`](#query-history-core-hours) | Produces the median core hour count for histories matching a name filter
 [`query history-count`](#query-history-count) | Count the number of histories.
 [`query history-exports`](#query-history-exports) | List history exports ordered by most recent.
-[`query history-runtime-system`](#query-history-runtime-system) | Sum of runtimes by all jobs in a history
 [`query history-runtime-system-by-tool`](#query-history-runtime-system-by-tool) | Sum of runtimes by all jobs in a history, split by tool
+[`query history-runtime-system`](#query-history-runtime-system) | Sum of runtimes by all jobs in a history
 [`query history-runtime-wallclock`](#query-history-runtime-wallclock) | Time as elapsed by a clock on the wall
 [`query job-history`](#query-job-history) | Job state history for a specific job
 [`query job-info`](#query-job-info) | Retrieve information about jobs given some job IDs
@@ -110,8 +110,8 @@ Command | Description
 [`query tpt-tool-memory`](#query-tpt-tool-memory) | Start year is required. Formula returns sum if blank.
 [`query tpt-tool-users`](#query-tpt-tool-users) | Start year is required.
 [`query training-list`](#query-training-list) | List known trainings
-[`query training-members`](#query-training-members) | List users in a specific training
 [`query training-members-remove`](#query-training-members-remove) | Remove a user from a training
+[`query training-members`](#query-training-members) | List users in a specific training
 [`query training-queue`](#query-training-queue) | Jobs currently being run by people in a given training
 [`query ts-repos`](#query-ts-repos) | Counts of toolshed repositories by toolshed and owner.
 [`query upload-gb-in-past-hour`](#query-upload-gb-in-past-hour) | Sum in bytes of files uploaded in the past hour
@@ -712,16 +712,6 @@ $ gxadmin query history-exports --min_history_size=10 --user=jarvis
 (3 rows)
 
 
-## query history-runtime-system
-
-([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_history-runtime-system&type=Code))
-query history-runtime-system -  Sum of runtimes by all jobs in a history
-
-**SYNOPSIS**
-
-    gxadmin query history-runtime-system <history_id>
-
-
 ## query history-runtime-system-by-tool
 
 ([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_history-runtime-system-by-tool&type=Code))
@@ -730,6 +720,16 @@ query history-runtime-system-by-tool -  Sum of runtimes by all jobs in a history
 **SYNOPSIS**
 
     gxadmin query history-runtime-system-by-tool <history_id>
+
+
+## query history-runtime-system
+
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_history-runtime-system&type=Code))
+query history-runtime-system -  Sum of runtimes by all jobs in a history
+
+**SYNOPSIS**
+
+    gxadmin query history-runtime-system <history_id>
 
 
 ## query history-runtime-wallclock
@@ -2685,6 +2685,16 @@ This module is specific to EU's implementation of Training Infrastructure as a S
     (2 rows)
 
 
+## query training-members-remove
+
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_training-members-remove&type=Code))
+query training-members-remove -  Remove a user from a training
+
+**SYNOPSIS**
+
+    gxadmin query training-members-remove <training> <username> [--yesdoit]
+
+
 ## query training-members
 
 ([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_training-members&type=Code))
@@ -2700,16 +2710,6 @@ query training-members -  List users in a specific training
           username      |       joined
     --------------------+---------------------
      helena-Rasche      | 2018-09-21 21:42:01
-
-
-## query training-members-remove
-
-([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_training-members-remove&type=Code))
-query training-members-remove -  Remove a user from a training
-
-**SYNOPSIS**
-
-    gxadmin query training-members-remove <training> <username> [--yesdoit]
 
 
 ## query training-queue
