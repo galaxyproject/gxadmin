@@ -285,17 +285,24 @@ galaxy_migrate-tool-install-from-sqlite() { ## [sqlite-db]: Converts SQLite vers
 		success "  export: ${table}"
 		export_csv=$(mktemp /tmp/tmp.gxadmin.${table}.XXXXXXXXXXX)
 
+		# Name the columns: their order differs between the sqlite and postgres schemas.
+		columns=$(sqlite3 "$1" "select group_concat(name, ',') from pragma_table_info('$table')")
+
 		if [[ "$table" == "tool_shed_repository" ]]; then
 			# Might have json instead of hexencoded json
-			sqlite3 -csv "$1" "select * from $table" | python -c "$hexencodefield9" > "$export_csv";
+			sqlite3 -csv -header "$1" "select $columns from $table" | python3 -c "$hexencode_bytea" metadata tool_shed_status > "$export_csv";
+			if (( PIPESTATUS[0] != 0 || PIPESTATUS[1] != 0 )); then
+				error "  csv: ${export_csv}"
+				break
+			fi
 		elif [[ "$table" == "tool_version" ]]; then
 			# Might have null values quoted as empty string
-			sqlite3 -csv "$1" "select * from $table" | sed 's/""$//' > "$export_csv";
+			sqlite3 -csv -header "$1" "select $columns from $table" | sed 's/""$//' > "$export_csv";
 		else
-			sqlite3 -csv "$1" "select * from $table" > "$export_csv";
+			sqlite3 -csv -header "$1" "select $columns from $table" > "$export_csv";
 		fi
 
-		psql -c "COPY $table FROM STDIN with CSV" < "$export_csv";
+		psql -c "COPY $table ($columns) FROM STDIN with CSV HEADER" < "$export_csv";
 		ec=$?
 
 		if (( ec == 0 )); then
@@ -307,6 +314,14 @@ galaxy_migrate-tool-install-from-sqlite() { ## [sqlite-db]: Converts SQLite vers
 		fi
 	done
 
+	# Newer Galaxy tracks the install schema with alembic, in its own branch.
+	if [[ -n "$(sqlite3 "$1" "select name from sqlite_master where name = 'alembic_version'")" ]]; then
+		for revision in $(sqlite3 "$1" "select version_num from alembic_version"); do
+			psql -c "INSERT INTO alembic_version (version_num) SELECT '$revision' WHERE NOT EXISTS (SELECT 1 FROM alembic_version WHERE version_num = '$revision')"
+			success "  alembic: $revision"
+		done
+	fi
+
 	# Update sequences
 	success "Updating sequences"
 	for table in {tool_shed_repository,tool_version,tool_version_association,tool_dependency,repository_dependency,repository_repository_dependency_association}; do
@@ -316,8 +331,13 @@ galaxy_migrate-tool-install-from-sqlite() { ## [sqlite-db]: Converts SQLite vers
 	success "Comparing table counts"
 
 	for table in {migrate_version,tool_shed_repository,tool_version,tool_version_association,migrate_tools,tool_dependency,repository_dependency,repository_repository_dependency_association}; do
-		postgres=$(psql -c "COPY (select count(*) from $table) to STDOUT with CSV")
-		sqlite=$(sqlite3 -csv "$1" "select count(*) from $table")
+		# Postgres' migrate_version also holds Galaxy's own row.
+		where=""
+		if [[ "$table" == "migrate_version" ]]; then
+			where="where repository_id = 'ToolShedInstall'"
+		fi
+		postgres=$(psql -c "COPY (select count(*) from $table $where) to STDOUT with CSV")
+		sqlite=$(sqlite3 -csv "$1" "select count(*) from $table $where")
 
 		if (( postgres == sqlite )); then
 			success "  $table: $postgres == $sqlite"
