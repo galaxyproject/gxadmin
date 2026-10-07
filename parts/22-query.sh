@@ -6020,6 +6020,124 @@ query_tool-memory-efficiency() { ##? [--newer-than=2592000] [--min-job-count=5] 
 	EOF
 }
 
+query_tool-resource-usage() { ##? [--limit=20] [--newer-than=30d] [--order-by=core] [--ok] [--no-version]: Top N tools by aggregate CPU, memory and runtime footprint
+	meta <<-EOF
+		AUTHORS: mvdbeek
+		ADDED: 24
+	EOF
+	handle_help "$@" <<-EOF
+		Ranks tools by their total resource footprint over a recent time window, to
+		find the tools that consume the most of your compute.
+
+		    $ gxadmin query tool-resource-usage --limit=5 --order-by=cpu
+		         tool_id       | jobs | runtime_hrs | core_hrs | cpu_hrs | cpu_eff_pct | mem_alloc_gb_hrs | avg_mem_gb | max_mem_gb | mem_eff_pct
+		    -------------------+------+-------------+----------+---------+-------------+------------------+------------+------------+-------------
+		     rna_star/2.7.11a  | 1823 |      2211.4 |  35382.4 | 19841.2 |        56.1 |         141529.6 |      31.20 |      61.95 |        48.7
+		     bwa_mem2/2.2.1    | 2402 |      1612.0 |  25792.0 | 18213.9 |        70.6 |          96720.0 |      29.04 |      57.12 |        48.4
+		     kraken2/2.1.3     | 5112 |       690.2 |   5521.6 |  1530.8 |        27.7 |          88345.6 |      78.03 |      84.82 |        91.5
+		     fastqc/0.74       | 9851 |       812.9 |   1625.8 |   905.3 |        55.7 |           6503.2 |       0.81 |       3.91 |        10.1
+		     trim_galore/0.6.7 | 4327 |       701.6 |   2806.4 |   702.4 |        25.0 |          12979.6 |       1.12 |       9.30 |         6.0
+
+		Columns:
+
+		- runtime_hrs: wall-clock hours (runtime_seconds)
+		- core_hrs: allocated core hours (runtime_seconds * galaxy_slots)
+		- cpu_hrs: consumed CPU hours, from cgroups (cpu.stat.usage_usec or cpuacct.usage)
+		- cpu_eff_pct: cpu_hrs as a percentage of core_hrs, for jobs that report cgroup CPU usage
+		- mem_alloc_gb_hrs: allocated memory integrated over runtime (galaxy_memory_mb * runtime_seconds)
+		- avg_mem_gb/max_mem_gb: peak memory per job, from cgroups (memory.peak, memory.memsw.max_usage_in_bytes or memory.max_usage_in_bytes)
+		- mem_eff_pct: runtime-weighted peak memory as a percentage of allocated memory
+
+		runtime_hrs and core_hrs only need the core job metrics plugin. The cpu_* and
+		*_mem_* columns are empty unless the cgroup job metrics plugin is enabled.
+		mem_alloc_gb_hrs needs GALAXY_MEMORY_MB to be set for jobs.
+
+		Only jobs updated within '--newer-than' are considered (default: 30d). This takes a
+		PostgreSQL interval, e.g. 7d, 6mon or 1y. All states are included by default, since
+		failed jobs consume resources too; use '--ok' to only count successful jobs.
+
+		'--order-by' is one of:
+
+		- jobs:    number of jobs
+		- runtime: runtime_hrs
+		- core:    core_hrs (default)
+		- cpu:     cpu_hrs
+		- mem:     mem_alloc_gb_hrs
+		- peak:    max_mem_gb
+
+		'--no-version' aggregates all versions of a tool together.
+	EOF
+
+	case "$arg_order_by" in
+		jobs)    order_col="jobs" ;;
+		runtime) order_col=runtime_hrs ;;
+		core)    order_col=core_hrs ;;
+		cpu)     order_col=cpu_hrs ;;
+		mem)     order_col=mem_alloc_gb_hrs ;;
+		peak)    order_col=max_mem_gb ;;
+		*)       error "Unknown --order-by '$arg_order_by', must be one of jobs, runtime, core, cpu, mem, peak"; exit 1 ;;
+	esac
+
+	tool_id=$(tool_id_expr "job.tool_id")
+	if [[ -n $arg_no_version ]]; then
+		tool_id="regexp_replace(${tool_id}::TEXT, '/[0-9.a-z+-]+$', '')"
+	fi
+
+	state_filter=
+	if [[ -n $arg_ok ]]; then
+		state_filter="AND job.state = 'ok'"
+	fi
+
+	fields="jobs=1;runtime_hrs=2;core_hrs=3;cpu_hrs=4;cpu_eff_pct=5;mem_alloc_gb_hrs=6;avg_mem_gb=7;max_mem_gb=8;mem_eff_pct=9"
+	tags="tool_id=0"
+
+	read -r -d '' QUERY <<-EOF
+		WITH jobs AS (
+			SELECT job.id, $tool_id AS tool_id
+			FROM job
+			WHERE
+				job.update_time > timezone('UTC', now()) - '$arg_newer_than'::INTERVAL
+				$state_filter
+		),
+		job_metrics AS (
+			SELECT
+				jobs.tool_id,
+				max(m.metric_value) FILTER (WHERE m.metric_name = 'runtime_seconds') AS runtime,
+				max(m.metric_value) FILTER (WHERE m.metric_name = 'galaxy_slots') AS slots,
+				max(m.metric_value) FILTER (WHERE m.metric_name = 'galaxy_memory_mb') * 1048576.0 AS mem_allocated,
+				max(m.metric_value) FILTER (WHERE m.metric_name IN ('memory.peak', 'memory.memsw.max_usage_in_bytes', 'memory.max_usage_in_bytes')) AS mem_used,
+				coalesce(
+					max(m.metric_value) FILTER (WHERE m.metric_name = 'cpu.stat.usage_usec') / 1000000.0,
+					max(m.metric_value) FILTER (WHERE m.metric_name = 'cpuacct.usage') / 1000000000.0
+				) AS cpu_seconds
+			FROM jobs
+			JOIN job_metric_numeric m ON m.job_id = jobs.id
+			WHERE m.metric_name IN (
+				'runtime_seconds', 'galaxy_slots', 'galaxy_memory_mb',
+				'memory.peak', 'memory.memsw.max_usage_in_bytes', 'memory.max_usage_in_bytes',
+				'cpu.stat.usage_usec', 'cpuacct.usage'
+			)
+			GROUP BY jobs.id, jobs.tool_id
+		)
+		SELECT
+			tool_id,
+			count(*) AS jobs,
+			round(sum(runtime) / 3600, 1) AS runtime_hrs,
+			round(sum(runtime * slots) / 3600, 1) AS core_hrs,
+			round(sum(cpu_seconds) / 3600, 1) AS cpu_hrs,
+			round(100 * sum(cpu_seconds) / nullif(sum(runtime * slots) FILTER (WHERE cpu_seconds IS NOT NULL), 0), 1) AS cpu_eff_pct,
+			round(sum(mem_allocated * runtime) / 1073741824.0 / 3600, 1) AS mem_alloc_gb_hrs,
+			round(avg(mem_used) / 1073741824.0, 2) AS avg_mem_gb,
+			round(max(mem_used) / 1073741824.0, 2) AS max_mem_gb,
+			round(100 * sum(mem_used * runtime) / nullif(sum(mem_allocated * runtime) FILTER (WHERE mem_used IS NOT NULL), 0), 1) AS mem_eff_pct
+		FROM job_metrics
+		WHERE runtime IS NOT NULL
+		GROUP BY tool_id
+		ORDER BY $order_col DESC NULLS LAST
+		LIMIT $arg_limit
+	EOF
+}
+
 query_user-info() { ## <-|user [user [...]]> : Retrieve information about users given some user identifiers (id, username or email)
 	handle_help "$@" <<-EOF
 		Get user info for one or more user id/username/email

@@ -1,5 +1,8 @@
 # 24-pre
 
+- Added:
+	- query tool-resource-usage: top N tools by aggregate runtime, allocated core hours, consumed CPU hours and memory footprint
+
 # 23
 
 Some bigger changes:
