@@ -6052,6 +6052,10 @@ query_tool-resource-usage() { ##? [--limit=20] [--newer-than=30d] [--order-by=co
 		*_mem_* columns are empty unless the cgroup job metrics plugin is enabled.
 		mem_alloc_gb_hrs needs GALAXY_MEMORY_MB to be set for jobs.
 
+		CPU values more than 100x the allocated core time (runtime_seconds * galaxy_slots)
+		are ignored. Some clusters record a shared, node-level cgroup counter instead of the
+		job's own, which would otherwise dominate the totals.
+
 		Only jobs updated within '--newer-than' are considered (default: 30d). This takes a
 		PostgreSQL interval, e.g. 7d, 6mon or 1y. All states are included by default, since
 		failed jobs consume resources too; use '--ok' to only count successful jobs.
@@ -6099,7 +6103,7 @@ query_tool-resource-usage() { ##? [--limit=20] [--newer-than=30d] [--order-by=co
 				job.update_time > timezone('UTC', now()) - '$arg_newer_than'::INTERVAL
 				$state_filter
 		),
-		job_metrics AS (
+		raw_metrics AS (
 			SELECT
 				jobs.tool_id,
 				max(m.metric_value) FILTER (WHERE m.metric_name = 'runtime_seconds') AS runtime,
@@ -6118,6 +6122,12 @@ query_tool-resource-usage() { ##? [--limit=20] [--newer-than=30d] [--order-by=co
 				'cpu.stat.usage_usec', 'cpuacct.usage'
 			)
 			GROUP BY jobs.id, jobs.tool_id
+		),
+		job_metrics AS (
+			SELECT
+				tool_id, runtime, slots, mem_allocated, mem_used,
+				CASE WHEN cpu_seconds <= runtime * coalesce(slots, 1) * 100 THEN cpu_seconds END AS cpu_seconds
+			FROM raw_metrics
 		)
 		SELECT
 			tool_id,
