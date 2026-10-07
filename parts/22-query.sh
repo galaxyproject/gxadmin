@@ -6052,7 +6052,7 @@ query_tool-resource-usage() { ##? [--limit=20] [--newer-than=30d] [--order-by=co
 		*_mem_* columns are empty unless the cgroup job metrics plugin is enabled.
 		mem_alloc_gb_hrs needs GALAXY_MEMORY_MB to be set for jobs.
 
-		CPU values more than 100x the allocated core time (runtime_seconds * galaxy_slots)
+		CPU values more than twice the allocated core time (runtime_seconds * galaxy_slots)
 		are ignored. Some clusters record a shared, node-level cgroup counter instead of the
 		job's own, which would otherwise dominate the totals.
 
@@ -6126,7 +6126,7 @@ query_tool-resource-usage() { ##? [--limit=20] [--newer-than=30d] [--order-by=co
 		job_metrics AS (
 			SELECT
 				tool_id, runtime, slots, mem_allocated, mem_used,
-				CASE WHEN cpu_seconds <= runtime * coalesce(slots, 1) * 100 THEN cpu_seconds END AS cpu_seconds
+				CASE WHEN cpu_seconds <= runtime * coalesce(slots, 1) * 2 THEN cpu_seconds END AS cpu_seconds
 			FROM raw_metrics
 		)
 		SELECT
