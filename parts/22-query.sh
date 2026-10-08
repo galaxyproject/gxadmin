@@ -6087,7 +6087,7 @@ query_tool-resource-usage() { ##? [--limit=20] [--newer-than=30d] [--order-by=co
 		*)       error "Unknown --order-by '$arg_order_by', must be one of jobs, runtime, core, cpu, mem, peak"; exit 1 ;;
 	esac
 
-	tool_id=$(tool_id_expr "job.tool_id")
+	tool_id="job.tool_id"
 	if [[ -n $arg_no_version ]]; then
 		tool_id="regexp_replace(${tool_id}::TEXT, '/[0-9.a-z+-]+$', '')"
 	fi
@@ -6136,7 +6136,7 @@ query_tool-resource-usage() { ##? [--limit=20] [--newer-than=30d] [--order-by=co
 			FROM raw_metrics
 		)
 		SELECT
-			tool_id,
+			$(tool_id_expr job_metrics.tool_id) AS tool_id,
 			count(*) AS jobs,
 			round(sum(runtime) / 3600, 1) AS runtime_hrs,
 			round(sum(core_seconds) / 3600, 1) AS core_hrs,
@@ -6148,7 +6148,7 @@ query_tool-resource-usage() { ##? [--limit=20] [--newer-than=30d] [--order-by=co
 			round(100 * sum(mem_used * runtime) / nullif(sum(mem_allocated * runtime) FILTER (WHERE mem_used IS NOT NULL), 0), 1) AS mem_eff_pct
 		FROM job_metrics
 		WHERE runtime IS NOT NULL
-		GROUP BY tool_id
+		GROUP BY job_metrics.tool_id
 		ORDER BY $order_col DESC NULLS LAST
 		LIMIT $arg_limit
 	EOF
