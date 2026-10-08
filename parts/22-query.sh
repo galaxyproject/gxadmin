@@ -6041,9 +6041,9 @@ query_tool-resource-usage() { ##? [--limit=20] [--newer-than=30d] [--order-by=co
 		Columns:
 
 		- runtime_hrs: wall-clock hours (runtime_seconds)
-		- core_hrs: allocated core hours (runtime_seconds * galaxy_slots)
+		- core_hrs: allocated core hours (runtime_seconds * galaxy_slots, 1 slot if unset)
 		- cpu_hrs: consumed CPU hours, from cgroups (cpu.stat.usage_usec or cpuacct.usage)
-		- cpu_eff_pct: cpu_hrs as a percentage of core_hrs, for jobs that report cgroup CPU usage
+		- cpu_eff_pct: cpu_hrs as a percentage of the core hours of the jobs counted in cpu_hrs
 		- mem_alloc_gb_hrs: allocated memory integrated over runtime (galaxy_memory_mb * runtime_seconds)
 		- avg_mem_gb/max_mem_gb: peak memory per job, from cgroups (memory.peak, memory.memsw.max_usage_in_bytes or memory.max_usage_in_bytes)
 		- mem_eff_pct: runtime-weighted peak memory as a percentage of allocated memory
@@ -6055,6 +6055,11 @@ query_tool-resource-usage() { ##? [--limit=20] [--newer-than=30d] [--order-by=co
 		CPU values more than twice the allocated core time (runtime_seconds * galaxy_slots)
 		are ignored. Some clusters record a shared, node-level cgroup counter instead of the
 		job's own, which would otherwise dominate the totals.
+
+		core_hrs counts every job, but cpu_hrs only counts jobs with a usable cgroup CPU
+		value. When some jobs have no cgroup data, or their CPU value was ignored,
+		cpu_hrs / core_hrs is therefore lower than cpu_eff_pct, which only compares
+		against the core hours of the jobs in cpu_hrs.
 
 		Only jobs updated within '--newer-than' are considered (default: 30d). This takes a
 		PostgreSQL interval, e.g. 7d, 6mon or 1y. All states are included by default, since
@@ -6125,7 +6130,8 @@ query_tool-resource-usage() { ##? [--limit=20] [--newer-than=30d] [--order-by=co
 		),
 		job_metrics AS (
 			SELECT
-				tool_id, runtime, slots, mem_allocated, mem_used,
+				tool_id, runtime, mem_allocated, mem_used,
+				runtime * coalesce(slots, 1) AS core_seconds,
 				CASE WHEN cpu_seconds <= runtime * coalesce(slots, 1) * 2 THEN cpu_seconds END AS cpu_seconds
 			FROM raw_metrics
 		)
@@ -6133,9 +6139,9 @@ query_tool-resource-usage() { ##? [--limit=20] [--newer-than=30d] [--order-by=co
 			tool_id,
 			count(*) AS jobs,
 			round(sum(runtime) / 3600, 1) AS runtime_hrs,
-			round(sum(runtime * slots) / 3600, 1) AS core_hrs,
+			round(sum(core_seconds) / 3600, 1) AS core_hrs,
 			round(sum(cpu_seconds) / 3600, 1) AS cpu_hrs,
-			round(100 * sum(cpu_seconds) / nullif(sum(runtime * slots) FILTER (WHERE cpu_seconds IS NOT NULL), 0), 1) AS cpu_eff_pct,
+			round(100 * sum(cpu_seconds) / nullif(sum(core_seconds) FILTER (WHERE cpu_seconds IS NOT NULL), 0), 1) AS cpu_eff_pct,
 			round(sum(mem_allocated * runtime) / 1073741824.0 / 3600, 1) AS mem_alloc_gb_hrs,
 			round(avg(mem_used) / 1073741824.0, 2) AS avg_mem_gb,
 			round(max(mem_used) / 1073741824.0, 2) AS max_mem_gb,
