@@ -9,20 +9,28 @@ GXADMIN_SITE_SPECIFIC=${GXADMIN_SITE_SPECIFIC:-~/.config/gxadmin-local.sh}
 # Set in the environment or in ~/.config/gxadmin-local.sh
 GXADMIN_TOOL_ID_FORMAT=${GXADMIN_TOOL_ID_FORMAT:-full}
 
-hexencodefield9=$(cat <<EOF
-import csv
+hexencode_bytea=$(cat <<EOF
 import binascii
+import csv
+import io
 import sys
 csv.field_size_limit(sys.maxsize)
 
-
-spamreader = csv.reader(sys.stdin, delimiter=',', quotechar='"')
-spwamwrite = csv.writer(sys.stdout, delimiter=',', quotechar='"')
-
-for row in spamreader:
-	if row[9][0] != "\\\\":
-		row[9] = "\\\\x" + binascii.hexlify(row[9])
-	spwamwrite.writerow(row)
+# Hex-encode the named columns for postgres bytea, unless they already are.
+columns = sys.argv[1:]
+stdin = io.TextIOWrapper(sys.stdin.buffer, encoding="utf-8", errors="surrogateescape")
+stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="surrogateescape", newline="")
+reader = csv.reader(stdin)
+writer = csv.writer(stdout)
+header = next(reader)
+writer.writerow(header)
+indexes = [header.index(c) for c in columns if c in header]
+for row in reader:
+	for i in indexes:
+		if row[i] and not row[i].startswith("\\\\x"):
+			row[i] = "\\\\x" + binascii.hexlify(row[i].encode("utf-8", "surrogateescape")).decode()
+	writer.writerow(row)
+stdout.flush()
 EOF
 )
 

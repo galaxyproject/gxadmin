@@ -1,5 +1,8 @@
 # 24-pre
 
+- Fixed:
+	- galaxy migrate-tool-install-from-sqlite: copy columns by name (their order differs between the sqlite and postgres schemas), hex-encode metadata and tool_shed_status with python3, stop on a failed export, and record the install alembic revision
+
 # 23
 
 Some bigger changes:
