@@ -100,6 +100,7 @@ Command | Description
 [`query tool-metrics`](#query-tool-metrics) | See values of a specific metric
 [`query tool-new-errors`](#query-tool-new-errors) | Summarize percent of tool runs in error over the past weeks for "new tools"
 [`query tool-popularity`](#query-tool-popularity) | Most run tools by month (tool_predictions)
+[`query tool-resource-usage`](#query-tool-resource-usage) | Top N tools by aggregate CPU, memory and runtime footprint
 [`query tools-usage-per-month`](#query-tools-usage-per-month) | By default, startmonth is 1 year ago and end month is current month. tool1, tool2 etc. should correspond to the tool_id with the same format as requested (respecting GXADMIN_TOOL_ID_FORMAT): toolshed.g2.bx.psu.edu/repos/devteam/bowtie2/bowtie2/2.5.0+galaxy0,Cut1 for full, devteam/bowtie2/bowtie2/2.5.0+galaxy0,Cut1 for short, bowtie2/2.5.0+galaxy0,Cut1 for tool_short etc...
 [`query tools-usage`](#query-tools-usage) | tool1, tool2 etc. should correspond to the tool_id with the same format as requested (respecting GXADMIN_TOOL_ID_FORMAT): toolshed.g2.bx.psu.edu/repos/devteam/bowtie2/bowtie2/2.5.0+galaxy0,Cut1 for full, devteam/bowtie2/bowtie2/2.5.0+galaxy0,Cut1 for short, bowtie2/2.5.0+galaxy0,Cut1 for tool_short etc...
 [`query tool-usage-over-time`](#query-tool-usage-over-time) | Counts of tool runs by month, filtered by a tool id search
@@ -2433,6 +2434,68 @@ See most popular tools by month. Use --error to include error counts.
      circos_interval_to_tile   | 2019-02-01 |     1
      __SET_METADATA__          | 2019-02-01 |     1
     (8 rows)
+
+
+## query tool-resource-usage
+
+([*source*](https://github.com/galaxyproject/gxadmin/search?q=query_tool-resource-usage&type=Code))
+query tool-resource-usage -  Top N tools by aggregate CPU, memory and runtime footprint
+
+**SYNOPSIS**
+
+    gxadmin query tool-resource-usage [--limit=20] [--newer-than=30d] [--order-by=core] [--ok] [--no-version]
+
+**NOTES**
+
+Ranks tools by their total resource footprint over a recent time window, to
+find the tools that consume the most of your compute.
+
+    $ gxadmin query tool-resource-usage --limit=5 --order-by=cpu
+         tool_id       | jobs | runtime_hrs | core_hrs | cpu_hrs | cpu_eff_pct | mem_alloc_gb_hrs | avg_mem_gb | max_mem_gb | mem_eff_pct
+    -------------------+------+-------------+----------+---------+-------------+------------------+------------+------------+-------------
+     rna_star/2.7.11a  | 1823 |      2211.4 |  35382.4 | 19841.2 |        56.1 |         141529.6 |      31.20 |      61.95 |        48.7
+     bwa_mem2/2.2.1    | 2402 |      1612.0 |  25792.0 | 18213.9 |        70.6 |          96720.0 |      29.04 |      57.12 |        48.4
+     kraken2/2.1.3     | 5112 |       690.2 |   5521.6 |  1530.8 |        27.7 |          88345.6 |      78.03 |      84.82 |        91.5
+     fastqc/0.74       | 9851 |       812.9 |   1625.8 |   905.3 |        55.7 |           6503.2 |       0.81 |       3.91 |        10.1
+     trim_galore/0.6.7 | 4327 |       701.6 |   2806.4 |   702.4 |        25.0 |          12979.6 |       1.12 |       9.30 |         6.0
+
+Columns:
+
+- runtime_hrs: wall-clock hours (runtime_seconds)
+- core_hrs: allocated core hours (runtime_seconds * galaxy_slots, 1 slot if unset)
+- cpu_hrs: consumed CPU hours, from cgroups (cpu.stat.usage_usec or cpuacct.usage)
+- cpu_eff_pct: cpu_hrs as a percentage of the core hours of the jobs counted in cpu_hrs
+- mem_alloc_gb_hrs: allocated memory integrated over runtime (galaxy_memory_mb * runtime_seconds)
+- avg_mem_gb/max_mem_gb: peak memory per job, from cgroups (memory.peak, memory.memsw.max_usage_in_bytes or memory.max_usage_in_bytes)
+- mem_eff_pct: runtime-weighted peak memory as a percentage of allocated memory
+
+runtime_hrs and core_hrs only need the core job metrics plugin. The cpu_* and
+*_mem_* columns are empty unless the cgroup job metrics plugin is enabled.
+mem_alloc_gb_hrs needs GALAXY_MEMORY_MB to be set for jobs.
+
+CPU values more than twice the allocated core time (runtime_seconds * galaxy_slots)
+are ignored. Some clusters record a shared, node-level cgroup counter instead of the
+job's own, which would otherwise dominate the totals.
+
+core_hrs counts every job, but cpu_hrs only counts jobs with a usable cgroup CPU
+value. When some jobs have no cgroup data, or their CPU value was ignored,
+cpu_hrs / core_hrs is therefore lower than cpu_eff_pct, which only compares
+against the core hours of the jobs in cpu_hrs.
+
+Only jobs updated within '--newer-than' are considered (default: 30d). This takes a
+PostgreSQL interval, e.g. 7d, 6mon or 1y. All states are included by default, since
+failed jobs consume resources too; use '--ok' to only count successful jobs.
+
+'--order-by' is one of:
+
+- jobs:    number of jobs
+- runtime: runtime_hrs
+- core:    core_hrs (default)
+- cpu:     cpu_hrs
+- mem:     mem_alloc_gb_hrs
+- peak:    max_mem_gb
+
+'--no-version' aggregates all versions of a tool together.
 
 
 ## query tools-usage-per-month

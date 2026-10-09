@@ -1,5 +1,7 @@
 # 24-pre
 
+- Added:
+	- query tool-resource-usage: top N tools by aggregate runtime, allocated core hours, consumed CPU hours and memory footprint
 - Fixed:
 	- galaxy migrate-tool-install-from-sqlite: copy columns by name (their order differs between the sqlite and postgres schemas), hex-encode metadata and tool_shed_status with python3, stop on a failed export, and record the install alembic revision
 
