@@ -4923,8 +4923,10 @@ query_job-metrics() { ## : Retrieves input size, runtime, memory for all execute
 		WITH dataset_filesizes AS (
 			SELECT
 				job_to_input_dataset.job_id, sum(file_size) AS total_filesize,
-				count(file_size) AS num_files FROM dataset
-			LEFT JOIN job_to_input_dataset ON dataset.id = job_to_input_dataset.dataset_id
+				count(file_size) AS num_files
+			FROM job_to_input_dataset
+			LEFT JOIN history_dataset_association ON history_dataset_association.id = job_to_input_dataset.dataset_id
+			LEFT JOIN dataset ON dataset.id = history_dataset_association.dataset_id
 			GROUP BY job_to_input_dataset.job_id
 		)
 

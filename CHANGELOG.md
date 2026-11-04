@@ -1,5 +1,8 @@
 # 25-pre
 
+- Fixed:
+	- query job-metrics: resolve input HDA IDs through history_dataset_association before looking up dataset sizes
+
 # 24
 
 - Added:
