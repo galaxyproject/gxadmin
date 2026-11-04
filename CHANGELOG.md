@@ -1,6 +1,8 @@
 # 25-pre
 
 - Fixed:
+	- query job-metrics, monthly-cpu-stats, monthly-cpu-years, tool-memory-per-inputs, tool-memory-efficiency and tool-resource-usage: select plugin-qualified metrics, collapse identical duplicates, leave conflicts/nulls unknown, and keep memory-only peaks separate from memory-plus-swap
+	- query tool-resource-usage: leave missing slots and mixed cgroup v1/v2 CPU observations unknown; compare memory efficiency over matched observations, and document nominal CPU conversions as diagnostic estimates
 	- query job-metrics: resolve input HDA IDs through history_dataset_association before looking up dataset sizes
 
 # 24

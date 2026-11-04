@@ -272,3 +272,19 @@ resolve_id() {
 	fi
 	echo "$decoded"
 }
+
+# Internal SQL builder: arguments are trusted SQL expressions/literals supplied by
+# query functions, never command-line values. Multiple names are alternatives
+# for the same quantity, not values to combine or choose between.
+metric_scalar() {
+	cat <<-EOF
+		(SELECT CASE
+			WHEN count(DISTINCT metric_name) = 1
+				AND count(*) = count(metric_value)
+				AND min(metric_value) = max(metric_value)
+			THEN min(metric_value)
+		END
+		FROM job_metric_numeric
+		WHERE job_id = $1 AND plugin = '$2' AND metric_name IN ($3))
+	EOF
+}
