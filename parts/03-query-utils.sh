@@ -16,6 +16,10 @@ query_tbl_wrapper() {
 	fi
 }
 
+query_raw() {
+	psql -At <<< "$1"
+}
+
 query_tsv() {
 	psql <<-EOF
 	COPY ($1) to STDOUT with CSV DELIMITER E'\t'
