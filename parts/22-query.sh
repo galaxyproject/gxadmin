@@ -1722,8 +1722,7 @@ query_tool-memory-per-inputs() { ##? <tool_id> [--like]: See memory usage and in
 				job_metric_numeric jmn ON j.id = jmn.job_id
 			WHERE
 				jmn.plugin = 'cgroup'
-				AND
-					jmn.metric_name = 'memory.memsw.max_usage_in_bytes'
+				AND jmn.metric_name IN ('memory.peak', 'memory.max_usage_in_bytes')
 		),
 		data_cte AS (
 			SELECT
@@ -1821,6 +1820,8 @@ query_monthly-cpu-stats() { ##? [--nb-users] [--filter-email=<domain>] [year]: C
 		WHERE
 			b.job_id = a.job_id
 			AND a.job_id = job.id
+			AND a.plugin = 'core'
+			AND b.plugin = 'core'
 			AND a.metric_name = 'runtime_seconds'
 			AND b.metric_name = 'galaxy_slots'
 			$filter_by_year
@@ -1872,6 +1873,8 @@ query_monthly-cpu-years() { ## : CPU years allocated to tools by month
 		WHERE
 			b.job_id = a.job_id
 			AND a.job_id = job.id
+			AND a.plugin = 'core'
+			AND b.plugin = 'core'
 			AND a.metric_name = 'runtime_seconds'
 			AND b.metric_name = 'galaxy_slots'
 		GROUP BY date_trunc('month', job.create_time)
@@ -4951,6 +4954,7 @@ query_job-metrics() { ## : Retrieves input size, runtime, memory for all execute
 		    996     | circos                               | ok      |         588747 |         6 |      48.0000000 | 1.0000000 |              | 2020-04-30 11:21:51.49684
 		    997     | circos                               | ok      |         588747 |         6 |      46.0000000 | 1.0000000 |              | 2020-04-30 11:23:52.455536
 
+
 		**WARNING**
 
 		!> This can be very slow for large databases and there is no tool filtering; every job + dataset table record are scanned.
@@ -4960,8 +4964,10 @@ query_job-metrics() { ## : Retrieves input size, runtime, memory for all execute
 		WITH dataset_filesizes AS (
 			SELECT
 				job_to_input_dataset.job_id, sum(file_size) AS total_filesize,
-				count(file_size) AS num_files FROM dataset
-			LEFT JOIN job_to_input_dataset ON dataset.id = job_to_input_dataset.dataset_id
+				count(file_size) AS num_files
+			FROM job_to_input_dataset
+			LEFT JOIN history_dataset_association ON history_dataset_association.id = job_to_input_dataset.dataset_id
+			LEFT JOIN dataset ON dataset.id = history_dataset_association.dataset_id
 			GROUP BY job_to_input_dataset.job_id
 		)
 
@@ -4977,9 +4983,9 @@ query_job-metrics() { ## : Retrieves input size, runtime, memory for all execute
 			job.create_time AS create_time
 		FROM job
 		LEFT JOIN dataset_filesizes ON job.id = dataset_filesizes.job_id
-		LEFT JOIN (SELECT * FROM job_metric_numeric WHERE job_metric_numeric.metric_name = 'runtime_seconds') jmn1 ON jmn1.job_id = job.id
-		LEFT JOIN (SELECT * FROM job_metric_numeric WHERE job_metric_numeric.metric_name = 'galaxy_slots') jmn2 ON jmn2.job_id = job.id
-		LEFT JOIN (SELECT * FROM job_metric_numeric WHERE job_metric_numeric.metric_name = 'memory.memsw.max_usage_in_bytes') jmn3 ON jmn3.job_id = job.id
+		LEFT JOIN (SELECT * FROM job_metric_numeric WHERE plugin = 'core' AND metric_name = 'runtime_seconds') jmn1 ON jmn1.job_id = job.id
+		LEFT JOIN (SELECT * FROM job_metric_numeric WHERE plugin = 'core' AND metric_name = 'galaxy_slots') jmn2 ON jmn2.job_id = job.id
+		LEFT JOIN (SELECT * FROM job_metric_numeric WHERE plugin = 'cgroup' AND metric_name IN ('memory.peak', 'memory.max_usage_in_bytes')) jmn3 ON jmn3.job_id = job.id
 	EOF
 }
 
@@ -5987,7 +5993,7 @@ query_tool-memory-efficiency() { ##? [--newer-than=2592000] [--min-job-count=5] 
 		This is mainly useful for determining which long-running tools with large memory allocations have been
 		granted too large of an allocation. It requires that your jobs run in isolated Linux cgroups (as is
 		commonly configured for Slurm) that accurately report memory usage in memory.peak (cgroupsv2) or
-		memory.memsw.max_usage_in_bytes (cgroupsv1) and you have enabled the Galaxy cgroups job metrics plugin.
+		memory.max_usage_in_bytes (cgroupsv1) and you have enabled the Galaxy cgroups job metrics plugin.
 
 		    $ gxadmin query tool-memory-efficiency
 		           tool_id       | run_count | total_runtime_hrs | avg_mem_used_gb | avg_mem_allocated_gb | avg_mem_percent
@@ -6024,11 +6030,9 @@ query_tool-memory-efficiency() { ##? [--newer-than=2592000] [--min-job-count=5] 
 			SELECT
 			j.id,
 			j.tool_id,
-			(SELECT metric_value FROM job_metric_numeric WHERE job_id = j.id AND metric_name = 'galaxy_memory_mb' LIMIT 1) * POW(1024, 2) AS mem_allocated,
-			(SELECT metric_value FROM job_metric_numeric WHERE job_id = j.id AND metric_name IN ('memory.peak', 'memory.memsw.max_usage_in_bytes') LIMIT 1) AS mem_used,
-			(SELECT metric_value FROM job_metric_numeric WHERE job_id = j.id AND metric_name = 'runtime_seconds' LIMIT 1) AS runtime,
-			(SELECT metric_value FROM job_metric_numeric WHERE job_id = j.id AND metric_name IN ('memory.peak', 'memory.memsw.max_usage_in_bytes') LIMIT 1)
-			  / NULLIF((SELECT metric_value FROM job_metric_numeric WHERE job_id = j.id AND metric_name = 'galaxy_memory_mb' LIMIT 1) * POW(1024, 2), 0) AS mem_ratio
+			(SELECT metric_value FROM job_metric_numeric WHERE job_id = j.id AND plugin = 'core' AND metric_name = 'galaxy_memory_mb' LIMIT 1) * POW(1024, 2) AS mem_allocated,
+			(SELECT metric_value FROM job_metric_numeric WHERE job_id = j.id AND plugin = 'cgroup' AND metric_name IN ('memory.peak', 'memory.max_usage_in_bytes') LIMIT 1) AS mem_used,
+			(SELECT metric_value FROM job_metric_numeric WHERE job_id = j.id AND plugin = 'core' AND metric_name = 'runtime_seconds' LIMIT 1) AS runtime
 		    FROM
 			job j
 		    WHERE
@@ -6041,7 +6045,7 @@ query_tool-memory-efficiency() { ##? [--newer-than=2592000] [--min-job-count=5] 
 		    ROUND((SUM(runtime) / POW(60, 2))::numeric, 2) AS total_runtime_hrs,
 		    ROUND((AVG(mem_used) / POW(1024, 3))::numeric, 2) AS avg_mem_used_gb,
 		    ROUND((AVG(mem_allocated) / POW(1024, 3))::numeric, 2) AS avg_mem_allocated_gb,
-		    ROUND((AVG(mem_ratio) * 100)::numeric, 2) AS avg_mem_percent
+		    ROUND((AVG(mem_used / NULLIF(mem_allocated, 0)) * 100)::numeric, 2) AS avg_mem_percent
 		FROM
 		    job_metrics
 		WHERE
@@ -6082,7 +6086,7 @@ query_tool-resource-usage() { ##? [--limit=20] [--newer-than=30d] [--order-by=co
 		- cpu_hrs: consumed CPU hours, from cgroups (cpu.stat.usage_usec or cpuacct.usage)
 		- cpu_eff_pct: cpu_hrs as a percentage of the core hours of the jobs counted in cpu_hrs
 		- mem_alloc_gb_hrs: allocated memory integrated over runtime (galaxy_memory_mb * runtime_seconds)
-		- avg_mem_gb/max_mem_gb: peak memory per job, from cgroups (memory.peak, memory.memsw.max_usage_in_bytes or memory.max_usage_in_bytes)
+		- avg_mem_gb/max_mem_gb: peak memory per job, from cgroups (memory.peak or memory.max_usage_in_bytes; excludes memory-plus-swap)
 		- mem_eff_pct: runtime-weighted peak memory as a percentage of allocated memory
 
 		runtime_hrs and core_hrs only need the core job metrics plugin. The cpu_* and
@@ -6093,7 +6097,7 @@ query_tool-resource-usage() { ##? [--limit=20] [--newer-than=30d] [--order-by=co
 		are ignored. Some clusters record a shared, node-level cgroup counter instead of the
 		job's own, which would otherwise dominate the totals.
 
-		core_hrs counts every job, but cpu_hrs only counts jobs with a usable cgroup CPU
+		core_hrs counts jobs with recorded runtime (assuming one slot if unset), but cpu_hrs only counts jobs with a usable cgroup CPU
 		value. When some jobs have no cgroup data, or their CPU value was ignored,
 		cpu_hrs / core_hrs is therefore lower than cpu_eff_pct, which only compares
 		against the core hours of the jobs in cpu_hrs.
@@ -6148,21 +6152,19 @@ query_tool-resource-usage() { ##? [--limit=20] [--newer-than=30d] [--order-by=co
 		raw_metrics AS (
 			SELECT
 				jobs.tool_id,
-				max(m.metric_value) FILTER (WHERE m.metric_name = 'runtime_seconds') AS runtime,
-				max(m.metric_value) FILTER (WHERE m.metric_name = 'galaxy_slots') AS slots,
-				max(m.metric_value) FILTER (WHERE m.metric_name = 'galaxy_memory_mb') * 1048576.0 AS mem_allocated,
-				max(m.metric_value) FILTER (WHERE m.metric_name IN ('memory.peak', 'memory.memsw.max_usage_in_bytes', 'memory.max_usage_in_bytes')) AS mem_used,
+				max(m.metric_value) FILTER (WHERE m.plugin = 'core' AND m.metric_name = 'runtime_seconds') AS runtime,
+				max(m.metric_value) FILTER (WHERE m.plugin = 'core' AND m.metric_name = 'galaxy_slots') AS slots,
+				max(m.metric_value) FILTER (WHERE m.plugin = 'core' AND m.metric_name = 'galaxy_memory_mb') * 1048576.0 AS mem_allocated,
+				max(m.metric_value) FILTER (WHERE m.plugin = 'cgroup' AND m.metric_name IN ('memory.peak', 'memory.max_usage_in_bytes')) AS mem_used,
 				coalesce(
-					max(m.metric_value) FILTER (WHERE m.metric_name = 'cpu.stat.usage_usec') / 1000000.0,
-					max(m.metric_value) FILTER (WHERE m.metric_name = 'cpuacct.usage') / 1000000000.0
+					max(m.metric_value) FILTER (WHERE m.plugin = 'cgroup' AND m.metric_name = 'cpu.stat.usage_usec') / 1000000.0,
+					max(m.metric_value) FILTER (WHERE m.plugin = 'cgroup' AND m.metric_name = 'cpuacct.usage') / 1000000000.0
 				) AS cpu_seconds
 			FROM jobs
 			JOIN job_metric_numeric m ON m.job_id = jobs.id
-			WHERE m.metric_name IN (
-				'runtime_seconds', 'galaxy_slots', 'galaxy_memory_mb',
-				'memory.peak', 'memory.memsw.max_usage_in_bytes', 'memory.max_usage_in_bytes',
-				'cpu.stat.usage_usec', 'cpuacct.usage'
-			)
+			WHERE (m.plugin = 'core' AND m.metric_name IN ('runtime_seconds', 'galaxy_slots', 'galaxy_memory_mb'))
+				OR (m.plugin = 'cgroup' AND m.metric_name IN (
+					'memory.peak', 'memory.max_usage_in_bytes', 'cpu.stat.usage_usec', 'cpuacct.usage'))
 			GROUP BY jobs.id, jobs.tool_id
 		),
 		job_metrics AS (
@@ -6182,7 +6184,8 @@ query_tool-resource-usage() { ##? [--limit=20] [--newer-than=30d] [--order-by=co
 			round(sum(mem_allocated * runtime) / 1073741824.0 / 3600, 1) AS mem_alloc_gb_hrs,
 			round(avg(mem_used) / 1073741824.0, 2) AS avg_mem_gb,
 			round(max(mem_used) / 1073741824.0, 2) AS max_mem_gb,
-			round(100 * sum(mem_used * runtime) / nullif(sum(mem_allocated * runtime) FILTER (WHERE mem_used IS NOT NULL), 0), 1) AS mem_eff_pct
+			round(100 * sum(mem_used * runtime) FILTER (WHERE mem_allocated > 0)
+				/ nullif(sum(mem_allocated * runtime) FILTER (WHERE mem_used IS NOT NULL AND mem_allocated > 0), 0), 1) AS mem_eff_pct
 		FROM job_metrics
 		WHERE runtime IS NOT NULL
 		GROUP BY job_metrics.tool_id

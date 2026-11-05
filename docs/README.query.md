@@ -144,7 +144,35 @@ query aq -  Given a list of IDs from a table (e.g. 'job'), access a specific col
 
 **SYNOPSIS**
 
-    gxadmin query aq <table> <column> <-|job_id [job_id [...]]>
+    gxadmin query aq [--escape] <table> <column> <-|job_id [job_id [...]]>
+
+**NOTES**
+
+Select a column from a table matching the given id(s).
+
+The --escape option can be used to convert data stored in the escape format, such as the job destination
+parameters:
+
+    $ gxadmin query aq --escape job destination_params 42 43
+                                                 encode
+    ------------------------------------------------------------------------------------------------
+     {"embed_metadata_in_job": false, "require_container": true, "singularity_enabled": true}
+     {"native_specification": "--partition=normal --nodes=1 --ntasks=2 --mem=8192 --time=24:00:00"}
+    (2 rows)
+
+This is particularly useful to combine with 'rawquery' and jq:
+
+    $ gxadmin rawquery aq --escape job destination_params 42 43 | jq -s
+    [
+      {
+        "embed_metadata_in_job": false,
+        "require_container": true,
+        "singularity_enabled": true
+      },
+      {
+        "native_specification": "--partition=normal --nodes=1 --ntasks=2 --mem=8192 --time=24:00:00"
+      }
+    ]
 
 
 ## query archivable-histories
@@ -847,6 +875,7 @@ Dump runtime stats for ALL jobs:
     995     | circos                               | error   |         588747 |         6 |      42.0000000 | 1.0000000 |              | 2020-04-30 11:16:41.19449
     996     | circos                               | ok      |         588747 |         6 |      48.0000000 | 1.0000000 |              | 2020-04-30 11:21:51.49684
     997     | circos                               | ok      |         588747 |         6 |      46.0000000 | 1.0000000 |              | 2020-04-30 11:23:52.455536
+
 
 **WARNING**
 
@@ -2267,7 +2296,7 @@ query tool-memory-efficiency -  View the efficiency of recent jobs
 This is mainly useful for determining which long-running tools with large memory allocations have been
 granted too large of an allocation. It requires that your jobs run in isolated Linux cgroups (as is
 commonly configured for Slurm) that accurately report memory usage in memory.peak (cgroupsv2) or
-memory.memsw.max_usage_in_bytes (cgroupsv1) and you have enabled the Galaxy cgroups job metrics plugin.
+memory.max_usage_in_bytes (cgroupsv1) and you have enabled the Galaxy cgroups job metrics plugin.
 
     $ gxadmin query tool-memory-efficiency
            tool_id       | run_count | total_runtime_hrs | avg_mem_used_gb | avg_mem_allocated_gb | avg_mem_percent
@@ -2466,7 +2495,7 @@ Columns:
 - cpu_hrs: consumed CPU hours, from cgroups (cpu.stat.usage_usec or cpuacct.usage)
 - cpu_eff_pct: cpu_hrs as a percentage of the core hours of the jobs counted in cpu_hrs
 - mem_alloc_gb_hrs: allocated memory integrated over runtime (galaxy_memory_mb * runtime_seconds)
-- avg_mem_gb/max_mem_gb: peak memory per job, from cgroups (memory.peak, memory.memsw.max_usage_in_bytes or memory.max_usage_in_bytes)
+- avg_mem_gb/max_mem_gb: peak memory per job, from cgroups (memory.peak or memory.max_usage_in_bytes; excludes memory-plus-swap)
 - mem_eff_pct: runtime-weighted peak memory as a percentage of allocated memory
 
 runtime_hrs and core_hrs only need the core job metrics plugin. The cpu_* and
@@ -2477,7 +2506,7 @@ CPU values more than twice the allocated core time (runtime_seconds * galaxy_slo
 are ignored. Some clusters record a shared, node-level cgroup counter instead of the
 job's own, which would otherwise dominate the totals.
 
-core_hrs counts every job, but cpu_hrs only counts jobs with a usable cgroup CPU
+core_hrs counts jobs with recorded runtime (assuming one slot if unset), but cpu_hrs only counts jobs with a usable cgroup CPU
 value. When some jobs have no cgroup data, or their CPU value was ignored,
 cpu_hrs / core_hrs is therefore lower than cpu_eff_pct, which only compares
 against the core hours of the jobs in cpu_hrs.
