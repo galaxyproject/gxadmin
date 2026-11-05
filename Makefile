@@ -1,21 +1,24 @@
 PARTS=$(sort $(wildcard parts/*.sh))
 TMP := $(shell mktemp)
 
-defaut: gxadmin
+.DEFAULT_GOAL := help
 
-all: gxadmin test docs
+help: ## Show this help
+	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_.-]+:.*?## / {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST) | sort
 
-docs:
+all: gxadmin test docs ## Build gxadmin, run tests, and regenerate docs
+
+docs: ## Regenerate the docs/README.*.md command reference
 	@cat $(PARTS) > .tmpgxadmin
 	@chmod +x .tmpgxadmin
 	./.tmpgxadmin meta cmdlist
 	@rm -f .tmpgxadmin
 
-gxadmin: $(PARTS)
+gxadmin: $(PARTS) ## Assemble the gxadmin script from parts/*.sh
 	cat $(PARTS) > gxadmin
 	chmod +x gxadmin
 
-test:
+test: ## Run shellcheck and the bats test suite
 	shellcheck --exclude SC2148 parts/22-query.sh
 	@cat $(PARTS) > .tmpgxadmin
 	@chmod +x .tmpgxadmin
@@ -23,7 +26,7 @@ test:
 	shellcheck --severity error .tmpgxadmin
 	@rm -f .tmpgxadmin
 
-shellcheck: gxadmin
+shellcheck: gxadmin ## Run shellcheck on the assembled gxadmin script
 	@# SC2001 - stylistic, no thank you!
 	@# SC2119 - literally no clue
 	@# SC2120 - literally no clue
@@ -31,7 +34,7 @@ shellcheck: gxadmin
 	shellcheck -s bash -f gcc --exclude SC2001,SC2120,SC2119,SC2129,SC2044 gxadmin
 	shellcheck -s bash -f gcc --exclude SC2001,SC2120,SC2119,SC2129,SC2044 gxadmin-complete.sh
 
-shellcheck-parts:
+shellcheck-parts: ## Run shellcheck on the individual parts/*.sh files
 	@# SC2001 - stylistic, no thank you!
 	@# SC2119 - literally no clue
 	@# SC2120 - literally no clue
@@ -40,7 +43,7 @@ shellcheck-parts:
 	@# SC2034 - unnecessary due to split
 	shellcheck -s bash -f gcc --exclude SC2001,SC2120,SC2119,SC2129,SC2044,SC2154,SC2034 parts/[023456789]*
 
-.PHONY: test shellcheck shellcheck-parts docs
+.PHONY: help test shellcheck shellcheck-parts docs
 
 RESULTS := $(wildcard .asv/results/*) $(wildcard .asv/results/*/*)
 
@@ -49,10 +52,10 @@ benchmarks/benchmarks.py: benchmarks.sh gxadmin
 	benchmarks.sh > benchmarks/benchmarks.py
 
 # Run the benchmarks
-benchmark: benchmarks/benchmarks.py
+benchmark: benchmarks/benchmarks.py ## Run the asv benchmarks
 	asv run
 	git add .asv
 
 # Collect results
-benchmark-publish: $(RESULTS)
+benchmark-publish: $(RESULTS) ## Publish benchmark results to docs/benchmarking/
 	asv publish -o docs/benchmarking/

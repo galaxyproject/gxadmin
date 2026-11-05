@@ -1,12 +1,41 @@
-# 23-pre
+# 25-pre
+
+# 24
 
 - Added:
+	- query tool-resource-usage: top N tools by aggregate runtime, allocated core hours, consumed CPU hours and memory footprint
+- Fixed:
+	- galaxy migrate-tool-install-from-sqlite: copy columns by name (their order differs between the sqlite and postgres schemas), hex-encode metadata and tool_shed_status with python3, stop on a failed export, and record the install alembic revision
+
+# 23
+
+Some bigger changes:
+
+- Support for multiple formats for datasets: UUID (accepts bare, dashed, or dataset_<uuid>.dat filename forms)
+- Standardised the --commit flag in the same way in (nearly) all commands
+- GXADMIN_TOOL_ID_FORMAT: a new env var to let you decide how you want your tool IDs returned:
+
+	- full  - the raw tool_id as stored in the database (default)
+	- short - strip the toolshed prefix: genouest/helixer/helixer/0.3.6+galaxy0
+	- owner_short - also strip the repo: genouest/helixer/0.3.6+galaxy0
+	- tool_short- also strip the owner: helixer/0.3.6+galaxy0
+
+Specific commands:
+
+- Added:
+	- query workflow-invocation-info: information about a specific workflow invocation (user, workflow, history with link)
+	- query dataset-tool: get the tool_id and job creation time for a dataset given its UUID (accepts bare, dashed, or dataset_<uuid>.dat filename forms)
 	- query tools-usage (like tools-usage-per-month but for a year or for whole history) by @lldelisle
 	- query tool-memory-efficiency, evaluates the memory efficiency of recent jobs from @natefoo
 	- Return query results in raw (unaligned, tuples-only) format with 'rawquery' from @natefoo
 - Updated:
 	- query aq to add --escape option to encode bytea columns to ASCII from @natefoo
+	- query longest-running-jobs-by-destination from @TomasVondrak and @sanjaysrikakulam
+	- query most-used-tools-by-destination from @TomasVondrak and @sanjaysrikakulam
+- Updated:
+	- query job-state, job-history, job-inputs, job-outputs now accept either a numeric or a Galaxy-encoded ("encrypted") job ID via the new resolve_id helper
 - Fixed:
+	- query job-state now casts the supplied id to bigint to guard against non-numeric input
 	- query tools-usage-per-month when 'no_version' was used there were still one line per version.
 
 # 22

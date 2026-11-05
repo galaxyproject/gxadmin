@@ -7,6 +7,24 @@
 	2. Update the changelog for your additions
 3. Commit everything except the `gxadmin` file
 
+# Authorship and Communications
+
+Anything that a human is intended to read (code comments, help text especially, PRs and Issues) must be human authored.
+Here we take inspiration from the rust LLM policy:
+
+- ✅ Allowed: Private use.
+- ❌ Banned: LLM-created comments, docs, or diagnostics. Replacing human judgement with LLM judgement. Requiring people to use an LLM to contribute.
+- ⚠️ Conditionally allowed: Trivial changes, machine translation, LLM reviews and review bots, LLM authored code provided it is the minimal implementation of the desired changes.
+- 🔨 Carries a moderation penalty: Lying.
+
+Please do not have an LLM polish it or translate any text you've written.
+If you don't feel comfortable writing in English, then please write in whatever your preferred language is.
+I would rather we all use our own preferred translation method, than that choice being made for me.
+
+- Using an LLM for your own personal use is likely allowed ✅
+- Showing LLM output to another human without solicitation is likely banned ❌
+- Making a decision that affects others based on LLM output requires disclosure ⚠️
+
 # Writing Queries
 
 Add your functions to the appropriate file in `parts/2[0-9]*`. The other files are support for gxadmin and probably aren't interesting to you.
@@ -68,6 +86,23 @@ To see the query gxadmin has built, use `echoquery`, for example:
 ```
 gxadmin echoquery users-total
 ```
+
+## Tool ID display
+
+Queries that display a `tool_id` column should shorten it via the `tool_id_expr`
+helper (defined in `parts/03-query-utils.sh`) rather than selecting the raw
+column. This respects the user's `GXADMIN_TOOL_ID_FORMAT` setting (see
+README.md → "Tool ID display"):
+
+```
+$(tool_id_expr job.tool_id) AS tool_id
+```
+
+The format is controlled by the `GXADMIN_TOOL_ID_FORMAT` environment
+variable. When grouping, the `GROUP BY` should be on
+the raw column (e.g. `GROUP BY job.tool_id`) so distinct tools that shorten to
+the same string remain separate rows. Export queries (e.g.
+`server workflow-trace-archive-*`) should use the full tool ID.
 
 # Portability
 

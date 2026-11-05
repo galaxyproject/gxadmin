@@ -9,6 +9,78 @@ _query_long_help="
 	In all cases 'explainquery' will show you the query plan, in case you need to optimise or index data. 'explainjsonquery' is useful with PEV: http://tatiyants.com/pev/
 "
 
+query_longest-running-jobs-by-destination() { ## : List the longest (currently) running jobs on the Galaxy server by destination
+	handle_help "$@" <<-EOF
+		List the longest (currently) running jobs on the Galaxy server by destination
+
+		job_id | tool_id                                                                                  | destination_id         | hours_since_running
+		------ | ---------------------------------------------------------------------------------------- | ---------------------- | -------------------
+		65213  | toolshed.g2.bx.psu.edu/repos/petr-novak/repeatexplorer2_testing/repeatexplorer2/2.3.12.1 | tpv_pulsar_singularity | 326
+		69261  | toolshed.g2.bx.psu.edu/repos/petr-novak/dante/dante/2.6.2                                | tpv_pulsar             | 85
+		69435  | toolshed.g2.bx.psu.edu/repos/petr-novak/dante_ltr/dante_ltr_search/4.0.4.1               | tpv_pulsar             | 56
+
+	EOF
+
+	fields="hours_since_running=3"
+	tags="job_id=0;tool_id=1;destination_id=2"
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			j.id,
+			$(tool_id_expr j.tool_id) AS tool_id,
+			j.destination_id,
+			EXTRACT(EPOCH FROM (NOW() - jsh.running_since)) / 3600 AS hours_since_running
+		FROM
+			job j JOIN LATERAL (
+				SELECT
+					MIN(create_time) AS running_since
+				FROM
+					job_state_history jsh
+				WHERE
+					jsh.job_id = j.id
+					AND jsh.state = 'running'
+			) jsh ON true
+		WHERE
+			j.state = 'running'
+		ORDER BY
+			hours_since_running DESC
+	EOF
+}
+
+query_most-used-tools-by-destination() { ## : List tools with the highest job count on the Galaxy server by destination
+	handle_help "$@" <<-EOF
+		List tools with the highest job count on the Galaxy server by destination
+
+		tool_id                                                                                         | destination_id | job_count
+		----------------------------------------------------------------------------------------------- | -------------- | ---------
+		toolshed.g2.bx.psu.edu/repos/petr-novak/re_utils/paired_fastq_filtering                         | tpv_pulsar     | 23
+		toolshed.g2.bx.psu.edu/repos/petr-novak/re_utils/fasta_affixer                                  | tpv_pulsar     | 14
+		toolshed.g2.bx.psu.edu/repos/petr-novak/re_utils/sampler                                        | tpv_pulsar     | 13
+
+	EOF
+
+	fields="job_count=2"
+	tags="tool_id=0;destination_id=1"
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			regexp_replace($(tool_id_expr tool_id), '/[^/]+$', '') AS tool_id_no_version,
+			destination_id,
+			COUNT(*) AS job_count
+		FROM
+			job
+		WHERE
+			create_time >= (NOW() AT TIME ZONE 'UTC' - INTERVAL '1 hour')
+			AND tool_id ILIKE 'toolshed%'
+			AND destination_id IS NOT NULL
+		GROUP BY
+			tool_id_no_version,
+			destination_id
+		ORDER BY
+			job_count DESC
+	EOF
+}
+
 query_latest-users() { ## : 40 recently registered users
 	meta <<-EOF
 		AUTHORS: hexylena
@@ -75,7 +147,7 @@ query_tool-usage() { ##? [weeks]: Counts of tool runs in the past weeks (default
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			j.tool_id, count(*) AS count
+			$(tool_id_expr j.tool_id) AS tool_id, count(*) AS count
 		FROM job j
 		$where
 		GROUP BY j.tool_id
@@ -119,13 +191,81 @@ query_tool-usage-over-time() { ##? [searchterm]: Counts of tool runs by month, f
 					$where
 				)
 		SELECT
-			date_trunc, tool_id, count(*)
+			date_trunc, $(tool_id_expr tool_id) AS tool_id, count(*)
 		FROM
 			cte
 		GROUP BY
 			date_trunc, tool_id
 		ORDER BY
 			date_trunc ASC, count DESC
+	EOF
+}
+
+query_user-tool-usage() { ##? [user_id]: Counts distinct users per tool for the last 5 years (default = all users)
+	handle_help "$@" <<-EOF
+		Counts distinct users per normalized tool name for the last 5 years.
+		By default, includes all users. Optionally pass a specific user_id.
+
+		    $ gxadmin query user-tool-usage
+		    $ gxadmin query user-tool-usage 123
+	EOF
+
+	user_filter=
+	if [[ "$arg_user_id" != "" ]]; then
+		user_filter="AND user_id = '$arg_user_id'"
+	fi
+
+	fields="count=1"
+	tags="tool_name=0"
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			tool_name, COUNT(*) AS count
+		FROM (
+			SELECT DISTINCT
+				REGEXP_REPLACE(tool_id, '(.*)/(.*)', '\1') AS tool_name,
+				user_id
+			FROM job
+			WHERE create_time BETWEEN CURRENT_DATE - INTERVAL '5 years' AND CURRENT_DATE
+			$user_filter
+			GROUP BY tool_name, user_id
+		) AS subquery
+		GROUP BY tool_name
+		ORDER BY count DESC
+	EOF
+}
+
+query_user-tool-usage-over-time() { ##? [user_id]: Counts distinct users per tool by month for the last 5 years (default = all users)
+	meta <<-EOF
+		ADDED: 19
+		UPDATED: 26
+	EOF
+	handle_help "$@" <<-EOF
+		Counts distinct users per normalized tool name by month for the last 5 years.
+		By default, includes all users. Optionally pass a specific user_id.
+
+		    $ gxadmin query user-tool-usage-over-time
+		    $ gxadmin query user-tool-usage-over-time 123
+	EOF
+
+	user_filter=
+	if [[ "$arg_user_id" != "" ]]; then
+		user_filter="AND user_id = '$arg_user_id'"
+	fi
+
+	fields="count=2"
+	tags="month=0;tool_name=1"
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			date_trunc('month', create_time)::date AS month,
+			REGEXP_REPLACE(tool_id, '(.*)/(.*)', '\1') AS tool_name,
+			COUNT(DISTINCT user_id) AS count
+		FROM job
+		WHERE create_time BETWEEN CURRENT_DATE - INTERVAL '5 years' AND CURRENT_DATE
+		$user_filter
+		GROUP BY month, tool_name
+		ORDER BY month ASC, count DESC
 	EOF
 }
 
@@ -157,7 +297,7 @@ query_tool-popularity() { ##? [months=24] [--error]: Most run tools by month (to
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			tool_id,
+			$(tool_id_expr tool_id) AS tool_id,
 			date_trunc('month', create_time AT TIME ZONE 'UTC')::date as month,
 			count(*) as count $error_count
 		FROM job
@@ -206,10 +346,10 @@ query_workflow-connections() { ##? [--all]: The connections of tools, from outpu
 			workflow.id as wf_id,
 			workflow.update_time::DATE as wf_updated,
 			ws_in.id as in_id,
-			ws_in.tool_id as in_tool,
+			$(tool_id_expr ws_in.tool_id) as in_tool,
 			ws_in.tool_version as in_tool_v,
 			ws_out.id as out_id,
-			ws_out.tool_id as out_tool,
+			$(tool_id_expr ws_out.tool_id) as out_tool,
 			ws_out.tool_version as out_tool_v,
 			sw.published as published,
 			sw.deleted as deleted,
@@ -238,10 +378,10 @@ query_history-connections() { ## : The connections of tools, from output to inpu
 			h.id AS h_id,
 			h.update_time::DATE AS h_update,
 			jtod.job_id AS in_id,
-			j.tool_id AS in_tool,
+			$(tool_id_expr j.tool_id) AS in_tool,
 			j.tool_version AS in_tool_v,
 			jtid.job_id AS out_id,
-			j2.tool_id AS out_tool,
+			$(tool_id_expr j2.tool_id) AS out_tool,
 			j2.tool_version AS out_ver
 		FROM
 			job AS j
@@ -400,7 +540,7 @@ query_destination-queue-run-time() { ##? [--older-than=30] [--seconds]: The aver
 				AS (
 					SELECT
 						j.destination_id,
-						j.tool_id,
+						$(tool_id_expr j.tool_id) AS tool_id,
 						j.id,
 						$nonpretty (min(a.create_time) - min(b.create_time))$nonprettyend
 							AS queue_time,
@@ -511,6 +651,10 @@ query_queue() { ## [--by (tool|destination|user)]: Brief overview of currently r
 		column_query="$column"
 	fi
 
+	if [[ "$column" == "tool_id" ]]; then
+		column_query="$(tool_id_expr "$column") AS tool_id"
+	fi
+
 	read -r -d '' QUERY <<-EOF
 		SELECT
 			${column_query}, state, count(${column}) as ${title}_count
@@ -525,20 +669,50 @@ query_queue() { ## [--by (tool|destination|user)]: Brief overview of currently r
 	EOF
 }
 
-query_queue-overview() { ##? [--short-tool-id]: View used mostly for monitoring
+query_queue-overview() { ## : View used mostly for monitoring
 	handle_help "$@" <<-EOF
-		Primarily for monitoring of queue. Optimally used with 'iquery' and passed to Telegraf.
+		Counts jobs that are not yet in a terminal state (states 'new', 'queued'
+		and 'running') grouped by tool id, tool version, destination, handler,
+		state, job runner and user. Primarily for monitoring of the queue, and
+		optimally used with 'iquery' so the output can be passed straight to
+		Telegraf/InfluxDB.
 
 		    $ gxadmin iquery queue-overview
 		    queue-overview,tool_id=upload1,tool_version=0.0.1,state=running,handler=main.web.1,destination_id=condor,job_runner_name=condor,user=1 count=1
 
+		It can also be run as a regular query for a tabular, human-readable view:
+
+		    $ gxadmin query queue-overview
+		         tool_id      | tool_version  | destination_id |   handler   |  state  | job_runner_name | count | user_id
+		    ------------------+---------------+----------------+-------------+---------+-----------------+-------+---------
+		    toolshed.g2.bx... | 2.5.0+galaxy0 | condor         | main.web.1  | running | condor          |     3 |       1
+		    upload1           | 0.0.1         | local          | main.web.2  | queued  | local           |     1 |       1
+
+		The tool version is stripped from the tool_id with a regex so that, e.g.,
+		'toolshed.g2.bx.psu.edu/repos/iuc/bowtie2/bowtie2/2.5.0+galaxy0' is
+		reported as 'toolshed.g2.bx.psu.edu/repos/iuc/bowtie2/bowtie2'.
+
+		**--short-tool-id**
+
+		Tool ids as stored in the database include the full toolshed path, e.g.
+		'toolshed.g2.bx.psu.edu/repos/iuc/bowtie2/bowtie2/2.5.0+galaxy0'. Pass
+		"--short-tool-id" to strip the "toolshed.../repos/" prefix, leaving
+		"iuc/bowtie2/bowtie2/2.5.0+galaxy0".
+
+		$ gxadmin iquery queue-overview --short-tool-id
+		queue-overview,tool_id=iuc/bowtie2/bowtie2/2.5.0+galaxy0,tool_version=2.5.0+galaxy0,state=running,handler=main.web.1,destination_id=condor,job_runner_name=condor,user=1 count=3
+
+		**GDPR_MODE**
+
+		By default the real "user_id" is exposed as a tag. Set the
+		"GDPR_MODE" environment variable to replace
+		the user id with '0' so that no individual user information is exposed.
+		This is recommended when forwarding metrics to a shared InfluxDB.
+
+		    GDPR_MODE=1 gxadmin iquery queue-overview
 	EOF
 
-	# Use full tool id by default
-	tool_id="tool_id"
-	if [[ -n "$arg_short_tool_id" ]]; then
-		tool_id="regexp_replace(tool_id, '.*toolshed.*/repos/', '')"
-	fi
+	tool_id=$(tool_id_expr "tool_id")
 
 	# Include by default
 	if [[ -z "$GDPR_MODE" ]]; then
@@ -576,6 +750,13 @@ query_queue-overview() { ##? [--short-tool-id]: View used mostly for monitoring
 			tool_id, tool_version, destination_id, handler, state, job_runner_name, user_id
 
 	EOF
+}
+
+query_queue-details() { ##? [--all] [--seconds] [--since-update]: Detailed overview of running and queued jobs
+	handle_help "$@" <<-EOF
+		This is an alias of ["queue-detail"](#query-queue-detail), provided because we can never remember.
+	EOF
+	query_queue-detail "$@"
 }
 
 query_queue-detail() { ##? [--all] [--seconds] [--since-update]: Detailed overview of running and queued jobs
@@ -623,7 +804,7 @@ query_queue-detail() { ##? [--all] [--seconds] [--since-update]: Detailed overvi
 			job.state,
 			job.id,
 			job.job_runner_external_id as extid,
-			job.tool_id,
+			$(tool_id_expr job.tool_id) AS tool_id,
 			$username,
 			$nonpretty now() AT TIME ZONE 'UTC' - $time_column) as $time_column_name,
 			job.handler,
@@ -756,7 +937,7 @@ query_jobs-nonterminal() { ## [--states=new,queued,running] [--update-time] [--o
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			job.id, job.tool_id, job.state, job.$time_column AT TIME ZONE 'UTC' AS $time_column, job.job_runner_name, job.job_runner_external_id, job.handler, $user
+			job.id, $(tool_id_expr job.tool_id) AS tool_id, job.state, job.$time_column AT TIME ZONE 'UTC' AS $time_column, job.job_runner_name, job.job_runner_external_id, job.handler, $user
 		FROM
 			job
 		LEFT OUTER JOIN
@@ -810,7 +991,7 @@ query_recent-jobs() { ##? <hours>: Jobs run in the past <hours> (in any state)
 		SELECT
 			job.id,
 			job.create_time AT TIME ZONE 'UTC' as create_time,
-			job.tool_id,
+			$(tool_id_expr job.tool_id) AS tool_id,
 			job.state, $username
 		FROM job, galaxy_user
 		WHERE job.create_time > (now() AT TIME ZONE 'UTC' - '$arg_hours hours'::interval) AND job.user_id = galaxy_user.id
@@ -1144,7 +1325,7 @@ query_training-queue() { ##? <training_id>: Jobs currently being run by people i
 				job.state,
 				job.id,
 				job.job_runner_external_id AS extid,
-				job.tool_id,
+				$(tool_id_expr job.tool_id) AS tool_id,
 				$username,
 				job.create_time AT TIME ZONE 'UTC' AS created
 			FROM
@@ -1248,7 +1429,7 @@ query_tool-last-used-date() { ## : When was the most recent invocation of every 
 	EOF
 
 	read -r -d '' QUERY <<-EOF
-		select max(date_trunc('month', create_time AT TIME ZONE 'UTC')), tool_id from job group by tool_id order by max desc
+		select max(date_trunc('month', create_time AT TIME ZONE 'UTC')), $(tool_id_expr tool_id) AS tool_id from job group by tool_id order by max desc
 	EOF
 }
 
@@ -1275,7 +1456,7 @@ EOFhelp
 	username=$(gdpr_safe galaxy_user.username username "Anonymous User")
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			job.tool_id, $username, count(job.tool_id)
+			$(tool_id_expr job.tool_id) AS tool_id, $username, count(job.tool_id)
 		FROM
 			job, galaxy_user, galaxy_group, user_group_association
 		WHERE
@@ -1523,7 +1704,7 @@ query_tool-memory-per-inputs() { ##? <tool_id> [--like]: See memory usage and in
 		WITH job_cte AS (
 			SELECT
 				j.id,
-				j.tool_id
+				$(tool_id_expr j.tool_id) AS tool_id
 			FROM
 				job j
 			WHERE
@@ -1550,6 +1731,7 @@ query_tool-memory-per-inputs() { ##? <tool_id> [--like]: See memory usage and in
 				count(jtid.id) AS input_count,
 				sum(d.total_size) AS total_input_size,
 				avg(d.total_size) AS mean_input_size,
+				string_agg(DISTINCT hda.extension, ',' ORDER BY hda.extension) AS extensions,
 				percentile_cont(0.5) WITHIN GROUP (ORDER BY d.total_size) AS median_input_size
 			FROM
 				job_cte j
@@ -1571,7 +1753,8 @@ query_tool-memory-per-inputs() { ##? <tool_id> [--like]: See memory usage and in
 			(m.memory_used/1024/1024)::bigint AS memory_used_mb,
 			(m.memory_used/NULLIF(d.total_input_size,0))::bigint AS memory_used_per_input_mb,
 			(m.memory_used/NULLIF(d.mean_input_size,0))::bigint AS memory_mean_input_ratio,
-			(m.memory_used/NULLIF(d.median_input_size,0))::bigint AS memory_median_input_ratio
+			(m.memory_used/NULLIF(d.median_input_size,0))::bigint AS memory_median_input_ratio,
+			d.extensions
 		FROM
 			job_cte j
 		JOIN
@@ -2903,6 +3086,10 @@ query_job-state() { ##? <job_id>: Get current job state given a job ID
 		ADDED: 19
 	EOF
 	handle_help "$@" <<-EOF
+		The <job_id> can be supplied as a numeric ID or as a Galaxy-encoded
+		("encrypted") hex string (decoded via secret_decoder_ring.py; requires
+		GALAXY_ROOT and GALAXY_CONFIG_FILE).
+
 		    $ gxadmin query job-state 1
 		     state
 		    --------
@@ -2910,16 +3097,22 @@ query_job-state() { ##? <job_id>: Get current job state given a job ID
 		    (1 row)
 	EOF
 
+	numeric_id="$(resolve_id "$arg_id")"
+
 	read -r -d '' QUERY <<-EOF
 			SELECT
 				state
 			FROM job
-			WHERE id = $arg_id
+			WHERE id = $numeric_id::bigint
 	EOF
 }
 
 query_job-history() { ##? <id>: Job state history for a specific job
 	handle_help "$@" <<-EOF
+		The <id> can be supplied as a numeric ID or as a Galaxy-encoded
+		("encrypted") hex string (decoded via secret_decoder_ring.py; requires
+		GALAXY_ROOT and GALAXY_CONFIG_FILE).
+
 		    $ gxadmin query job-history 1
 		                 time              | state
 		    -------------------------------+--------
@@ -2931,19 +3124,26 @@ query_job-history() { ##? <id>: Job state history for a specific job
 		    (5 rows)
 	EOF
 
+	numeric_id="$(resolve_id "$arg_id")"
+
 	read -r -d '' QUERY <<-EOF
 			SELECT
 				create_time AT TIME ZONE 'UTC' as time,
 				state
 			FROM job_state_history
-			WHERE job_id = $arg_id
+			WHERE job_id = $numeric_id::bigint
    			ORDER BY create_time ASC
 	EOF
 }
 
 query_job-inputs() { ##? <id>: Input datasets to a specific job
 	handle_help "$@" <<-EOF
+		The <id> can be supplied as a numeric ID or as a Galaxy-encoded
+		("encrypted") hex string (decoded via secret_decoder_ring.py; requires
+		GALAXY_ROOT and GALAXY_CONFIG_FILE).
 	EOF
+
+	numeric_id="$(resolve_id "$arg_id")"
 
 	read -r -d '' QUERY <<-EOF
 			SELECT
@@ -2963,13 +3163,18 @@ query_job-inputs() { ##? <id>: Input datasets to a specific job
 					ON hda.id = jtid.dataset_id
 				JOIN dataset d
 					ON hda.dataset_id = d.id
-			WHERE j.id = $arg_id
+			WHERE j.id = $numeric_id::bigint
 	EOF
 }
 
 query_job-outputs() { ##? <id>: Output datasets from a specific job
 	handle_help "$@" <<-EOF
+		The <id> can be supplied as a numeric ID or as a Galaxy-encoded
+		("encrypted") hex string (decoded via secret_decoder_ring.py; requires
+		GALAXY_ROOT and GALAXY_CONFIG_FILE).
 	EOF
+
+	numeric_id="$(resolve_id "$arg_id")"
 
 	read -r -d '' QUERY <<-EOF
 			SELECT
@@ -2989,7 +3194,7 @@ query_job-outputs() { ##? <id>: Output datasets from a specific job
 					ON hda.id = jtod.dataset_id
 				JOIN dataset d
 					ON hda.dataset_id = d.id
-			WHERE j.id = $arg_id
+			WHERE j.id = $numeric_id::bigint
 	EOF
 }
 
@@ -3046,7 +3251,7 @@ query_job-info() { ## <-|job_id [job_id [...]]> : Retrieve information about job
 		SELECT job.id,
 			job.create_time,
 			job.update_time,
-			job.tool_id,
+			$(tool_id_expr job.tool_id) AS tool_id,
 			job.state,
 			job.handler,
 			hostname_query.hostname,
@@ -3114,7 +3319,7 @@ query_jobs-max-by-cpu-days() { ## : Top 10 jobs by CPU days consumed (requires C
 	read -r -d '' QUERY <<-EOF
 		SELECT
 			job.id,
-			job.tool_id,
+			$(tool_id_expr job.tool_id) AS tool_id,
 			job.create_time,
 			metric_value/1000000000/3600/24 as cpu_days
 		FROM job, job_metric_numeric
@@ -3152,7 +3357,7 @@ query_errored-jobs(){ ##? <hours> [--details]: Lists jobs that errored in the la
 		SELECT
 			job.id,
 			job.create_time AT TIME ZONE 'UTC' as create_time,
-			job.tool_id,
+			$(tool_id_expr job.tool_id) AS tool_id,
 			job.tool_version,
 			job.handler,
 			job.destination_id,
@@ -3217,30 +3422,120 @@ query_workflow-invocation-totals() { ## : Report on overall workflow counts, to 
 	EOF
 }
 
-query_tool-new-errors() { ##? [weeks=4] [--short-tool-id]: Summarize percent of tool runs in error over the past weeks for "new tools"
+query_workflow-invocation-info() { ##? <id> [--encode]: Information about a specific workflow invocation (user, workflow, history)
+	meta <<-EOF
+		ADDED: 23
+	EOF
+	handle_help "$@" <<-EOF
+		Retrieve information about a workflow invocation given its ID. It will
+		return the user, the workflow, when it was scheduled, and the history
+		it is/was running in - plus a history link.
+
+		The <id> argument can be supplied either as a numeric ("decrypted") ID
+		(e.g. 1) or as a Galaxy-encoded ("encrypted") hex string (e.g.
+		6fe4eea8c591a9c4).
+
+		With --encode, the workflow, history, and invocation IDs are additionally
+		shown in their Galaxy-encoded ("encrypted") form alongside the numeric
+		("decrypted") IDs.
+
+		    $ GALAXY_URL=https://usegalaxy.eu gxadmin query workflow-invocation-info 1
+		     id | workflow_id |        workflow         | user_id |    user    |         scheduled          | history_id |        history         |            history_url
+		    ----+-------------+-------------------------+---------+------------+----------------------------+------------+------------------------+--------------------------------------------
+		     1  | 42          | my-workflow             | 7       | alice      | 2023-05-19 10:36:44.902+00 | 1234       | My History             | https://usegalaxy.eu/histories/view?id=1234
+		    (1 row)
+
+		    $ GALAXY_URL=https://usegalaxy.eu GALAXY_ROOT=/srv/galaxy/server GALAXY_CONFIG_FILE=/srv/galaxy/config/galaxy.yml gxadmin query workflow-invocation-info 6fe4eea8c591a9c4 --encode
+		     id |  id_encoded  | workflow_id | workflow_id_encoded |        workflow         | user_id |    user    |         scheduled          | history_id | history_id_encoded |        history         |            history_url
+		    ----+--------------+-------------+---------------------+-------------------------+---------+------------+----------------------------+------------+--------------------+------------------------+--------------------------------------------
+		     1  | 6fe4eea8c591a9c4 | 42     | f6e5d4c3b2a1        | my-workflow             | 7       | alice      | 2023-05-19 10:36:44.902+00 | 1234       | 1a2b3c4d5e6f      | My History             | https://usegalaxy.eu/histories/view?id=1234
+		    (1 row)
+
+		The history URL is built from GALAXY_URL (if set), otherwise left blank.
+	EOF
+
+	galaxy_url="${GALAXY_URL:-}"
+
+	# Accept either a numeric (decoded) ID or a Galaxy-encoded (hex) ID.
+	numeric_id="$(resolve_id "$arg_id")"
+
+	if [[ -n "$arg_encode" ]]; then
+		# Pre-fetch the numeric workflow/history IDs so they can be encoded
+		# via Galaxy's secret_decoder_ring alongside the invocation id.
+		row="$(query_tsv "SELECT workflow_id, history_id FROM workflow_invocation WHERE id = $numeric_id::bigint")"
+		wf_id="$(printf '%s' "$row" | cut -f1)"
+		hist_id="$(printf '%s' "$row" | cut -f2)"
+
+		inv_encoded="$(galaxy_encode_id "$numeric_id" 2>/dev/null)"
+		wf_encoded="$(galaxy_encode_id "$wf_id" 2>/dev/null)"
+		hist_encoded="$(galaxy_encode_id "$hist_id" 2>/dev/null)"
+
+		read -r -d '' QUERY <<-EOF
+			SELECT
+				wi.id AS id,
+				'${inv_encoded}' AS id_encoded,
+				wi.workflow_id AS workflow_id,
+				'${wf_encoded}' AS workflow_id_encoded,
+				w.name AS workflow,
+				galaxy_user.id AS user_id,
+				galaxy_user.username AS user,
+				wi.create_time AS scheduled,
+				wi.history_id AS history_id,
+				'${hist_encoded}' AS history_id_encoded,
+				history.name AS history,
+				'${galaxy_url}/histories/view?id=' || wi.history_id AS history_url
+			FROM
+				workflow_invocation wi
+				JOIN workflow w ON wi.workflow_id = w.id
+				JOIN history ON wi.history_id = history.id
+				LEFT JOIN galaxy_user ON history.user_id = galaxy_user.id
+			WHERE
+				wi.id = $numeric_id::bigint
+		EOF
+	else
+		read -r -d '' QUERY <<-EOF
+			SELECT
+				wi.id AS id,
+				wi.workflow_id AS workflow_id,
+				w.name AS workflow,
+				galaxy_user.id AS user_id,
+				galaxy_user.username AS user,
+				wi.create_time AS scheduled,
+				wi.history_id AS history_id,
+				history.name AS history,
+				'${galaxy_url}/histories/view?id=' || wi.history_id AS history_url
+			FROM
+				workflow_invocation wi
+				JOIN workflow w ON wi.workflow_id = w.id
+				JOIN history ON wi.history_id = history.id
+				LEFT JOIN galaxy_user ON history.user_id = galaxy_user.id
+			WHERE
+				wi.id = $numeric_id::bigint
+		EOF
+	fi
+}
+
+query_tool-new-errors() { ##? [weeks=4]: Summarize percent of tool runs in error over the past weeks for "new tools"
 	meta <<-EOF
 		ADDED: 12
 	EOF
 	handle_help "$@" <<-EOF
 		See jobs-in-error summary for recent tools (tools whose first execution is in recent weeks).
 
-		    $ gxadmin query tool-errors --short-tool-id 1
-		        tool_id                        | tool_runs |  percent_errored  | percent_failed | count_errored | count_failed |     handler
-		    -----------------------------------+-----------+-------------------+----------------+---------------+--------------+-----------------
-		     rnateam/graphclust_align_cluster/ |        55 | 0.145454545454545 |              0 |             8 |            0 | handler_main_10
-		     iuc/rgrnastar/rna_star/2.6.0b-2   |        46 | 0.347826086956522 |              0 |            16 |            0 | handler_main_3
-		     iuc/rgrnastar/rna_star/2.6.0b-2   |        43 | 0.186046511627907 |              0 |             8 |            0 | handler_main_0
-		     iuc/rgrnastar/rna_star/2.6.0b-2   |        41 | 0.390243902439024 |              0 |            16 |            0 | handler_main_4
-		     iuc/rgrnastar/rna_star/2.6.0b-2   |        40 |             0.325 |              0 |            13 |            0 | handler_main_6
-		     Filter1                           |        40 |             0.125 |              0 |             5 |            0 | handler_main_0
-		     devteam/bowtie2/bowtie2/2.3.4.3   |        40 |             0.125 |              0 |             5 |            0 | handler_main_7
-		     iuc/rgrnastar/rna_star/2.6.0b-2   |        40 |               0.3 |              0 |            12 |            0 | handler_main_2
+		    $ GXADMIN_TOOL_ID_FORMAT=tool_short gxadmin query tool-errors
+		        tool_id                   | tool_runs |  percent_errored  | percent_failed | count_errored | count_failed |     handler
+		    ------------------------------+-----------+-------------------+----------------+---------------+--------------+-----------------
+		     graphclust_align_cluster/    |        55 | 0.145454545454545 |              0 |             8 |            0 | handler_main_10
+		     rna_star/2.6.0b-2            |        46 | 0.347826086956522 |              0 |            16 |            0 | handler_main_3
+		     rna_star/2.6.0b-2            |        43 | 0.186046511627907 |              0 |             8 |            0 | handler_main_0
+		     rna_star/2.6.0b-2            |        41 | 0.390243902439024 |              0 |            16 |            0 | handler_main_4
+		     rna_star/2.6.0b-2            |        40 |             0.325 |              0 |            13 |            0 | handler_main_6
+		     Filter1                      |        40 |             0.125 |              0 |             5 |            0 | handler_main_0
+		     bowtie2/2.3.4.3              |        40 |             0.125 |              0 |             5 |            0 | handler_main_7
+		     rna_star/2.6.0b-2            |        40 |               0.3 |              0 |            12 |            0 | handler_main_2
 	EOF
 
-	tool_id="j.tool_id"
-	if [[ -n $arg_short_tool_id ]]; then
-		tool_id="regexp_replace(j.tool_id, '.*toolshed.*/repos/', '') as tool_id"
-	fi
+	tool_id="$(tool_id_expr "j.tool_id") as tool_id"
 
 	fields="tool_runs=1;percent_errored=2;percent_failed=3;count_errored=4;count_failed=5"
 	tags="tool_id=0;handler=6"
@@ -3264,35 +3559,32 @@ query_tool-new-errors() { ##? [weeks=4] [--short-tool-id]: Summarize percent of 
 					GROUP BY j.tool_id
 				)
 		GROUP BY j.tool_id, j.handler
-		ORDER BY percent_failed_errored DESC
+		ORDER BY percent_errored DESC
 	EOF
 }
 
-query_tool-errors() { ##? [--short-tool-id] [weeks=4]: Summarize percent of tool runs in error over the past weeks for all tools that have failed (most popular tools first)
+query_tool-errors() { ##? [weeks=4]: Summarize percent of tool runs in error over the past weeks for all tools that have failed (most popular tools first)
 	meta <<-EOF
 		ADDED: 12
 	EOF
 	handle_help "$@" <<-EOF
 		See jobs-in-error summary for recently executed tools that have failed at least 10% of the time.
 
-		    $ gxadmin query tool-errors --short-tool-id 1
-		        tool_id                        | tool_runs |  percent_errored  | percent_failed | count_errored | count_failed |     handler
-		    -----------------------------------+-----------+-------------------+----------------+---------------+--------------+-----------------
-		     rnateam/graphclust_align_cluster/ |        55 | 0.145454545454545 |              0 |             8 |            0 | handler_main_10
-		     iuc/rgrnastar/rna_star/2.6.0b-2   |        46 | 0.347826086956522 |              0 |            16 |            0 | handler_main_3
-		     iuc/rgrnastar/rna_star/2.6.0b-2   |        43 | 0.186046511627907 |              0 |             8 |            0 | handler_main_0
-		     iuc/rgrnastar/rna_star/2.6.0b-2   |        41 | 0.390243902439024 |              0 |            16 |            0 | handler_main_4
-		     iuc/rgrnastar/rna_star/2.6.0b-2   |        40 |             0.325 |              0 |            13 |            0 | handler_main_6
-		     Filter1                           |        40 |             0.125 |              0 |             5 |            0 | handler_main_0
-		     devteam/bowtie2/bowtie2/2.3.4.3   |        40 |             0.125 |              0 |             5 |            0 | handler_main_7
-		     iuc/rgrnastar/rna_star/2.6.0b-2   |        40 |               0.3 |              0 |            12 |            0 | handler_main_2
+		    $ GXADMIN_TOOL_ID_FORMAT=tool_short gxadmin query tool-errors
+		        tool_id                   | tool_runs |  percent_errored  | percent_failed | count_errored | count_failed |     handler
+		    ------------------------------+-----------+-------------------+----------------+---------------+--------------+-----------------
+		     graphclust_align_cluster/    |        55 | 0.145454545454545 |              0 |             8 |            0 | handler_main_10
+		     rna_star/2.6.0b-2            |        46 | 0.347826086956522 |              0 |            16 |            0 | handler_main_3
+		     rna_star/2.6.0b-2            |        43 | 0.186046511627907 |              0 |             8 |            0 | handler_main_0
+		     rna_star/2.6.0b-2            |        41 | 0.390243902439024 |              0 |            16 |            0 | handler_main_4
+		     rna_star/2.6.0b-2            |        40 |             0.325 |              0 |            13 |            0 | handler_main_6
+		     Filter1                      |        40 |             0.125 |              0 |             5 |            0 | handler_main_0
+		     bowtie2/2.3.4.3              |        40 |             0.125 |              0 |             5 |            0 | handler_main_7
+		     rna_star/2.6.0b-2            |        40 |               0.3 |              0 |            12 |            0 | handler_main_2
 	EOF
 
 	# TODO: Fix this nonsense for proper args
-	tool_id="j.tool_id"
-	if [[ -n $arg_short_tool_id ]]; then
-		tool_id="regexp_replace(j.tool_id, '.*toolshed.*/repos/', '') as tool_id"
-	fi
+	tool_id="$(tool_id_expr "j.tool_id") as tool_id"
 
 	fields="tool_runs=1;percent_errored=2;percent_failed=3;count_errored=4;count_failed=5"
 	tags="tool_id=0;handler=6"
@@ -3319,7 +3611,7 @@ query_tool-errors() { ##? [--short-tool-id] [weeks=4]: Summarize percent of tool
 	EOF
 }
 
-query_tool-likely-broken() { ##? [--short-tool-id] [weeks=4]: Find tools that have been executed in recent weeks that are (or were due to job running) likely substantially broken
+query_tool-likely-broken() { ##? [weeks=4]: Find tools that have been executed in recent weeks that are (or were due to job running) likely substantially broken
 	handle_help "$@" <<-EOF
 		This runs an identical query to tool-errors, except filtering for tools
 		which were run more than 4 times, and have a failure rate over 95%.
@@ -3337,10 +3629,7 @@ query_tool-likely-broken() { ##? [--short-tool-id] [weeks=4]: Find tools that ha
 	EOF
 
 	# TODO: Fix this nonsense for proper args
-	tool_id="j.tool_id"
-	if [[ -n $arg_short_tool_id ]]; then
-		tool_id="regexp_replace(j.tool_id, '.*toolshed.*/repos/', '') as tool_id"
-	fi
+	tool_id="$(tool_id_expr "j.tool_id") as tool_id"
 
 	fields="tool_runs=1;percent_errored=2;percent_failed=3;count_errored=4;count_failed=5"
 	tags="tool_id=0;handler=6"
@@ -3381,7 +3670,7 @@ query_user-recent-aggregate-jobs() { ##? <user> [days=7]: Show aggregate informa
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			date_trunc('day', create_time), tool_id, state, count(*)
+			date_trunc('day', create_time), $(tool_id_expr tool_id) AS tool_id, state, count(*)
 		FROM
 			job
 		JOIN
@@ -3636,7 +3925,7 @@ query_history-runtime-system-by-tool() { ##? <history_id>: Sum of runtimes by al
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			job.tool_id,
+			$(tool_id_expr job.tool_id) AS tool_id,
 			(sum(job_metric_numeric.metric_value)::INT || 'seconds')::INTERVAL
 		FROM
 			job LEFT JOIN job_metric_numeric ON job.id = job_metric_numeric.job_id
@@ -3718,7 +4007,7 @@ query_queue-detail-by-handler() { ##? <handler_id>: List jobs for a specific han
 			id,
 			create_time,
 			state,
-			regexp_replace(tool_id, '.*toolshed.*/repos/', ''),
+			$(tool_id_expr tool_id) AS tool_id,
 			job_runner_name,
 			job_runner_external_id,
 			destination_id
@@ -4182,8 +4471,33 @@ query_pg-stat-user-tables() { ## : stats about tables (tuples, index scans, vacu
 	EOF
 }
 
-query_data-origin-distribution-merged() {
-	summary="$(summary_statistics data "$human")"
+query_data-origin-distribution-merged() { ##? [--human]: Per-user monthly total data volume (uploaded + derived merged)
+	meta <<-EOF
+		ADDED: 14
+	EOF
+	handle_help "$@" <<-EOF
+		Similar to "data-origin-distribution" but collapses both origins
+		(uploaded 'created' and tool 'derived') into a single 'total' bucket,
+		reporting the total data volume produced per user per month.
+
+		This is useful when you only care about overall throughput per user.
+
+		Recommendation is to run with GDPR_MODE so you can safely share this
+		information:
+
+		    GDPR_MODE=\$(openssl rand -hex 24 2>/dev/null) gxadmin tsvquery data-origin-distribution-merged | gzip > data-origin-merged.tsv.gz
+
+		Pass "--human" to pretty-print the byte counts (do not use "--human" with "iquery"):
+
+		$ gxadmin query data-origin-distribution-merged --human
+		  origin |   data    |       created        | galaxy_user
+		---------+-----------+----------------------+--------------
+		 total   | 13 GB     | 2019-07-01 00:00:00  | fff4f423d06
+		 total   | 61 GB     | 2019-08-01 00:00:00  | fff4f423d06
+		 total   | 180 GB    | 2019-04-01 00:00:00  | ffd28c0cf8c
+	EOF
+
+	summary="$(summary_statistics data "$arg_human")"
 	username=$(gdpr_safe job.user_id galaxy_user)
 
 	read -r -d '' QUERY <<-EOF
@@ -4393,7 +4707,7 @@ query_good-for-pulsar() { ## : Look for jobs EU would like to send to pulsar
 	read -r -d '' QUERY <<-EOF
 		WITH job_data AS (
 			SELECT
-				regexp_replace(j.tool_id, '.*toolshed.*/repos/', '') as tool_id,
+				$(tool_id_expr j.tool_id) as tool_id,
 				SUM(d.total_size) AS size,
 				MIN(jmn.metric_value) AS runtime,
 				SUM(d.total_size) / min(jmn.metric_value) AS score
@@ -4583,26 +4897,28 @@ query_dump-users() { ##? [--apikey] [--email] : Dump the list of users and their
 	EOF
 
 	if [[ -n "$arg_email"  ]]; then
-		email=",$(gdpr_safe email email)"
+		email=",$(gdpr_safe email u.email)"
 	else
 		email=""
 	fi
 
 	if [[ -n "$arg_apikey"  ]]; then
-		apikey="apikey"
-		apikeyjoin="left join api_keys "
+		apikey=",ak.key"
+		apikeyjoin="left join api_keys ak on ak.user_id = u.id"
 	else
-		email=""
+		apikey=""
+  		apikeyjoin=""
 	fi
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			username
+			u.username
 			$email
+   			$apikey
 		FROM
-			galaxy_user
+			galaxy_user u $apikeyjoin
 		ORDER BY
-		    id desc
+		    u.id desc
 	EOF
 }
 
@@ -4651,7 +4967,7 @@ query_job-metrics() { ## : Retrieves input size, runtime, memory for all execute
 
 		SELECT
 			job.id AS job_id,
-			job.tool_id,
+			$(tool_id_expr job.tool_id) AS tool_id,
 			job.state,
 			dataset_filesizes.total_filesize,
 			dataset_filesizes.num_files,
@@ -4891,6 +5207,59 @@ query_dataset-usage-and-imports() { ##? <dataset_uuid>: Fetch limited informatio
 	EOF
 }
 
+query_dataset-tool() { ##? <dataset_uuid>: Get the tool that produced a dataset, given its UUID.
+	meta <<-EOF
+		ADDED: 23
+	EOF
+	handle_help "$@" <<-EOF
+		Retrieve the tool_id and creation time of the job that produced a
+		dataset, looked up by the dataset's UUID. The <dataset_uuid> argument
+		can be given in any of the following formats:
+
+		  - the bare UUID as stored in the database (no dashes), e.g.
+		    4d333a8a27d64e1f9060acd06f34f5dd
+		  - the canonical UUID form with dashes, e.g.
+		    4d333a8a-27d6-4e1f-9060-acd06f34f5dd
+		  - the on-disk object store filename, e.g.
+		    dataset_4d333a8a-27d6-4e1f-9060-acd06f34f5dd.dat
+		    (or even a full path such as
+		    /data/galaxy/d/4/d/dataset_4d333a8a-27d6-4e1f-9060-acd06f34f5dd.dat)
+
+		The leading "dataset_" prefix and trailing ".dat" suffix (if present)
+		are stripped, as are any dashes, before the UUID is compared against
+		the database. Both the dashed (canonical) and undashed (stored) UUID
+		forms are returned in the output.
+
+		    $ gxadmin query dataset-tool 4d333a8a-27d6-4e1f-9060-acd06f34f5dd
+		                  uuid_dashed               |             uuid              |     tool_id      |        job_created
+		    --------------------------------------+------------------------------+------------------+----------------------------
+		     4d333a8a-27d6-4e1f-9060-acd06f34f5dd | 4d333a8a27d64e1f9060acd06f34f5dd | toolshed.g2.bx.psu.edu/repos/iuc/bowtie2/bowtie2/2.5.0+galaxy0 | 2026-04-25 10:36:44.902+00
+		    (1 row)
+
+		    $ gxadmin query dataset-tool dataset_4d333a8a-27d6-4e1f-9060-acd06f34f5dd.dat
+		     ... (same result as above) ...
+	EOF
+
+	# Strip any leading path and "dataset_" prefix, trailing ".dat", and dashes
+	# so the UUID matches the undashed form stored in the database.
+	cleaned_dataset_uuid=$(echo "$arg_dataset_uuid" | sed 's/.*dataset_//g;s/\.dat$//g;s/-//g')
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			REGEXP_REPLACE(d.uuid, '(........)(....)(....)(....)(............)', '\1-\2-\3-\4-\5') AS uuid_dashed,
+			d.uuid AS uuid,
+			j.tool_id AS tool_id,
+			j.create_time AS job_created
+		FROM
+			dataset d
+			JOIN history_dataset_association hda ON d.id = hda.dataset_id
+			LEFT JOIN job_to_output_dataset jtod ON hda.id = jtod.dataset_id
+			LEFT JOIN job j ON jtod.job_id = j.id
+		WHERE
+			d.uuid = '$cleaned_dataset_uuid'
+	EOF
+}
+
 query_dataset-count() { ##? [date] : Count the number of datasets.
 	meta <<-EOF
 		ADDED: 23
@@ -4963,11 +5332,11 @@ query_queue-details-drm() { ##? [--all] [--seconds] [--since-update]: Detailed o
 			job_data
 				AS (
 					SELECT
-						job.state as jobstate,
-						job.id as jobid,
-						job.job_runner_external_id as extid,
-						job.tool_id as toolid,
-						$username,
+					job.state as jobstate,
+					job.id as jobid,
+					job.job_runner_external_id as extid,
+					$(tool_id_expr job.tool_id) as toolid,
+					$username,
 						$nonpretty now() AT TIME ZONE 'UTC' - $time_column) as $time_column_name,
 						job.handler as handler,
 						(REGEXP_MATCHES(encode(job.destination_params, 'escape'), 'ntasks=(\d+)'))[1] as cpu_slurm,
@@ -5056,7 +5425,7 @@ query_jobs() { ##? [--tool=] [--destination=] [--limit=50] [--states=<comma,sep,
 				job.update_time::timestamp(0) as update_time,
 				job.user_id as user_id,
 				job.state as state,
-				job.tool_id as tool_id,
+				$(tool_id_expr job.tool_id) as tool_id,
 				job.handler as handler,
 				job.destination_id as destination,
 				job.job_runner_external_id as external_id
@@ -5286,7 +5655,7 @@ query_tpt-tool-cpu() { ##? [--startyear=<YYYY>] [--endyear=<YYYY>] [--formula=av
 				metric_name = 'cpuacct.usage'
 		)
 		SELECT
-			job.tool_id,
+			$(tool_id_expr job.tool_id) AS tool_id,
 			date_trunc('month', job.create_time) AS month,
 			cpu_usage.destination_id,
 			ROUND($sql_formula(cpu_usage.cpu_usage_seconds), 0) AS seconds
@@ -5337,7 +5706,7 @@ query_tpt-tool-users() { ##? [--startyear=<YYYY>] [--endyear=<YYYY>]: Start year
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			tool_id,
+			$(tool_id_expr tool_id) AS tool_id,
 			date_trunc('month', job.create_time AT TIME ZONE 'UTC') AS month,
 			COUNT(DISTINCT galaxy_user.username) AS count
 		FROM
@@ -5402,7 +5771,7 @@ query_tpt-tool-memory() { ##? [--startyear=<YYYY>] [--endyear=<YYYY>] [--formula
 				metric_name = 'memory.memsw.max_usage_in_bytes'
 		)
 		SELECT
-			tool_id,
+			$(tool_id_expr tool_id) AS tool_id,
 			date_trunc('month', job.create_time AT TIME ZONE 'UTC') AS month,
 			ROUND($sql_formula(metric_value) * 0.000000001, 0) AS consumed_gigabytes
 		FROM
@@ -5419,7 +5788,7 @@ query_tpt-tool-memory() { ##? [--startyear=<YYYY>] [--endyear=<YYYY>] [--formula
 	EOF
 }
 
-query_tools-usage-per-month() { ##? [--startmonth=<YYYY>-<MM>] [--endmonth=<YYYY>-<MM>] [--tools=<tool1,tool2,...>] [--short_tool_id] [--super_short_tool_id] [--no_version]: By default, startmonth is 1 year ago and end month is current month. tool1, tool2 etc. should correspond to the tool_id with the same format as requested: toolshed.g2.bx.psu.edu/repos/devteam/bowtie2/bowtie2/2.5.0+galaxy0,Cut1 for default, devteam/bowtie2/bowtie2/2.5.0+galaxy0,Cut1 for --short_tool_id, bowtie2/2.5.0+galaxy0,Cut1 for --super_short_tool_id etc...
+query_tools-usage-per-month() { ##? [--startmonth=<YYYY>-<MM>] [--endmonth=<YYYY>-<MM>] [--tools=<tool1,tool2,...>] [--no-version]: By default, startmonth is 1 year ago and end month is current month. tool1, tool2 etc. should correspond to the tool_id with the same format as requested (respecting GXADMIN_TOOL_ID_FORMAT): toolshed.g2.bx.psu.edu/repos/devteam/bowtie2/bowtie2/2.5.0+galaxy0,Cut1 for full, devteam/bowtie2/bowtie2/2.5.0+galaxy0,Cut1 for short, bowtie2/2.5.0+galaxy0,Cut1 for tool_short etc...
 	meta <<-EOF
 		AUTHORS: lldelisle
 		ADDED: 22
@@ -5428,7 +5797,7 @@ query_tools-usage-per-month() { ##? [--startmonth=<YYYY>-<MM>] [--endmonth=<YYYY
 	handle_help "$@" <<-EOF
 		Tools Usage Tracking: cpu-hours and nb_users by Month-Year.
 
-		    $ gxadmin query tools-usage-per-month --super_short_tool_id --no_version --tools bowtie2,Cut1 --startmonth=2023-03 --endmonth 2023-08
+		    $ GXADMIN_TOOL_ID_FORMAT=tool_short gxadmin query tools-usage-per-month --no-version --tools bowtie2,Cut1 --startmonth=2023-03 --endmonth 2023-08
 			   month    | cpu_hours | tool_id | nb_users
 			------------+-----------+---------+----------
 			 2023-08-01 |    796.15 | bowtie2 |        2
@@ -5454,13 +5823,7 @@ query_tools-usage-per-month() { ##? [--startmonth=<YYYY>-<MM>] [--endmonth=<YYYY
 	if [[ -n $arg_endmonth ]]; then
 		filter_by_time_period="$filter_by_time_period AND date_trunc('month', job.create_time AT TIME ZONE 'UTC') <= '$arg_endmonth-01'::date"
 	fi
-	tool_id="job.tool_id"
-	if [[ -n $arg_short_tool_id ]]; then
-		tool_id="regexp_replace(job.tool_id, '.*toolshed.*/repos/', '')"
-	fi
-	if [[ -n $arg_super_short_tool_id ]]; then
-		tool_id="regexp_replace(job.tool_id, '.*toolshed.*/repos/[^/]*/[^/]*/', '')"
-	fi
+	tool_id=$(tool_id_expr "job.tool_id")
 
 	if [[ -n $arg_no_version ]]; then
 		tool_id="regexp_replace(${tool_id}::TEXT, '/[0-9.a-z+-]+$', '')"
@@ -5564,7 +5927,7 @@ query_archivable-histories() { ##? [--user-last-active=360] [--history-last-acti
 	EOF
 }
 
-query_tools-usage() { ##? [year] [--tools=<tool1,tool2,...>] [--short_tool_id] [--super_short_tool_id] [--no_version]: tool1, tool2 etc. should correspond to the tool_id with the same format as requested: toolshed.g2.bx.psu.edu/repos/devteam/bowtie2/bowtie2/2.5.0+galaxy0,Cut1 for default, devteam/bowtie2/bowtie2/2.5.0+galaxy0,Cut1 for --short_tool_id, bowtie2/2.5.0+galaxy0,Cut1 for --super_short_tool_id etc...
+query_tools-usage() { ##? [year] [--tools=<tool1,tool2,...>] [--no-version]: tool1, tool2 etc. should correspond to the tool_id with the same format as requested (respecting GXADMIN_TOOL_ID_FORMAT): toolshed.g2.bx.psu.edu/repos/devteam/bowtie2/bowtie2/2.5.0+galaxy0,Cut1 for full, devteam/bowtie2/bowtie2/2.5.0+galaxy0,Cut1 for short, bowtie2/2.5.0+galaxy0,Cut1 for tool_short etc...
 	meta <<-EOF
 		AUTHORS: lldelisle
 		ADDED: 23
@@ -5572,7 +5935,7 @@ query_tools-usage() { ##? [year] [--tools=<tool1,tool2,...>] [--short_tool_id] [
 	handle_help "$@" <<-EOF
 		Tools Usage Tracking: cpu-hours, cpu-years and nb_users for specific tools (optionally in a given year).
 
-		    $ gxadmin query tools-usage --super_short_tool_id --no_version --tools bowtie2,Cut1 2023
+		    $ GXADMIN_TOOL_ID_FORMAT=tool_short gxadmin query tools-usage --no-version --tools bowtie2,Cut1 2023
 			 cpu_hours | cpu_years | tool_id | nb_users
 			-----------+-----------+---------+----------
 			   4631.91 |      0.53 | bowtie2 |        7
@@ -5582,13 +5945,7 @@ query_tools-usage() { ##? [year] [--tools=<tool1,tool2,...>] [--short_tool_id] [
 	if [[ -n $arg_year ]]; then
 	    filter_by_year="AND date_trunc('year', job.create_time AT TIME ZONE 'UTC') = '$arg_year-01-01'::date"
 	fi
-	tool_id="job.tool_id"
-	if [[ -n $arg_short_tool_id ]]; then
-		tool_id="regexp_replace(job.tool_id, '.*toolshed.*/repos/', '')"
-	fi
-	if [[ -n $arg_super_short_tool_id ]]; then
-		tool_id="regexp_replace(job.tool_id, '.*toolshed.*/repos/[^/]*/[^/]*/', '')"
-	fi
+	tool_id=$(tool_id_expr "job.tool_id")
 
 	if [[ -n $arg_no_version ]]; then
 		tool_id="regexp_replace(${tool_id}::TEXT, '/[0-9.a-z+-]+$', '')"
@@ -5679,7 +6036,7 @@ query_tool-memory-efficiency() { ##? [--newer-than=2592000] [--min-job-count=5] 
 			AND j.state = 'ok'
 		)
 		SELECT
-		    tool_id,
+		    $(tool_id_expr tool_id) AS tool_id,
 		    COUNT(*) AS run_count,
 		    ROUND((SUM(runtime) / POW(60, 2))::numeric, 2) AS total_runtime_hrs,
 		    ROUND((AVG(mem_used) / POW(1024, 3))::numeric, 2) AS avg_mem_used_gb,
@@ -5697,5 +6054,275 @@ query_tool-memory-efficiency() { ##? [--newer-than=2592000] [--min-job-count=5] 
 		    COUNT(tool_id) > $arg_min_job_count
 		ORDER BY
 		    avg_mem_percent DESC
+	EOF
+}
+
+query_tool-resource-usage() { ##? [--limit=20] [--newer-than=30d] [--order-by=core] [--ok] [--no-version]: Top N tools by aggregate CPU, memory and runtime footprint
+	meta <<-EOF
+		AUTHORS: mvdbeek
+		ADDED: 24
+	EOF
+	handle_help "$@" <<-EOF
+		Ranks tools by their total resource footprint over a recent time window, to
+		find the tools that consume the most of your compute.
+
+		    $ gxadmin query tool-resource-usage --limit=5 --order-by=cpu
+		         tool_id       | jobs | runtime_hrs | core_hrs | cpu_hrs | cpu_eff_pct | mem_alloc_gb_hrs | avg_mem_gb | max_mem_gb | mem_eff_pct
+		    -------------------+------+-------------+----------+---------+-------------+------------------+------------+------------+-------------
+		     rna_star/2.7.11a  | 1823 |      2211.4 |  35382.4 | 19841.2 |        56.1 |         141529.6 |      31.20 |      61.95 |        48.7
+		     bwa_mem2/2.2.1    | 2402 |      1612.0 |  25792.0 | 18213.9 |        70.6 |          96720.0 |      29.04 |      57.12 |        48.4
+		     kraken2/2.1.3     | 5112 |       690.2 |   5521.6 |  1530.8 |        27.7 |          88345.6 |      78.03 |      84.82 |        91.5
+		     fastqc/0.74       | 9851 |       812.9 |   1625.8 |   905.3 |        55.7 |           6503.2 |       0.81 |       3.91 |        10.1
+		     trim_galore/0.6.7 | 4327 |       701.6 |   2806.4 |   702.4 |        25.0 |          12979.6 |       1.12 |       9.30 |         6.0
+
+		Columns:
+
+		- runtime_hrs: wall-clock hours (runtime_seconds)
+		- core_hrs: allocated core hours (runtime_seconds * galaxy_slots, 1 slot if unset)
+		- cpu_hrs: consumed CPU hours, from cgroups (cpu.stat.usage_usec or cpuacct.usage)
+		- cpu_eff_pct: cpu_hrs as a percentage of the core hours of the jobs counted in cpu_hrs
+		- mem_alloc_gb_hrs: allocated memory integrated over runtime (galaxy_memory_mb * runtime_seconds)
+		- avg_mem_gb/max_mem_gb: peak memory per job, from cgroups (memory.peak, memory.memsw.max_usage_in_bytes or memory.max_usage_in_bytes)
+		- mem_eff_pct: runtime-weighted peak memory as a percentage of allocated memory
+
+		runtime_hrs and core_hrs only need the core job metrics plugin. The cpu_* and
+		*_mem_* columns are empty unless the cgroup job metrics plugin is enabled.
+		mem_alloc_gb_hrs needs GALAXY_MEMORY_MB to be set for jobs.
+
+		CPU values more than twice the allocated core time (runtime_seconds * galaxy_slots)
+		are ignored. Some clusters record a shared, node-level cgroup counter instead of the
+		job's own, which would otherwise dominate the totals.
+
+		core_hrs counts every job, but cpu_hrs only counts jobs with a usable cgroup CPU
+		value. When some jobs have no cgroup data, or their CPU value was ignored,
+		cpu_hrs / core_hrs is therefore lower than cpu_eff_pct, which only compares
+		against the core hours of the jobs in cpu_hrs.
+
+		Only jobs updated within '--newer-than' are considered (default: 30d). This takes a
+		PostgreSQL interval, e.g. 7d, 6mon or 1y. All states are included by default, since
+		failed jobs consume resources too; use '--ok' to only count successful jobs.
+
+		'--order-by' is one of:
+
+		- jobs:    number of jobs
+		- runtime: runtime_hrs
+		- core:    core_hrs (default)
+		- cpu:     cpu_hrs
+		- mem:     mem_alloc_gb_hrs
+		- peak:    max_mem_gb
+
+		'--no-version' aggregates all versions of a tool together.
+	EOF
+
+	case "$arg_order_by" in
+		jobs)    order_col="jobs" ;;
+		runtime) order_col=runtime_hrs ;;
+		core)    order_col=core_hrs ;;
+		cpu)     order_col=cpu_hrs ;;
+		mem)     order_col=mem_alloc_gb_hrs ;;
+		peak)    order_col=max_mem_gb ;;
+		*)       error "Unknown --order-by '$arg_order_by', must be one of jobs, runtime, core, cpu, mem, peak"; exit 1 ;;
+	esac
+
+	tool_id="job.tool_id"
+	if [[ -n $arg_no_version ]]; then
+		tool_id="regexp_replace(${tool_id}::TEXT, '/[0-9.a-z+-]+$', '')"
+	fi
+
+	state_filter=
+	if [[ -n $arg_ok ]]; then
+		state_filter="AND job.state = 'ok'"
+	fi
+
+	fields="jobs=1;runtime_hrs=2;core_hrs=3;cpu_hrs=4;cpu_eff_pct=5;mem_alloc_gb_hrs=6;avg_mem_gb=7;max_mem_gb=8;mem_eff_pct=9"
+	tags="tool_id=0"
+
+	read -r -d '' QUERY <<-EOF
+		WITH jobs AS (
+			SELECT job.id, $tool_id AS tool_id
+			FROM job
+			WHERE
+				job.update_time > timezone('UTC', now()) - '$arg_newer_than'::INTERVAL
+				$state_filter
+		),
+		raw_metrics AS (
+			SELECT
+				jobs.tool_id,
+				max(m.metric_value) FILTER (WHERE m.metric_name = 'runtime_seconds') AS runtime,
+				max(m.metric_value) FILTER (WHERE m.metric_name = 'galaxy_slots') AS slots,
+				max(m.metric_value) FILTER (WHERE m.metric_name = 'galaxy_memory_mb') * 1048576.0 AS mem_allocated,
+				max(m.metric_value) FILTER (WHERE m.metric_name IN ('memory.peak', 'memory.memsw.max_usage_in_bytes', 'memory.max_usage_in_bytes')) AS mem_used,
+				coalesce(
+					max(m.metric_value) FILTER (WHERE m.metric_name = 'cpu.stat.usage_usec') / 1000000.0,
+					max(m.metric_value) FILTER (WHERE m.metric_name = 'cpuacct.usage') / 1000000000.0
+				) AS cpu_seconds
+			FROM jobs
+			JOIN job_metric_numeric m ON m.job_id = jobs.id
+			WHERE m.metric_name IN (
+				'runtime_seconds', 'galaxy_slots', 'galaxy_memory_mb',
+				'memory.peak', 'memory.memsw.max_usage_in_bytes', 'memory.max_usage_in_bytes',
+				'cpu.stat.usage_usec', 'cpuacct.usage'
+			)
+			GROUP BY jobs.id, jobs.tool_id
+		),
+		job_metrics AS (
+			SELECT
+				tool_id, runtime, mem_allocated, mem_used,
+				runtime * coalesce(slots, 1) AS core_seconds,
+				CASE WHEN cpu_seconds <= runtime * coalesce(slots, 1) * 2 THEN cpu_seconds END AS cpu_seconds
+			FROM raw_metrics
+		)
+		SELECT
+			$(tool_id_expr job_metrics.tool_id) AS tool_id,
+			count(*) AS jobs,
+			round(sum(runtime) / 3600, 1) AS runtime_hrs,
+			round(sum(core_seconds) / 3600, 1) AS core_hrs,
+			round(sum(cpu_seconds) / 3600, 1) AS cpu_hrs,
+			round(100 * sum(cpu_seconds) / nullif(sum(core_seconds) FILTER (WHERE cpu_seconds IS NOT NULL), 0), 1) AS cpu_eff_pct,
+			round(sum(mem_allocated * runtime) / 1073741824.0 / 3600, 1) AS mem_alloc_gb_hrs,
+			round(avg(mem_used) / 1073741824.0, 2) AS avg_mem_gb,
+			round(max(mem_used) / 1073741824.0, 2) AS max_mem_gb,
+			round(100 * sum(mem_used * runtime) / nullif(sum(mem_allocated * runtime) FILTER (WHERE mem_used IS NOT NULL), 0), 1) AS mem_eff_pct
+		FROM job_metrics
+		WHERE runtime IS NOT NULL
+		GROUP BY job_metrics.tool_id
+		ORDER BY $order_col DESC NULLS LAST
+		LIMIT $arg_limit
+	EOF
+}
+
+query_user-info() { ## <-|user [user [...]]> : Retrieve information about users given some user identifiers (id, username or email)
+	handle_help "$@" <<-EOF
+		Get user info for one or more user id/username/email
+
+		$gxadmin query user-info roosta arthur-dent
+		 username    |  id  |               email           |          create_time          | active | deleted | purged | disk_usage
+		-------------+------+-------------------------------+-------------------------------+--------+---------+--------+------------
+		 roosta      |  409 | roosta2000@unimelb.edu.au     | 2016-08-22 06:16:17.377211+00 | t      | f       | f      | 102 GB
+		 authur-dent | 5948 | arthur.dent725@unimelb.edu.au | 2019-12-08 22:59:10.536365+00 | t      | f       | f      | 569 GB
+	EOF
+
+	assert_count_ge $# 1 "No users specified"
+
+	if [[ "$1" == "-" ]]; then
+		# read jobs from stdin
+		users=$(cat | paste -s -d' ')
+	else
+		# read from $@
+		users=$*;
+	fi
+
+	# shellcheck disable=SC2068
+	users_string=$(join_by "','" ${users[@]})
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			id, username, email, create_time AT TIME ZONE 'UTC' as create_time, active, deleted, purged, pg_size_pretty(disk_usage) as disk_usage
+		FROM
+			galaxy_user
+		WHERE
+			(galaxy_user.email in ('$users_string') or galaxy_user.username in ('$users_string') or galaxy_user.id::text in ('$users_string'))
+	EOF
+}
+
+query_live-tuples() { ##? [--no-analyzed-only] [table]: Estimate table row counts using the n_live_tup stat
+	meta <<-EOF
+		AUTHORS: natefoo
+		ADDED: 23
+	EOF
+	handle_help "$@" <<-EOF
+		Query the 'n_live_tup' value from pg_stat_user_tables as an estimate of total row count in the table.
+
+		NOTE: This will not be accurate if the table has not been analyzed since the last time PostgreSQL was
+		started. The 'gxadmin mutate analyze-unanalyzed-tables' function can be run to ensure all tables are
+		analyzed.
+
+		$gxadmin query live-tuples | head
+		                            relname                             | n_live_tup
+		----------------------------------------------------------------+------------
+		 alembic_version                                                |          1
+		 api_keys                                                       |       4242
+		 celery_user_rate_limit                                         |          0
+		 chat_exchange                                                  |        128
+		 chat_exchange_message                                          |        132
+		 cleanup_event                                                  |        100
+		 cleanup_event_dataset_association                              |       1251
+		 cleanup_event_hda_association                                  |       2898
+
+		By default, only analyzed tables will be included in the output. All tables can be included using
+		'--no-analyzed-only'. The value for a single table can be obtained with the optional 'table' argument.
+	EOF
+
+	fields="count=1"
+	tags="table_name=0"
+
+	analyze_null_string="AND (last_analyze IS NOT NULL OR last_autoanalyze IS NOT NULL)"
+	if [[ -n $arg_no_analyzed_only ]]; then
+		analyze_null_string=
+	fi
+
+	table_clause=
+	if [[ -n $arg_table ]]; then
+		table_clause="AND relname = '$arg_table'"
+	fi
+
+	read -r -d '' QUERY <<-EOF
+		SELECT
+			relname,
+			n_live_tup
+		FROM
+			pg_stat_user_tables
+		WHERE
+			schemaname = 'public'
+			$analyze_null_string
+			$table_clause
+		ORDER BY
+			relname
+	EOF
+}
+
+query_history-exports() { ##? [--limit=50] [--user=] [--min_history_size=] : List history exports ordered by most recent.
+	handle_help "$@" <<-EOF
+		Show most recent history export tasks from the store_export_association table.
+		There are optional filters --user (ID/username/email) and --min_history_size (GB) and an optional --limit for number of rows returned (default 50).
+		Note that total_size is the undeleted size of the history: what was included in the export might be smaller than this.
+
+		$ gxadmin query history-exports --min_history_size=10 --user=jarvis
+		  id  |     create_time     |            task_uuid             | history_id | user_id | total_size |                  result_data
+		------+---------------------+----------------------------------+------------+---------+------------+-----------------------------------------------
+		 3275 | 2026-03-15 10:27:25 | 5557cfe535c34c959baa7e7fa4ecddc6 |    2800101 |   12345 | 149 GB     | {"uri": null, "error": null, "success": true}
+		 3274 | 2026-03-14 05:13:12 | 555611b2b02d4ec59a9246b73bbdda15 |    2840202 |   12345 | 11 GB      | {"uri": null, "error": null, "success": true}
+		 3273 | 2026-03-14 04:08:40 | 555c6a5a7eb44836a1c8a705bcfa7714 |    2790303 |   12345 | 279 GB     | {"uri": null, "error": null, "success": true}
+		(3 rows)
+	EOF
+
+	if [[ -n "$arg_user" ]]; then
+		user_filter=" AND $(get_user_filter "$arg_user")"
+	fi
+	if [[ -n "$arg_min_history_size" ]]; then
+		min_history_size_filter=" AND (SELECT SUM(COALESCE(d.total_size, d.file_size, 0)) FROM history_dataset_association hda, dataset d WHERE hda.dataset_id = d.id AND hda.history_id = history.id) >= $(echo "$arg_min_history_size*1024*1024*1024" | bc)"
+	fi
+
+	read -r -d '' QUERY <<-EOF
+			SELECT
+			  store_export_association.id as id,
+			  store_export_association.create_time::timestamp(0) as create_time,
+			  store_export_association.task_uuid as task_uuid,
+			  store_export_association.object_id as history_id,
+			  galaxy_user.id as user_id,
+			  (
+				SELECT
+				  pg_size_pretty(SUM(COALESCE(d.total_size, d.file_size, 0)))
+				  FROM history_dataset_association hda, dataset d
+				  WHERE hda.dataset_id = d.id
+				  AND hda.history_id = history.id
+			  ) as total_size,
+			((CONVERT_FROM(store_export_association.export_metadata, 'UTF8')::jsonb #>> '{}')::jsonb -> 'result_data') as result_data
+			FROM store_export_association
+			LEFT JOIN history ON history.id = store_export_association.object_id
+			LEFT JOIN galaxy_user ON galaxy_user.id = history.user_id
+			WHERE store_export_association.object_type = 'history' $user_filter ${min_history_size_filter}
+			ORDER BY store_export_association.create_time desc
+			LIMIT $arg_limit
 	EOF
 }

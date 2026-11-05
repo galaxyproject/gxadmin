@@ -3,7 +3,7 @@ _cluster_short_help="WIP"
 
 
 cluster_slurm-stats() { ## : Collect stats on slurm
-	meta <-EOF
+	meta <<-EOF
 		ADDED: 17
 	EOF
 	handle_help "$@" <<-EOF

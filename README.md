@@ -12,19 +12,6 @@ but you can also easily add more to your installation with local functions. gxad
 attempts to be a very readable bash script and avoids using fancy new bash
 features.
 
-Subcommand | Functions
-----       | ---
-query      | 104
-server     | 22
-mutate     | 22
-meta       | 12
-galaxy     | 12
-report     | 5
-filter     | 3
-config     | 2
-cluster    | 1
-
-
 This script **requires a postgres database** and has **no** plans to support
 mysql or sqlite3.
 
@@ -103,6 +90,36 @@ Variable | Example Value
 `GALAXY_MUTABLE_CONFIG_DIR` |  `/srv/galaxy/var/`
 `GALAXY_ROOT` | `/srv/galaxy/server/` 
 `VIRTUAL_ENV` | `/srv/galaxy/venv/` 
+`GXADMIN_TOOL_ID_FORMAT` | `tool_short`
+
+
+### Tool ID display
+
+Tool IDs stored in the Galaxy database are long, e.g.
+`toolshed.g2.bx.psu.edu/repos/genouest/helixer/helixer/0.3.6+galaxy0`, which
+wastes screen space in wide tables. Set `GXADMIN_TOOL_ID_FORMAT` to shorten
+them consistently across all display queries:
+
+Value | Example output
+--- | ---
+`full` (default) | `toolshed.g2.bx.psu.edu/repos/genouest/helixer/helixer/0.3.6+galaxy0`
+`short` | `genouest/helixer/helixer/0.3.6+galaxy0`
+`owner_short` | `genouest/helixer/0.3.6+galaxy0`
+`tool_short` | `helixer/0.3.6+galaxy0`
+
+(`super_short` is accepted as a deprecated alias for `tool_short`.)
+
+```bash
+export GXADMIN_TOOL_ID_FORMAT=tool_short
+gxadmin query queue
+```
+
+Set it permanently in your shell or in `~/.config/gxadmin-local.sh`.
+
+Note: when using `--tools=` filters (in `tools-usage` / `tools-usage-per-month`),
+supply the tool IDs in the same form as the chosen format. Export-oriented
+queries (e.g. the `server workflow-trace-archive-*` commands) always emit the
+full tool ID so downstream consumers are unaffected.
 
 
 ### GDPR
