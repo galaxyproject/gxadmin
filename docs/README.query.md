@@ -144,7 +144,35 @@ query aq -  Given a list of IDs from a table (e.g. 'job'), access a specific col
 
 **SYNOPSIS**
 
-    gxadmin query aq <table> <column> <-|job_id [job_id [...]]>
+    gxadmin query aq [--escape] <table> <column> <-|job_id [job_id [...]]>
+
+**NOTES**
+
+Select a column from a table matching the given id(s).
+
+The --escape option can be used to convert data stored in the escape format, such as the job destination
+parameters:
+
+    $ gxadmin query aq --escape job destination_params 42 43
+                                                 encode
+    ------------------------------------------------------------------------------------------------
+     {"embed_metadata_in_job": false, "require_container": true, "singularity_enabled": true}
+     {"native_specification": "--partition=normal --nodes=1 --ntasks=2 --mem=8192 --time=24:00:00"}
+    (2 rows)
+
+This is particularly useful to combine with 'rawquery' and jq:
+
+    $ gxadmin rawquery aq --escape job destination_params 42 43 | jq -s
+    [
+      {
+        "embed_metadata_in_job": false,
+        "require_container": true,
+        "singularity_enabled": true
+      },
+      {
+        "native_specification": "--partition=normal --nodes=1 --ntasks=2 --mem=8192 --time=24:00:00"
+      }
+    ]
 
 
 ## query archivable-histories
@@ -848,14 +876,6 @@ Dump runtime stats for ALL jobs:
     996     | circos                               | ok      |         588747 |         6 |      48.0000000 | 1.0000000 |              | 2020-04-30 11:21:51.49684
     997     | circos                               | ok      |         588747 |         6 |      46.0000000 | 1.0000000 |              | 2020-04-30 11:23:52.455536
 
-Metrics are selected by plugin and name. Identical non-null duplicates count
-once; conflicting duplicates or any null observation leave the value unknown.
-memory_bytes is the observed memory-only peak: cgroup v1 memory.max_usage_in_bytes
-or v2 memory.peak. Memory-plus-swap is not substituted. If both names are
-present, the value is unknown. Cgroup values require deployment-specific
-validation before being interpreted as trustworthy per-job consumption.
-Input sizes/counts cover ordinary HDA input associations with known file_size;
-repeated associations count repeatedly. Library and collection traversal is not included.
 
 **WARNING**
 
@@ -1326,14 +1346,7 @@ query monthly-cpu-stats -  CPU years/hours allocated to tools by month (+ nb of 
 
 This uses the galaxy_slots and runtime_seconds metrics in order to
 calculate allocated CPU years/hours. This will not be the value of what is
-actually consumed by your jobs. Cgroup measurements require validation of units
-and per-job scope. It can also display the number of users that ran jobs.
-You can also filter for email domain.
-
-Only core-plugin metrics are used. Identical non-null duplicates count once;
-conflicting or null observations leave that job's allocation unknown. Missing
-values are not replaced with defaults. These commands do not establish compute
-eligibility or collection coverage for a public indicator.
+actually consumed by your jobs, you should use cgroups. It can also display the number of users that ran jobs. You can also filter for email domain.
 
     $ gxadmin query monthly-cpu-stats --nb-users --filter-email epfl.ch 2022
    month    | cpu_years | cpu_hours | nb_users
@@ -1368,13 +1381,7 @@ query monthly-cpu-years -  CPU years allocated to tools by month
 
 This uses the galaxy_slots and runtime_seconds metrics in order to
 calculate allocated CPU years. This will not be the value of what is
-actually consumed by your jobs. Cgroup measurements require validation of units
-and per-job scope.
-
-Only core-plugin metrics are used. Identical non-null duplicates count once;
-conflicting or null observations leave that job's allocation unknown. Missing
-values are not replaced with defaults. These commands do not establish compute
-eligibility or collection coverage for a public indicator.
+actually consumed by your jobs, you should use cgroups.
 
     $ gxadmin query monthly-cpu-years
         month   | cpu_years
@@ -2291,11 +2298,6 @@ granted too large of an allocation. It requires that your jobs run in isolated L
 commonly configured for Slurm) that accurately report memory usage in memory.peak (cgroupsv2) or
 memory.max_usage_in_bytes (cgroupsv1) and you have enabled the Galaxy cgroups job metrics plugin.
 
-Memory-plus-swap is not a memory-only peak and is excluded. Core metrics use
-the core plugin; memory peaks use cgroup. Identical non-null duplicates count
-once; conflicts, null observations, or both peak names leave the value unknown.
-These rules do not validate cgroup isolation or measurement units for a site.
-
     $ gxadmin query tool-memory-efficiency
            tool_id       | run_count | total_runtime_hrs | avg_mem_used_gb | avg_mem_allocated_gb | avg_mem_percent
     ---------------------+-----------+-------------------+-----------------+----------------------+-----------------
@@ -2336,11 +2338,6 @@ query tool-memory-per-inputs -  See memory usage and inout size data
 
 Display details about tool input counts and sizes along with memory usage and the relation between them,
 to aid in determining appropriate memory allocations for tools.
-Memory uses the cgroup memory-only peak (v1 memory.max_usage_in_bytes or v2
-memory.peak), excluding memory-plus-swap. Identical non-null duplicates count
-once. Conflicts, null observations or both peak names leave memory unknown;
-jobs without usable memory are omitted. Per-job scope and units still require
-site validation.
 
     $ gxadmin query tool-memory-per-inputs %/unicycler/% --like
         id    |                           tool_id                            | input_count | total_input_size_mb | mean_input_size_mb | median_input_size_mb | memory_used_mb | memory_used_per_input_mb | memory_mean_input_ratio | memory_median_input_ratio
@@ -2494,21 +2491,12 @@ find the tools that consume the most of your compute.
 Columns:
 
 - runtime_hrs: wall-clock hours (runtime_seconds)
-- core_hrs: allocated core hours (runtime_seconds * galaxy_slots)
+- core_hrs: allocated core hours (runtime_seconds * galaxy_slots, 1 slot if unset)
 - cpu_hrs: consumed CPU hours, from cgroups (cpu.stat.usage_usec or cpuacct.usage)
 - cpu_eff_pct: cpu_hrs as a percentage of the core hours of the jobs counted in cpu_hrs
 - mem_alloc_gb_hrs: allocated memory integrated over runtime (galaxy_memory_mb * runtime_seconds)
 - avg_mem_gb/max_mem_gb: peak memory per job, from cgroups (memory.peak or memory.max_usage_in_bytes; excludes memory-plus-swap)
 - mem_eff_pct: runtime-weighted peak memory as a percentage of allocated memory
-
-Metrics are selected by plugin and name (core allocations/runtime, cgroup usage).
-Identical non-null duplicates count once. Conflicts or null observations leave
-the metric unknown. Missing slots are not replaced with one. If both cgroup v1
-and v2 names for a quantity are present, that quantity remains unknown.
-
-CPU conversions use the nominal cgroup units (v1 nanoseconds, v2 microseconds).
-They are diagnostic estimates: actual units and per-job scope require site
-validation. The cutoff below does not establish measurement trust.
 
 runtime_hrs and core_hrs only need the core job metrics plugin. The cpu_* and
 *_mem_* columns are empty unless the cgroup job metrics plugin is enabled.
@@ -2518,7 +2506,7 @@ CPU values more than twice the allocated core time (runtime_seconds * galaxy_slo
 are ignored. Some clusters record a shared, node-level cgroup counter instead of the
 job's own, which would otherwise dominate the totals.
 
-core_hrs counts jobs with usable runtime and slots, but cpu_hrs only counts jobs with a usable cgroup CPU
+core_hrs counts jobs with recorded runtime (assuming one slot if unset), but cpu_hrs only counts jobs with a usable cgroup CPU
 value. When some jobs have no cgroup data, or their CPU value was ignored,
 cpu_hrs / core_hrs is therefore lower than cpu_eff_pct, which only compares
 against the core hours of the jobs in cpu_hrs.

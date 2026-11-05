@@ -26,9 +26,6 @@ test: ## Run shellcheck and the bats test suite
 	shellcheck --severity error .tmpgxadmin
 	@rm -f .tmpgxadmin
 
-test-metrics: gxadmin ## Run PostgreSQL-backed metric query regression checks
-	./test/metric-queries.sh
-
 shellcheck: gxadmin ## Run shellcheck on the assembled gxadmin script
 	@# SC2001 - stylistic, no thank you!
 	@# SC2119 - literally no clue
@@ -46,7 +43,7 @@ shellcheck-parts: ## Run shellcheck on the individual parts/*.sh files
 	@# SC2034 - unnecessary due to split
 	shellcheck -s bash -f gcc --exclude SC2001,SC2120,SC2119,SC2129,SC2044,SC2154,SC2034 parts/[023456789]*
 
-.PHONY: help test test-metrics shellcheck shellcheck-parts docs
+.PHONY: help test shellcheck shellcheck-parts docs
 
 RESULTS := $(wildcard .asv/results/*) $(wildcard .asv/results/*/*)
 

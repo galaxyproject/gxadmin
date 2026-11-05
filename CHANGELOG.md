@@ -1,8 +1,15 @@
 # 25-pre
 
+- Added:
+	- query aq to add --escape option to encode bytea columns to ASCII from @natefoo
+- Updated:
+	- query tool-memory-efficiency, evaluates the memory efficiency of recent jobs from @natefoo
+	- Return query results in raw (unaligned, tuples-only) format with 'rawquery' from @natefoo
+
 - Fixed:
-	- query job-metrics, monthly-cpu-stats, monthly-cpu-years, tool-memory-per-inputs, tool-memory-efficiency and tool-resource-usage: select plugin-qualified metrics, collapse identical duplicates, leave conflicts/nulls unknown, and keep memory-only peaks separate from memory-plus-swap
-	- query tool-resource-usage: leave missing slots and mixed cgroup v1/v2 CPU observations unknown; compare memory efficiency over matched observations, and document nominal CPU conversions as diagnostic estimates
+	- query monthly-cpu-stats and monthly-cpu-years: select runtime and slots from the core plugin
+	- query job-metrics, tool-memory-per-inputs, tool-memory-efficiency and tool-resource-usage: select plugin-qualified metrics and use memory-only peaks instead of memory-plus-swap
+	- query tool-resource-usage: compare memory efficiency over jobs with usable memory allocations
 	- query job-metrics: resolve input HDA IDs through history_dataset_association before looking up dataset sizes
 
 # 24
@@ -31,9 +38,9 @@ Specific commands:
 	- query workflow-invocation-info: information about a specific workflow invocation (user, workflow, history with link)
 	- query dataset-tool: get the tool_id and job creation time for a dataset given its UUID (accepts bare, dashed, or dataset_<uuid>.dat filename forms)
 	- query tools-usage (like tools-usage-per-month but for a year or for whole history) by @lldelisle
+- Updated:
 	- query longest-running-jobs-by-destination from @TomasVondrak and @sanjaysrikakulam
 	- query most-used-tools-by-destination from @TomasVondrak and @sanjaysrikakulam
-- Updated:
 	- query job-state, job-history, job-inputs, job-outputs now accept either a numeric or a Galaxy-encoded ("encrypted") job ID via the new resolve_id helper
 - Fixed:
 	- query job-state now casts the supplied id to bigint to guard against non-numeric input

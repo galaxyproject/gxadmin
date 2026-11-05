@@ -16,6 +16,10 @@ query_tbl_wrapper() {
 	fi
 }
 
+query_raw() {
+	psql -At <<< "$1"
+}
+
 query_tsv() {
 	psql <<-EOF
 	COPY ($1) to STDOUT with CSV DELIMITER E'\t'
@@ -85,7 +89,7 @@ query_exp_pub() {
 		echo "Aborting"
 		exit 1;
 	fi
-	
+
 	resp=$(curl --silent 'https://explain.dalibo.com/new.json' \
 		-X POST \
 		-H 'User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:123.0) Gecko/20100101 Firefox/123.0' \
@@ -271,20 +275,4 @@ resolve_id() {
 		exit 1
 	fi
 	echo "$decoded"
-}
-
-# Internal SQL builder: arguments are trusted SQL expressions/literals supplied by
-# query functions, never command-line values. Multiple names are alternatives
-# for the same quantity, not values to combine or choose between.
-metric_scalar() {
-	cat <<-EOF
-		(SELECT CASE
-			WHEN count(DISTINCT metric_name) = 1
-				AND count(*) = count(metric_value)
-				AND min(metric_value) = max(metric_value)
-			THEN min(metric_value)
-		END
-		FROM job_metric_numeric
-		WHERE job_id = $1 AND plugin = '$2' AND metric_name IN ($3))
-	EOF
 }
