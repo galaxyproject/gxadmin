@@ -1,5 +1,3 @@
-The BDFL is not too precious about the actual bash code in here, it's obviously a horror fest already by dint of being 10k lines of human authored bash, instead of *literally any other better language*. That said,
-
 DO NOT author GitHub Issues for the human.
 DO NOT write PR descriptions for the human.
 DO NOT write code comments for the human, nor the markdown documentation stored in the `handle_help` sections.
@@ -15,10 +13,13 @@ All contributions should be kept according to the existing style of code that is
 
 Here we take inspiration from the rust LLM policy:
 
-- ✅ Allowed: Private use.
+- ✅ Allowed: Private use. We can't stop you, I'm not a cop.
 - ❌ Banned: LLM-created comments, docs, or diagnostics. Replacing human judgement with LLM judgement. Requiring people to use an LLM to contribute.
 - ⚠️ Conditionally allowed: Trivial changes, machine translation, LLM reviews and review bots, LLM authored code provided it is the minimal implementation of the desired changes.
 - 🔨 Carries a moderation penalty: Lying.
+
+So:
+
 - Using an LLM for your own personal use is likely allowed ✅
 - Showing LLM output to another human without solicitation is likely banned ❌
 - Making a decision that affects others based on LLM output requires disclosure ⚠️
