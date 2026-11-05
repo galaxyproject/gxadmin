@@ -4872,14 +4872,14 @@ query_dump-users() { ##? [--apikey] [--email] : Dump the list of users and their
 		apikeyjoin="left join api_keys ak on ak.user_id = u.id"
 	else
 		apikey=""
-  		apikeyjoin=""
+		apikeyjoin=""
 	fi
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
 			u.username
 			$email
-   			$apikey
+			$apikey
 		FROM
 			galaxy_user u $apikeyjoin
 		ORDER BY
