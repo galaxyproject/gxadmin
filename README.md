@@ -12,19 +12,6 @@ but you can also easily add more to your installation with local functions. gxad
 attempts to be a very readable bash script and avoids using fancy new bash
 features.
 
-Subcommand | Functions
-----       | ---
-query      | 104
-server     | 22
-mutate     | 22
-meta       | 12
-galaxy     | 12
-report     | 5
-filter     | 3
-config     | 2
-cluster    | 1
-
-
 This script **requires a postgres database** and has **no** plans to support
 mysql or sqlite3.
 
