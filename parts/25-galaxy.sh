@@ -571,8 +571,7 @@ galaxy_prune-gxit-routes() { ##? <interactivetools_map>: Prunes dead routes
 
 galaxy_job-observation-capabilities() { ## : Display supported observation fields
 	handle_help "$@" <<-EOF
-		export GXADMIN_GALAXY_RELEASE=26.2
-		export GXADMIN_SOURCE_TIMEZONE=UTC
+		Display supported observation fields
 
 		$ gxadmin galaxy job-observation-capabilities
 		{
@@ -719,7 +718,7 @@ galaxy_job-observation-capabilities() { ## : Display supported observation field
 			"runnerSourceColumn": "job.job_runner_name",
 			"textMetrics": [],
 			"timestampInterpretation": "UTC"
-			}
+		}
 	EOF
 	GXADMIN_EXPORT_VERSION=$(version) GXADMIN_OBSERVATION_PROGRAM="$job_observation_program" "$GXADMIN_PYTHON" -c "$job_observation_program" capabilities || exit $?
 }
@@ -734,30 +733,36 @@ galaxy_job-observation-bounds() { ## :  Get the highest job ID
 	GXADMIN_EXPORT_VERSION=$(version) GXADMIN_OBSERVATION_PROGRAM="$job_observation_program" "$GXADMIN_PYTHON" -c "$job_observation_program" bounds || exit $?
 }
 
-galaxy_export-job-observations() { ##? [request-json] [output-directory]: Return metric details for a job
+galaxy_export-job-observations() { ##? [low job ID] [high job ID] [output-directory]: Export job metrics in CSV files.
 	handle_help "$@" <<-EOF
-		Return metric details for a job.
+		Export job metrics in CSV files.
 
-		$ cat request.json
-		{
-			"galaxyRelease": "26.2",
-			"timestampInterpretation": "UTC",
-			"selection": {
-				"entity": "jobs",
-				"mode": "id_list",
-				"ids": ["209"]
-		}
+		$ gxadmin galaxy export-job-observations 194 209 /tmp/my-job-export
 
-		$ gxadmin galaxy export-job-observations  request.json   /tmp/export/
-		$ ls -l /tmp/export/
-		-rw-r--r-- 1 galaxy galaxy  510 Nov  6 16:57 jobs.csv
-		-rw-r--r-- 1 galaxy galaxy 1787 Nov  6 16:57 metadata.json
-		-rw-r--r-- 1 galaxy galaxy  409 Nov  6 16:57 numeric_metrics.csv
+		$ ls -l /tmp/my-job-export/
+		total 12
+		-rw-r--r-- 1 galaxy galaxy 2206 Nov  6 18:50 jobs.csv
+		-rw-r--r-- 1 galaxy galaxy 1747 Nov  6 18:50 metadata.json
+		-rw-r--r-- 1 galaxy galaxy 1456 Nov  6 18:50 numeric_metrics.csv
 
-		$ cat /tmp/export/jobs.csv
+		$ $ cat /tmp/my-job-export/jobs.csv
 		job_id,create_time,update_time,state_raw,tool_id_raw,tool_version,galaxy_version,destination_id,handler,runner_name,user_id,exit_code,copied_from_job_id,imported
-		209,2026-09-01T00:00:00.000000Z,2026-09-01T01:00:00.000000Z,ok,step4_fixture/mixed_cgroup,1.0,26.2,test-destination,step4-fixture,__gxadmin_null_aecaf5be-600d-4195-9243-031998
-		ca4e6c__,__gxadmin_null_aecaf5be-600d-4195-9243-031998ca4e6c__,__gxadmin_null_aecaf5be-600d-4195-9243-031998ca4e6c__,__gxadmin_null_aecaf5be-600d-4195-9243-031998ca4e6c__,f
+		195,2026-09-01T00:00:00.000000Z,2026-09-01T01:00:00.000000Z,ok,step4_fixture/clean,"quote""comma,
+		Ω",26.2,test-destination,step4-fixture,,,,,f
+		196,2026-09-01T00:00:00.000000Z,2026-09-01T01:00:00.000000Z,ok,step4_fixture/equal_duplicates,"",26.2,test-destination,step4-fixture,,,,,f
+		197,2026-09-01T00:00:00.000000Z,2026-09-01T01:00:00.000000Z,ok,step4_fixture/conflict,,26.2,test-destination,step4-fixture,,,,,f
+		198,2026-09-01T00:00:00.000000Z,2026-09-01T01:00:00.000000Z,error,step4_fixture/missing_slots,\N,26.2,test-destination,step4-fixture,,,,,f
+		199,2026-09-01T00:00:00.000000Z,2026-09-01T01:00:00.000000Z,ok,step4_fixture/copied,1.0,26.2,test-destination,step4-fixture,,,,194,f
+		200,2026-09-01T00:00:00.000000Z,2026-09-01T01:00:00.000000Z,ok,step4_fixture/imported,1.0,26.2,test-destination,step4-fixture,,,,,t
+		201,2026-09-01T00:00:00.000000Z,2026-09-01T01:00:00.000000Z,ok,step4_fixture/unknown_import,1.0,26.2,test-destination,step4-fixture,,,,,
+		202,2026-09-01T00:00:00.000000Z,2026-09-01T01:00:00.000000Z,ok,step4_fixture/zero_runtime,1.0,26.2,test-destination,step4-fixture,,,,,f
+		203,2026-09-01T00:00:00.000000Z,2026-09-01T01:00:00.000000Z,running,step4_fixture/reopened,1.0,26.2,test-destination,step4-fixture,,,,,f
+		204,2026-09-01T00:00:00.000000Z,2026-09-01T01:00:00.000000Z,ok,step4_fixture/null_runtime,1.0,26.2,test-destination,step4-fixture,,,,,f
+		205,2026-09-01T00:00:00.000000Z,2026-09-01T01:00:00.000000Z,ok,step4_fixture/zero_slots,1.0,26.2,test-destination,step4-fixture,,,,,f
+		206,2026-09-01T00:00:00.000000Z,2026-09-01T01:00:00.000000Z,ok,step4_fixture/empty_metrics,1.0,26.2,test-destination,step4-fixture,,,,,f
+		207,2026-09-01T00:00:00.000000Z,2026-09-01T01:00:00.000000Z,ok,step4_fixture/negative_runtime,1.0,26.2,test-destination,step4-fixture,,,,,f
+		208,2026-09-01T00:00:00.000000Z,2026-09-01T01:00:00.000000Z,ok,step4_fixture/nan_runtime,1.0,26.2,test-destination,step4-fixture,,,,,f
+		209,2026-09-01T00:00:00.000000Z,2026-09-01T01:00:00.000000Z,ok,step4_fixture/mixed_cgroup,1.0,26.2,test-destination,step4-fixture,,,,,f
 	EOF
-	GXADMIN_EXPORT_VERSION=$(version) GXADMIN_OBSERVATION_PROGRAM="$job_observation_program" "$GXADMIN_PYTHON" -c "$job_observation_program" export "$arg_request_json" "$arg_output_directory" || exit $?
+	GXADMIN_EXPORT_VERSION=$(version) GXADMIN_OBSERVATION_PROGRAM="$job_observation_program" "$GXADMIN_PYTHON" -c "$job_observation_program" export "$@" || exit $?
 }
