@@ -1,6 +1,7 @@
 # 25-pre
 
 - Added:
+	- galaxy job-observation-capabilities, job-observation-bounds, export-job-observations to fetch job observation data from Galaxy from @afgane
 	- query aq to add --escape option to encode bytea columns to ASCII from @natefoo
 - Updated:
 	- query tool-memory-efficiency, evaluates the memory efficiency of recent jobs from @natefoo

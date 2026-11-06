@@ -568,3 +568,196 @@ galaxy_prune-gxit-routes() { ##? <interactivetools_map>: Prunes dead routes
 	gxadmin tsvquery q "select token from interactivetool_entry_point left join job on job.id = job_id where job.state != 'running'" | \
 	  xargs -n 1 -I {} sqlite3 $arg_interactivetools_map "delete from gxitproxy where token = '{}'"
 }
+
+galaxy_job-observation-capabilities() { ## : Display supported observation fields
+	handle_help "$@" <<-EOF
+		export GXADMIN_GALAXY_RELEASE=26.2
+		export GXADMIN_SOURCE_TIMEZONE=UTC
+
+		$ gxadmin galaxy job-observation-capabilities
+		{
+			"components": {
+				"jobs": {
+				"columns": [
+					"job_id",
+					"create_time",
+					"update_time",
+					"state_raw",
+					"tool_id_raw",
+					"tool_version",
+					"galaxy_version",
+					"destination_id",
+					"handler",
+					"runner_name",
+					"user_id",
+					"exit_code",
+					"copied_from_job_id",
+					"imported"
+				],
+				"schemaVersion": 1,
+				"status": "supported"
+				},
+				"numeric_metrics": {
+				"columns": [
+					"metric_id",
+					"job_id",
+					"plugin",
+					"metric_name",
+					"metric_value_raw"
+				],
+				"schemaVersion": 1,
+				"status": "supported"
+				}
+			},
+			"exporterBuild": "e6c2ca3384ac6b454dffe960f37e0d5e2bcc3a510c0b895ef3b0318b4561ec22",
+			"formatVersion": 1,
+			"galaxyRelease": "26.2",
+			"gxadminVersion": "24",
+			"numericMetricAllowList": [
+				[
+				"core",
+				"runtime_seconds"
+				],
+				[
+				"core",
+				"galaxy_slots"
+				],
+				[
+				"core",
+				"galaxy_memory_mb"
+				],
+				[
+				"core",
+				"start_epoch"
+				],
+				[
+				"core",
+				"end_epoch"
+				],
+				[
+				"core",
+				"resubmission_count"
+				],
+				[
+				"cgroup",
+				"cpuacct.usage"
+				],
+				[
+				"cgroup",
+				"cpu.stat.usage_usec"
+				],
+				[
+				"cgroup",
+				"cpu.stat.user_usec"
+				],
+				[
+				"cgroup",
+				"cpu.stat.system_usec"
+				],
+				[
+				"cgroup",
+				"memory.max_usage_in_bytes"
+				],
+				[
+				"cgroup",
+				"memory.peak"
+				],
+				[
+				"cgroup",
+				"memory.memsw.max_usage_in_bytes"
+				],
+				[
+				"cgroup",
+				"memory.limit_in_bytes"
+				],
+				[
+				"cgroup",
+				"memory.memsw.limit_in_bytes"
+				],
+				[
+				"cgroup",
+				"memory.max"
+				],
+				[
+				"cgroup",
+				"memory.failcnt"
+				],
+				[
+				"cgroup",
+				"memory.events.oom"
+				],
+				[
+				"cgroup",
+				"memory.events.oom_kill"
+				],
+				[
+				"cgroup",
+				"memory.oom_control.oom_kill"
+				],
+				[
+				"cgroup",
+				"memory.oom_control.oom_kill_disable"
+				],
+				[
+				"cgroup",
+				"memory.oom_control.under_oom"
+				],
+				[
+				"cpuinfo",
+				"processor_count"
+				],
+				[
+				"meminfo",
+				"memtotal"
+				],
+				[
+				"meminfo",
+				"swaptotal"
+				]
+			],
+			"postgresqlVersion": "17.2 (Debian 17.2-1.pgdg110+1)",
+			"runnerSourceColumn": "job.job_runner_name",
+			"textMetrics": [],
+			"timestampInterpretation": "UTC"
+			}
+	EOF
+	GXADMIN_EXPORT_VERSION=$(version) GXADMIN_OBSERVATION_PROGRAM="$job_observation_program" "$GXADMIN_PYTHON" -c "$job_observation_program" capabilities || exit $?
+}
+
+galaxy_job-observation-bounds() { ## :  Get the highest job ID
+	handle_help "$@" <<-EOF
+		Get the highest job ID.
+
+		$ gxadmin galaxy job-observation-bounds
+		{"entity":"jobs","maxId":"209"}
+	EOF
+	GXADMIN_EXPORT_VERSION=$(version) GXADMIN_OBSERVATION_PROGRAM="$job_observation_program" "$GXADMIN_PYTHON" -c "$job_observation_program" bounds || exit $?
+}
+
+galaxy_export-job-observations() { ##? [request-json] [output-directory]: Return metric details for a job
+	handle_help "$@" <<-EOF
+		Return metric details for a job.
+
+		$ cat request.json
+		{
+			"galaxyRelease": "26.2",
+			"timestampInterpretation": "UTC",
+			"selection": {
+				"entity": "jobs",
+				"mode": "id_list",
+				"ids": ["209"]
+		}
+
+		$ gxadmin galaxy export-job-observations  request.json   /tmp/export/
+		$ ls -l /tmp/export/
+		-rw-r--r-- 1 galaxy galaxy  510 Nov  6 16:57 jobs.csv
+		-rw-r--r-- 1 galaxy galaxy 1787 Nov  6 16:57 metadata.json
+		-rw-r--r-- 1 galaxy galaxy  409 Nov  6 16:57 numeric_metrics.csv
+
+		$ cat /tmp/export/jobs.csv
+		job_id,create_time,update_time,state_raw,tool_id_raw,tool_version,galaxy_version,destination_id,handler,runner_name,user_id,exit_code,copied_from_job_id,imported
+		209,2026-09-01T00:00:00.000000Z,2026-09-01T01:00:00.000000Z,ok,step4_fixture/mixed_cgroup,1.0,26.2,test-destination,step4-fixture,__gxadmin_null_aecaf5be-600d-4195-9243-031998
+		ca4e6c__,__gxadmin_null_aecaf5be-600d-4195-9243-031998ca4e6c__,__gxadmin_null_aecaf5be-600d-4195-9243-031998ca4e6c__,__gxadmin_null_aecaf5be-600d-4195-9243-031998ca4e6c__,f
+	EOF
+	GXADMIN_EXPORT_VERSION=$(version) GXADMIN_OBSERVATION_PROGRAM="$job_observation_program" "$GXADMIN_PYTHON" -c "$job_observation_program" export "$arg_request_json" "$arg_output_directory" || exit $?
+}
