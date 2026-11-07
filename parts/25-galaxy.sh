@@ -733,7 +733,7 @@ galaxy_job-observation-bounds() { ## :  Get the highest job ID
 	GXADMIN_EXPORT_VERSION=$(version) GXADMIN_OBSERVATION_PROGRAM="$job_observation_program" "$GXADMIN_PYTHON" -c "$job_observation_program" bounds || exit $?
 }
 
-galaxy_export-job-observations() { ##? <low-job-ID> <high-job-ID> <output-directory>: Export job metrics in CSV files.
+galaxy_export-job-observations() { ##? <low-job-ID|request-json> <high-job-ID|output-directory> [output-directory]: Export job metrics in CSV files.
 	handle_help "$@" <<-EOF
 		Export job metrics in CSV files.
 
