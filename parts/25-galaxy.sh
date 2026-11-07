@@ -723,14 +723,17 @@ galaxy_job-observation-capabilities() { ## : Display supported observation field
 	GXADMIN_EXPORT_VERSION=$(version) GXADMIN_OBSERVATION_PROGRAM="$job_observation_program" "$GXADMIN_PYTHON" -c "$job_observation_program" capabilities || exit $?
 }
 
-galaxy_job-observation-bounds() { ## :  Get the highest job ID
+galaxy_job-observation-bounds() { ##? [created-before] [creation-floor]:  Get the highest job ID
 	handle_help "$@" <<-EOF
 		Get the highest job ID.
 
 		$ gxadmin galaxy job-observation-bounds
 		{"entity":"jobs","maxId":"209"}
+
+		$ gxadmin galaxy job-observation-bounds 2026-11-05T00:00:00Z  2026-01-01T00:00:00Z
+		{"createdBefore":"2026-11-05T00:00:00.000000Z","entity":"jobs","floor":"2026-01-01T00:00:00.000000Z","floorId":"1","maxId":"50219"}
 	EOF
-	GXADMIN_EXPORT_VERSION=$(version) GXADMIN_OBSERVATION_PROGRAM="$job_observation_program" "$GXADMIN_PYTHON" -c "$job_observation_program" bounds || exit $?
+	GXADMIN_EXPORT_VERSION=$(version) GXADMIN_OBSERVATION_PROGRAM="$job_observation_program" "$GXADMIN_PYTHON" -c "$job_observation_program" bounds "$@" || exit $?
 }
 
 galaxy_export-job-observations() { ##? <low-job-ID|request-json> <high-job-ID|output-directory> [output-directory]: Export job metrics in CSV files.

@@ -1,5 +1,6 @@
 # Extract job and metric data from Galaxy's database.
 
+from datetime import datetime, timezone
 import hashlib
 import json
 import os
@@ -136,6 +137,38 @@ def export(request, output):
 			shutil.rmtree(work)
 
 
+def bounds_sql(created_before=None, creation_floor=None):
+	def utc(value):
+		parsed = datetime.fromisoformat(value)
+		return parsed.replace(tzinfo=timezone.utc) if parsed.tzinfo is None else parsed.astimezone(timezone.utc)
+	where = ""
+	properties = ""
+	if created_before:
+		cutoff = utc(created_before)
+		where = f"WHERE create_time <= '{cutoff.strftime('%Y-%m-%d %H:%M:%S.%f')}'::timestamp AND imported IS NOT TRUE"
+		properties += f",'createdBefore','{cutoff.strftime('%Y-%m-%dT%H:%M:%S.%fZ')}'"
+	sql = ""
+	if creation_floor:
+		floor = utc(creation_floor)
+		date = floor.strftime('%Y-%m-%d %H:%M:%S.%f')
+		sql = f"""DO $$
+		DECLARE low_id bigint := 1; high_id bigint; middle_id bigint; floor_id bigint; sample record;
+		BEGIN
+		  SELECT COALESCE(max(id),0)+1 INTO high_id FROM public.job;
+		  WHILE low_id < high_id LOOP
+		    middle_id := low_id + (high_id-low_id)/2;
+		    SELECT id,create_time INTO sample FROM public.job WHERE id >= middle_id AND imported IS NOT TRUE ORDER BY id LIMIT 1;
+		    IF NOT FOUND OR sample.create_time >= '{date}'::timestamp THEN high_id := middle_id;
+		    ELSE low_id := sample.id+1; END IF;
+		  END LOOP;
+		  SELECT id INTO floor_id FROM public.job WHERE id >= low_id AND create_time >= '{date}'::timestamp AND imported IS NOT TRUE ORDER BY id LIMIT 1;
+		  PERFORM set_config('gxadmin.floor_id',COALESCE(floor_id::text,''),true);
+		END $$;
+		"""
+		properties += f",'floor','{floor.strftime('%Y-%m-%dT%H:%M:%S.%fZ')}', 'floorId',NULLIF(current_setting('gxadmin.floor_id'),'')"
+	return sql + f"SELECT json_build_object('entity','jobs','maxId',COALESCE((SELECT id FROM public.job {where} ORDER BY id DESC LIMIT 1),0)::text{properties})\n\\g bounds.json\n"
+
+
 def main():
 	mode = sys.argv[1]
 	if mode == "export":
@@ -148,9 +181,9 @@ def main():
 		return
 	with tempfile.TemporaryDirectory(prefix="gxadmin-observations-") as tmp:
 		work = Path(tmp)
-		sql = "BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY;\nSET LOCAL statement_timeout='30s';\nSET LOCAL lock_timeout='3s';\n" + preflight_sql()
+		sql = "BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY;\nSET LOCAL timezone='UTC';\nSET LOCAL statement_timeout='30s';\nSET LOCAL lock_timeout='3s';\n" + preflight_sql()
 		if mode == "bounds":
-			sql += "SELECT json_build_object('entity','jobs','maxId',COALESCE(max(id),0)::text) FROM public.job\n\\g bounds.json\n"
+			sql += bounds_sql(*sys.argv[2:])
 		sql += "COMMIT;\n"
 		psql(sql, work, 60)
 		print(encode(json.loads((work / "bounds.json").read_text()) if mode == "bounds" else capability(work)).decode())
