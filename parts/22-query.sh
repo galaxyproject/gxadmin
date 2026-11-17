@@ -937,7 +937,7 @@ query_jobs-nonterminal() { ## [--states=new,queued,running] [--update-time] [--o
 
 	read -r -d '' QUERY <<-EOF
 		SELECT
-			job.id, $(tool_id_expr job.tool_id) AS tool_id, job.state, job.$time_column AT TIME ZONE 'UTC' AS $time_column, job.job_runner_name, job.job_runner_external_id, job.handler, $user
+			job.id, $(tool_id_expr job.tool_id) AS tool_id, job.state, job.$time_column AT TIME ZONE 'UTC' AS $time_column, job.destination_id, job.job_runner_external_id, job.handler, $user
 		FROM
 			job
 		LEFT OUTER JOIN
