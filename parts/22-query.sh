@@ -3155,7 +3155,9 @@ query_job-inputs() { ##? <id>: Input datasets to a specific job
 				d.state AS d_state,
 				d.deleted AS d_deleted,
 				d.purged AS d_purged,
-				d.object_store_id AS object_store_id
+				d.object_store_id AS object_store_id,
+				d.total_size/1024/1024/1024 AS total_size_gb,
+				jtid.name AS input_name
 			FROM job j
 				JOIN job_to_input_dataset jtid
 					ON j.id = jtid.job_id
