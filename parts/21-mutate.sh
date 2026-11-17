@@ -1672,7 +1672,7 @@ mutate_set-missing-username-to-random-uuid() { ##? [--commit]: Set empty usernam
 	QUERY="$txn_pre $QUERY; $txn_pos"
 }
 
-mutate_scale-table-autovacuum() { ##? [--shift=16] [--commit]: Update autovacuum and autoanalyze scale for large tables.
+mutate_scale-table-autovacuum() { ##? [--shift=16] [--min-rows=0] [--insert-threshold=0] [--commit]: Update autovacuum and autoanalyze scale for large tables.
 	meta <<-EOF
 		ADDED: 22
 		AUTHORS: natefoo
@@ -1685,13 +1685,14 @@ mutate_scale-table-autovacuum() { ##? [--shift=16] [--commit]: Update autovacuum
 		adjusted to 0.2/log(rows >> [shift]) and autoanalyze scale adjusted to 0.1/log(rows >> [shift]).
 	EOF
 
-	local qstr table vacscale anscale
+	local qstr table vacscale anscale fixed_insert settings
 
 	read -r -d '' qstr <<-EOF
 		SELECT
 			s.oid,
 			to_char(0.2 / s.shiftlog, 'FM0.9999') AS vacscale,
-			to_char(0.1 / s.shiftlog, 'FM0.9999') AS anscale
+			to_char(0.1 / s.shiftlog, 'FM0.9999') AS anscale,
+			(s.reltuples * 0.2 / s.shiftlog > $arg_insert_threshold) AS fixed_insert
 		FROM (
 			SELECT
 				oid::REGCLASS,
@@ -1702,6 +1703,7 @@ mutate_scale-table-autovacuum() { ##? [--shift=16] [--commit]: Update autovacuum
 			WHERE
 				relkind = 'r'
 				AND relowner = (SELECT usesysid FROM pg_user WHERE usename = (SELECT current_user))
+				AND reltuples >= $arg_min_rows
 				AND (reltuples::INT8 >> $arg_shift) > 0
 				AND log(reltuples::INT8 >> $arg_shift) > 1
 		) AS s
@@ -1709,14 +1711,19 @@ mutate_scale-table-autovacuum() { ##? [--shift=16] [--commit]: Update autovacuum
 			s.reltuples
 	EOF
 
-	while read table vacscale anscale; do
-		QUERY="$(printf '%s;\n%s' "$QUERY" \
-			"ALTER TABLE $table SET (autovacuum_vacuum_scale_factor = $vacscale, autovacuum_analyze_scale_factor = $anscale)")"
+	while read table vacscale anscale fixed_insert; do
+		settings="autovacuum_vacuum_scale_factor = $vacscale, autovacuum_analyze_scale_factor = $anscale"
+		if (( arg_insert_threshold > 0 )) && [[ "$fixed_insert" == "t" ]]; then
+			settings="$settings, autovacuum_vacuum_insert_scale_factor = 0, autovacuum_vacuum_insert_threshold = $arg_insert_threshold"
+		else
+			settings="$settings, autovacuum_vacuum_insert_scale_factor = $vacscale"
+		fi
+		QUERY="$(printf '%s\n%s' "$QUERY" "ALTER TABLE $table SET ($settings);")"
 	done< <(query_tsv "$qstr")
 
 	txn_pre=$(txn_prefix "$arg_commit")
 	txn_pos=$(txn_postfix "$arg_commit")
-	QUERY="$txn_pre $QUERY; $txn_pos"
+	QUERY="$txn_pre $QUERY $txn_pos"
 }
 
 mutate_analyze-unanalyzed-tables() { ##?: Analyze unanalyzed tables.
