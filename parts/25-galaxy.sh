@@ -2,15 +2,23 @@ registered_subcommands="$registered_subcommands galaxy"
 _galaxy_short_help="Galaxy Administration"
 
 
-galaxy_cleanup() { ## [days]: Cleanup histories/hdas/etc for past N days (default=30)
+galaxy_cleanup() { ## [days] [--gdpr]: Cleanup histories/hdas/etc for past N days (default=30)
 	handle_help "$@" <<-EOF
 		Cleanup histories/hdas/etc for past N days using the python objects-based method
+
+		With --gdpr, deleted users are purged with pgcleanup's purge_deleted_users_gdpr
+		action, which also replaces their email and username with a hash. This needs the
+		pgcrypto extension in the Galaxy database.
 	EOF
 
 	days=30
-	if (( $# > 0 )); then
-		days=$1
-	fi
+	purge_users=purge_deleted_users
+	for arg in "$@"; do
+		case "$arg" in
+			--gdpr) purge_users=purge_deleted_users_gdpr ;;
+			*) days=$arg ;;
+		esac
+	done
 
 	assert_set_env GALAXY_ROOT
 	assert_set_env GALAXY_LOG_DIR
@@ -18,7 +26,7 @@ galaxy_cleanup() { ## [days]: Cleanup histories/hdas/etc for past N days (defaul
 
 	run_date=$(date --rfc-3339=seconds)
 
-	for action in {delete_userless_histories,delete_exported_histories,purge_deleted_users,purge_deleted_histories,purge_deleted_hdas,purge_historyless_hdas,purge_hdas_of_purged_histories,delete_datasets,purge_datasets}; do
+	for action in delete_userless_histories delete_exported_histories $purge_users purge_deleted_histories purge_deleted_hdas purge_historyless_hdas purge_hdas_of_purged_histories delete_datasets purge_datasets; do
 		start_time=$(date +%s)
 		cd "$GALAXY_ROOT";
 		$GXADMIN_PYTHON \
