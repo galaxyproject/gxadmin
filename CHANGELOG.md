@@ -3,6 +3,7 @@
 - Added:
 	- query aq to add --escape option to encode bytea columns to ASCII from @natefoo
 - Updated:
+	- galaxy cleanup: --gdpr purges deleted users with purge_deleted_users_gdpr from @pauldg
 	- query tool-memory-efficiency, evaluates the memory efficiency of recent jobs from @natefoo
 	- Return query results in raw (unaligned, tuples-only) format with 'rawquery' from @natefoo
 
