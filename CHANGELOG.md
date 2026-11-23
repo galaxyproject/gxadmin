@@ -6,6 +6,12 @@
 	- query tool-memory-efficiency, evaluates the memory efficiency of recent jobs from @natefoo
 	- Return query results in raw (unaligned, tuples-only) format with 'rawquery' from @natefoo
 
+- Fixed:
+	- query monthly-cpu-stats and monthly-cpu-years: select runtime and slots from the core plugin
+	- query job-metrics, tool-memory-per-inputs, tool-memory-efficiency and tool-resource-usage: select plugin-qualified metrics and use memory-only peaks instead of memory-plus-swap
+	- query tool-resource-usage: compare memory efficiency over jobs with usable memory allocations
+	- query job-metrics: resolve input HDA IDs through history_dataset_association before looking up dataset sizes
+
 # 24
 
 - Added:
